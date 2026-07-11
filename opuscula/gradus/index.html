@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#2b2116">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>GRADUS — machina contrapuncti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   GRADUS — engraved plate, letterpress treatise
+   ink #241d13 · paper #e8dcc2 · rubric #9c2c1c · leather #2b2116
+   ===================================================================== */
+html{background:#2b2116}
+:root{
+  color-scheme:light;
+  --leather:#2b2116; --paper:#e8dcc2; --paper2:#e0d2b3;
+  --ink:#241d13; --faint:rgba(36,29,19,.42); --hair:rgba(36,29,19,.28);
+  --rubric:#9c2c1c;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  background:var(--leather);
+  background-image:radial-gradient(140% 100% at 50% 0%,rgba(232,220,194,.06),transparent 55%);
+  color:#241d13; color:var(--ink);
+  font-family:'EB Garamond',Georgia,serif;
+  min-height:100vh;display:flex;justify-content:center;
+  padding:max(16px,env(safe-area-inset-top)) 12px calc(24px + env(safe-area-inset-bottom));
+}
+.sheet{
+  width:100%;max-width:600px;background:var(--paper);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.14 0 0 0 0 0.11 0 0 0 0 0.07 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  border:1px solid var(--ink);
+  box-shadow:inset 0 0 0 4px var(--paper),inset 0 0 0 5.5px var(--ink),
+             inset 0 0 60px rgba(36,29,19,.18), 0 8px 40px rgba(0,0,0,.5);
+  padding:26px 20px 18px;
+}
+.sc{font-family:'Cormorant SC','EB Garamond',serif}
+
+/* ---- head ---- */
+.eyebrow{font-size:.72rem;letter-spacing:.34em;color:var(--rubric);text-align:center;text-transform:uppercase}
+h1{
+  font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
+  font-size:clamp(3.4rem,15vw,4.8rem);line-height:1;letter-spacing:.06em;margin:8px 0 2px;
+}
+.sub{text-align:center;font-style:italic;font-size:1.02rem;color:var(--ink);max-width:44ch;margin:0 auto}
+.credit{text-align:center;font-size:.72rem;letter-spacing:.22em;color:var(--faint);margin-top:10px;text-transform:uppercase}
+.fleuron{text-align:center;color:var(--rubric);font-size:1rem;margin:12px 0 4px;letter-spacing:.6em}
+
+hr.rule{border:none;border-top:1px solid var(--ink);margin:14px 0 0}
+hr.rule.dbl{border-top:3px double var(--ink)}
+
+/* ---- plate ---- */
+.plate{margin-top:14px;border:1px solid var(--ink);background:var(--paper2);position:relative}
+.platehead{display:flex;justify-content:space-between;padding:7px 10px;border-bottom:1px solid var(--hair);
+  font-size:.66rem;letter-spacing:.24em;text-transform:uppercase;color:var(--faint)}
+.platehead .op{color:var(--rubric)}
+.scrollwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+canvas#plate{display:block}
+
+/* ---- controls ---- */
+.controls{margin-top:16px;display:flex;flex-direction:column;gap:15px}
+.lab{font-family:'Cormorant SC',serif;font-weight:600;font-size:.86rem;letter-spacing:.3em;text-transform:uppercase;
+  display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+.lab .rd{font-family:'EB Garamond',serif;font-style:italic;font-size:.85rem;letter-spacing:.02em;text-transform:none;color:var(--faint)}
+
+button{
+  font-family:'Cormorant SC',serif;font-weight:600;color:var(--ink);
+  background:transparent;border:1.5px solid var(--ink);cursor:pointer;
+  letter-spacing:.14em;touch-action:manipulation;
+}
+button:focus-visible{outline:2px solid var(--rubric);outline-offset:2px}
+
+.playbtn{width:100%;padding:14px;font-size:1.3rem;letter-spacing:.4em;border-width:2px}
+.playbtn.on{background:var(--rubric);border-color:var(--rubric);color:var(--paper)}
+
+.seg{display:flex;border:1.5px solid var(--ink)}
+.seg button{flex:1;border:none;border-right:1px solid var(--ink);padding:10px 2px;font-size:.9rem;background:transparent}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--ink);color:var(--paper)}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{padding:8px 12px;font-size:.9rem}
+.chips button.on{background:var(--ink);color:var(--paper)}
+
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--ink)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;margin-top:-8.5px;border-radius:50%;
+  background:var(--paper);border:2px solid var(--ink)}
+input[type=range]::-moz-range-track{height:2px;background:var(--ink)}
+input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--paper);border:2px solid var(--ink)}
+
+/* regulae */
+.regs{display:flex;flex-direction:column;border:1.5px solid var(--ink)}
+.regs button{display:flex;align-items:baseline;gap:10px;border:none;border-bottom:1px solid var(--hair);
+  padding:10px 12px;text-align:left;font-size:.95rem;letter-spacing:.06em}
+.regs button:last-child{border-bottom:none}
+.regs .box{font-family:'EB Garamond',serif;width:1.1em;color:var(--rubric)}
+.regs .gloss{font-family:'EB Garamond',serif;font-style:italic;font-size:.8rem;letter-spacing:0;color:var(--faint);margin-left:auto;text-align:right}
+.regs button.off{color:var(--faint)}
+.regs button.off .box{color:var(--faint)}
+.lexnote{font-style:italic;font-size:.85rem;margin-top:7px;min-height:1.2em}
+.lexnote.het{color:var(--rubric)}
+
+.cut{width:100%;padding:12px;font-size:.95rem;letter-spacing:.24em;border-style:dashed}
+.cut:disabled{opacity:.45}
+.cutnote{font-style:italic;text-align:center;font-size:.82rem;color:var(--faint);margin-top:6px;min-height:1.1em}
+
+/* ledger / colophon */
+.ledger{margin-top:16px;border-top:3px double var(--ink);padding-top:10px;
+  font-size:.8rem;line-height:1.75;color:var(--ink)}
+.ledger .k{font-family:'Cormorant SC',serif;letter-spacing:.18em;font-size:.72rem;color:var(--faint);text-transform:uppercase}
+.colophon{text-align:center;font-size:.7rem;letter-spacing:.26em;color:var(--faint);margin-top:14px;text-transform:uppercase}
+.platefoot{display:flex;justify-content:center;gap:14px;padding:6px 10px;border-top:1px solid var(--hair);
+  font-size:.7rem;font-style:italic;color:var(--faint)}
+.platefoot .pf{color:var(--rubric)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* ---- opuscula shared refinements ---- */
+button:active{transform:translateY(1px)}
+button,canvas{-webkit-user-select:none;user-select:none}
+.colophon a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+@media(min-width:900px){.sheet{max-width:720px}}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <div class="eyebrow">Liber generativus · tabula I</div>
+  <h1>Gradus</h1>
+  <div class="sub">machina contrapuncti — the machine composes each line under the species rules; you set the law it must obey.</div>
+  <div class="credit">after Johann Joseph Fux · Gradus ad Parnassum · Vienna 1725</div>
+  <div class="fleuron">❦ ❦ ❦</div>
+
+  <div class="plate">
+    <div class="platehead"><span>Tabula · <span id="tactus">figured plate</span></span><span class="op" id="opus">OPUS —</span></div>
+    <div class="scrollwrap"><canvas id="plate" height="424" aria-label="Two-voice counterpoint score with interval figures between the staves"></canvas></div>
+    <div class="platefoot"><span>figures: consonant</span><span style="font-weight:600">perfect</span><span class="pf">dissonant — transitus / ligatura</span></div>
+  </div>
+
+  <div class="controls">
+
+    <button class="playbtn" id="play">SONA</button>
+
+    <div>
+      <div class="lab">Modus <span class="rd" id="modusrd"></span></div>
+      <div class="chips" id="modus"></div>
+    </div>
+
+    <div>
+      <div class="lab">Species <span class="rd" id="specrd"></span></div>
+      <div class="seg" id="spec">
+        <button data-s="1" class="on">I</button><button data-s="2">II</button>
+        <button data-s="3">III</button><button data-s="4">IV</button>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <div class="lab">Vox</div>
+        <div class="seg" id="vox">
+          <button data-v="supra" class="on">Supra</button>
+          <button data-v="infra">Infra</button>
+        </div>
+      </div>
+      <div>
+        <div class="lab">Cantus</div>
+        <div class="seg" id="cfsrc">
+          <button data-c="novus" class="on">Novus</button>
+          <button data-c="fux">Fux · d</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <div class="lab">Longitudo <span class="rd" id="lenrd">11 brevia</span></div>
+        <input type="range" id="len" min="8" max="13" value="11">
+      </div>
+      <div>
+        <div class="lab">Tempus <span class="rd" id="temprd">1.8 s</span></div>
+        <input type="range" id="tempo" min="10" max="30" value="18">
+      </div>
+    </div>
+
+    <button class="playbtn" id="aliud" style="font-size:1rem;letter-spacing:.3em;padding:12px">ALIUD — compose another</button>
+
+    <div>
+      <div class="lab">Regulae · the law</div>
+      <div class="regs" id="regs"></div>
+      <div class="lexnote" id="lexnote"></div>
+    </div>
+
+    <div>
+      <button class="cut" id="cut">Pull a print · 16-bit WAV</button>
+      <div class="cutnote" id="cutnote">renders this opus offline, exactly as figured</div>
+    </div>
+
+    <div class="ledger" id="ledger"></div>
+
+    <div class="colophon">species I–IV · ficta at the clausula · sine temperament · sheet 1 of 1<br>
+    op. III · <a href="../">opvscvla</a> · claves: space=sona · r=aliud · c=cut</div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
+function __hint(msg){
+  try{
+    const p=document.getElementById('play')||document.getElementById('playBtn')||document.querySelector('button');
+    if(!p||!p.insertAdjacentElement)return;
+    let h=document.getElementById('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin-top:6px;font-style:italic;letter-spacing:.04em';
+      p.insertAdjacentElement('afterend',h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{if(document.visibilityState==='visible')kick();}catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('AUDIO SUSPENSUM — tap play again · if still silent, check the ring/silent switch');}catch(e){}},450);
+}
+
+/* ============================ ENGINE-BEGIN ============================ */
+/* GRADUS — generative species counterpoint after Fux (1725).
+   Weighted-random DFS with retry; the REGULAE toggles are the law.    */
+
+const frac=x=>x-Math.floor(x);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function pick(arr,w,rng){const tot=w.reduce((a,b)=>a+b,0);let r=rng()*tot;
+  for(let i=0;i<arr.length;i++){r-=w[i];if(r<=0)return arr[i];}return arr[arr.length-1];}
+
+const SCALE=[0,2,4,5,7,9,11];
+const pc=m=>((m%12)+12)%12;
+const inScale=m=>SCALE.includes(pc(m));
+const DIA=[0,0,1,1,2,3,3,4,4,5,5,6];
+const diaIx=m=>Math.floor(m/12)*7+DIA[pc(m)];
+const LETTERS=['c','d','e','f','g','a','b'];
+const naturalOf=m=>inScale(m)?m:m-1;                 // all ficta are sharps
+const scaleStepBelow=p=>{if(inScale(p-1))return p-1;if(inScale(p-2))return p-2;return null;};
+
+const MODES=[
+ {id:'dorius',label:'Dorius',final:50},
+ {id:'phrygius',label:'Phrygius',final:52},
+ {id:'lydius',label:'Lydius',final:53},
+ {id:'mixolydius',label:'Mixolyd.',final:55},
+ {id:'aeolius',label:'Aeolius',final:57},
+ {id:'ionicus',label:'Ionicus',final:60},
+];
+const FUXCF=[50,53,52,50,55,53,57,55,53,52,50];      // D F E D G F A G F E D
+
+const cls=iv=>((iv%12)+12)%12;
+const CONS=[0,3,4,7,8,9];
+const isCons=iv=>CONS.includes(cls(iv));
+const isPerf=iv=>cls(iv)===0||cls(iv)===7;
+function melOK(from,to){const d=to-from,a=Math.abs(d);
+  if(a===0)return false;
+  if([1,2,3,4,5,7,12].includes(a))return true;
+  if(a===8&&d>0)return true;                          // m6 ascending only
+  return false;}
+const isLeap=(a,b)=>Math.abs(b-a)>2;
+
+function tritoneFree(line){
+  let turn=line[0];
+  for(let i=1;i<line.length-1;i++){
+    const a=line[i]-line[i-1],b=line[i+1]-line[i];
+    if(a!==0&&b!==0&&Math.sign(a)!==Math.sign(b)){
+      if(cls(Math.abs(line[i]-turn))===6)return false;
+      turn=line[i];
+    }
+  }
+  if(cls(Math.abs(line[line.length-1]-turn))===6)return false;
+  return true;
+}
+
+const RULEDEFS=[
+ {id:'parallels',lat:'Quintae parallelae',gloss:'no parallel 5ths & 8ves',on:true},
+ {id:'direct',   lat:'Motus rectus',      gloss:'no similar motion into a perfect',on:true},
+ {id:'crossing', lat:'Transitus vocum',   gloss:'no crossing or overlap',on:true},
+ {id:'leapfix',  lat:'Saltus revertitur', gloss:'a leap turns back by step',on:true},
+ {id:'contrary', lat:'Motus contrarius',  gloss:'prefer contrary motion',on:true},
+ {id:'climax',   lat:'Culmen unicum',     gloss:'one summit, held once',on:true},
+];
+
+/* ---------------- cantus firmus ---------------- */
+function genCF(L,final,rng,prune){
+  const step2=[1,2].find(s=>inScale(final+s));
+  const pen=final+step2;
+  const lo=final-2,hi=final+12;
+  const pool=[];for(let m=lo;m<=hi;m++)if(inScale(m))pool.push(m);
+  for(let attempt=0;attempt<500;attempt++){
+    const line=[final];let ok=true;
+    for(let i=1;i<=L-3;i++){
+      const prev=line[i-1],pprev=line[i-2];
+      const remain=L-3-i;
+      const leapsSoFar=line.slice(1).filter((x,k)=>Math.abs(x-line[k])>2).length;
+      let cands=pool.filter(p=>{
+        const step=Math.abs(p-prev);
+        if(step===0||step>7)return false;              // CF leaps never exceed a fifth
+        if(!SCALE.includes(pc(p)))return false;
+        if(step>2&&leapsSoFar>=3)return false;          // at most a few leaps per line
+        if(pprev!==undefined){
+          const d1=prev-pprev,d2=p-prev;
+          if(isLeap(pprev,prev)&&isLeap(prev,p))return false;  // no two leaps in a row
+          if(Math.abs(d1)>2&&!(Math.abs(d2)<=2))return false;  // a leap is followed by a step
+          if(Math.abs(d1)>4&&!(Math.sign(d2)===-Math.sign(d1)))return false; // big leap turns back
+        }
+        if(remain===0){
+          if(!melOK(p,pen))return false;
+          const dj=pen-p;
+          if(isLeap(prev,p)&&isLeap(p,pen))return false;
+          if(Math.abs(p-prev)>2&&Math.abs(dj)>2)return false;
+          if(Math.abs(p-pen)>4)return false;           // approach the penult closely
+          return true;
+        }
+        return Math.abs(p-pen)<=2+3*remain;
+      });
+      if(!cands.length){ok=false;prune.cf=(prune.cf||0)+1;break;}
+      const w=cands.map(p=>{let s=Math.abs(p-prev)<=2?3:0.5;if(p===final)s*=0.4;return s;});
+      line.push(pick(cands,w,rng));
+    }
+    if(!ok)continue;
+    line.push(pen,final);
+    const mx=Math.max(...line),mxi=line.indexOf(mx);
+    if(line.filter(x=>x===mx).length!==1||mxi===0||mxi>=L-2){prune.cf=(prune.cf||0)+1;continue;}
+    if(!tritoneFree(line)){prune.cf=(prune.cf||0)+1;continue;}
+    const steps=line.slice(1).filter((p,i)=>Math.abs(p-line[i])<=2).length;
+    if(steps/(L-1)<0.5){prune.cf=(prune.cf||0)+1;continue;}
+    return line;
+  }
+  return null;
+}
+
+/* ---------------- counterpoint ----------------
+   Unified slot-based DFS with backtracking. Each species compiles to a
+   slot list; gates enforce the active REGULAE; weighted-random candidate
+   order keeps output varied while the search stays complete (budgeted).
+   attacks: {bar,pos,dur,midi,ficta,tie}  (pos/dur in breves)          */
+
+const HOLD={hold:true},EXT={ext:true};
+
+function generateCP(cf,mode,species,vox,R,seed){
+  const prune={};
+  for(let attempt=0;attempt<24;attempt++){
+    const rng=mulberry32((seed+attempt*2654435761)>>>0);
+    const res=tryCP(cf,mode,species,vox,R,rng,prune);
+    if(res){res.stats.attempts=attempt+1;res.stats.prunes=prune;return res;}
+  }
+  return null;
+}
+
+function buildSlots(species,L){
+  const S=[];
+  if(species===1){
+    for(let b=0;b<L;b++)S.push({bar:b,pos:0,kind:b===0?'start':b===L-2?'cad':b===L-1?'fin':'s1'});
+  }
+  if(species===2){
+    S.push({bar:0,pos:0.5,kind:'start'});
+    for(let b=1;b<L-1;b++){
+      S.push({bar:b,pos:0,kind:'down'});
+      S.push({bar:b,pos:0.5,kind:b===L-2?'cad':'up'});
+    }
+    S.push({bar:L-1,pos:0,kind:'fin'});
+  }
+  if(species===3){
+    S.push({bar:0,pos:0.25,kind:'start'},{bar:0,pos:0.5,kind:'q'},{bar:0,pos:0.75,kind:'q'});
+    for(let b=1;b<L-1;b++){
+      S.push({bar:b,pos:0,kind:'q1'});
+      for(const p of [0.25,0.5,0.75])
+        S.push({bar:b,pos:p,kind:(b===L-2&&p===0.75)?'cad':'q'});
+    }
+    S.push({bar:L-1,pos:0,kind:'fin'});
+  }
+  if(species===4){
+    S.push({bar:0,pos:0.5,kind:'b40'});
+    for(let b=1;b<L-1;b++){
+      S.push({bar:b,pos:0,kind:'b4a'});
+      S.push({bar:b,pos:0.5,kind:b===L-2?'b4cad':b===L-3?'b4prep':'b4b'});
+    }
+    S.push({bar:L-1,pos:0,kind:'fin'});
+  }
+  return S;
+}
+
+function tryCP(cf,mode,species,vox,R,rng,prune){
+  const L=cf.length,final=mode.final,sup=vox==='supra';
+  const step2=[1,2].find(s=>inScale(final+s));
+  const cad=sup?cf[L-2]+9:cf[L-2]-3;
+  const cadF=!inScale(cad);
+  const fin=sup?final+12:final;
+  const X=sup?final+12:final;                          // suspension preparation
+  const iv=(m,c)=>sup?m-c:c-m;
+  const crossOK=(m,c)=>!R.crossing||iv(m,c)>=0;
+  const P=k=>{prune[k]=(prune[k]||0)+1;};
+  const SUSP=sup?[1,2,5,10,11]:[1,2];
+  const slots=buildSlots(species,L);
+  const meta=[],struck=[];
+  let budget=16000;
+
+  function pool(c){
+    const out=[];
+    const lo=sup?c-(R.crossing?0:12):c-19;
+    const hi=sup?c+19:c+(R.crossing?0:12);
+    for(let m=lo;m<=hi;m++){
+      if(!inScale(m))continue;
+      const i=iv(m,c);
+      if(i>16||(i<0&&R.crossing))continue;
+      out.push(m);
+    }
+    return out;
+  }
+  const startSet=c=>(sup?[0,7,12]:[0,-12]).map(d=>c+d).filter(m=>inScale(m));
+  const lastStruck=()=>struck[struck.length-1];
+  function melodicGate(m){
+    const n=struck.length;
+    if(n===0)return true;
+    const prev=struck[n-1];
+    if(!melOK(prev,m)){P('melodia');return false;}
+    if(n>=2){
+      const pp=struck[n-2],d1=prev-pp,d2=m-prev;
+      if(R.leapfix&&Math.abs(d1)>4&&!(Math.abs(d2)<=2&&Math.sign(d2)===-Math.sign(d1))){P('saltus');return false;}
+      if(isLeap(pp,prev)&&isLeap(prev,m)&&Math.sign(d1)===Math.sign(d2)&&Math.abs(d1)+Math.abs(d2)>7){P('saltus');return false;}
+    }
+    return true;
+  }
+  function pairGate(m,c,prevM,prevC){
+    const i1=iv(m,c),i0=iv(prevM,prevC);
+    const dCP=m-prevM,dCF=c-prevC;
+    const mot=(dCF===0||dCP===0)?'obl':(Math.sign(dCP)===Math.sign(dCF)?'sim':'con');
+    if(R.parallels&&isPerf(i0)&&isPerf(i1)&&cls(i0)===cls(i1)&&dCP!==0&&dCF!==0){P('parallelae');return false;}
+    if(R.direct&&mot==='sim'&&isPerf(i1)){P('rectus');return false;}
+    return mot;
+  }
+  function lastKind(...kinds){
+    for(let i=meta.length-1;i>=0;i--)if(kinds.includes(meta[i].kind))return meta[i];
+    return null;
+  }
+  function weigh(m,c,mot){
+    let w=1;const i1=iv(m,c);
+    if(!isPerf(i1))w*=2.1;
+    const ls=lastStruck();
+    if(ls!==undefined&&Math.abs(m-ls)<=2)w*=1.9;
+    if(R.contrary&&mot==='con')w*=2.0;
+    if(R.contrary&&mot==='sim')w*=0.5;
+    if(cls(i1)===0)w*=0.55;
+    if(!sup&&m<final)w*=1.25;
+    return w;
+  }
+
+  /* candidate generation per slot kind → [{m|HOLD|EXT, tie?, w}] */
+  function kindGen(i){
+    const sl=slots[i],c=cf[sl.bar],out=[];
+    const prev=meta[meta.length-1];
+    const add=(m,w,tie)=>out.push({m,w,tie:!!tie});
+
+    if(sl.kind==='start'||sl.kind==='b40'){
+      for(const m of startSet(c)){
+        if(sl.kind==='b40'){
+          const i2=iv(m,cf[1]);
+          if(!(isCons(i2)||SUSP.includes(cls(i2)))||!crossOK(m,cf[1])){P('praeparatio');continue;}
+        }
+        add(m,1,sl.kind==='b40');
+      }
+      return out;
+    }
+    if(sl.kind==='fin'){
+      if(!melodicGate(fin))return out;
+      const mot=pairGate(fin,c,lastStruck(),cf[sl.bar-1]);
+      if(mot===false)return out;
+      if((species===2||species===3)&&R.parallels){
+        const d=lastKind('down','q1','start');
+        if(d&&isPerf(d.iv)&&cls(d.iv)===cls(iv(fin,c))){P('parallelae');return out;}
+      }
+      add(fin,1);return out;
+    }
+    if(sl.kind==='cad'){
+      if(!melodicGate(cad))return out;
+      if(prev&&prev.dis){                              // owed passing step
+        const d=cad-lastStruck();
+        if(!(Math.abs(d)<=2&&(species===3?true:Math.sign(d)===prev.pdir))){P('transitus');return out;}
+      }
+      const prevC=(species===1)?cf[sl.bar-1]:c;
+      const mot=pairGate(cad,c,lastStruck(),prevC);
+      if(mot===false)return out;
+      add(cad,1);return out;
+    }
+
+    if(sl.kind==='s1'){
+      for(const m of pool(c)){
+        const i1=iv(m,c);
+        if(!isCons(i1)||i1===0)continue;
+        if(!melodicGate(m))continue;
+        const mot=pairGate(m,c,lastStruck(),cf[sl.bar-1]);
+        if(mot===false)continue;
+        add(m,weigh(m,c,mot));
+      }
+      return out;
+    }
+
+    if(sl.kind==='down'||sl.kind==='q1'){
+      for(const m of pool(c)){
+        const i1=iv(m,c);
+        if(!isCons(i1)||i1===0)continue;
+        if(prev&&prev.dis){
+          const d=m-lastStruck();
+          if(!(Math.abs(d)<=2&&(sl.kind==='q1'?true:Math.sign(d)===prev.pdir))){P('transitus');continue;}
+        }
+        if(!melodicGate(m))continue;
+        const mot=pairGate(m,c,lastStruck(),cf[sl.bar-1]);
+        if(mot===false)continue;
+        if(R.parallels){
+          const d=lastKind('down','q1','start');
+          if(d&&isPerf(d.iv)&&isPerf(i1)&&cls(d.iv)===cls(i1)){P('parallelae');continue;}
+        }
+        add(m,weigh(m,c,mot));
+      }
+      return out;
+    }
+
+    if(sl.kind==='up'||sl.kind==='q'){
+      for(const m of pool(c)){
+        const i1=iv(m,c),cons=isCons(i1);
+        const ls=lastStruck();
+        if(prev&&prev.dis){
+          const d=m-ls;
+          if(!cons){P('dissonantia');continue;}        // no double dissonance
+          if(!(Math.abs(d)<=2&&(sl.kind==='q'?true:Math.sign(d)===prev.pdir))){P('transitus');continue;}
+        }
+        if(!cons&&Math.abs(m-ls)>2){P('dissonantia');continue;}
+        if(!melodicGate(m))continue;
+        const mot=pairGate(m,c,ls,c);                  // CF static → oblique
+        if(mot===false)continue;
+        add(m,weigh(m,c,mot)*(cons?1:1.6));
+      }
+      return out;
+    }
+
+    /* --- species IV --- */
+    if(sl.kind==='b4a'){
+      if(prev.tie){
+        const held=prev.m,i1=iv(held,c);
+        if(!crossOK(held,c)){P('transitusV');return out;}
+        if(isCons(i1)||SUSP.includes(cls(i1)))add(HOLD,1);
+        else P('ligatura');
+        return out;
+      }
+      for(const m of pool(c)){
+        const i1=iv(m,c);
+        if(!isCons(i1)||i1===0)continue;
+        if(!melodicGate(m))continue;
+        const mot=pairGate(m,c,lastStruck(),cf[sl.bar-1]);
+        if(mot===false)continue;
+        add(m,weigh(m,c,mot));
+      }
+      return out;
+    }
+    if(sl.kind==='b4b'||sl.kind==='b4prep'||sl.kind==='b4cad'){
+      const b1=prev.m===undefined?prev.held:prev.m;     // b4a meta carries pitch
+      const held=prev.hold?prev.held:prev.m;
+      const b1p=prev.hold?prev.held:prev.m;
+      const i1=iv(b1p,c);
+      const dis=!isCons(i1);
+      if(sl.kind==='b4cad'){
+        if(!(b1p-cad===1||b1p-cad===2)){P('ligatura');return out;}
+        add(cad,1,false);return out;
+      }
+      if(sl.kind==='b4prep'){
+        if(!isCons(iv(X,c))){P('praeparatio');return out;}
+        if(dis){
+          if(!(b1p-X===1||b1p-X===2)){P('ligatura');return out;}
+          add(X,1,true);
+        }else if(X===b1p){
+          add(EXT,1,true);
+        }else{
+          if(!melodicGate(X))return out;
+          add(X,1,true);
+        }
+        return out;
+      }
+      // b4b
+      if(dis){
+        const r=scaleStepBelow(b1p);
+        if(r===null){P('ligatura');return out;}
+        const ir=iv(r,c);
+        if(!isCons(ir)||(ir<0&&R.crossing)){P('ligatura');return out;}
+        if(R.parallels){
+          const pb=lastKind('b4b','b40');
+          if(pb&&isPerf(pb.iv)&&isPerf(ir)&&cls(pb.iv)===cls(ir)){P('parallelae');return out;}
+        }
+        const i2=iv(r,cf[sl.bar+1]);
+        const canTie=(isCons(i2)||SUSP.includes(cls(i2)))&&crossOK(r,cf[sl.bar+1]);
+        if(canTie)add(r,1.7,true);
+        add(r,0.5,false);
+        return out;
+      }
+      for(const m of pool(c)){
+        const im=iv(m,c);
+        if(!isCons(im)||im===0||m===b1p)continue;
+        if(!crossOK(m,c))continue;
+        if(!melodicGate(m))continue;
+        if(R.parallels){
+          const pb=lastKind('b4b','b40');
+          if(pb&&isPerf(pb.iv)&&isPerf(im)&&cls(pb.iv)===cls(im)){P('parallelae');continue;}
+        }
+        let w=(isPerf(im)?1:2)*(Math.abs(m-b1p)<=2?1.7:1);
+        if(sl.bar>=L-6)w*=1/(1+Math.abs(m-X)/6);
+        const i2=iv(m,cf[sl.bar+1]);
+        const canTie=(isCons(i2)||SUSP.includes(cls(i2)))&&crossOK(m,cf[sl.bar+1]);
+        if(canTie)add(m,w*1.7,true);
+        add(m,w*0.35,false);
+      }
+      return out;
+    }
+    return out;
+  }
+
+  function applyMeta(i,cand){
+    const sl=slots[i],c=cf[sl.bar];
+    const m={kind:sl.kind,bar:sl.bar,pos:sl.pos,tie:cand.tie};
+    if(cand.m===HOLD){
+      m.hold=true;m.held=meta[meta.length-1].m??meta[meta.length-1].held;
+      m.iv=iv(m.held,c);m.dis=!isCons(m.iv);
+      m.tie=true;                                      // held pitch keeps sounding
+    }else if(cand.m===EXT){
+      m.ext=true;m.m=meta[meta.length-1].held??meta[meta.length-1].m;
+      m.iv=iv(m.m,c);m.dis=false;m.tie=true;
+    }else{
+      m.m=cand.m;m.iv=iv(cand.m,c);m.dis=!isCons(m.iv);
+      if(m.dis){const ls=lastStruck();m.pdir=Math.sign(cand.m-ls);}
+      struck.push(cand.m);m.pushed=true;
+    }
+    meta.push(m);
+  }
+  function popMeta(){const m=meta.pop();if(m.pushed)struck.pop();}
+
+  function postValidate(){
+    if(R.climax){
+      const ex=Math.max(...struck);                    // summit = highest note, either voice
+      const n=struck.filter(x=>x===ex).length,ix=struck.indexOf(ex);
+      if(n!==1||ix===0||ix>=struck.length-1){P('culmen');return false;}
+    }
+    if(!tritoneFree(struck)){P('tritonus');return false;}
+    return true;
+  }
+
+  function dfs(i){
+    if(budget<=0)return false;
+    if(i===slots.length)return postValidate();
+    const cands=kindGen(i);
+    // weighted random order without replacement
+    const keyed=cands.map(cd=>({cd,k:Math.pow(rng(),1/Math.max(cd.w,1e-4))}));
+    keyed.sort((a,b)=>b.k-a.k);
+    for(const {cd} of keyed){
+      budget--;
+      applyMeta(i,cd);
+      if(dfs(i+1))return true;
+      popMeta();
+      if(budget<=0)return false;
+    }
+    if(!cands.length)P('mortuus');
+    return false;
+  }
+
+  if(!dfs(0))return null;
+
+  /* ---- emit attacks + stats ---- */
+  const atk=[];
+  for(const m of meta){
+    if(m.hold)continue;
+    if(m.ext){const last=atk[atk.length-1];last.dur+=1;last.tie=true;continue;}
+    let dur;
+    if(m.kind==='fin')dur=1;
+    else if(species===1)dur=1;
+    else if(species===3)dur=0.25;
+    else if(species===2)dur=0.5;
+    else dur=m.tie?1:0.5;                              // species IV
+    atk.push({bar:m.bar,pos:m.pos,dur,midi:m.m,ficta:m.m===cad&&cadF,tie:!!m.tie&&species===4});
+  }
+  // motion at bar boundaries
+  const motion={con:0,obl:0,sim:0};
+  let prevSon=null;
+  for(let b=0;b<L;b++){
+    let son=null;
+    for(const a of atk){const t0=a.bar+a.pos;if(t0<=b+1e-6&&t0+a.dur>b+1e-6)son=a.midi;}
+    if(son===null)for(const a of atk){if(a.bar===b){son=a.midi;break;}}
+    if(prevSon!==null&&son!==null){
+      const dCP=son-prevSon.m,dCF=cf[b]-prevSon.c;
+      motion[(dCP===0||dCF===0)?'obl':(Math.sign(dCP)===Math.sign(dCF)?'sim':'con')]++;
+    }
+    if(son!==null)prevSon={m:son,c:cf[b]};
+  }
+  const tot=motion.con+motion.obl+motion.sim||1;
+  const perf=atk.filter(a=>isPerf(iv(a.midi,cf[a.bar]))).length;
+  return {atk,stats:{motion,con:Math.round(100*motion.con/tot),perf,n:atk.length}};
+}
+
+
+/* ============================ ENGINE-END ============================ */
+
+/* ---------------- state & driver ---------------- */
+const $=id=>document.getElementById(id);
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const R={};RULEDEFS.forEach(r=>R[r.id]=r.on);
+const st={mode:0,species:1,vox:'supra',cfsrc:'novus',len:11,breve:1.8,
+  seed:(Math.random()*0xffffffff)>>>0,cf:null,cp:null,stats:null,playing:false};
+
+function regenerate(newSeed){
+  if(st.playing)stop();
+  if(newSeed)st.seed=(Math.random()*0xffffffff)>>>0;
+  const prune={};
+  let cf=null,res=null;
+  if(st.cfsrc==='fux'){
+    st.mode=0;st.len=11;cf=FUXCF.slice();
+    res=generateCP(cf,MODES[0],st.species,st.vox,R,st.seed);
+  }else{
+    // try several cantus firmi; keep the first that admits a counterpoint
+    const __rt0=(typeof performance!=='undefined'?performance.now():Date.now());
+    const __now=()=>(typeof performance!=='undefined'?performance.now():Date.now());
+    for(let k=0;k<10&&!res;k++){
+      if(__now()-__rt0>600)break;                        // stay responsive on phones
+      const rng=mulberry32((st.seed^0x9e3779b9)+k*40503);
+      const c=genCF(st.len,MODES[st.mode].final,rng,prune);
+      if(!c)continue;
+      const r=generateCP(c,MODES[st.mode],st.species,st.vox,R,(st.seed+k*131)>>>0);
+      if(r){cf=c;res=r;}
+      else if(!cf)cf=c;                                // remember a CF to show even if CP failed
+    }
+    if(!cf)cf=FUXCF.slice();
+    if(!res)res=generateCP(cf,MODES[st.mode],st.species,st.vox,R,st.seed);
+  }
+  st.cf=cf;
+  if(res){st.cp=res.atk;st.stats=res.stats;}
+  else{st.cp=null;st.stats={prunes:prune,failed:true};}
+  $('opus').textContent='OPUS '+st.seed.toString(16).toUpperCase().padStart(6,'0').slice(-6);
+  __invalidatePlate();syncModeUI();drawPlate();renderLedger();renderLex();
+}
+
+function renderLedger(){
+  const el=$('ledger');
+  if(!st.cp){el.innerHTML='<span class="k">non inventum</span> — the law admits no line here; loosen a rule, or compose another.';return;}
+  const s=st.stats,pr=s.prunes||{};
+  const top=Object.entries(pr).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([k,v])=>k+' '+v).join(' · ')||'nulla';
+  el.innerHTML=
+   '<span class="k">Attempts</span> '+s.attempts+' &nbsp;&nbsp;<span class="k">Motion at the bar</span> contrary '+s.motion.con+' · oblique '+s.motion.obl+' · similar '+s.motion.sim+'<br>'+
+   '<span class="k">Candidates pruned by</span> '+top+'<br>'+
+   '<span class="k">Sonorities</span> '+s.perf+' perfect of '+s.n+' attacks';
+}
+function renderLex(){
+  const off=RULEDEFS.filter(r=>!R[r.id]);
+  const el=$('lexnote');
+  if(!off.length){el.textContent='secundum Fux — all six rules in force.';el.classList.remove('het');}
+  else{el.textContent='heterodox: '+off.map(r=>r.lat.toLowerCase()).join(', ')+' suspended.'
+    +(R.parallels?'':' parallel perfects admitted — organum.');el.classList.add('het');}
+}
+
+/* ---------------- notation plate ---------------- */
+const cvs=$('plate'),mainCtx=cvs.getContext('2d');
+const INK='#241d13',FAINT='rgba(36,29,19,.4)',HAIR='rgba(36,29,19,.28)',RUB='#9c2c1c';
+const BW={1:58,2:80,3:114,4:90};
+function headUnit(){return {1:1,2:.5,3:.25,4:.5}[st.species];}
+
+function noteHeads(a,L){
+  // expand an attack into notated heads (start times), per species base value
+  const unit=a.bar===L-1?1:headUnit();
+  const heads=[];let t=a.bar+a.pos;const end=a.bar+a.pos+a.dur-1e-6;
+  while(t<end){heads.push(t);t+=unit;}
+  return heads;
+}
+let __plate=null,__plateKey='';
+function __invalidatePlate(){__plateKey='';}
+function drawPlate(tNow){
+  if(!st.cf)return;
+  const L=st.cf.length,bw=BW[st.species],pad=56;
+  const Wl=pad+bw*L+22,Hl=212,S=2;
+  if(cvs.width!==Wl*S){cvs.width=Wl*S;cvs.height=Hl*S;cvs.style.width=Wl+'px';cvs.style.height=Hl+'px';__plateKey='';}
+  const key=st.seed+'|'+st.mood+'|'+st.species+'|'+st.vox+'|'+Wl+'|'+(st.cp?st.cp.length:-1);
+  const rebuild=key!==__plateKey||!__plate;
+  const outer=mainCtx;
+  if(rebuild){
+    __plate=document.createElement('canvas');__plate.width=Wl*S;__plate.height=Hl*S;
+    __plateKey=key;
+  }else{
+    // cached: blit + overlay only
+    outer.setTransform(S,0,0,S,0,0);
+    outer.clearRect(0,0,Wl,Hl);
+    outer.drawImage(__plate,0,0,Wl,Hl);
+    __overlay(outer,tNow,L,bw,pad,Wl);
+    return;
+  }
+  const ctx=__plate.getContext('2d');                    // shadow: static render goes to cache
+  ctx.setTransform(S,0,0,S,0,0);
+  ctx.clearRect(0,0,Wl,Hl);
+
+  const sup=st.vox==='supra';
+  const topNotes= sup? (st.cp?st.cp.map(a=>a.midi):[])
+                     : st.cf;
+  const botNotes= sup? st.cf : (st.cp?st.cp.map(a=>a.midi):[]);
+  const topBottomY=78,botBottomY=182,gapY=(topBottomY+botBottomY-32)/2+16-24;
+  const figY=(topBottomY+ (botBottomY-32))/2+4;
+  const med=v=>{const a=v.slice().sort((x,y)=>x-y);return a.length?a[(a.length/2)|0]:60;};
+  const clef=v=>med(v)>=59?{g:'g',ref:64}:{g:'f',ref:43};
+  const ctop=clef(topNotes),cbot=clef(botNotes);
+  const yOf=(m,staff)=>{const c=staff==='t'?ctop:cbot,base=staff==='t'?topBottomY:botBottomY;
+    return base-(diaIx(naturalOf(m))-diaIx(c.ref))*4;};
+
+  // staves
+  ctx.strokeStyle=INK;ctx.lineWidth=.8;
+  for(const base of [topBottomY,botBottomY])
+    for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(pad-14,base-i*8);ctx.lineTo(Wl-10,base-i*8);ctx.stroke();}
+  // system brace line + clefs + voice labels
+  ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(pad-14,topBottomY-32);ctx.lineTo(pad-14,botBottomY);ctx.stroke();
+  ctx.fillStyle=INK;ctx.font='italic 600 21px "EB Garamond",serif';ctx.textAlign='left';ctx.textBaseline='middle';
+  ctx.fillText(ctop.g,pad-9,topBottomY-16+(ctop.g==='g'?2:-6));
+  ctx.fillText(cbot.g,pad-9,botBottomY-16+(cbot.g==='g'?2:-6));
+  if(ctop.g==='f'){ctx.fillText('·',pad+3,topBottomY-25);ctx.fillText('·',pad+3,topBottomY-18);}
+  if(cbot.g==='f'){ctx.fillText('·',pad+3,botBottomY-25);ctx.fillText('·',pad+3,botBottomY-18);}
+  ctx.font='600 8.5px "Cormorant SC","EB Garamond",serif';ctx.fillStyle=FAINT;
+  ctx.fillText(sup?'CONTRA':'CANTUS',pad-14,topBottomY-44);
+  ctx.fillText(sup?'CANTUS':'CONTRA',pad-14,botBottomY+12);
+
+  // barlines
+  for(let b=0;b<=L;b++){
+    const x=pad+b*bw;
+    ctx.strokeStyle=b===L?INK:HAIR;ctx.lineWidth=b===L?1:0.7;
+    ctx.beginPath();ctx.moveTo(x,topBottomY-32);ctx.lineTo(x,botBottomY);ctx.stroke();
+    if(b===L){ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(x+3.4,topBottomY-32);ctx.lineTo(x+3.4,botBottomY);ctx.stroke();}
+  }
+
+  const xOf=(bar,pos)=>pad+bar*bw+9+pos*(bw-18);
+  function ledger(x,m,staff){
+    const c=staff==='t'?ctop:cbot,base=staff==='t'?topBottomY:botBottomY;
+    const p=diaIx(naturalOf(m))-diaIx(c.ref);
+    ctx.strokeStyle=INK;ctx.lineWidth=.9;
+    for(let q=-2;q>=p;q-=2){const y=base-q*4;ctx.beginPath();ctx.moveTo(x-7.5,y);ctx.lineTo(x+7.5,y);ctx.stroke();}
+    for(let q=10;q<=p;q+=2){const y=base-q*4;ctx.beginPath();ctx.moveTo(x-7.5,y);ctx.lineTo(x+7.5,y);ctx.stroke();}
+  }
+  function head(x,y,open,stem,staffMidY){
+    ctx.save();ctx.translate(x,y);ctx.rotate(-0.32);
+    ctx.beginPath();ctx.ellipse(0,0,5.1,3.8,0,0,2*Math.PI);
+    ctx.lineWidth=1.5;ctx.strokeStyle=INK;
+    if(open){ctx.stroke();}else{ctx.fillStyle=INK;ctx.fill();}
+    ctx.restore();
+    if(stem){
+      const up=y>staffMidY;
+      ctx.strokeStyle=INK;ctx.lineWidth=1.1;ctx.beginPath();
+      if(up){ctx.moveTo(x+4.6,y-1);ctx.lineTo(x+4.6,y-23);}else{ctx.moveTo(x-4.6,y+1);ctx.lineTo(x-4.6,y+23);}
+      ctx.stroke();
+    }
+  }
+  function rest(x,staff,kind){
+    const base=staff==='t'?topBottomY:botBottomY,mid=base-16;
+    ctx.fillStyle=INK;ctx.strokeStyle=INK;
+    if(kind==='half'){ctx.fillRect(x-4,mid-3.5,9,3.5);}
+    else{ctx.lineWidth=1.6;ctx.beginPath();ctx.moveTo(x-2,mid-8);ctx.lineTo(x+2.5,mid-3);ctx.lineTo(x-2,mid+1);ctx.lineTo(x+2.5,mid+6);ctx.stroke();}
+  }
+
+  // cantus firmus (whole notes)
+  const cfStaff=sup?'b':'t';
+  st.cf.forEach((m,b)=>{
+    const x=pad+b*bw+bw*0.30,y=yOf(m,cfStaff);
+    ledger(x,m,cfStaff);head(x,y,true,false,0);
+  });
+
+  // counterpoint
+  const cpStaff=sup?'t':'b';
+  const staffMid=(cpStaff==='t'?topBottomY:botBottomY)-16;
+  if(st.cp){
+    if(st.species>1)rest(xOf(0,st.species===3?0:0.02)+2,cpStaff,st.species===3?'q':'half');
+    const figs=[];
+    let prevHead=null;
+    st.cp.forEach(a=>{
+      const heads=noteHeads(a,L);
+      heads.forEach((t,hi)=>{
+        const bar=Math.floor(t+1e-6),pos=t-bar;
+        const x=xOf(bar,pos)+(a.bar===L-1?bw*0.18:0),y=yOf(a.midi,cpStaff);
+        ledger(x,a.midi,cpStaff);
+        const whole=(a.bar===L-1)||st.species===1;
+        const open=whole||headUnit()===0.5;
+        head(x,y,open,!whole,staffMid);
+        if(a.ficta){ctx.fillStyle=INK;ctx.font='500 12px "EB Garamond",serif';ctx.textAlign='center';ctx.fillText('♯',x-11,y+0.5);}
+        if(hi>0){ // tie back to previous head of same attack
+          const px=prevHead.x;ctx.strokeStyle=INK;ctx.lineWidth=1.1;
+          const dir=y>staffMid?-1:1,yy=y+dir*7.5;
+          ctx.beginPath();ctx.moveTo(px+4,yy);ctx.quadraticCurveTo((px+x)/2,yy+dir*5,x-4,yy);ctx.stroke();
+        }
+        prevHead={x,y};
+        if(pos===0||hi===0){ // figure at attack & at tied barline heads
+          figs.push({x,bar,midi:a.midi});
+        }
+      });
+    });
+    // interval figures
+    figs.forEach(f=>{
+      const c=st.cf[f.bar];
+      const num=Math.abs(diaIx(naturalOf(f.midi))-diaIx(naturalOf(c)))+1;
+      const i1=sup?f.midi-c:c-f.midi;
+      const dis=!isCons(i1),perf=isPerf(i1);
+      ctx.textAlign='center';ctx.textBaseline='middle';
+      if(dis){ctx.fillStyle=RUB;ctx.font='italic 600 13px "EB Garamond",serif';}
+      else if(perf){ctx.fillStyle=INK;ctx.font='700 13.5px "EB Garamond",serif';}
+      else{ctx.fillStyle=INK;ctx.font='400 13px "EB Garamond",serif';}
+      ctx.fillText(String(num),f.x,figY);
+    });
+  }else{
+    ctx.fillStyle=RUB;ctx.font='italic 15px "EB Garamond",serif';ctx.textAlign='center';
+    ctx.fillText('non inventum',Wl/2,figY);
+  }
+
+  // static render complete → blit to screen and overlay the playhead
+  outer.setTransform(S,0,0,S,0,0);
+  outer.clearRect(0,0,Wl,Hl);
+  outer.drawImage(__plate,0,0,Wl,Hl);
+  __overlay(outer,tNow,L,bw,pad,Wl);
+}
+function __overlay(c,tNow,L,bw,pad,Wl){
+  const topBottomY=78,botBottomY=182;
+  if(tNow!==undefined&&tNow>=0){
+    const t=Math.min(tNow,L-0.001);
+    const bar=Math.floor(t),fracp=t-bar;
+    const x=pad+bar*bw+9+fracp*(bw-18);
+    c.fillStyle='rgba(156,44,28,.08)';c.fillRect(pad+bar*bw,topBottomY-38,bw,botBottomY-topBottomY+44);
+    c.strokeStyle=RUB;c.lineWidth=1.2;
+    c.beginPath();c.moveTo(x,topBottomY-38);c.lineTo(x,botBottomY+6);c.stroke();
+    const wrap=document.querySelector('.scrollwrap');
+    if(wrap)wrap.scrollLeft=clamp(x-wrap.clientWidth*0.4,0,Wl);
+  }
+}
+
+/* ---------------- audio ---------------- */
+let RT=null;
+function makeIR(ac){const len=Math.floor(1.8*ac.sampleRate),b=ac.createBuffer(2,len,ac.sampleRate);
+  for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,2.4);lp+=0.25*((Math.random()*2-1)-lp);d[i]=lp*e*3;}}return b;}
+function buildAudio(ac){
+  const G={};G.master=ac.createGain();G.master.gain.value=.9;
+  G.comp=ac.createDynamicsCompressor();G.comp.threshold.value=-18;G.comp.ratio.value=3;
+  G.comp.attack.value=.01;G.comp.release.value=.3;
+  G.master.connect(G.comp).connect(ac.destination);
+  G.verb=ac.createConvolver();G.verb.buffer=makeIR(ac);
+  const vg=ac.createGain();vg.gain.value=.3;G.verb.connect(vg).connect(G.master);
+  G.send=(n,a)=>{const g=ac.createGain();g.gain.value=a;n.connect(g).connect(G.verb);};
+  G.ac=ac;return G;
+}
+const mtof=m=>440*Math.pow(2,(m-69)/12);
+function voiceNote(G,when,dur,midi,kind){
+  const ac=G.ac,f=mtof(midi);
+  const pan=ac.createStereoPanner?ac.createStereoPanner():ac.createGain();
+  if(pan.pan)pan.pan.value=kind==='cf'?-0.3:0.3;
+  const lp=ac.createBiquadFilter();lp.type='lowpass';
+  lp.frequency.value=kind==='cf'?2100:3800;lp.Q.value=.4;
+  const g=ac.createGain();g.gain.value=0;
+  lp.connect(g).connect(pan).connect(G.master);G.send(pan,kind==='cf'?.24:.2);
+  const det=kind==='cf'?3:4;
+  [det,-det].forEach(c=>{const o=ac.createOscillator();o.type='sawtooth';
+    o.frequency.value=f;o.detune.value=c;o.connect(lp);o.start(when);o.stop(when+dur+.25);});
+  if(kind==='cf'){const s=ac.createOscillator();s.type='sine';s.frequency.value=f/2;
+    const sg=ac.createGain();sg.gain.value=.5;s.connect(sg).connect(lp);s.start(when);s.stop(when+dur+.25);}
+  const lvl=kind==='cf'?.17:.15;
+  g.gain.setValueAtTime(0,when);
+  g.gain.linearRampToValueAtTime(lvl,when+.03);
+  g.gain.setValueAtTime(lvl,when+Math.max(.03,dur-.07));
+  g.gain.linearRampToValueAtTime(0,when+dur+.03);
+}
+function schedule(G,t0){
+  const bv=st.breve,L=st.cf.length;
+  st.cf.forEach((m,i)=>voiceNote(G,t0+i*bv,bv*(i===L-1?1.4:0.985),m,'cf'));
+  st.cp.forEach(a=>{
+    const t=t0+(a.bar+a.pos)*bv;
+    const d=a.dur*bv*(a.bar===L-1?1.4:0.985);
+    voiceNote(G,t,d,a.midi,'cp');
+  });
+  return (L-1+1.4)*bv+2.2;
+}
+function start(){
+  if(!st.cp)return;
+  const ac=new(window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ac);
+  const G=buildAudio(ac);const t0=ac.currentTime+.15;
+  const total=schedule(G,t0);
+  RT={ac,t0,end:t0+total,timer:setInterval(()=>{if(RT&&RT.ac.currentTime>RT.end)stop();},200)};
+  st.playing=true;$('play').textContent='TACE';$('play').classList.add('on');
+  tick();
+}
+function stop(){
+  if(!RT)return;
+  clearInterval(RT.timer);
+  const c=RT.ac;RT=null;
+  setTimeout(()=>c.close(),120);
+  st.playing=false;
+  $('play').textContent='SONA';$('play').classList.remove('on');
+  const te=$('tactus');if(te)te.textContent='figured plate';
+  drawPlate();
+}
+let lastTick=0,__pk='';
+function tick(ts){
+  if(!RT)return;
+  const minMs=RM?240:33;
+  if(!ts||ts-lastTick>=minMs){
+    const t=(RT.ac.currentTime-RT.t0)/st.breve;
+    const k=Math.round(t*48);                            // ~3px steps
+    if(String(k)!==__pk){__pk=String(k);drawPlate(t);
+      const te=$('tactus'),L=st.cf?st.cf.length:0;
+      if(te){const b=Math.min(L,Math.floor(t)+1);
+        if(b>=1&&te.textContent!=='tactus '+b+' / '+L)te.textContent='tactus '+b+' / '+L;}}
+    lastTick=ts||0;
+  }
+  requestAnimationFrame(tick);
+}
+$('play').addEventListener('click',()=>st.playing?stop():start());
+
+/* ---------------- WAV ---------------- */
+function encodeWav(Lc,Rc,sr){
+  const n=Lc.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');d.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  ws(36,'data');d.setUint32(40,n*4,true);let o=44;
+  for(let i=0;i<n;i++){d.setInt16(o,clamp(Lc[i],-1,1)*32767,true);o+=2;d.setInt16(o,clamp(Rc[i],-1,1)*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+async function cutWav(){
+  if(!st.cp)return;
+  const btn=$('cut'),note=$('cutnote');btn.disabled=true;note.textContent='rendering…';
+  try{
+    const bv=st.breve,total=(st.cf.length-1+1.4)*bv+2.6;
+    const ac=new OfflineAudioContext(2,Math.ceil(total*44100),44100);
+    const G=buildAudio(ac);schedule(G,0.06);
+    const rb=await ac.startRendering();
+    const blob=encodeWav(rb.getChannelData(0),rb.getChannelData(1),44100);
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download='gradus_'+MODES[st.mode].id+'_sp'+st.species+'_'+st.vox+'_'+st.seed.toString(16).slice(-6)+'.wav';
+    document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    note.textContent='printed · '+total.toFixed(1)+' s';
+  }catch(e){note.textContent='render failed — '+e.message;}
+  btn.disabled=false;
+}
+$('cut').addEventListener('click',cutWav);
+
+/* ---------------- UI wiring ---------------- */
+const modusEl=$('modus');
+MODES.forEach((m,i)=>{
+  const b=document.createElement('button');b.textContent=m.label;
+  if(i===0)b.classList.add('on');
+  b.addEventListener('click',()=>{st.mode=i;if(i!==0)st.cfsrc='novus';regenerate(true);});
+  modusEl.appendChild(b);
+});
+function syncModeUI(){
+  modusEl.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('on',i===st.mode));
+  $('modusrd').textContent='finalis '+LETTERS[DIA[pc(MODES[st.mode].final)]];
+  document.querySelectorAll('#cfsrc button').forEach(b=>b.classList.toggle('on',b.dataset.c===st.cfsrc));
+  $('len').value=st.len;$('lenrd').textContent=st.len+' brevia';
+}
+$('spec').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  st.species=+b.dataset.s;
+  document.querySelectorAll('#spec button').forEach(x=>x.classList.toggle('on',x===b));
+  $('specrd').textContent=['','nota contra notam','duae contra unam','quattuor contra unam','ligaturae'][st.species];
+  regenerate(true);
+}));
+$('specrd').textContent='nota contra notam';
+$('vox').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  st.vox=b.dataset.v;
+  document.querySelectorAll('#vox button').forEach(x=>x.classList.toggle('on',x===b));
+  regenerate(true);
+}));
+$('cfsrc').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
+  st.cfsrc=b.dataset.c;if(st.cfsrc==='fux'){st.mode=0;st.len=11;}
+  regenerate(true);
+}));
+$('len').addEventListener('input',e=>{$('lenrd').textContent=e.target.value+' brevia';});
+$('len').addEventListener('change',e=>{st.len=+e.target.value;st.cfsrc='novus';regenerate(true);});
+$('tempo').addEventListener('input',e=>{st.breve=+e.target.value/10;$('temprd').textContent=st.breve.toFixed(1)+' s';});
+$('aliud').addEventListener('click',()=>regenerate(true));
+
+const regsEl=$('regs');
+RULEDEFS.forEach(r=>{
+  const b=document.createElement('button');
+  b.innerHTML='<span class="box">☑</span> '+r.lat+' <span class="gloss">'+r.gloss+'</span>';
+  b.addEventListener('click',()=>{R[r.id]=!R[r.id];
+    b.querySelector('.box').textContent=R[r.id]?'☑':'☐';
+    b.classList.toggle('off',!R[r.id]);regenerate(true);});
+  regsEl.appendChild(b);
+});
+
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{__invalidatePlate();drawPlate();});
+regenerate(false);
+
+
+/* ---- opuscula shared: claves · permalink ---- */
+let __applying=false;
+function __ruleBits(){let m=0;RULEDEFS.forEach((r,i)=>{if(R[r.id])m|=1<<i;});return m;}
+function __state(){
+  return {s:st.seed.toString(16),m:st.mode,sp:st.species,
+          v:st.vox==='infra'?1:0,c:st.cfsrc==='fux'?1:0,
+          l:st.len,t:$('tempo').value,r:__ruleBits()};
+}
+function __apply(o){
+  if(o.m!==undefined)modusEl.children[+o.m]&&modusEl.children[+o.m].click();
+  if(o.sp!==undefined){const b=document.querySelector('#spec button[data-s="'+o.sp+'"]');b&&b.click();}
+  if(o.v!==undefined){const b=document.querySelector('#vox button[data-v="'+(+o.v?'infra':'supra')+'"]');b&&b.click();}
+  if(o.c!==undefined){const b=document.querySelector('#cfsrc button[data-c="'+(+o.c?'fux':'novus')+'"]');b&&b.click();}
+  if(o.l){$('len').value=o.l;$('len').dispatchEvent(new Event('change'));}
+  if(o.t){$('tempo').value=o.t;$('tempo').dispatchEvent(new Event('input'));}
+  if(o.r!==undefined){const want=+o.r;
+    RULEDEFS.forEach((r,i)=>{const w=!!(want&(1<<i));
+      if(R[r.id]!==w)regsEl.children[i].click();});}
+  if(o.s){st.seed=parseInt(o.s,16)>>>0;regenerate(false);}
+}
+function __hashRead(){const h=location.hash.slice(1);if(!h)return null;const o={};
+  for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}
+function __hashWrite(){if(__applying)return;
+  try{const o=__state();history.replaceState(null,'','#'+Object.entries(o).map(([k,v])=>k+'='+v).join('&'));}catch(e){}}
+document.addEventListener('click',()=>setTimeout(__hashWrite,120),true);
+document.addEventListener('change',()=>setTimeout(__hashWrite,120),true);
+addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
+  if(e.code==='Space'){e.preventDefault();$('play').click();}
+  else if(e.key==='r'||e.key==='R')$('aliud').click();
+  else if(e.key==='c'||e.key==='C')$('cut').click();});
+(function(){const o=__hashRead();
+  if(o){__applying=true;try{__apply(o);}catch(e){}__applying=false;}
+  __hashWrite();})();
+</script>
+</body>
+</html>
