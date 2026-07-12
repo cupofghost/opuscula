@@ -13,6 +13,7 @@ composes; you set the law it obeys.
 | III | [GRADUS](./gradus/) | Generative species counterpoint after Fux (1725). Six rules are the interface; turn off parallels and it writes organum. |
 | IV | [RILLE](./rille/) | Minimal techno on a white-label dubplate — named in German, techno's mother tongue. Six affects steer key, tempo, and space; a diatonic engine keeps the chords in the mode. |
 | V | [COCHLEA](./cochlea/) | A just-intonation comma pump. Pure intervals walk a fifth-and-third lattice that never quite closes; the residual comma winds an Archimedean spiral. Every interval pure, every return imperfect. |
+| VI | [BOLG](./bolg/) | Generative uilleann piping — named in Irish, the music's mother tongue. A just-intonation chanter over three standing drones; cuts, rolls and crans with the regulators vamping underneath. Reels, jigs, slip jigs, hornpipes and slow airs. |
 
 ## Shared grammar
 
