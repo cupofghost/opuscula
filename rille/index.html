@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
 <meta charset="UTF-8">
 <meta name="theme-color" content="#0a0a0b">
@@ -8,12 +8,12 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
-<title>SULCUS — white label</title>
+<title>RILLE — white label</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* =====================================================================
-   SULCUS — dubplate / white-label test pressing
+   RILLE — dubplate / white-label test pressing
    vinyl #101013 · page #0a0a0b · label cream #e7e1d3 · ink = per AFFECTUS
    ===================================================================== */
 html{background:#0a0a0b}
@@ -119,16 +119,16 @@ button,canvas,.centerlabel{-webkit-user-select:none;user-select:none}
 <body>
 <div class="sleeve">
 
-  <div class="runout"><span>OP. IV · SIDE A</span><span id="matrix">MATRIX —</span></div>
-  <h1>SULCUS</h1>
-  <div class="sub">machina sulci · minimal techno · white label</div>
+  <div class="runout"><span>OP. IV · SEITE A</span><span id="matrix">MATRIZE —</span></div>
+  <h1>RILLE</h1>
+  <div class="sub">rillenmaschine · minimal techno · white label</div>
 
   <div class="deck">
-    <canvas id="disc" aria-label="Rotating dubplate showing the generated sixteen-step patterns as concentric rings"></canvas>
+    <canvas id="disc" aria-label="Rotierende Dubplate; die generierten Sechzehntel-Muster als konzentrische Ringe"></canvas>
     <div class="centerlabel" id="clabel">
-      <div class="stampbox">test pressing · not for sale</div>
-      <div class="aff" id="laff">TENEBRAE</div>
-      <div class="gloss" id="lgloss">dark</div>
+      <div class="stampbox">testpressung · unverkäuflich</div>
+      <div class="aff" id="laff">FINSTERNIS</div>
+      <div class="gloss" id="lgloss">dunkel</div>
       <div class="tech" id="ltech">— BPM · —</div>
       <div class="hole"></div>
     </div>
@@ -136,44 +136,44 @@ button,canvas,.centerlabel{-webkit-user-select:none;user-select:none}
 
   <div class="controls">
 
-    <button class="playbtn" id="play">SONA</button>
+    <button class="playbtn" id="play">SPIEL</button>
 
     <div>
-      <div class="lab">Affectus · choose the mood</div>
+      <div class="lab">Affekt · Stimmung wählen</div>
       <div class="chips" id="aff"></div>
     </div>
 
     <div>
-      <div class="lab">Progressio · the chords <span class="rd" id="progrd"></span></div>
+      <div class="lab">Progression · die Akkorde <span class="rd" id="progrd"></span></div>
       <div class="chips" style="grid-template-columns:repeat(4,1fr)" id="prog"></div>
       <div class="chips" style="grid-template-columns:repeat(2,1fr);margin-top:8px" id="bassmode"></div>
     </div>
 
     <div class="row2">
       <div>
-        <div class="lab">Tempus <span class="rd" id="temprd">— bpm</span></div>
+        <div class="lab">Tempo <span class="rd" id="temprd">— bpm</span></div>
         <input type="range" id="tempo" min="118" max="140" value="128">
       </div>
       <div>
-        <div class="lab">Aliud</div>
-        <button style="width:100%;padding:10px;font-size:.72rem" id="aliud">RE-PRESS · NEW SEED</button>
+        <div class="lab">Neupressung</div>
+        <button style="width:100%;padding:10px;font-size:.72rem" id="aliud">NEU PRESSEN · NEUER KEIM</button>
       </div>
     </div>
 
     <div>
-      <div class="lab">Stemma · the parts</div>
+      <div class="lab">Spuren · die Teile</div>
       <div class="strip" id="strip"></div>
     </div>
 
     <div>
-      <button class="cut" id="cut">CUT DUBPLATE · 16-BIT WAV</button>
-      <div class="cutnote" id="cutnote">renders 64 bars offline, this seed, this affect</div>
+      <button class="cut" id="cut">DUBPLATE SCHNEIDEN · 16-BIT WAV</button>
+      <div class="cutnote" id="cutnote">rendert 64 Takte offline · dieser Keim · dieser Affekt</div>
     </div>
 
     <div class="ledger" id="ledger"></div>
 
-    <div class="colophon">33⅓ RPM · stereo · sine qua non<br>
-    op. IV · <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:2px">opvscvla</a> · claves: space=sona · r=aliud · c=cut</div>
+    <div class="colophon">33⅓ U/min · stereo · ohne Kompromiss<br>
+    op. IV · <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:2px">opvscvla</a> · Tasten: Leertaste=Spiel · r=Neupressung · c=Schnitt</div>
   </div>
 </div>
 
@@ -205,11 +205,11 @@ function __iosAudio(ac){
     else setTimeout(kick,60);
   });}catch(e){}
   setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
-    __hint('AUDIO SUSPENSUM — tap play again · if still silent, check the ring/silent switch');}catch(e){}},450);
+    __hint('AUDIO ANGEHALTEN — nochmals auf Spiel tippen · bei Stille den Klingel-/Stummschalter prüfen');}catch(e){}},450);
 }
 
 /* ============================ ENGINE-BEGIN ============================ */
-/* SULCUS — seeded minimal techno generator. AFFECTUS presets steer key,
+/* RILLE — seeded minimal techno generator. AFFECTUS presets steer key,
    tempo, palette, space and density; patterns and arrangement are
    generated. All parts synthesized; no samples.                        */
 
@@ -219,47 +219,47 @@ const NOTE=['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'];
 const mtof=m=>440*Math.pow(2,(m-69)/12);
 
 const PARTS=['fundus','bassus','crepitus','manus','chordae','cantus','pulvis'];
-const PARTLABEL={fundus:'FUNDUS',bassus:'BASSUS',crepitus:'CREPIT.',manus:'MANUS',chordae:'CHORDAE',cantus:'CANTUS',pulvis:'PULVIS'};
+const PARTLABEL={fundus:'KICK',bassus:'BASS',crepitus:'HATS',manus:'CLAP',chordae:'AKKORDE',cantus:'MELODIE',pulvis:'STAUB'};
 
 const MOODS=[
- {id:'tenebrae',gloss:'dark',hue:'#2c3438',ink:'#22303a',
-  bpm:130,root:41,mode:[0,1,3,5,7,8,10],modeName:'phrygius',
+ {id:'tenebrae',gloss:'dunkel',name:'FINSTERNIS',hue:'#2c3438',ink:'#22303a',
+  bpm:130,root:41,mode:[0,1,3,5,7,8,10],modeName:'phrygisch',
   progDeg:[0],vstyle:'shell9',follow:false,stab:{bp:520,q:1.6,dec:.5,pad:false},
   hat16:.18,openPat:'ten',bass:'offbeat',clap:'rim',
   kick:{drive:2.6,dec:.32,pitch:120},swing:.02,dust:.5,
   verb:{sec:1.6,mix:.16},dly:{fb:.42,mix:.2},cantus:false,duck:.5,
   order:['bassus','crepitus','chordae','manus']},
- {id:'umbra',gloss:'moody',hue:'#26424a',ink:'#1e3d46',
-  bpm:126,root:44,mode:[0,2,3,5,7,9,10],modeName:'dorius',
+ {id:'umbra',gloss:'düster',name:'SCHATTEN',hue:'#26424a',ink:'#1e3d46',
+  bpm:126,root:44,mode:[0,2,3,5,7,9,10],modeName:'dorisch',
   progDeg:[0,4],vstyle:'shell9',follow:false,stab:{bp:760,q:1.3,dec:.7,pad:false},
   hat16:.3,openPat:'one',bass:'offbeat',clap:'clap',
   kick:{drive:1.9,dec:.36,pitch:110},swing:.05,dust:.65,
   verb:{sec:2.6,mix:.24},dly:{fb:.55,mix:.32},cantus:false,duck:.45,
   order:['bassus','chordae','crepitus','manus']},
- {id:'lacrimae',gloss:'emotional',hue:'#4a2c3c',ink:'#4a2338',
-  bpm:123,root:45,mode:[0,2,3,5,7,8,10],modeName:'aeolius',
+ {id:'lacrimae',gloss:'ergreifend',name:'TRÄNEN',hue:'#4a2c3c',ink:'#4a2338',
+  bpm:123,root:45,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
   progDeg:[0,5,2,6],vstyle:'stack9',follow:true,
   stab:{bp:900,q:.9,dec:1.6,pad:true},
   hat16:.22,openPat:'two',bass:'roll',clap:'clap',
   kick:{drive:1.6,dec:.4,pitch:105},swing:.06,dust:.4,
   verb:{sec:3.4,mix:.3},dly:{fb:.5,mix:.26},cantus:true,duck:.42,
   order:['chordae','bassus','crepitus','manus','cantus']},
- {id:'ferrum',gloss:'industrial',hue:'#4a2a22',ink:'#57281c',
-  bpm:136,root:40,mode:[0,1,3,5,7,8,10],modeName:'phrygius',
+ {id:'ferrum',gloss:'industriell',name:'EISEN',hue:'#4a2a22',ink:'#57281c',
+  bpm:136,root:40,mode:[0,1,3,5,7,8,10],modeName:'phrygisch',
   progDeg:[0],vstyle:'cluster',follow:false,stab:{bp:1400,q:2.2,dec:.22,pad:false},
   hat16:.85,openPat:'ten',bass:'roll',clap:'clapnoise',
   kick:{drive:4.2,dec:.3,pitch:150},swing:0,dust:.3,
   verb:{sec:1.1,mix:.12},dly:{fb:.3,mix:.12},cantus:false,duck:.55,
   order:['crepitus','bassus','manus','chordae']},
- {id:'aurora',gloss:'warm',hue:'#4a3c22',ink:'#4d3a17',
-  bpm:125,root:38,mode:[0,2,3,5,7,9,10],modeName:'dorius',
+ {id:'aurora',gloss:'warm',name:'DÄMMERUNG',hue:'#4a3c22',ink:'#4d3a17',
+  bpm:125,root:38,mode:[0,2,3,5,7,9,10],modeName:'dorisch',
   progDeg:[0,3],vstyle:'sus9',follow:true,stab:{bp:1050,q:.8,dec:1.0,pad:false},
   hat16:.4,openPat:'all',bass:'offbeat',clap:'clap',
   kick:{drive:1.5,dec:.38,pitch:100},swing:.08,dust:.55,
   verb:{sec:2.2,mix:.2},dly:{fb:.45,mix:.22},cantus:false,duck:.4,
   order:['crepitus','bassus','chordae','manus']},
- {id:'vacuum',gloss:'deep',hue:'#222c42',ink:'#1e2a48',
-  bpm:120,root:36,mode:[0,2,3,5,7,8,10],modeName:'aeolius',
+ {id:'vacuum',gloss:'tief',name:'LEERE',hue:'#222c42',ink:'#1e2a48',
+  bpm:120,root:36,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
   progDeg:[0],vstyle:'stack9',follow:false,stab:{bp:600,q:.7,dec:2.4,pad:true},
   hat16:.08,openPat:'none',bass:'drone',clap:'rim',
   kick:{drive:1.2,dec:.5,pitch:90},swing:.03,dust:.8,
@@ -395,23 +395,23 @@ function newArrange(g,rng){
   return {
     active:{fundus:true,pulvis:true,bassus:false,crepitus:false,manus:false,chordae:false,cantus:false},
     queue:g.M.order.slice(),
-    section:'INTROITUS',
+    section:'INTRO',
     frac:0,                                              // bars of break remaining
     advance(bar){
       if(this.frac>0)return;
       if(this.queue.length){
         const p=this.queue.shift();this.active[p]=true;
-        this.section=this.queue.length?'ACCUMULATIO':'PLENUM';
+        this.section=this.queue.length?'AUFBAU':'VOLL';
       }else{
         const r=rng();
-        if(r<.22){this.frac=4;this.section='FRACTURA';}
-        else if(r<.36){this.active.crepitus=false;this.section='SUSPENSIO';}
+        if(r<.22){this.frac=4;this.section='BRUCH';}
+        else if(r<.36){this.active.crepitus=false;this.section='SCHWEBE';}
         else{this.active.crepitus=true;
           if(g.M.cantus)this.active.cantus=true;
-          this.section='PLENUM';}
+          this.section='VOLL';}
       }
     },
-    tickBar(){if(this.frac>0){this.frac--;if(this.frac===0){this.section='PLENUM';}}},
+    tickBar(){if(this.frac>0){this.frac--;if(this.frac===0){this.section='VOLL';}}},
     gate(part,bar){
       if(this.frac>0&&(part==='fundus'||part==='bassus'))return false;
       return this.active[part];
@@ -433,12 +433,12 @@ function regenerate(newSeed){
   st.g=genAll(st.seed,st.mood,st.bpm,st.prog,st.follow);
   st.bar=0;st.step=0;
   applyMoodSkin();renderLedger();drawDisc(0,0,null);
-  $('matrix').textContent='MATRIX '+st.seed.toString(16).toUpperCase().padStart(8,'0');
+  $('matrix').textContent='MATRIZE '+st.seed.toString(16).toUpperCase().padStart(8,'0');
 }
 function applyMoodSkin(){
   const M=MOODS[st.mood];
   document.documentElement.style.setProperty('--ink',M.ink);
-  $('laff').textContent=M.id.toUpperCase();
+  $('laff').textContent=M.name;
   $('lgloss').textContent=M.gloss;
   $('ltech').textContent=st.bpm+' BPM · '+NOTE[st.g.root%12].toUpperCase()+' '+M.modeName;
   $('temprd').textContent=st.bpm+' bpm';
@@ -447,12 +447,12 @@ function renderLedger(){
   const M=MOODS[st.mood],g=st.g;
   const chords=chordLetters(M.mode,g.root,g.progDeg);
   $('ledger').innerHTML=
-   '<b>TONUS</b> '+NOTE[g.root%12].toUpperCase()+' '+M.modeName+' &nbsp; <b>PROGRESSIO</b> '+romanOf(M.mode,g.progDeg)+' · '+chords+' · bassus '+(g.follow?'sequitur':'pedalis')+'<br>'+
-   '<b>SECTIO</b> <span id="secname">—</span> &nbsp; <b>MENSURA</b> <span id="barno">0</span> &nbsp; '+
-   '<b>PULSUS</b> '+g.kick.filter(v=>v>0).length+'/16 · crepitus '+g.hatC.filter(v=>v>0).length+
-   ' · bassus '+g.bass.length+'<br>'+
-   '<b>SPATIUM</b> verb '+M.verb.sec.toFixed(1)+'s · echo ⅜ fb '+Math.round(M.dly.fb*100)+'%'+
-   ' &nbsp; <b>MATRIX</b> '+st.seed.toString(16).toUpperCase().slice(-6);
+   '<b>TONART</b> '+NOTE[g.root%12].toUpperCase()+' '+M.modeName+' &nbsp; <b>PROGRESSION</b> '+romanOf(M.mode,g.progDeg)+' · '+chords+' · Bass '+(g.follow?'folgt':'hält')+'<br>'+
+   '<b>ABSCHNITT</b> <span id="secname">—</span> &nbsp; <b>TAKT</b> <span id="barno">0</span> &nbsp; '+
+   '<b>PULS</b> '+g.kick.filter(v=>v>0).length+'/16 · Hats '+g.hatC.filter(v=>v>0).length+
+   ' · Bass '+g.bass.length+'<br>'+
+   '<b>RAUM</b> Hall '+M.verb.sec.toFixed(1)+'s · Echo ⅜ fb '+Math.round(M.dly.fb*100)+'%'+
+   ' &nbsp; <b>MATRIZE</b> '+st.seed.toString(16).toUpperCase().slice(-6);
 }
 
 /* ---------------- audio graph ---------------- */
@@ -716,7 +716,7 @@ function startPlay(){
   },40);
   RT={ac,G,arr,timer,stepDur,t0:nextBarT,dust,getBar:()=>bar};
   st.playing=true;
-  $('play').textContent='TACE';$('play').classList.add('on');
+  $('play').textContent='STOPP';$('play').classList.add('on');
   tick();
 }
 function stopPlay(){
@@ -725,7 +725,7 @@ function stopPlay(){
   const c=RT.ac;RT=null;
   setTimeout(()=>c.close(),150);
   st.playing=false;
-  $('play').textContent='SONA';$('play').classList.remove('on');
+  $('play').textContent='SPIEL';$('play').classList.remove('on');
   const sn=$('secname');if(sn)sn.textContent='—';
   drawDisc(0,0,null);
 }
@@ -834,7 +834,7 @@ function encodeWav(Lc,Rc,sr){
   return new Blob([buf],{type:'audio/wav'});
 }
 async function cutPlate(){
-  const btn=$('cut'),note=$('cutnote');btn.disabled=true;note.textContent='cutting…';
+  const btn=$('cut'),note=$('cutnote');btn.disabled=true;note.textContent='schneide…';
   try{
     const g=st.g,stepDur=60/st.bpm/4,BARS=64;
     const total=BARS*16*stepDur+3;
@@ -851,7 +851,7 @@ async function cutPlate(){
           arr.frac=0;
           arr.active.chordae=false;arr.active.cantus=false;arr.active.manus=false;
           if(bar>=BARS-4){arr.active.bassus=false;arr.active.crepitus=false;}
-          arr.section='EXITUS';
+          arr.section='AUSKLANG';
         }else{arr.advance(bar);if(arr.frac>0)vSweep(G,t,4,stepDur);}
       }
       scheduleBar(G,arr,g,bar,t,stepDur,rng);
@@ -860,11 +860,12 @@ async function cutPlate(){
     const rb=await ac.startRendering();
     const blob=encodeWav(rb.getChannelData(0),rb.getChannelData(1),44100);
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download='sulcus_'+MOODS[st.mood].id+'_'+st.bpm+'bpm_'+st.seed.toString(16).slice(-6)+'.wav';
+    const slug=MOODS[st.mood].name.toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss');
+    a.download='rille_'+slug+'_'+st.bpm+'bpm_'+st.seed.toString(16).slice(-6)+'.wav';
     document.body.appendChild(a);a.click();a.remove();
     setTimeout(()=>URL.revokeObjectURL(a.href),4000);
-    note.textContent='cut · '+(total-3+2).toFixed(0)+' s · '+MOODS[st.mood].id;
-  }catch(e){note.textContent='cut failed — '+e.message;}
+    note.textContent='Schnitt · '+(total-3+2).toFixed(0)+' s · '+MOODS[st.mood].name;
+  }catch(e){note.textContent='Schnitt fehlgeschlagen — '+e.message;}
   btn.disabled=false;
 }
 $('cut').addEventListener('click',cutPlate);
@@ -873,7 +874,7 @@ $('cut').addEventListener('click',cutPlate);
 const affEl=$('aff');
 MOODS.forEach((m,i)=>{
   const b=document.createElement('button');
-  b.innerHTML=m.id.toUpperCase()+'<span class="en">'+m.gloss+'</span>';
+  b.innerHTML=m.name+'<span class="en">'+m.gloss+'</span>';
   if(i===0)b.classList.add('on');
   b.addEventListener('click',()=>{
     st.mood=i;st.bpm=m.bpm;$('tempo').value=m.bpm;
@@ -891,8 +892,8 @@ function renderProgChips(){
   PROGS.forEach((p,i)=>{
     const b=document.createElement('button');
     const degs=p.deg||M.progDeg;
-    b.innerHTML=(p.id==='suum'?'SUUM':romanOf(M.mode,degs))+
-      '<span class="en">'+(p.id==='suum'?'the affect\'s own':chordLetters(M.mode,M.root,degs))+'</span>';
+    b.innerHTML=(p.id==='suum'?'EIGEN':romanOf(M.mode,degs))+
+      '<span class="en">'+(p.id==='suum'?'des Affekts eigene':chordLetters(M.mode,M.root,degs))+'</span>';
     if(i===st.prog)b.classList.add('on');
     b.addEventListener('click',()=>{
       st.prog=i;
@@ -902,9 +903,9 @@ function renderProgChips(){
     progEl.appendChild(b);
   });
   bassEl.innerHTML='';
-  [['pedalis','bass holds the tonus'],['sequitur','bass follows the chord']].forEach(([id,en],k)=>{
+  [['hält','Bass hält die Tonart'],['folgt','Bass folgt dem Akkord']].forEach(([id,en],k)=>{
     const b=document.createElement('button');
-    b.innerHTML='BASSUS '+id.toUpperCase()+'<span class="en">'+en+'</span>';
+    b.innerHTML='BASS '+id.toUpperCase()+'<span class="en">'+en+'</span>';
     const cur=(st.follow===undefined)?MOODS[st.mood].follow:st.follow;
     if((k===1)===cur)b.classList.add('on');
     b.addEventListener('click',()=>{
