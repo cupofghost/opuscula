@@ -1128,10 +1128,7 @@ async function cutWav(){
     const G=buildAudio(ac);schedule(G,0.06);
     const rb=await ac.startRendering();
     const blob=encodeWav(rb.getChannelData(0),rb.getChannelData(1),44100);
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download='gradus_'+MODES[st.mode].id+'_sp'+st.species+'_'+st.vox+'_'+st.seed.toString(16).slice(-6)+'.wav';
-    document.body.appendChild(a);a.click();a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    saveWav(blob,'gradus_'+MODES[st.mode].id+'_sp'+st.species+'_'+st.vox+'_'+st.seed.toString(16).slice(-6)+'.wav');
     note.textContent='printed · '+total.toFixed(1)+' s';
   }catch(e){note.textContent='render failed — '+e.message;}
   btn.disabled=false;
@@ -1221,6 +1218,34 @@ addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
 (function(){const o=__hashRead();
   if(o){__applying=true;try{__apply(o);}catch(e){}__applying=false;}
   __hashWrite();})();
+
+/* ---- robust WAV save (shared) ----------------------------------------------
+   Auto-downloads where the browser allows it (desktop Chrome/Firefox/Edge,
+   Android), and ALWAYS shows a tappable "Save WAV" pill. The pill is the
+   reliable path on Safari/iOS, where a programmatic download fired after the
+   async render is blocked — a real tap on the link is a fresh user gesture,
+   which iOS honours (offering the file to Save to Files / share).            */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(14,14,16,.92);color:#e9e2d2;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#e9e2d2;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
 </script>
+
 </body>
 </html>
