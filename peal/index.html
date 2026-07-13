@@ -181,6 +181,11 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
     </div>
 
     <div class="fld">
+      <div class="lab">Acoustic <span class="rd" id="revrd">Nave</span></div>
+      <div class="chips" id="rev"></div>
+    </div>
+
+    <div class="fld">
       <div class="lab">Peal speed <span class="rd" id="speedrd">220 ms / bell</span></div>
       <input type="range" id="speed" min="0" max="100" value="55" aria-label="Milliseconds per bell">
     </div>
@@ -482,6 +487,7 @@ const st={
   ms:220,                                        // bell-space, milliseconds
   gap:true, muf:false,
   touch:false, seed:1,                           // touch mode + which true touch (seeded)
+  rev:3,                                          // acoustic: index into REVERBS (Nave)
 };
 // frequency of bell number `b` (1=treble/highest … N=tenor/tonic)
 function bellFreq(b){
@@ -493,13 +499,22 @@ function bellFreq(b){
 /* ------------------------------- audio ---------------------------------- */
 const SR=44100;
 
-// Stone-chamber reverb — a short generated impulse (same idea as SCALA).
-// Kept fairly dry and quick to decay: bells already ring for seconds, so a
-// long tail just piles change on change and muddies the strike.
-function makeIR(ctx){
-  const len=Math.floor(1.5*ctx.sampleRate),b=ctx.createBuffer(2,len,ctx.sampleRate);
+// The acoustic — how much stone surrounds the ring. Bells already sustain for
+// seconds, so even the largest room here stays fairly short and quiet, or the
+// tail piles change on change and muddies the strike. Each preset sets the
+// impulse length + decay and the wet levels; the last is the roomiest.
+// {name, sec, exp (decay steepness), wet (return), dry-send, muffled-send}
+const REVERBS=[
+  {name:'Dry',     sec:0.18, exp:5.0, wet:0.00, dry:0.00, muf:0.00},
+  {name:'Chapel',  sec:0.55, exp:3.4, wet:0.13, dry:0.09, muf:0.13},
+  {name:'Church',  sec:1.00, exp:3.1, wet:0.16, dry:0.12, muf:0.17},
+  {name:'Nave',    sec:1.50, exp:2.9, wet:0.19, dry:0.14, muf:0.20},
+];
+// Stone-chamber impulse of a given length + decay steepness.
+function makeIR(ctx,sec,exp){
+  const len=Math.max(1,Math.floor(sec*ctx.sampleRate)),b=ctx.createBuffer(2,len,ctx.sampleRate);
   for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
-    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,2.9);lp+=0.18*((Math.random()*2-1)-lp);d[i]=lp*e*2.4;}}
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,exp);lp+=0.18*((Math.random()*2-1)-lp);d[i]=lp*e*2.4;}}
   return b;
 }
 
@@ -535,15 +550,28 @@ function buildGraph(ctx){
   G.lim=ctx.createDynamicsCompressor();
   G.lim.threshold.value=-3;G.lim.knee.value=0;G.lim.ratio.value=20;G.lim.attack.value=0.001;G.lim.release.value=0.06;
   G.master.connect(G.comp).connect(G.lim).connect(ctx.destination);
-  G.verb=ctx.createConvolver();G.verb.buffer=makeIR(ctx);
-  G.vgain=ctx.createGain();G.vgain.gain.value=0.19;G.verb.connect(G.vgain).connect(G.master);
-  const send=(node,a)=>{const g=ctx.createGain();g.gain.value=a;node.connect(g).connect(G.verb);};
-  G.dry=ctx.createGain();G.dry.gain.value=1;G.dry.connect(G.master);send(G.dry,0.14);
+  const R=REVERBS[st.rev]||REVERBS[REVERBS.length-1];
+  G.verb=ctx.createConvolver();G.verb.buffer=makeIR(ctx,R.sec,R.exp);
+  G.vgain=ctx.createGain();G.vgain.gain.value=R.wet;G.verb.connect(G.vgain).connect(G.master);
+  const send=(node,a)=>{const g=ctx.createGain();g.gain.value=a;node.connect(g).connect(G.verb);return g;};
+  G.dry=ctx.createGain();G.dry.gain.value=1;G.dry.connect(G.master);G.sDry=send(G.dry,R.dry);
   G.muf=ctx.createBiquadFilter();G.muf.type='lowpass';G.muf.frequency.value=760;G.muf.Q.value=0.6;
-  G.mufg=ctx.createGain();G.mufg.gain.value=0.5;G.muf.connect(G.mufg).connect(G.master);send(G.mufg,0.2);
+  G.mufg=ctx.createGain();G.mufg.gain.value=0.5;G.muf.connect(G.mufg).connect(G.master);G.sMuf=send(G.mufg,R.muf);
   // one pre-rendered buffer per bell number 1..N
   G.buf={};for(let b=1;b<=st.N;b++)G.buf[b]=makeBell(ctx,bellFreq(b));
   return G;
+}
+
+// change the acoustic live: swap the impulse (under a brief duck so the
+// convolver doesn't click) and ramp the wet + send levels to the new room.
+function applyReverb(G){
+  const R=REVERBS[st.rev]||REVERBS[REVERBS.length-1], t=G.ctx.currentTime;
+  const ramp=(p,v)=>{try{p.cancelScheduledValues(t);p.setValueAtTime(p.value,t);p.linearRampToValueAtTime(v,t+.2);}catch(e){}};
+  ramp(G.sDry.gain,R.dry); ramp(G.sMuf.gain,R.muf);
+  const g=G.vgain.gain;
+  try{g.cancelScheduledValues(t);g.setValueAtTime(g.value,t);g.linearRampToValueAtTime(0,t+.05);}catch(e){}
+  setTimeout(()=>{try{G.verb.buffer=makeIR(G.ctx,R.sec,R.exp);const t2=G.ctx.currentTime;
+    g.setValueAtTime(0,t2);g.linearRampToValueAtTime(R.wet,t2+.18);}catch(e){}},60);
 }
 
 // Strike bell `b` at time `t`. Pan by pitch (treble left … tenor right) so
@@ -802,6 +830,17 @@ KEYS.forEach(([name],i)=>{
   keyC.appendChild(b);
 });
 
+const revC=$('rev');                              // Acoustic: Dry → Chapel → Church → Nave (live)
+REVERBS.forEach((R,i)=>{
+  const b=document.createElement('button');b.textContent=R.name;b.dataset.rv=i;
+  if(i===st.rev)b.classList.add('on');
+  b.onclick=()=>{revC.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');st.rev=i;$('revrd').textContent=R.name;
+    if(RT)applyReverb(RT.G);};                    // swap the room without restarting
+  revC.appendChild(b);
+});
+$('revrd').textContent=REVERBS[st.rev].name;
+
 function ms2slider(ms){return Math.round((ms-140)/(320-140)*100);}
 function slider2ms(v){return Math.round(140+v/100*(320-140));}
 $('speed').value=ms2slider(st.ms);
@@ -817,7 +856,7 @@ $('cut').addEventListener('click',cut);
 
 /* ---------------------- opuscula shared: hash · keys --------------------- */
 let __applying=false;
-function __state(){return {me:st.method,n:st.N,s:st.start,k:st.keyi,ms:st.ms,g:st.gap?1:0,mu:st.muf?1:0,tc:st.touch?1:0,sd:st.seed};}
+function __state(){return {me:st.method,n:st.N,s:st.start,k:st.keyi,ms:st.ms,g:st.gap?1:0,mu:st.muf?1:0,tc:st.touch?1:0,sd:st.seed,rv:st.rev};}
 function __apply(o){
   if(o.n){const b=$('bells').querySelector('[data-v="'+o.n+'"]');b&&b.click();}   // stage first (rebuilds methods)
   if(o.me){const b=$('method').querySelector('[data-v="'+o.me+'"]');b&&b.click();}
@@ -825,6 +864,7 @@ function __apply(o){
   if(o.tc!==undefined){const want=+o.tc===1;const b=$('comp').querySelector('[data-v="'+(want?'touch':'course')+'"]');if(b&&!b.disabled)b.click();}
   if(o.s){const b=$('start').querySelector('[data-s="'+o.s+'"]');b&&b.click();}
   if(o.k!==undefined){const b=$('key').querySelector('[data-k="'+o.k+'"]');b&&b.click();}
+  if(o.rv!==undefined){const b=$('rev').querySelector('[data-rv="'+o.rv+'"]');b&&b.click();}
   if(o.ms){$('speed').value=ms2slider(+o.ms);$('speed').dispatchEvent(new Event('input'));}
   if(o.g!==undefined&&(st.gap?1:0)!==+o.g)$('tgGap').click();
   if(o.mu!==undefined&&(st.muf?1:0)!==+o.mu)$('tgMuf').click();
