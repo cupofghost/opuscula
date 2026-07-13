@@ -494,10 +494,12 @@ function bellFreq(b){
 const SR=44100;
 
 // Stone-chamber reverb — a short generated impulse (same idea as SCALA).
+// Kept fairly dry and quick to decay: bells already ring for seconds, so a
+// long tail just piles change on change and muddies the strike.
 function makeIR(ctx){
-  const len=Math.floor(2.4*ctx.sampleRate),b=ctx.createBuffer(2,len,ctx.sampleRate);
+  const len=Math.floor(1.5*ctx.sampleRate),b=ctx.createBuffer(2,len,ctx.sampleRate);
   for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
-    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,2.2);lp+=0.18*((Math.random()*2-1)-lp);d[i]=lp*e*2.6;}}
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,2.9);lp+=0.18*((Math.random()*2-1)-lp);d[i]=lp*e*2.4;}}
   return b;
 }
 
@@ -534,11 +536,11 @@ function buildGraph(ctx){
   G.lim.threshold.value=-3;G.lim.knee.value=0;G.lim.ratio.value=20;G.lim.attack.value=0.001;G.lim.release.value=0.06;
   G.master.connect(G.comp).connect(G.lim).connect(ctx.destination);
   G.verb=ctx.createConvolver();G.verb.buffer=makeIR(ctx);
-  G.vgain=ctx.createGain();G.vgain.gain.value=0.3;G.verb.connect(G.vgain).connect(G.master);
+  G.vgain=ctx.createGain();G.vgain.gain.value=0.19;G.verb.connect(G.vgain).connect(G.master);
   const send=(node,a)=>{const g=ctx.createGain();g.gain.value=a;node.connect(g).connect(G.verb);};
-  G.dry=ctx.createGain();G.dry.gain.value=1;G.dry.connect(G.master);send(G.dry,0.22);
+  G.dry=ctx.createGain();G.dry.gain.value=1;G.dry.connect(G.master);send(G.dry,0.14);
   G.muf=ctx.createBiquadFilter();G.muf.type='lowpass';G.muf.frequency.value=760;G.muf.Q.value=0.6;
-  G.mufg=ctx.createGain();G.mufg.gain.value=0.5;G.muf.connect(G.mufg).connect(G.master);send(G.mufg,0.3);
+  G.mufg=ctx.createGain();G.mufg.gain.value=0.5;G.muf.connect(G.mufg).connect(G.master);send(G.mufg,0.2);
   // one pre-rendered buffer per bell number 1..N
   G.buf={};for(let b=1;b<=st.N;b++)G.buf[b]=makeBell(ctx,bellFreq(b));
   return G;
