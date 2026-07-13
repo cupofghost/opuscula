@@ -487,7 +487,7 @@ function newArrange(g,rng){
         if(r<.22){this.frac=4;this.section='BRUCH';}
         else if(r<.36){this.active.crepitus=false;this.section='SCHWEBE';}
         else{this.active.crepitus=true;
-          if(g.M.cantus)this.active.cantus=true;
+          if(st.g.M.cantus)this.active.cantus=true;      // live mood
           this.section='VOLL';}
       }
     },
@@ -507,13 +507,37 @@ const st={mood:0,seed:(Math.random()*0xffffffff)>>>0,bpm:MOODS[0].bpm,g:null,
   prog:0,follow:undefined,mutes:{},playing:false,bar:0,step:0};
 PARTS.forEach(p=>st.mutes[p]=false);
 
-function regenerate(newSeed){
-  if(st.playing)stopPlay();
+// regenerate the patterns for the current mood/prog/seed (no transport change)
+function regenPatterns(newSeed){
   if(newSeed)st.seed=(Math.random()*0xffffffff)>>>0;
   st.g=genAll(st.seed,st.mood,st.bpm,st.prog,st.follow);
-  st.bar=0;st.step=0;
-  applyMoodSkin();renderLedger();drawDisc(0,0,null);
+  applyMoodSkin();renderLedger();
   $('matrix').textContent='MATRIZE '+st.seed.toString(16).toUpperCase().padStart(8,'0');
+}
+// a control changed. If the deck is RUNNING, keep it running: swap in the new
+// patterns (the scheduler reads st.g live, so they take effect at the next bar)
+// and ramp the mood's effects to their new settings — no lead-in, no restart.
+// If stopped, just refresh the preview and reset to the top.
+function applyChange(newSeed){
+  regenPatterns(newSeed);
+  if(RT) applyMoodFX(RT.G,st.g.M,RT.ac.currentTime);
+  else { st.bar=0;st.step=0; drawDisc(0,0,null); }
+}
+// ramp the mood-dependent effects (reverb, echo, chord filter, kick drive) to
+// a new mood while playing. The reverb IR is swapped under a brief duck so the
+// convolver doesn't click.
+function applyMoodFX(G,M,t){
+  const ramp=(p,v)=>{try{p.cancelScheduledValues(t);p.setValueAtTime(p.value,t);p.linearRampToValueAtTime(v,t+.25);}catch(e){}};
+  if(G.dret)ramp(G.dret.gain,M.dly.mix);
+  if(G.dfb)ramp(G.dfb.gain,M.dly.fb);
+  try{G.stabBP.type=M.stab.pad?'lowpass':'bandpass';G.stabBP.frequency.setTargetAtTime(M.stab.bp,t,.1);G.stabBP.Q.setTargetAtTime(M.stab.q,t,.1);}catch(e){}
+  try{G.kickDrive.curve=shaperCurve(M.kick.drive);}catch(e){}
+  if(G.vret&&G.verb){                                   // duck → swap IR → restore
+    const g=G.vret.gain;
+    try{g.cancelScheduledValues(t);g.setValueAtTime(g.value,t);g.linearRampToValueAtTime(0,t+.05);}catch(e){}
+    setTimeout(()=>{try{G.verb.buffer=makeIR(G.ac,M.verb.sec);const t2=G.ac.currentTime;
+      g.setValueAtTime(0,t2);g.linearRampToValueAtTime(M.verb.mix,t2+.2);}catch(e){}},70);
+  }
 }
 function applyMoodSkin(){
   const M=MOODS[st.mood];
@@ -561,12 +585,12 @@ function buildGraph(ac,g){
   G.pre.connect(G.shape).connect(G.comp).connect(ac.destination);
   // sends
   G.verb=ac.createConvolver();G.verb.buffer=makeIR(ac,M.verb.sec);
-  const vret=ac.createGain();vret.gain.value=M.verb.mix;G.verb.connect(vret).connect(G.pre);
+  G.vret=ac.createGain();G.vret.gain.value=M.verb.mix;G.verb.connect(G.vret).connect(G.pre);
   G.dly=ac.createDelay(2);G.dfb=ac.createGain();G.dfb.gain.value=M.dly.fb;
   const dlp=ac.createBiquadFilter();dlp.type='lowpass';dlp.frequency.value=3200;
   const dhp=ac.createBiquadFilter();dhp.type='highpass';dhp.frequency.value=300;
   G.dly.connect(dlp).connect(dhp).connect(G.dfb).connect(G.dly);
-  const dret=ac.createGain();dret.gain.value=M.dly.mix;dhp.connect(dret).connect(G.pre);
+  G.dret=ac.createGain();G.dret.gain.value=M.dly.mix;dhp.connect(G.dret).connect(G.pre);
   G.sendV=(n,a)=>{const s=ac.createGain();s.gain.value=a;n.connect(s).connect(G.verb);};
   G.sendD=(n,a)=>{const s=ac.createGain();s.gain.value=a;n.connect(s).connect(G.dly);};
   // duck bus (musical parts)
@@ -776,25 +800,27 @@ function scheduleBar(G,arr,g,bar,t0,stepDur,rng){
 function startPlay(){
   const ac=new(window.AudioContext||window.webkitAudioContext)();
   __iosAudio(ac);
-  const g=st.g;
-  const G=buildGraph(ac,g);
+  const G=buildGraph(ac,st.g);
   const rng=mulberry32(st.seed^0xA5A5A5A5);
-  const arr=newArrange(g,rng);
-  const stepDur=60/st.bpm/4;
+  const arr=newArrange(st.g,rng);
   const dust=startDust(G,ac.currentTime+.05);
-  let bar=0,nextBarT=ac.currentTime+.1;
-  scheduleBar(G,arr,g,bar,nextBarT,stepDur,rng);
-  const timer=setInterval(()=>{
+  const t0=ac.currentTime+.1, stepDur=60/st.bpm/4;
+  // bars: a running log of {bar,t,dur,section} so tempo can change mid-flow and
+  // the visuals still know which bar is sounding.
+  RT={ac,G,arr,rng,dust,timer:null,bars:[{bar:0,t:t0,dur:stepDur,section:arr.section}]};
+  scheduleBar(G,arr,st.g,0,t0,stepDur,rng);
+  RT.timer=setInterval(()=>{
     if(!RT)return;
-    const ahead=nextBarT+16*stepDur;
-    if(ac.currentTime>ahead-0.35){
-      bar++;nextBarT=ahead;
+    const cur=RT.bars[RT.bars.length-1], endT=cur.t+16*cur.dur;
+    if(ac.currentTime>endT-0.35){
+      const bar=cur.bar+1, dur=60/st.bpm/4, t=endT;      // LIVE tempo, each bar
       arr.tickBar();
-      if(bar%8===0){arr.advance(bar);if(arr.frac>0)vSweep(G,nextBarT,4,stepDur);}
-      scheduleBar(G,arr,g,bar,nextBarT,stepDur,rng);
+      if(bar%8===0){arr.advance(bar);if(arr.frac>0)vSweep(G,t,4,dur);}
+      scheduleBar(G,arr,st.g,bar,t,dur,rng);             // LIVE patterns (st.g)
+      RT.bars.push({bar,t,dur,section:arr.section});
+      if(RT.bars.length>48)RT.bars.splice(0,RT.bars.length-48);
     }
   },40);
-  RT={ac,G,arr,timer,stepDur,t0:nextBarT,dust,getBar:()=>bar};
   st.playing=true;
   $('play').textContent='STOPP';$('play').classList.add('on');
   tick();
@@ -814,16 +840,17 @@ function tick(ts){
   if(!RT)return;
   const minMs=RM?240:33;                                 // 30fps cap
   if(!ts||ts-lastT>=minMs){
-    const el=RT.ac.currentTime-RT.t0;
-    const totalSteps=el/RT.stepDur;
-    const bar=Math.max(0,Math.floor(totalSteps/16));
-    const step=((totalSteps%16)+16)%16;
+    const now=RT.ac.currentTime;
+    // find the bar currently sounding in the log (robust to live tempo changes)
+    let e=RT.bars[0];
+    for(let i=RT.bars.length-1;i>=0;i--){if(RT.bars[i].t<=now){e=RT.bars[i];break;}}
+    const bar=e.bar, step=Math.max(0,Math.min(15.999,(now-e.t)/e.dur));
     const key=bar+':'+(RM?Math.floor(step):Math.round(step*24));
     if(key!==__frameKey){                                // skip identical frames
       __frameKey=key;
       drawDisc(bar,step,RT.arr);
       const sn=$('secname'),bn=$('barno');
-      if(sn&&sn.textContent!==RT.arr.section)sn.textContent=RT.arr.section;
+      if(sn&&sn.textContent!==e.section)sn.textContent=e.section;
       if(bn)bn.textContent=bar+1;
     }
     lastT=ts||0;
@@ -957,11 +984,11 @@ MOODS.forEach((m,i)=>{
   b.innerHTML=m.name+'<span class="en">'+m.gloss+'</span>';
   if(i===0)b.classList.add('on');
   b.addEventListener('click',()=>{
-    st.mood=i;st.bpm=m.bpm;$('tempo').value=m.bpm;
+    st.mood=i;st.bpm=m.bpm;$('tempo').value=m.bpm;$('temprd').textContent=m.bpm+' bpm';
     st.prog=0;st.follow=undefined;
     affEl.querySelectorAll('button').forEach((x,k)=>x.classList.toggle('on',k===i));
     renderProgChips();
-    regenerate(true);
+    applyChange(false);                                  // re-vibe live; the groove keeps running
   });
   affEl.appendChild(b);
 });
@@ -978,7 +1005,7 @@ function renderProgChips(){
     b.addEventListener('click',()=>{
       st.prog=i;
       progEl.querySelectorAll('button').forEach((x,k)=>x.classList.toggle('on',k===i));
-      regenerate(false);                                 // same seed: groove holds, chords change
+      applyChange(false);                                // same seed: groove holds, chords change (live)
     });
     progEl.appendChild(b);
   });
@@ -991,14 +1018,14 @@ function renderProgChips(){
     b.addEventListener('click',()=>{
       st.follow=(k===1);
       bassEl.querySelectorAll('button').forEach((x,j)=>x.classList.toggle('on',j===k));
-      regenerate(false);
+      applyChange(false);                                // live
     });
     bassEl.appendChild(b);
   });
 }
 $('tempo').addEventListener('input',e=>{st.bpm=+e.target.value;$('temprd').textContent=st.bpm+' bpm';});
 $('tempo').addEventListener('change',()=>{st.g.bpm=st.bpm;applyMoodSkin();renderLedger();});
-$('aliud').addEventListener('click',()=>regenerate(true));
+$('aliud').addEventListener('click',()=>applyChange(true));   // a new pressing — live if running
 
 const stripEl=$('strip');
 PARTS.forEach(p=>{
@@ -1016,7 +1043,7 @@ PARTS.forEach(p=>{
 addEventListener('resize',()=>{if(!RT)drawDisc(0,0,null);});
 renderProgChips();
 document.fonts&&document.fonts.ready&&document.fonts.ready.then(()=>drawDisc(0,0,null));
-regenerate(false);
+applyChange(false);
 
 /* ---- opuscula shared: claves · permalink ---- */
 let __applying=false;
@@ -1034,7 +1061,7 @@ function __apply(o){
   if(o.m!==undefined){const want=+o.m;
     PARTS.forEach((p,i)=>{const w=!!(want&(1<<i));
       if(st.mutes[p]!==w)stripEl.children[i].click();});}
-  if(o.s){st.seed=parseInt(o.s,16)>>>0;regenerate(false);}
+  if(o.s){st.seed=parseInt(o.s,16)>>>0;applyChange(false);}
 }
 function __hashRead(){const h=location.hash.slice(1);if(!h)return null;const o={};
   for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}

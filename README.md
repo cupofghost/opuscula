@@ -21,6 +21,9 @@ composes; you set the law it obeys.
 - **space** = play/stop · **r** = another (aliud/encore) · **c** = cut 16-bit WAV
 - Every work carries an expandable **“on this music”** panel — a short, plain-language
   history of the musical idea it renders.
+- **Change it while it plays.** Where a work runs a groove — Rille and Scala, and
+  Peal’s key and speed — the controls take effect on the fly: the music keeps
+  running and re-vibes at the next bar rather than starting over.
 - **The URL hash is the pressing.** Every parameter — seed included — serializes
   into `#…`. Copy the address and the exact opus reloads anywhere.
 - Offline render: each work cuts a deterministic WAV of itself.
