@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="opuscula — six small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping.">
+<meta name="description" content="opuscula — seven small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing.">
 <title>OPVSCVLA — small musical machines</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -54,7 +54,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
      READER'S GUIDE — the landing page (catalogue)
      ---------------------------------------------------------------------
      This file is pure HTML + CSS. No JavaScript, no audio: it is just the
-     index card wall that links out to the six works. Each work lives in
+     index card wall that links out to the seven works. Each work lives in
      its own folder as its own index.html; this page never loads them, it
      only links to them (href="./folder/").
 
@@ -62,7 +62,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
        .wrap      the 760px column everything sits in
        .eyebrow   the "catalogvs · mmxxvi" kicker
        h1 / .sub  the title and the one-line manifesto
-       .grid      the card wall — one <a class="card"> per work (six total)
+       .grid      the card wall — one <a class="card"> per work (seven total)
        .notes     the shared-keys reminder (space / r / c)
        .foot      the colophon + repo link
 
@@ -85,7 +85,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
 <div class="wrap">
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
-  <div class="sub">six small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="sub">seven small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
   <hr class="rule">
 
   <div class="grid">
@@ -195,6 +195,30 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
         <h2>Cochlea</h2>
         <p>comma pump in just intonation</p>
         <span class="tech">seven pumps · the lattice never closes · cut a spiral</span>
+      </div>
+    </a>
+
+    <a class="card" href="./peal/" style="--bg:#20282b">
+      <div class="emblem" aria-hidden="true">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- change-ringing grid: dotted rows/places, with the treble's
+               plain-hunt path (red) crossing a working bell's line (brass) -->
+          <g fill="rgba(200,162,92,.30)">
+            <circle cx="26" cy="20" r="1.5"/><circle cx="42" cy="20" r="1.5"/><circle cx="58" cy="20" r="1.5"/><circle cx="74" cy="20" r="1.5"/>
+            <circle cx="26" cy="34" r="1.5"/><circle cx="42" cy="34" r="1.5"/><circle cx="58" cy="34" r="1.5"/><circle cx="74" cy="34" r="1.5"/>
+            <circle cx="26" cy="48" r="1.5"/><circle cx="42" cy="48" r="1.5"/><circle cx="58" cy="48" r="1.5"/><circle cx="74" cy="48" r="1.5"/>
+            <circle cx="26" cy="62" r="1.5"/><circle cx="42" cy="62" r="1.5"/><circle cx="58" cy="62" r="1.5"/><circle cx="74" cy="62" r="1.5"/>
+            <circle cx="26" cy="76" r="1.5"/><circle cx="42" cy="76" r="1.5"/><circle cx="58" cy="76" r="1.5"/><circle cx="74" cy="76" r="1.5"/>
+          </g>
+          <path d="M26,20 L42,34 L58,48 L74,62 L74,76" fill="none" stroke="#c8a25c" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+          <path d="M74,20 L58,34 L42,48 L26,62 L26,76" fill="none" stroke="#d8604f" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="op">op. VII · MMXXVI</span>
+        <h2>Peal</h2>
+        <p>change-ringing on tower bells</p>
+        <span class="tech">plain hunt &amp; bob · 5–8 bells · true bell partials · cut a touch</span>
       </div>
     </a>
 
