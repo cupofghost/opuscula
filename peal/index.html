@@ -166,6 +166,11 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
     </div>
 
     <div class="fld">
+      <div class="lab">Ringing <span class="rd" id="comprd">plain course</span></div>
+      <div class="chips" id="comp"></div>
+    </div>
+
+    <div class="fld">
       <div class="lab">Start row</div>
       <div class="chips" id="start"></div>
     </div>
@@ -203,6 +208,8 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
       <p>You begin in <em>rounds</em> — the bells in order from the lightest (the treble) down to the heaviest (the tenor), a descending scale. Each change may swap only neighbouring bells, and no row may repeat. Ring long enough under a good <em>method</em> and you thread a path through the permutations and arrive back at rounds: the ring “comes round”. To ring every one of the N! orderings once is to ring the <em>extent</em>; a full <em>peal</em> is 5,000 changes or more — around three hours, without a stop or a repeat.</p>
       <h4>Method and mathematics</h4>
       <p>A method is an algorithm, written in a shorthand called “place notation”; ringers memorise the path their own bell weaves through it — the “blue line” drawn on the plate above. It is applied group theory, and English ringers were generating permutations by adjacent swaps a century before mathematicians formalised the idea: Fabian Stedman's <em>Tintinnalogia</em> (1668) and <em>Campanalogia</em> (1677) are among the first books ever written on it. This machine rings five true methods on five to twelve bells — Doubles, Minor, Triples, Major, Caters, Royal, Cinques, Maximus. The Treble-Bob and Surprise methods (Cambridge and its cousins) and Stedman's own principle lie just beyond it.</p>
+      <h4>Calls, touches and the conductor</h4>
+      <p>A plain course is only one path home, and often a short one. To ring longer — and to steer the bells onto a chosen finish — a <em>conductor</em> calls out <em>Bobs</em> and <em>Singles</em> at the lead ends, small alterations that splice one course into another. A “touch” is any such calling that comes round; a full <em>peal</em> is a touch of five thousand changes or more. The one unbreakable rule is truth: a row may never be struck twice. Switch this machine to <em>Touch</em> (on Plain Bob) and it rings a genuine touch found by search — every one verified true, no row repeated — with each Bob (a dot) and Single (a diamond) marked on the plate as the conductor calls it.</p>
       <h4>The bells themselves</h4>
       <p>Each bell is synthesised from the partials of a real tuned bell: a <em>hum</em> an octave below, the <em>prime</em>, a <em>tierce</em> a minor third above it — which is why bells shimmer faintly minor even in a major ring — a <em>quint</em>, and the <em>nominal</em> an octave up, which fixes the “strike note” you think you hear. Tuning those partials true is called Simpson tuning, worked out in the 1890s.</p>
       <h4>The name</h4>
@@ -241,6 +248,13 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
    All five are verified "true": every row in a course distinct, always
    comes round. Real ringing also has Treble-Bob, Surprise (Cambridge…) and
    principles (Stedman) — beautiful, but left for the reader-notes essay.
+
+   THE CONDUCTOR — calls & touches. For Plain Bob you can ring a "touch":
+   the conductor calls Bobs and Singles at the lead ends to splice courses so
+   the ring comes round on a chosen figure. The catch is TRUTH — no row may
+   ever be struck twice — so touches here are found by a depth-first search
+   that backs out the instant a lead would repeat a row. Every touch is true
+   by construction. Bobs and Singles are marked on the plate as they fall.
 
    THE SHARED SKELETON (every opuscula work is built the same way):
      · the ENGINE band below is PURE: it turns a method + N + start row into
@@ -372,10 +386,85 @@ function tittums(N){const h=Math.ceil(N/2),o=[];for(let k=0;k<N;k++)o.push(k%2==
 const STARTS={rounds,queens,tittums,reverse};
 const startRow=(name,N)=>(STARTS[name]||rounds)(N);
 
-// Generate `count` rows beginning WITH `start` (so out[0]===start).
-function genRows(method,N,start,count){
-  const out=[start.slice()]; let row=start.slice();
-  for(let g=0;g<count-1;g++){ row=nextRow(method,N,g,row); out.push(row); }
+/* ---- the conductor: calls & TRUE touches --------------------------------
+   A plain course is just one path home. A "touch" splices several courses by
+   the conductor's CALLS — shouted at the lead end — so the ring comes round
+   on a chosen figure. For Plain Bob the three calls are standard:
+       Plain  = 12 (the method's own lead end)
+       Bob    = 14        Single = 1234
+   The hard rule is TRUTH: a real touch may never strike the same row twice.
+   findTouches() searches call sequences depth-first and backs out the instant
+   a lead would repeat a row already rung — so every touch it returns is true
+   BY CONSTRUCTION and ends back at rounds. (Calls are implemented for Plain
+   Bob, where bob/single are unambiguous; the other methods ring plain courses.)   */
+const CALL={P:[1,2],B:[1,4],S:[1,2,3,4]};
+const callable=m=>m==='plainbob';
+function ringLead(row,N,c){let r=row;const rows=[];for(let g=0;g<2*N;g++){r=(g===2*N-1)?change(r,CALL[c]):huntChange(r,g);rows.push(r);}return{rows,head:r};}
+function findTouches(N,maxLeads,want){
+  // Iterative deepening: look for the SHORTEST touches first. Because truth-
+  // pruning kills most branches within a lead or two, searching short depths
+  // is cheap even on twelve bells (where a full open search would hang).
+  const start=rounds(N),startK=start.join(','),out=[];
+  for(let depth=2; depth<=maxLeads && out.length<want; depth++){
+    (function dfs(head,seen,calls){
+      if(out.length>=want)return;
+      for(const c of ['P','B','S']){
+        const {rows,head:nh}=ringLead(head,N,c);
+        let ok=true;const add=[];
+        for(let i=0;i<rows.length;i++){
+          if(i===rows.length-1&&eqRow(rows[i],start))continue;    // the closing rounds is allowed
+          const k=rows[i].join(','); if(seen.has(k)){ok=false;break;} seen.add(k);add.push(k);
+        }
+        if(ok){ const c2=calls.concat(c), round=eqRow(nh,start);
+          if(c2.length===depth){ if(round&&c2.some(x=>x!=='P'))out.push(c2); }
+          else if(!round) dfs(nh,seen,c2);                        // a shorter come-round is caught at a shallower depth
+        }
+        for(const k of add)seen.delete(k);
+      }
+    })(start,new Set([startK]),[]);
+  }
+  out.sort((a,b)=>a.length-b.length);                            // shortest touches first
+  return out;
+}
+const _touchCache={};
+function pickTouch(N,seed){
+  const list=_touchCache[N]||(_touchCache[N]=findTouches(N,N+2,24));
+  return list.length? list[((seed%list.length)+list.length)%list.length] : null;
+}
+
+/* ---- the run: what is actually being rung (a plain course, or a touch) ----
+   Everything the audio/canvas draws goes through stepRow/genRows/runLength so
+   plain courses and touches share one path. setRun() snapshots the controls. */
+let RUN={method:'plainbob',N:8,calling:null,start:null};
+function setRun(){
+  RUN.method=st.method; RUN.N=st.N;
+  RUN.calling=(st.touch&&callable(st.method))?pickTouch(st.N,st.seed):null;
+  RUN.start=RUN.calling?rounds(st.N):startRow(st.start,st.N);   // touches always ring from rounds
+}
+// one change of the current run: obey the calling at each lead end, else method
+function stepRow(g,row){
+  const {method,N,calling}=RUN;
+  if(calling&&g%(2*N)===2*N-1) return change(row,CALL[calling[Math.floor(g/(2*N))%calling.length]]);
+  return METHODS[method].next(N,g,row);
+}
+// the call that lands on the row AFTER change g (null for none / plain lead)
+function callAt(g){
+  const {N,calling}=RUN; if(!calling||g%(2*N)!==2*N-1)return null;
+  const c=calling[Math.floor(g/(2*N))%calling.length]; return c==='P'?null:c;
+}
+// length of the current run (touch or plain course), computed and cached
+const _runLen={};
+function runLength(){
+  const key=RUN.method+'.'+RUN.N+'.'+(RUN.calling?RUN.calling.join(''):'plain');
+  if(_runLen[key])return _runLen[key];
+  const start=RUN.start.slice(); let row=start.slice();
+  for(let g=0;g<80000;g++){ row=stepRow(g,row); if(eqRow(row,start))return _runLen[key]=g+1; }
+  return _runLen[key]=courseLen(RUN.method,RUN.N);
+}
+// rows of the current run, beginning WITH its start row (call setRun first)
+function genRows(count){
+  setRun(); const out=[RUN.start.slice()]; let row=RUN.start.slice();
+  for(let g=0;g<count-1;g++){ row=stepRow(g,row); out.push(row); }
   return out;
 }
 
@@ -392,6 +481,7 @@ const st={
   method:'plainbob', N:8, start:'rounds', keyi:1,   // keyi → tenor tonic (A3 = 220)
   ms:220,                                        // bell-space, milliseconds
   gap:true, muf:false,
+  touch:false, seed:1,                           // touch mode + which true touch (seeded)
 };
 // frequency of bell number `b` (1=treble/highest … N=tenor/tonic)
 function bellFreq(b){
@@ -472,9 +562,10 @@ function start(){
   const ctx=new (window.AudioContext||window.webkitAudioContext)();
   __iosAudio(ctx);
   const G=buildGraph(ctx);
-  const startArr=startRow(st.start,st.N);
+  setRun();                                        // snapshot method/stage/touch into RUN
+  const startArr=RUN.start;
   RT={ctx,G,g:0,rowIdx:0,curRow:startArr.slice(),nextT:ctx.currentTime+0.18,
-      log:[],startArr,len:courseLen(st.method,st.N),roundAt:-1};
+      log:[],startArr,len:runLength(),roundAt:-1,pendingCall:null,callAt:-1,callName:''};
   schedule();
   RT.timer=setInterval(schedule,70);
   st.playing=true;$('ring').textContent='Stand';$('ring').classList.add('on');
@@ -486,11 +577,14 @@ function schedule(){
     const stroke=RT.rowIdx%2;                     // 0 handstroke · 1 backstroke
     const muffled=st.muf&&stroke===1;
     for(let pos=0;pos<st.N;pos++) strike(RT.G,RT.curRow[pos],RT.nextT+pos*dt,muffled);
-    RT.log.push({i:RT.rowIdx,t:RT.nextT,row:RT.curRow.slice(),stroke});
+    RT.log.push({i:RT.rowIdx,t:RT.nextT,row:RT.curRow.slice(),stroke,call:RT.pendingCall});
+    if(RT.pendingCall){RT.callAt=RT.nextT;RT.callName=RT.pendingCall==='B'?'BOB':'SINGLE';}
+    RT.pendingCall=null;
     if(RT.log.length>160)RT.log.splice(0,RT.log.length-160);
     if(RT.rowIdx>0&&eqRow(RT.curRow,RT.startArr))RT.roundAt=RT.nextT;   // came round
-    // advance one change
-    RT.curRow=nextRow(st.method,st.N,RT.g,RT.curRow);RT.g++;RT.rowIdx++;
+    // advance one change — the conductor's call (if any) rides the next row
+    RT.pendingCall=callAt(RT.g);
+    RT.curRow=stepRow(RT.g,RT.curRow);RT.g++;RT.rowIdx++;
     let gap=0;if(st.gap&&(RT.rowIdx%2===0))gap=dt;                       // open handstroke lead
     RT.nextT+=st.N*dt+gap;
   }
@@ -516,11 +610,11 @@ function encodeWav(L,R,sr){
   return new Blob([buf],{type:'audio/wav'});
 }
 async function cut(){
-  const btn=$('cut'),note=$('cutnote');btn.disabled=true;note.textContent='ringing the course…';
+  const btn=$('cut'),note=$('cutnote');btn.disabled=true;note.textContent='ringing…';
   try{
-    const dt=st.ms/1000, full=courseLen(st.method,st.N);
-    const rowsN=Math.min(full,st.method==='hunt'?full:48)+1;   // a "touch": one course, or 48 rows
-    const rows=genRows(st.method,st.N,startRow(st.start,st.N),rowsN);
+    const dt=st.ms/1000;
+    const rowsN=Math.min(runLength(),300)+1;         // one whole run (course or touch), capped
+    const rows=genRows(rowsN);
     // total time = rows scheduled + ring-down tail
     let dur=0.18;for(let k=0;k<rows.length;k++){dur+=st.N*dt+((st.gap&&(k+1)%2===0)?dt:0);}
     dur+=3.7;
@@ -535,8 +629,9 @@ async function cut(){
     const rb=await ctx.startRendering();
     const blob=encodeWav(rb.getChannelData(0),rb.getChannelData(1),SR);
     const key=KEYS[st.keyi][0].replace('♭','b');
+    const what=(st.touch&&callable(st.method))?'touch':st.start;
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download=`peal_${st.method}_${st.N}-${stageName(st.N).toLowerCase()}_${st.start}_${key}.wav`;
+    a.download=`peal_${st.method}_${st.N}-${stageName(st.N).toLowerCase()}_${what}_${key}.wav`;
     document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
     note.textContent=`cut · ${rows.length-1} changes · ${st.N} bells`;
   }catch(e){note.textContent='render failed — '+e.message;}
@@ -557,22 +652,24 @@ let needsDraw=true;const invalidate=()=>{needsDraw=true;};
 function draw(){
   cx.clearRect(0,0,CW,CH);
   const N=st.N;
-  // choose the window of rows + which is "current"
-  let rows,curLocal;
+  // choose the window of rows + which is "current" + any calls in view
+  let rows,curLocal,runLen,marks={};              // marks: local row index → 'B' | 'S'
   if(RT&&RT.log.length){
     const now=RT.ctx.currentTime;
     let ci=RT.log.length-1;for(let i=RT.log.length-1;i>=0;i--){if(RT.log[i].t<=now){ci=i;break;}}
     const startI=Math.max(0,ci-VIS+8);
-    rows=RT.log.slice(startI,startI+VIS).map(e=>e.row);
-    curLocal=ci-startI;
+    const win=RT.log.slice(startI,startI+VIS);
+    rows=win.map(e=>e.row);
+    win.forEach((e,idx)=>{if(e.call)marks[idx]=e.call;});
+    curLocal=ci-startI; runLen=RT.len;
     $('rowTag').textContent=(RT.log[ci].i%RT.len)+1;
   }else{
-    const full=courseLen(st.method,N);
-    rows=genRows(st.method,N,startRow(st.start,N),Math.min(full,VIS));
-    curLocal=-1;
-    $('rowTag').textContent='1';
+    setRun(); runLen=runLength();
+    rows=genRows(Math.min(runLen,VIS));
+    for(let k=1;k<rows.length;k++){const c=callAt(k-1);if(c)marks[k]=c;}
+    curLocal=-1; $('rowTag').textContent='1';
   }
-  $('lenTag').textContent=courseLen(st.method,N);
+  $('lenTag').textContent=runLen;
 
   // faint place columns
   cx.strokeStyle='rgba(200,162,92,.10)';cx.lineWidth=1;
@@ -609,6 +706,21 @@ function draw(){
     }
   }
   cx.globalAlpha=1;
+
+  // conductor's calls: mark each lead-head where a Bob (dot) or Single (diamond) landed
+  for(const k in marks){
+    const y=rowY(+k),x=CW*0.055,c=marks[k];
+    cx.fillStyle=c==='S'?'#c8a25c':'#d8604f';cx.beginPath();
+    if(c==='S'){cx.moveTo(x,y-6);cx.lineTo(x+6,y);cx.lineTo(x,y+6);cx.lineTo(x-6,y);cx.closePath();}
+    else cx.arc(x,y,5,0,2*Math.PI);
+    cx.fill();
+  }
+  // the call, shouted
+  if(RT&&RT.callAt>0&&RT.ctx.currentTime-RT.callAt<0.9){
+    cx.fillStyle='rgba(216,96,79,'+(0.9*(1-(RT.ctx.currentTime-RT.callAt)/0.9))+')';
+    cx.font='700 '+Math.round(CW*0.045)+'px "Cormorant SC",serif';cx.textAlign='center';
+    cx.fillText(RT.callName+'!',CW/2,rowY(1.1));
+  }
 
   // "came round" flash
   if(RT&&RT.roundAt>0&&RT.ctx.currentTime-RT.roundAt<1.6){
@@ -647,7 +759,25 @@ function buildBells(){
 function buildMethod(){
   const avail=methodsFor(st.N);
   if(!avail.includes(st.method))st.method=avail.includes('plainbob')?'plainbob':avail[0];
-  chipSel($('method'),avail.map(m=>[m,METHODS[m].label]),st.method,m=>{st.method=m;if(RT){stop();start();}});
+  chipSel($('method'),avail.map(m=>[m,METHODS[m].label]),st.method,m=>{st.method=m;buildComp();if(RT){stop();start();}});
+  buildComp();
+}
+// Ringing: plain course, or a seeded TRUE touch. Calls only apply to Plain Bob,
+// so Touch is disabled for the other methods.
+function buildComp(){
+  const can=callable(st.method); if(!can)st.touch=false;
+  chipSel($('comp'),[['course','Plain course'],['touch','Touch']],st.touch?'touch':'course',v=>{
+    st.touch=(v==='touch')&&callable(st.method); updateComprd(); if(RT){stop();start();}
+  });
+  const tb=$('comp').querySelector('[data-v="touch"]');
+  if(tb&&!can){tb.disabled=true;tb.style.opacity='.4';tb.title='calls are implemented for Plain Bob';}
+  updateComprd();
+}
+function updateComprd(){
+  if(st.touch&&callable(st.method)){
+    const c=pickTouch(st.N,st.seed);
+    $('comprd').textContent=c?('touch · '+c.join(' ')+' · '+(c.length*2*st.N)+' changes'):'plain course';
+  }else $('comprd').textContent='plain course';
 }
 buildBells();buildMethod();
 
@@ -684,10 +814,12 @@ $('cut').addEventListener('click',cut);
 
 /* ---------------------- opuscula shared: hash · keys --------------------- */
 let __applying=false;
-function __state(){return {me:st.method,n:st.N,s:st.start,k:st.keyi,ms:st.ms,g:st.gap?1:0,mu:st.muf?1:0};}
+function __state(){return {me:st.method,n:st.N,s:st.start,k:st.keyi,ms:st.ms,g:st.gap?1:0,mu:st.muf?1:0,tc:st.touch?1:0,sd:st.seed};}
 function __apply(o){
   if(o.n){const b=$('bells').querySelector('[data-v="'+o.n+'"]');b&&b.click();}   // stage first (rebuilds methods)
   if(o.me){const b=$('method').querySelector('[data-v="'+o.me+'"]');b&&b.click();}
+  if(o.sd!==undefined){const sd=+o.sd;if(Number.isFinite(sd)){st.seed=sd|0;updateComprd();}}   // seed before touch (0 is valid)
+  if(o.tc!==undefined){const want=+o.tc===1;const b=$('comp').querySelector('[data-v="'+(want?'touch':'course')+'"]');if(b&&!b.disabled)b.click();}
   if(o.s){const b=$('start').querySelector('[data-s="'+o.s+'"]');b&&b.click();}
   if(o.k!==undefined){const b=$('key').querySelector('[data-k="'+o.k+'"]');b&&b.click();}
   if(o.ms){$('speed').value=ms2slider(+o.ms);$('speed').dispatchEvent(new Event('input'));}
@@ -703,10 +835,15 @@ document.addEventListener('change',()=>setTimeout(__hashWrite,120),true);
 
 function another(){                                // r = ring a different one
   if(RT)stop();                                    // set up silently, then start once
+  st.seed=1+((Math.random()*1e6)|0);               // a fresh touch, if in touch mode
   const N=5+((Math.random()*8)|0);
   $('bells').querySelector('[data-v="'+N+'"]').click();     // sets stage + rebuilds methods
   const avail=methodsFor(N),m=avail[(Math.random()*avail.length)|0];
   $('method').querySelector('[data-v="'+m+'"]').click();
+  // for Plain Bob, sometimes call a touch instead of the plain course
+  const wantTouch=callable(m)&&Math.random()<0.5;
+  const cb=$('comp').querySelector('[data-v="'+(wantTouch?'touch':'course')+'"]');
+  if(cb&&!cb.disabled)cb.click();
   const ss=['rounds','queens','tittums','reverse'];
   $('start').querySelector('[data-s="'+ss[(Math.random()*4)|0]+'"]').click();
   $('key').querySelector('[data-k="'+((Math.random()*KEYS.length)|0)+'"]').click();
