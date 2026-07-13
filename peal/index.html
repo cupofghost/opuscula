@@ -112,6 +112,26 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
 .foot a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* ── on this music: expandable reader notes (shared across the opuscula) ── */
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
 </style>
 </head>
 <body>
@@ -135,23 +155,14 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
 
     <button class="ring" id="ring">Ring</button>
 
-    <div class="two">
-      <div class="fld">
-        <div class="lab">Method</div>
-        <div class="seg" id="method">
-          <button data-m="hunt">Plain Hunt</button>
-          <button data-m="bob" class="on">Plain Bob</button>
-        </div>
-      </div>
-      <div class="fld">
-        <div class="lab">Bells</div>
-        <div class="seg" id="bells">
-          <button data-n="5">5</button>
-          <button data-n="6">6</button>
-          <button data-n="7">7</button>
-          <button data-n="8" class="on">8</button>
-        </div>
-      </div>
+    <div class="fld">
+      <div class="lab">Bells <span class="rd" id="stagerd">8 · Major</span></div>
+      <div class="chips" id="bells"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Method</div>
+      <div class="chips" id="method"></div>
     </div>
 
     <div class="fld">
@@ -183,6 +194,22 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
     </div>
   </div>
 
+  <details class="reader">
+    <summary>On this music · change-ringing</summary>
+    <div class="rbody">
+      <h4>What you're hearing</h4>
+      <p>Not a tune. English tower bells are too heavy to play a melody in time — each swings full-circle on a wheel and can only be nudged a little on each pull. So ringers make music from <em>order</em> instead of pitch: they ring the bells over and over, altering which bell strikes when. Every distinct ordering is a “row”; moving from one row to the next is a “change”.</p>
+      <h4>Ringing the changes</h4>
+      <p>You begin in <em>rounds</em> — the bells in order from the lightest (the treble) down to the heaviest (the tenor), a descending scale. Each change may swap only neighbouring bells, and no row may repeat. Ring long enough under a good <em>method</em> and you thread a path through the permutations and arrive back at rounds: the ring “comes round”. To ring every one of the N! orderings once is to ring the <em>extent</em>; a full <em>peal</em> is 5,000 changes or more — around three hours, without a stop or a repeat.</p>
+      <h4>Method and mathematics</h4>
+      <p>A method is an algorithm, written in a shorthand called “place notation”; ringers memorise the path their own bell weaves through it — the “blue line” drawn on the plate above. It is applied group theory, and English ringers were generating permutations by adjacent swaps a century before mathematicians formalised the idea: Fabian Stedman's <em>Tintinnalogia</em> (1668) and <em>Campanalogia</em> (1677) are among the first books ever written on it. This machine rings five true methods on five to twelve bells — Doubles, Minor, Triples, Major, Caters, Royal, Cinques, Maximus. The Treble-Bob and Surprise methods (Cambridge and its cousins) and Stedman's own principle lie just beyond it.</p>
+      <h4>The bells themselves</h4>
+      <p>Each bell is synthesised from the partials of a real tuned bell: a <em>hum</em> an octave below, the <em>prime</em>, a <em>tierce</em> a minor third above it — which is why bells shimmer faintly minor even in a major ring — a <em>quint</em>, and the <em>nominal</em> an octave up, which fixes the “strike note” you think you hear. Tuning those partials true is called Simpson tuning, worked out in the 1890s.</p>
+      <h4>The name</h4>
+      <p>Change-ringing is an English art, so op. VII is named plainly in English: a <em>peal</em> is both the sound of bells and the word for a full-length performance.</p>
+    </div>
+  </details>
+
   <div class="foot">
     op. VII · <a href="../">opvscvla</a> · keys: space=ring · r=another · c=cut
   </div>
@@ -203,12 +230,17 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
    group theory you can hear. (A neat mirror of Cochlea: Cochlea never comes
    round; a peal always does.)
 
-   Two methods here, both real and both any-N:
+   Five real methods, on 5 to 12 bells (Doubles through Maximus):
      · Plain Hunt — the atom: every bell walks steadily out to the back and
-       back to the front. Comes round in 2N rows.
-     · Plain Bob  — plain hunting with one altered change each "lead", which
-       shuffles the bells so the course is long. Comes round in 2N(N-1) rows
-       (Plain Bob Major on 8 = 112 changes — the classic).
+       home again. Comes round in 2N rows.
+     · Plain Bob  — plain hunting with one altered change each "lead", so the
+       course is long (Plain Bob Major on 8 = 112 changes — the classic).
+     · Grandsire  — keeps two bells hunting; the odd-bell staple (5,7,9,11).
+     · Reverse / Double Bob — Plain-Bob cousins that make their place at the
+       back, or both ends, instead of the front (even stages).
+   All five are verified "true": every row in a course distinct, always
+   comes round. Real ringing also has Treble-Bob, Surprise (Cambridge…) and
+   principles (Stedman) — beautiful, but left for the reader-notes essay.
 
    THE SHARED SKELETON (every opuscula work is built the same way):
      · the ENGINE band below is PURE: it turns a method + N + start row into
@@ -268,41 +300,72 @@ function __iosAudio(ac){
    Pure, DOM-free. Change-ringing method → sequence of rows (permutations).
    A "row" is an array of bell numbers 1..N in ringing order; rounds is
    [1,2,…,N]. A "change" swaps disjoint neighbouring pairs — every bell
-   moves at most one position. Verified true for N=5..8: legal changes,
-   all rows distinct, always comes round.                                 */
+   moves at most one position. Methods are expressed through one general
+   place-notation interpreter (`change`); each was verified true for its
+   stages (5..12): legal changes, all rows distinct, always comes round.   */
 
 const $=id=>document.getElementById(id);
 const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-// Plain hunting: on even changes swap pairs from position 0 (a full
-// "cross" when N is even); on odd changes swap pairs from position 1
-// (the ends stand). Applied cyclically this IS plain hunt, period 2N.
+const eqRow=(a,b)=>a.length===b.length&&a.every((x,i)=>x===b[i]);
+
+// A CHANGE from place notation. `places` lists the 1-based positions that
+// STAND (a bell "makes a place"); everyone else swaps in adjacent pairs.
+// An empty list is a full "cross" (× — every pair swaps). This one routine
+// interprets all real change-ringing methods; a method is just a rule that
+// picks which places are made at each step.
+function change(row,places){
+  const n=row.length,r=row.slice(),P=new Set(places);
+  let i=0;
+  while(i<n){
+    if(P.has(i+1)){i++;continue;}                 // this bell stands
+    if(i+1<n&&!P.has(i+2)){const t=r[i];r[i]=r[i+1];r[i+1]=t;i+=2;}  // swap the pair
+    else i++;
+  }
+  return r;
+}
+// Plain hunting = alternately cross (from pos 0) and make the two end places
+// (from pos 1). Applied forever this is Plain Hunt, period 2N — every bell
+// walks steadily to the back and home again.
 function huntChange(row,g){
   const n=row.length,r=row.slice(),s=(g%2===0)?0:1;
   for(let i=s;i+1<n;i+=2){const t=r[i];r[i]=r[i+1];r[i+1]=t;}
   return r;
 }
-// "Seconds place" (place notation 12): the front two bells stand, the rest
-// swap in pairs. Plain Bob substitutes this for one change at each lead end,
-// which is what makes its course longer than plain hunt's.
-function secondsPlace(row){
-  const n=row.length,r=row.slice();
-  for(let i=2;i+1<n;i+=2){const t=r[i];r[i]=r[i+1];r[i+1]=t;}
-  return r;
+
+// The English names for a ring of each size (bells → "stage").
+const stageName=N=>({5:'Doubles',6:'Minor',7:'Triples',8:'Major',9:'Caters',10:'Royal',11:'Cinques',12:'Maximus'}[N]||N+' bells');
+
+// The method registry. Each method is a rule next(N,g,row) giving the next
+// row from the change count g, plus which stages it exists on. Every method
+// here is a genuine, "true" method (verified: all rows in a plain course are
+// distinct, and it always comes round). `le` = the special lead-end change,
+// made once every 2N changes, which is what lengthens a course past plain
+// hunt's 2N. Grandsire keeps TWO bells hunting, so it lives on odd stages.
+const METHODS={
+  hunt:      {label:'Plain Hunt', ok:n=>true,       next:(N,g,row)=>huntChange(row,g)},
+  plainbob:  {label:'Plain Bob',  ok:n=>true,       next:(N,g,row)=>(g%(2*N)===2*N-1)?change(row,[1,2]):huntChange(row,g)},
+  grandsire: {label:'Grandsire',  ok:n=>n%2===1,    next:(N,g,row)=>{const li=g%(2*N);return change(row, li===0?[3]:(li%2===1?[1]:[N]));}},
+  reversebob:{label:'Reverse Bob',ok:n=>n%2===0,    next:(N,g,row)=>(g%(2*N)===2*N-1)?change(row,[N-1,N]):huntChange(row,g)},
+  doublebob: {label:'Double Bob', ok:n=>n%2===0,    next:(N,g,row)=>(g%(2*N)===2*N-1)?change(row,[1,2,N-1,N]):huntChange(row,g)},
+};
+const METHOD_ORDER=['hunt','plainbob','grandsire','reversebob','doublebob'];
+const methodsFor=N=>METHOD_ORDER.filter(m=>METHODS[m].ok(N));
+function nextRow(method,N,g,row){ return (METHODS[method]||METHODS.plainbob).next(N,g,row); }
+
+// A plain course comes round after this many changes — computed, not
+// hardcoded, by ringing until rounds returns. Cached per method+stage.
+const _clcache={};
+function courseLen(method,N){
+  const key=method+'.'+N; if(_clcache[key])return _clcache[key];
+  const start=rounds(N); let row=start.slice();
+  for(let g=0;g<50000;g++){ row=nextRow(method,N,g,row); if(eqRow(row,start))return _clcache[key]=g+1; }
+  return _clcache[key]=2*N;
 }
-// The one rule of the whole work: given the change count g and current row,
-// return the next row. Plain Bob makes seconds at each lead end (g ≡ 2N−1),
-// otherwise both methods plain-hunt.
-function nextRow(method,N,g,row){
-  if(method==='bob' && (g%(2*N))===(2*N-1)) return secondsPlace(row);
-  return huntChange(row,g);
-}
-// Rows in a plain course — after this many changes the ring comes round.
-function courseLen(method,N){ return method==='bob' ? 2*N*(N-1) : 2*N; }
 
 // Named opening rows (all valid permutations for any N).
-const rounds =N=>Array.from({length:N},(_,i)=>i+1);
+function rounds(N){return Array.from({length:N},(_,i)=>i+1);}
 const reverse=N=>rounds(N).reverse();
 function queens(N){const o=[],e=[];for(let b=1;b<=N;b++)(b%2?o:e).push(b);return o.concat(e);}
 function tittums(N){const h=Math.ceil(N/2),o=[];for(let k=0;k<N;k++)o.push(k%2===0?(k/2+1):(h+(k-1)/2+1));return o;}
@@ -315,7 +378,6 @@ function genRows(method,N,start,count){
   for(let g=0;g<count-1;g++){ row=nextRow(method,N,g,row); out.push(row); }
   return out;
 }
-const eqRow=(a,b)=>a.length===b.length&&a.every((x,i)=>x===b[i]);
 
 /* ============================ ENGINE-END ============================ */
 
@@ -323,12 +385,12 @@ const eqRow=(a,b)=>a.length===b.length&&a.every((x,i)=>x===b[i]);
 // Bell pitches. The tenor (heaviest, highest bell number) is the tonic; the
 // bells above it climb a major scale, so rounds (1→N) rings DOWN the scale —
 // exactly how a real ring sounds. Semitone steps above the tenor:
-const SCALE=[0,2,4,5,7,9,11,12,14,16];             // major scale, tenor upward
+const SCALE=[0,2,4,5,7,9,11,12,14,16,17,19];       // major scale, tenor upward (12 bells)
 const KEYS=[['G',196.00],['A',220.00],['B♭',233.08],['C',261.63],['D',293.66]];
 
 const st={
-  method:'bob', N:8, start:'rounds', keyi:1,   // keyi → tenor tonic (A3 = 220)
-  ms:220,                                       // bell-space, milliseconds
+  method:'plainbob', N:8, start:'rounds', keyi:1,   // keyi → tenor tonic (A3 = 220)
+  ms:220,                                        // bell-space, milliseconds
   gap:true, muf:false,
 };
 // frequency of bell number `b` (1=treble/highest … N=tenor/tonic)
@@ -474,7 +536,7 @@ async function cut(){
     const blob=encodeWav(rb.getChannelData(0),rb.getChannelData(1),SR);
     const key=KEYS[st.keyi][0].replace('♭','b');
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-    a.download=`peal_${st.method==='bob'?'plain-bob':'plain-hunt'}_${st.N}_${st.start}_${key}.wav`;
+    a.download=`peal_${st.method}_${st.N}-${stageName(st.N).toLowerCase()}_${st.start}_${key}.wav`;
     document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
     note.textContent=`cut · ${rows.length-1} changes · ${st.N} bells`;
   }catch(e){note.textContent='render failed — '+e.message;}
@@ -563,15 +625,31 @@ function loop(){
 requestAnimationFrame(loop);
 
 /* ------------------------------ controls --------------------------------- */
-function seg(id,attr,val,set){
-  $(id).querySelectorAll('button').forEach(b=>{
-    b.classList.toggle('on',b.dataset[attr]===String(val));
-    b.onclick=()=>{$(id).querySelectorAll('button').forEach(x=>x.classList.remove('on'));
-      b.classList.add('on');set(b.dataset[attr]);invalidate();};
+// a rebuildable single-select chip group; each button carries data-v=value
+function chipSel(container,items,current,onPick){
+  container.innerHTML='';
+  items.forEach(([val,label])=>{
+    const b=document.createElement('button');b.textContent=label;b.dataset.v=String(val);
+    if(String(val)===String(current))b.classList.add('on');
+    b.onclick=()=>{container.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');onPick(val);invalidate();};
+    container.appendChild(b);
   });
 }
-seg('method','m',st.method,v=>{st.method=v;if(RT){stop();start();}});
-seg('bells','n',st.N,v=>{st.N=+v;if(RT){stop();start();}});
+// Bells 5..12. Changing stage may change which methods exist, so the method
+// chips are rebuilt to match (and an out-of-stage method falls back).
+function buildBells(){
+  const items=[];for(let n=5;n<=12;n++)items.push([n,String(n)]);
+  chipSel($('bells'),items,st.N,n=>{st.N=+n;$('stagerd').textContent=st.N+' · '+stageName(st.N);
+    buildMethod();if(RT){stop();start();}});
+  $('stagerd').textContent=st.N+' · '+stageName(st.N);
+}
+function buildMethod(){
+  const avail=methodsFor(st.N);
+  if(!avail.includes(st.method))st.method=avail.includes('plainbob')?'plainbob':avail[0];
+  chipSel($('method'),avail.map(m=>[m,METHODS[m].label]),st.method,m=>{st.method=m;if(RT){stop();start();}});
+}
+buildBells();buildMethod();
 
 const startC=$('start');
 [['rounds','Rounds'],['queens','Queens'],['tittums','Tittums'],['reverse','Reverse']].forEach(([id,label])=>{
@@ -608,8 +686,8 @@ $('cut').addEventListener('click',cut);
 let __applying=false;
 function __state(){return {me:st.method,n:st.N,s:st.start,k:st.keyi,ms:st.ms,g:st.gap?1:0,mu:st.muf?1:0};}
 function __apply(o){
-  if(o.me){const b=$('method').querySelector('[data-m="'+o.me+'"]');b&&b.click();}
-  if(o.n){const b=$('bells').querySelector('[data-n="'+o.n+'"]');b&&b.click();}
+  if(o.n){const b=$('bells').querySelector('[data-v="'+o.n+'"]');b&&b.click();}   // stage first (rebuilds methods)
+  if(o.me){const b=$('method').querySelector('[data-v="'+o.me+'"]');b&&b.click();}
   if(o.s){const b=$('start').querySelector('[data-s="'+o.s+'"]');b&&b.click();}
   if(o.k!==undefined){const b=$('key').querySelector('[data-k="'+o.k+'"]');b&&b.click();}
   if(o.ms){$('speed').value=ms2slider(+o.ms);$('speed').dispatchEvent(new Event('input'));}
@@ -624,11 +702,15 @@ document.addEventListener('click',()=>setTimeout(__hashWrite,120),true);
 document.addEventListener('change',()=>setTimeout(__hashWrite,120),true);
 
 function another(){                                // r = ring a different one
-  const ms=['hunt','bob'],ns=['5','6','7','8'],ss=['rounds','queens','tittums','reverse'];
-  const pk=(id,arr)=>{const v=arr[Math.floor(Math.random()*arr.length)];const b=$(id).querySelector('[data-'+(id==='method'?'m':id==='bells'?'n':'s')+'="'+v+'"]');b&&b.click();};
-  pk('method',ms);pk('bells',ns);pk('start',ss);
-  const ki=Math.floor(Math.random()*KEYS.length);$('key').querySelector('[data-k="'+ki+'"]').click();
-  if(!st.playing)start();
+  if(RT)stop();                                    // set up silently, then start once
+  const N=5+((Math.random()*8)|0);
+  $('bells').querySelector('[data-v="'+N+'"]').click();     // sets stage + rebuilds methods
+  const avail=methodsFor(N),m=avail[(Math.random()*avail.length)|0];
+  $('method').querySelector('[data-v="'+m+'"]').click();
+  const ss=['rounds','queens','tittums','reverse'];
+  $('start').querySelector('[data-s="'+ss[(Math.random()*4)|0]+'"]').click();
+  $('key').querySelector('[data-k="'+((Math.random()*KEYS.length)|0)+'"]').click();
+  start();
 }
 addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
   if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;

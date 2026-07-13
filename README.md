@@ -14,11 +14,13 @@ composes; you set the law it obeys.
 | IV | [RILLE](./rille/) | Minimal techno on a white-label dubplate — named in German, techno's mother tongue. Six affects steer key, tempo, and space; a diatonic engine keeps the chords in the mode. |
 | V | [COCHLEA](./cochlea/) | A just-intonation comma pump. Pure intervals walk a fifth-and-third lattice that never quite closes; the residual comma winds an Archimedean spiral. Every interval pure, every return imperfect. |
 | VI | [BOLG](./bolg/) | Generative uilleann piping — named in Irish, the music's mother tongue. A just-intonation chanter over three standing drones; cuts, rolls and crans with the regulators vamping underneath. Reels, jigs, slip jigs, hornpipes and slow airs. |
-| VII | [PEAL](./peal/) | English change-ringing — the bells sound permutations, not tunes. Set a method (Plain Hunt, Plain Bob) and the machine rings every distinct row once and comes round; the "blue line" traces a bell through the changes. Synthesized tower bells with true partials — hum, prime, tierce, quint, nominal. |
+| VII | [PEAL](./peal/) | English change-ringing — the bells sound permutations, not tunes. Choose a method (Plain Hunt, Plain Bob, Grandsire, Reverse/Double Bob) on five to twelve bells — Doubles through Maximus — and the machine rings every distinct row once and comes round; the "blue line" traces a bell through the changes. Every method is verified *true*. Synthesized tower bells with true partials — hum, prime, tierce, quint, nominal. |
 
 ## Shared grammar
 
 - **space** = play/stop · **r** = another (aliud/encore) · **c** = cut 16-bit WAV
+- Every work carries an expandable **“on this music”** panel — a short, plain-language
+  history of the musical idea it renders.
 - **The URL hash is the pressing.** Every parameter — seed included — serializes
   into `#…`. Copy the address and the exact opus reloads anywhere.
 - Offline render: each work cuts a deterministic WAV of itself.

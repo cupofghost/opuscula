@@ -150,6 +150,26 @@ button,canvas{-webkit-user-select:none;user-select:none}
 .exit:active{transform:translateY(1px)}
 .exit .x{font-size:15px;line-height:1;letter-spacing:0}
 @media(prefers-reduced-motion:reduce){.exit{transition:none}}
+
+/* ── on this music: expandable reader notes (shared across the opuscula) ── */
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
 </style>
 </head>
 <body>
@@ -222,6 +242,20 @@ button,canvas{-webkit-user-select:none;user-select:none}
     </div>
 
   </div>
+  <details class="reader">
+    <summary>On this music · the endless glissando</summary>
+    <div class="rbody">
+      <h4>What you're hearing</h4>
+      <p>A tone that seems to climb (or fall) forever without ever getting higher — the sonic equivalent of a barber's pole, or of a staircase by Escher that always leads up and always returns to itself.</p>
+      <h4>The illusion</h4>
+      <p>Roger Shepard described it in 1964: stack sine tones an octave apart and hold a fixed loudness “window” over them — bright in the middle, fading to silence at the top and bottom. Now slide every tone steadily upward. Because a tone climbing out the top fades away just as a fresh one steals in at the bottom, the octave never actually changes — yet the ear hears unbroken ascent. Jean-Claude Risset (1969) made the steps continuous, giving the smooth <em>glissando</em> you hear here; you may know its unsettling, ever-rising tension from film scores.</p>
+      <h4>Just intonation</h4>
+      <p>The octave-spaced partials are tuned in <em>just intonation</em> — by exact whole-number frequency ratios, the pure intervals of the harmonic series (a 3/2 fifth, a 5/4 third) rather than the tempered compromises of a piano. The chord presets — 4:5:6 and its kin — are those pure ratios, held without error as the whole structure glides.</p>
+      <h4>The name</h4>
+      <p>Latin <em>scala</em> — a ladder or stair, and the root of the word “scale” itself. The tuning theory it draws on comes down to us in Latin, so the work is named in that tongue.</p>
+    </div>
+  </details>
+
   <div style="text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.22em;opacity:.75;margin-top:16px;text-transform:uppercase">
     op. II · <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:2px">opvscvla</a> · claves: space=sona · r=alia · c=cut
   </div>

@@ -121,6 +121,26 @@ button,canvas,.centerlabel{-webkit-user-select:none;user-select:none}
 .exit:active{transform:translateY(1px)}
 .exit .x{font-size:15px;line-height:1;letter-spacing:0}
 @media(prefers-reduced-motion:reduce){.exit{transition:none}}
+
+/* ── on this music: expandable reader notes (shared across the opuscula) ── */
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
 </style>
 </head>
 <body>
@@ -179,6 +199,20 @@ button,canvas,.centerlabel{-webkit-user-select:none;user-select:none}
     </div>
 
     <div class="ledger" id="ledger"></div>
+
+    <details class="reader">
+      <summary>On this music · minimal techno</summary>
+      <div class="rbody">
+        <h4>What you're hearing</h4>
+        <p>A seeded minimal-techno track, generated and synthesized in full — kick, bass, chords, hats and hiss — dressed as an unlabelled test pressing.</p>
+        <h4>Detroit to Berlin</h4>
+        <p>Techno was born in the mid-1980s in Detroit, in the drum-machines and synthesizers of Juan Atkins, Derrick May and Kevin Saunderson. <em>Minimal</em> techno pared it back to the barest hypnotic essentials. After the Wall fell in 1989 Berlin became its second home, and in the city's studios Basic Channel — Moritz von Oswald and Mark Ernestus — fused techno with the echo, reverb and cavernous space of Jamaican <em>dub</em>. The result trades melody for the slow, patient evolution of a single groove: the loop <em>is</em> the composition.</p>
+        <h4>Affect and law</h4>
+        <p>Six <em>Affekte</em> — moods — set the key, tempo, palette, spread and density; a diatonic engine keeps the chords in the mode while the arrangement writes itself. A “dubplate”, or white label, is the one-off acetate a DJ cuts to road-test a track before anyone else can get a copy.</p>
+        <h4>The name</h4>
+        <p>German <em>Rille</em> — the groove cut into a record. Berlin is techno's adopted mother city, so the work speaks German; the visible interface is translated throughout, while the code beneath keeps its original names.</p>
+      </div>
+    </details>
 
     <div class="colophon">33⅓ U/min · stereo · ohne Kompromiss<br>
     op. IV · <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:2px">opvscvla</a> · Tasten: Leertaste=Spiel · r=Neupressung · c=Schnitt</div>
