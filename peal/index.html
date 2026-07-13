@@ -795,7 +795,10 @@ KEYS.forEach(([name],i)=>{
   const b=document.createElement('button');b.textContent=name;b.dataset.k=i;
   if(i===st.keyi)b.classList.add('on');
   b.onclick=()=>{keyC.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
-    b.classList.add('on');st.keyi=i;if(RT){stop();start();}};
+    b.classList.add('on');st.keyi=i;
+    // re-pitch the ring live: rebuild the bell buffers so the next strikes ring
+    // in the new key — no need to stop and start over (speed is already live).
+    if(RT){for(let bn=1;bn<=st.N;bn++)RT.G.buf[bn]=makeBell(RT.ctx,bellFreq(bn));}};
   keyC.appendChild(b);
 });
 
