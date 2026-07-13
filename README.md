@@ -11,7 +11,9 @@ composes; you set the law it obeys.
 | I | [PAS SALÉ](./pas-sale/) | zydeco two-step for a synthesized band — G, 148. ENCORE! presses another version. |
 | II | [SCALA](./scala/) | Shepard–Risset glissando in just intonation. Ratios exact; the lap loops seamlessly. |
 | III | [GRADUS](./gradus/) | Generative species counterpoint after Fux (1725). Six rules are the interface; turn off parallels and it writes organum. |
-| IV | [SULCUS](./sulcus/) | Minimal techno on a white-label dubplate. Six affects steer key, tempo, and space; a diatonic engine keeps the chords in the mode. |
+| IV | [RILLE](./rille/) | Minimal techno on a white-label dubplate — named in German, techno's mother tongue. Six affects steer key, tempo, and space; a diatonic engine keeps the chords in the mode. |
+| V | [COCHLEA](./cochlea/) | A just-intonation comma pump. Pure intervals walk a fifth-and-third lattice that never quite closes; the residual comma winds an Archimedean spiral. Every interval pure, every return imperfect. |
+| VI | [BOLG](./bolg/) | Generative uilleann piping — named in Irish, the music's mother tongue. A just-intonation chanter over three standing drones; cuts, rolls and crans with the regulators vamping underneath. Reels, jigs, slip jigs, hornpipes and slow airs. |
 
 ## Shared grammar
 
