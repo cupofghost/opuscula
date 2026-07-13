@@ -225,6 +225,44 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:170px;ba
 <script>
 'use strict';
 
+/* =====================================================================
+   READER'S GUIDE — COCHLEA (op. V)
+   ---------------------------------------------------------------------
+   A just-intonation "comma pump". You walk around a lattice of pure
+   fifths and thirds and come back to where you started — except in pure
+   tuning the lattice never quite closes: a tiny leftover interval (a
+   "comma") accumulates each lap. So every chord is consonant, but the
+   home note drifts a hair sharp/flat with every loop, and the drift is
+   what the canvas draws as an Archimedean spiral that never returns to
+   its centre. Arithmetic is done on exact integer fractions (no floats)
+   over the primes {2,3,5,7}, which is why the tuning is truly just.
+
+   THE SHARED SKELETON (every opuscula work is built the same way):
+     · a seeded generator that COMPOSES the piece — the ENGINE band below
+       is PURE: exact fraction math, walk generation, event planning and
+       WAV encoding, with NO DOM and NO Web Audio. Everything after
+       ENGINE-END may touch the page/audio; nothing inside it does.
+       (mulberry32 is the tiny seedable PRNG, so a seed reproduces a walk.)
+     · an audio graph built only from oscillators/noise — never samples.
+     · TWO renderers of that graph:
+         realtime — a look-ahead scheduler feeding the live AudioContext;
+         offline  — "SECO" (the cut button) re-renders into an
+                    OfflineAudioContext and encodes a 16-bit WAV.
+     · a <canvas> that draws the spiral/ledger; it sleeps when idle.
+     · __hint / __iosAudio — iOS audio unlock (Safari makes no sound until a
+       gesture). In this work it sits NEAR THE BOTTOM, just before init();
+       it is identical in all six works and can be skimmed.
+     · a hash-permalink block: every control (seed included) is written into
+       location.hash, so THE URL IS THE PRESSING — copy it to replay exactly.
+
+   KEYS (wired near the bottom, same in every work):
+       space = play/stop   ·   r = another pump   ·   c = cut a WAV
+
+   THIS FILE: ENGINE (fraction math → walk → analysis → plan → WAV) →
+   state → audio → SECO/WAV → regen → ledger → canvas → hash permalinks →
+   controls → __iosAudio → init.
+   ===================================================================== */
+
 /* ============================== ENGINE-BEGIN ==============================
    Pure, DOM-free. Exact rational arithmetic over {2,3,5,7}; walk generation;
    analysis; event planning; WAV encoding. Everything below the closing

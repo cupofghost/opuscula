@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="opuscula — four small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno.">
+<meta name="description" content="opuscula — six small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping.">
 <title>OPVSCVLA — small musical machines</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -50,10 +50,42 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
 </style>
 </head>
 <body>
+<!-- =====================================================================
+     READER'S GUIDE — the landing page (catalogue)
+     ---------------------------------------------------------------------
+     This file is pure HTML + CSS. No JavaScript, no audio: it is just the
+     index card wall that links out to the six works. Each work lives in
+     its own folder as its own index.html; this page never loads them, it
+     only links to them (href="./folder/").
+
+     Anatomy, top to bottom:
+       .wrap      the 760px column everything sits in
+       .eyebrow   the "catalogvs · mmxxvi" kicker
+       h1 / .sub  the title and the one-line manifesto
+       .grid      the card wall — one <a class="card"> per work (six total)
+       .notes     the shared-keys reminder (space / r / c)
+       .foot      the colophon + repo link
+
+     Each card is a link with three moving parts:
+       1. style="--bg:#……"  sets the emblem's background colour. The
+          --bg custom property is consumed by ".emblem{background:var(--bg)}"
+          in the <style> block, so the swatch colour lives on the card, not
+          in the CSS. Every work has its own signature colour (see README).
+       2. .emblem holds a hand-drawn inline <svg> — no image files. It is
+          aria-hidden because it is decoration; the text below carries the
+          meaning.
+       3. .meta holds the opus number, the work's title (in the work's own
+          language), an English one-line description, and a mono "tech" line.
+
+     NAMING PRINCIPLE: a work is titled in the mother tongue of the music it
+     is made of (French zydeco, Latin tuning theory, German techno, Irish
+     trad) — but the description here stays English. To add a work: copy one
+     <a class="card"> block, give it a new --bg, emblem, opus number and text.
+     ===================================================================== -->
 <div class="wrap">
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
-  <div class="sub">four small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="sub">six small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
   <hr class="rule">
 
   <div class="grid">
