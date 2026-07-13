@@ -221,6 +221,43 @@ button,canvas{-webkit-user-select:none;user-select:none}
 <script>
 'use strict';
 
+/* =====================================================================
+   READER'S GUIDE — GRADUS (op. III)
+   ---------------------------------------------------------------------
+   Generative species counterpoint after J. J. Fux's "Gradus ad Parnassum"
+   (1725). The machine first lays down a cantus firmus (a slow given
+   melody), then writes a second voice against it by weighted-random search
+   (a depth-first walk that backtracks when it paints itself into a corner).
+   The six REGULAE toggles ARE the interface: each is a counterpoint rule
+   (no parallel fifths, etc.); turning them on/off changes the law the
+   search must satisfy, so the same button set can yield strict Fux or,
+   with parallels allowed, medieval organum.
+
+   THE SHARED SKELETON (every opuscula work is built the same way):
+     · __hint / __iosAudio — iOS audio unlock. Safari makes no sound until
+       a user gesture, so this requests a 'playback' session, plays a silent
+       blip to open the pipe, and re-resumes after interruptions. It is
+       identical in all six works; you can skim past it while reading logic.
+     · a seeded generator that COMPOSES the piece (the ENGINE block below;
+       mulberry32 is the tiny seedable PRNG, so a seed reproduces a score).
+     · an audio graph built only from oscillators/noise — never samples.
+     · TWO renderers of that graph:
+         realtime — a look-ahead scheduler feeding the live AudioContext;
+         offline  — the "cut" button re-renders into an OfflineAudioContext
+                    and encodes a 16-bit WAV.
+     · a <canvas> that engraves the score as notation; it sleeps when idle.
+     · a hash-permalink block at the very bottom: every control (seed
+       included) is written into location.hash, so THE URL IS THE PRESSING —
+       copy the address bar and the exact piece reloads.
+
+   KEYS (wired at the bottom, same in every work):
+       space = play/stop   ·   r = another counterpoint   ·   c = cut a WAV
+
+   THIS FILE: helpers/PRNG → ENGINE (cantus firmus → counterpoint search)
+   → state & driver → notation plate → audio → WAV → UI → shared permalink.
+   The ENGINE-BEGIN…ENGINE-END band is pure composition: no DOM, no audio.
+   ===================================================================== */
+
 /* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
 function __hint(msg){
   try{

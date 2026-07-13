@@ -188,6 +188,44 @@ button,canvas,.centerlabel{-webkit-user-select:none;user-select:none}
 <script>
 'use strict';
 
+/* =====================================================================
+   READER'S GUIDE — RILLE (op. IV)
+   ---------------------------------------------------------------------
+   A seeded minimal-techno generator styled as a white-label test pressing.
+   Six AFFECTUS (mood) presets steer key, tempo, palette, space and
+   density; from a seed the ENGINE generates the chords, the patterns and
+   the arrangement, all synthesized (no samples).
+
+   ⚠ LANGUAGE NOTE: the visible UI is in GERMAN (techno's mother tongue),
+   but the CODE identifiers were deliberately left in the original tongue.
+   Object keys (fundus, bassus, crepitus, manus, chordae, cantus, pulvis),
+   mood ids (tenebrae, umbra, ferrum…) and PROGS ids drive the logic — do
+   NOT rename them. Only the display `name`/`gloss` strings and labels are
+   German. Safe to edit: any shown string. Unsafe: any id/key.
+
+   THE SHARED SKELETON (every opuscula work is built the same way):
+     · __hint / __iosAudio — iOS audio unlock. Safari makes no sound until
+       a user gesture, so this requests a 'playback' session, plays a silent
+       blip to open the pipe, and re-resumes after interruptions. It is
+       identical in all six works; you can skim past it while reading logic.
+     · a seeded generator that COMPOSES the piece (the ENGINE block below).
+     · an audio graph built only from oscillators/noise — never samples.
+     · TWO renderers of that graph:
+         realtime — a look-ahead bar scheduler feeding the live AudioContext;
+         offline  — the "cut" button re-renders 64 bars into an
+                    OfflineAudioContext and encodes a 16-bit WAV.
+     · a <canvas> that draws the spinning disc/label; it sleeps when idle.
+     · a hash-permalink block at the very bottom: every control (seed
+       included) is written into location.hash, so THE URL IS THE PRESSING.
+
+   KEYS (shown in German, but the physical keys are the same everywhere):
+       space = play/stop   ·   r = another version   ·   c = cut a WAV
+
+   THIS FILE: helpers → ENGINE (diatonic chords → pattern generation) →
+   state → audio graph → voices → bar scheduler → realtime transport →
+   disc drawing → WAV cut → UI wiring → shared claves/permalink.
+   ===================================================================== */
+
 /* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
 function __hint(msg){
   try{

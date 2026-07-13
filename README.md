@@ -1,6 +1,6 @@
 # OPVSCVLA
 
-Four small musical machines. Each is a single self-contained HTML file of pure
+Six small musical machines. Each is a single self-contained HTML file of pure
 Web Audio — no build, no dependencies, no samples, no trackers. The machine
 composes; you set the law it obeys.
 

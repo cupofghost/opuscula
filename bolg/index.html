@@ -220,6 +220,44 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:190px;ba
 <script>
 'use strict';
 
+/* =====================================================================
+   READER'S GUIDE — BOLG (op. VI)
+   ---------------------------------------------------------------------
+   Generative uilleann piping (Irish bagpipes). A seeded modal "tune
+   grammar" writes reels, jigs, slip jigs, hornpipes and slow airs for a
+   chanter over three standing drones, with the regulators vamping chords
+   underneath. It also models an instrument LAW: a bagpipe can't tongue, so
+   a repeated note must be broken by an ornament (a cut, roll or cran) or a
+   stop — the generator expands those ornaments into concrete micro-events.
+   The chanter is tuned just against the drones (its flat seventh is taken
+   septimal, 7/4).
+
+   THE SHARED SKELETON (every opuscula work is built the same way):
+     · a seeded generator that COMPOSES the piece — the ENGINE band below
+       is PURE: tune grammar, ornament expansion, just-intonation tuning and
+       WAV encoding, with NO DOM and NO Web Audio. Everything after
+       ENGINE-END may touch the page/audio; nothing inside it does.
+       (mulberry32 is the tiny seedable PRNG, so a seed reproduces a tune.)
+     · an audio graph built only from oscillators/noise — never samples.
+     · TWO renderers of that graph:
+         realtime — a look-ahead scheduler feeding the live AudioContext;
+         offline  — "GEARR" (the cut button) re-renders into an
+                    OfflineAudioContext and encodes a 16-bit WAV.
+     · a <canvas> that draws the tune/ledger; it sleeps when idle.
+     · __hint / __iosAudio — iOS audio unlock (Safari makes no sound until a
+       gesture). In this work it sits NEAR THE BOTTOM, just before init();
+       it is identical in all six works and can be skimmed.
+     · a hash-permalink block: every control (seed included) is written into
+       location.hash, so THE URL IS THE PRESSING — copy it to replay exactly.
+
+   KEYS (wired near the bottom, same in every work):
+       space = play/stop   ·   r = another tune   ·   c = cut a WAV
+
+   THIS FILE: ENGINE (grammar → ornaments → tuning → WAV) → state →
+   audio → GEARR/WAV → regen → ledger → canvas → hash permalinks →
+   controls → __iosAudio → init.
+   ===================================================================== */
+
 /* ============================== ENGINE-BEGIN ==============================
    Pure, DOM-free. Modal tune grammar; instrument law (a bagpipe cannot
    tongue — repeated notes demand a grace or a stop); ornament expansion

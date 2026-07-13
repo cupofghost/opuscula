@@ -230,6 +230,39 @@ button,canvas{-webkit-user-select:none;user-select:none}
 <script>
 'use strict';
 
+/* =====================================================================
+   READER'S GUIDE — SCALA (op. II)
+   ---------------------------------------------------------------------
+   A Shepard–Risset glissando in just intonation: an endless staircase of
+   pitch that seems to rise (or fall) forever without going anywhere. It
+   works by running several octave-spaced sine "voices" through a fixed
+   loudness window — as one voice fades out the top, another fades in the
+   bottom, so the octave never actually changes. The ratios are exact
+   integers (never tempered), which is what makes it "just intonation".
+
+   THE SHARED SKELETON (every opuscula work is built the same way):
+     · __hint / __iosAudio — iOS audio unlock. Safari makes no sound until
+       a user gesture, so this requests a 'playback' session, plays a silent
+       blip to open the pipe, and re-resumes after interruptions. It is
+       identical in all six works; you can skim past it while reading logic.
+     · a law that COMPOSES the piece (here: the PRESETS ratios + the glide).
+     · an audio graph built only from oscillators/noise — never samples.
+     · TWO renderers of that graph:
+         realtime — a look-ahead scheduler feeding the live AudioContext;
+         offline  — the "cut" button re-renders one seamless lap into an
+                    OfflineAudioContext and encodes a 16-bit WAV.
+     · a <canvas> "plate" that draws the state; it sleeps when idle.
+     · a hash-permalink block at the very bottom: every control is written
+       into location.hash, so THE URL IS THE PRESSING — copy the address
+       bar and the exact piece reloads; loading with a hash replays it.
+
+   KEYS (wired at the bottom, same in every work):
+       space = play/stop   ·   r = alia (next ratio)   ·   c = cut a WAV
+
+   THIS FILE: constants → state → audio graph → realtime → loop cutter →
+   controls → plate (spiral canvas) → shared claves/permalink.
+   ===================================================================== */
+
 /* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
 function __hint(msg){
   try{
