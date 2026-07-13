@@ -160,6 +160,26 @@ button,.man,canvas{-webkit-user-select:none;user-select:none}
 .exit:active{transform:translateY(1px)}
 .exit .x{font-size:15px;line-height:1;letter-spacing:0}
 @media(prefers-reduced-motion:reduce){.exit{transition:none}}
+
+/* ── on this music: expandable reader notes (shared across the opuscula) ── */
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
 </style>
 </head>
 <body>
@@ -192,6 +212,18 @@ button,.man,canvas{-webkit-user-select:none;user-select:none}
   <div class="blockhead">SETLIST <small>70 bars · one take</small></div>
   <div class="setlist" id="setlist"></div>
   <div class="counter" id="counter">tape stopped</div>
+
+  <details class="reader">
+    <summary>On this music · zydeco</summary>
+    <div class="rbody">
+      <h4>What you're hearing</h4>
+      <p>A synthesized zydeco band — piano-accordion, <em>frottoir</em> (the corrugated metal rubboard worn like a breastplate and raked with bottle-openers), guitar, bass and drums — playing a two-step in G. Nothing was recorded; every voice is built from oscillators and noise in the page.</p>
+      <h4>The music</h4>
+      <p>Zydeco is the dance music of Black Creoles on the prairies of southwest Louisiana. It grew out of <em>la-la</em>, the old Creole house-dance music, and the accordion tradition captured on Amédé Ardoin's recordings of the 1930s. In the 1950s Clifton Chenier — the “King of Zydeco” — married it to the blues and rhythm-and-blues coming over the radio, set the piano-accordion at its centre, and had the modern frottoir bent into shape by a welder. It is close kin to Cajun music but distinct: Creole rather than white Acadian, bluesier and more syncopated, built to drive a hard two-step or waltz all night.</p>
+      <h4>The name</h4>
+      <p>“Zydeco” is a Louisiana Creole word, worn down from <em>les haricots</em> in the phrase <em>“les haricots sont pas salés”</em> — “the snap-beans aren't salted”, a joke about being too poor to afford the salt-meat that seasons the pot. This machine keeps the phrase for its title, <em>Pas Salé</em>, and names itself in French, the mother tongue of the music.</p>
+    </div>
+  </details>
 
   <p class="foot">« les haricots sont pas salés » — after Amédé Ardoin<br>
   <span class="fr">synthesized end-to-end · no samples · pure Web Audio</span><br>

@@ -123,6 +123,26 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:190px;ba
 .exit:active{transform:translateY(1px)}
 .exit .x{font-size:15px;line-height:1;letter-spacing:0}
 @media(prefers-reduced-motion:reduce){.exit{transition:none}}
+
+/* ── on this music: expandable reader notes (shared across the opuscula) ── */
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
 </style>
 </head>
 <body>
@@ -210,6 +230,20 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:190px;ba
     <dt>BONN</dt><dd>ré 1/1 = 293.3 Hz · lá 3/2 = 440 · dosanna D₄·D₃·D₂</dd>
   </dl>
 </section>
+
+<details class="reader">
+  <summary>On this music · uilleann piping</summary>
+  <div class="rbody">
+    <h4>What you're hearing</h4>
+    <p>Generated Irish piping: a melody on the chanter over three steady drones, with keyed <em>regulators</em> vamping chords beneath — all tuned justly and synthesized from scratch.</p>
+    <h4>The instrument</h4>
+    <p>The uilleann pipes are Ireland's bellows-blown bagpipe, developed through the eighteenth century. Unlike the mouth-blown Highland pipes, the player pumps a bellows under one elbow — <em>uilleann</em> means “of the elbow” — feeding a bag under the other, which keeps the reed dry and lets the chanter sing sweetly across two octaves indoors. A full set adds three drones tuned to the tonic and three <em>regulators</em>, keyed pipes the piper strikes with the wrist to punch out chords. Alone among bagpipes, its chanter can be stopped dead against the knee, giving crisp, articulate phrasing.</p>
+    <h4>Ornament as grammar</h4>
+    <p>Because the pipes sound continuously and cannot be tongued, a piper separates repeated notes with grace-note ornaments — <em>cuts</em>, <em>taps</em>, <em>rolls</em>, and <em>crans</em> (the ornament used low on the chanter, where a roll won't fit). This machine treats that as law, expanding the ornaments as it generates reels, jigs, slip jigs, hornpipes and the free-flowing slow airs.</p>
+    <h4>The name</h4>
+    <p>Irish <em>bolg</em> — the bag, the belly of the pipes. The music is Irish, so the work is named in Irish.</p>
+  </div>
+</details>
 
 <footer class="colophon">
   op. VI · <a href="../">opvscvla</a> · eochracha: spás=seinn · r=ceann eile · c=gearr<br>

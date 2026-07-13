@@ -124,6 +124,26 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:170px;ba
 .exit:active{transform:translateY(1px)}
 .exit .x{font-size:15px;line-height:1;letter-spacing:0}
 @media(prefers-reduced-motion:reduce){.exit{transition:none}}
+
+/* ── on this music: expandable reader notes (shared across the opuscula) ── */
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
 </style>
 </head>
 <body>
@@ -215,6 +235,20 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:170px;ba
     <dt>BASIS</dt><dd>1/1 = 264 Hz · la 5/3 = 440 Hz</dd>
   </dl>
 </section>
+
+<details class="reader">
+  <summary>On this music · the comma pump</summary>
+  <div class="rbody">
+    <h4>What you're hearing</h4>
+    <p>Chords that are each perfectly in tune, yet drift steadily away from home — a spiral of pure harmony that never quite closes.</p>
+    <h4>Why the lattice won't close</h4>
+    <p>Tune by pure ratios and the arithmetic refuses to line up. Stack four pure fifths and you land about a fifth of a semitone above a pure major third — a gap called the <em>syntonic comma</em> (the ratio 81/80, roughly 21.5 cents). So a progression can move by smooth, justly-tuned steps — say I–vi–ii–V–I — and return to its opening chord a whole comma lower than it began. Come round again and it sinks another comma. The old theorists knew it: Giovanni Benedetti posed it as a puzzle in 1563, and Helmholtz measured it three centuries on. This drift is the very reason keyboards are <em>tempered</em> — we bend the pure intervals a hair so the circle can close.</p>
+    <h4>The spiral</h4>
+    <p>This machine refuses to temper. It walks a lattice of fifths and thirds — Euler's <em>Tonnetz</em> of 1739 — holding every interval pure, and lets the leftover comma accumulate. The residue winds outward as an Archimedean spiral that, like the tuning, never returns to its centre.</p>
+    <h4>The name</h4>
+    <p>Latin <em>cochlea</em> — a snail-shell, a spiral; also the spiral chamber of the inner ear. The tuning theory is Latin at its root, so the work is named in Latin.</p>
+  </div>
+</details>
 
 <footer class="colophon">
   op. V · <a href="../">opvscvla</a> · claves: space=sona · r=aliud · c=cut<br>
