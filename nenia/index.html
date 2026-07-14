@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#141317">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="nenia — playground lore as a small musical machine: taunts, counting-out, clapping games, skip rope, ring games. the universal chant of children, synthesized.">
+<title>NENIA — playground chant</title>
+<style>
+:root{
+  --asphalt:#141317; --asphalt2:#1b1a20; --chalk:#ece7da; --chalkdim:#8f8b80;
+  --pink:#e5a4b8; --yellow:#e3d08b; --blue:#a4c6e2; --green:#a9d4a4;
+  --line:#2c2a33; --accent:var(--yellow);
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--asphalt); color:var(--chalk);
+  font-family:Georgia,'Times New Roman',serif;
+  font-size:16px; line-height:1.55;
+  min-height:100vh; padding:1.2rem 1rem 3rem;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(228,208,139,.04), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 100%, rgba(164,198,226,.04), transparent 60%);
+}
+.wrap{max-width:680px; margin:0 auto}
+a{color:var(--blue); text-decoration:none; border-bottom:1px dotted var(--chalkdim)}
+a:hover{color:var(--chalk)}
+.mono{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace; font-size:.78rem; letter-spacing:.06em}
+nav{margin-bottom:1.4rem}
+nav a{border-bottom:none; color:var(--chalkdim)}
+.opline{color:var(--chalkdim); font-variant:small-caps; letter-spacing:.14em; font-size:.85rem}
+h1{
+  font-size:3rem; font-weight:400; letter-spacing:.02em; line-height:1.05;
+  margin:.15rem 0 .6rem; color:var(--chalk);
+  text-shadow:0 0 22px rgba(236,231,218,.18);
+}
+h1 .dot{color:var(--pink)}
+.thesis{font-size:1.02rem; margin-bottom:.5rem}
+.thesis b{font-weight:700}
+.sub{color:var(--chalkdim); font-style:italic; font-size:.9rem; margin-bottom:1.2rem}
+
+.plate{
+  position:relative; border:1px solid var(--line); border-radius:6px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.015), rgba(0,0,0,.12)),
+    var(--asphalt2);
+  overflow:hidden; margin-bottom:.6rem;
+}
+canvas{display:block; width:100%; height:auto}
+.readout{
+  display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+  padding:.45rem .7rem; border-top:1px solid var(--line);
+  color:var(--chalkdim);
+}
+.readout .live{color:var(--accent)}
+#rhyme{
+  font-style:italic; color:var(--chalkdim); text-align:center;
+  min-height:1.6em; margin:.3rem 0 1rem; font-size:.95rem;
+}
+#rhyme .now{color:var(--chalk)}
+
+.controls{display:grid; grid-template-columns:1fr 1fr; gap:.7rem .9rem; margin-bottom:1rem}
+@media(max-width:520px){.controls{grid-template-columns:1fr}}
+.ctl{display:flex; flex-direction:column; gap:.25rem}
+.ctl label{font-variant:small-caps; letter-spacing:.12em; font-size:.72rem; color:var(--chalkdim)}
+select,input[type=range]{
+  width:100%; background:var(--asphalt2); color:var(--chalk);
+  border:1px solid var(--line); border-radius:4px; padding:.4rem .5rem;
+  font-family:inherit; font-size:.9rem;
+}
+input[type=range]{padding:0; height:1.6rem; accent-color:var(--yellow)}
+.ctl .val{font-size:.72rem; color:var(--chalkdim)}
+.toggles{display:flex; gap:1.2rem; align-items:center; grid-column:1/-1; flex-wrap:wrap}
+.tog{display:flex; align-items:center; gap:.45rem; cursor:pointer; user-select:none}
+.tog input{accent-color:var(--pink)}
+.tog span{font-variant:small-caps; letter-spacing:.12em; font-size:.75rem; color:var(--chalkdim)}
+.tog input:checked+span{color:var(--chalk)}
+
+.btnrow{display:flex; gap:.7rem; flex-wrap:wrap; margin-bottom:.4rem}
+button{
+  font-family:Georgia,serif; font-size:1rem; letter-spacing:.03em;
+  background:transparent; color:var(--chalk);
+  border:1px solid var(--chalkdim); border-radius:999px;
+  padding:.55rem 1.4rem; cursor:pointer; transition:all .15s;
+}
+button:hover{border-color:var(--chalk); box-shadow:0 0 14px rgba(236,231,218,.12)}
+button.big{border-color:var(--yellow); color:var(--yellow)}
+button.big:hover{box-shadow:0 0 16px rgba(227,208,139,.25)}
+button:disabled{opacity:.4; cursor:default; box-shadow:none}
+.cutnote{color:var(--chalkdim); font-size:.78rem; font-style:italic; margin-bottom:2rem}
+
+.essay{border-top:1px solid var(--line); padding-top:1.4rem; margin-top:1.6rem}
+.essay h2{font-size:1.05rem; font-weight:700; margin-bottom:1rem}
+.essay h3{font-size:.92rem; font-weight:700; margin:1.1rem 0 .35rem; color:var(--chalk)}
+.essay p{color:#cfcabf; font-size:.94rem; margin-bottom:.6rem}
+.essay em{color:var(--chalk)}
+footer{
+  margin-top:2.2rem; padding-top:1rem; border-top:1px solid var(--line);
+  color:var(--chalkdim); font-size:.8rem; display:flex; justify-content:space-between;
+  flex-wrap:wrap; gap:.5rem;
+}
+@media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav><a href="../">←&thinsp;opvscvla</a></nav>
+  <div class="opline">op. X · playground lore</div>
+  <h1>Nenia<span class="dot">.</span></h1>
+  <p class="thesis"><b>The oldest song anyone learns.</b> Two notes and a taunt, passed child to child with no adult in the chain — this machine makes up rhymes nobody wrote and plays the games everybody knows.</p>
+  <p class="sub">the universal trichord: sol · mi · la — after the lore of the schoolyard</p>
+
+  <div class="plate">
+    <canvas id="cv" width="1320" height="640"></canvas>
+    <div class="readout mono">
+      <span id="gameName">—</span>
+      <span id="status">READY</span>
+      <span>MATRICVLA · <span id="matric" class="live">—</span></span>
+    </div>
+  </div>
+  <div id="rhyme">&nbsp;</div>
+
+  <div class="controls">
+    <div class="ctl">
+      <label for="game">Game</label>
+      <select id="game">
+        <option value="0">Taunt — nyah-nyah, two sides</option>
+        <option value="1" selected>Counting-out — one of you is It</option>
+        <option value="2">Clapping — faster till it breaks</option>
+        <option value="3">Skip rope — count till you trip</option>
+        <option value="4">Ring — all fall down</option>
+      </select>
+    </div>
+    <div class="ctl">
+      <label for="kids">Children</label>
+      <select id="kids">
+        <option>3</option><option>4</option><option selected>5</option>
+        <option>6</option><option>7</option><option>8</option>
+      </select>
+    </div>
+    <div class="ctl">
+      <label for="keysel">Chant pitch (sol)</label>
+      <select id="keysel">
+        <option value="0">G — low yard</option>
+        <option value="1" selected>A — the usual</option>
+        <option value="2">B♭ — shrill</option>
+        <option value="3">C — very small children</option>
+      </select>
+    </div>
+    <div class="ctl">
+      <label for="yard">Yard</label>
+      <select id="yard">
+        <option value="0" selected>Open asphalt — dry, a little slap</option>
+        <option value="1">School corridor — forbidden echo</option>
+      </select>
+    </div>
+    <div class="ctl">
+      <label for="tempo">Pace <span class="val" id="tempoVal">104</span></label>
+      <input type="range" id="tempo" min="80" max="140" value="104" step="1">
+    </div>
+    <div class="toggles">
+      <label class="tog"><input type="checkbox" id="rowdy" checked><span>ROWDY — worse tuning, worse timing</span></label>
+      <label class="tog"><input type="checkbox" id="giggles" checked><span>GIGGLES</span></label>
+    </div>
+  </div>
+
+  <div class="btnrow">
+    <button class="big" id="playBtn">Play</button>
+    <button id="anotherBtn">Another</button>
+    <button id="cutBtn">Cut a rhyme · 16-bit WAV</button>
+  </div>
+  <p class="cutnote">renders the whole game, then lets the yard go quiet · the URL hash <em>is</em> the rhyme — copy the address and the exact game reloads anywhere</p>
+
+  <div class="essay">
+    <h2>On this music · playground lore</h2>
+
+    <h3>What you're hearing</h3>
+    <p>Almost the whole of it is three notes: a note, the note a minor third below, and the note a tone above — <em>sol, mi, la</em>. This is the teasing chant, the "nyah-nyah" figure, and it is very nearly universal: children arrive at it across languages and continents, and Leonard Bernstein opened his 1973 Norton lectures by proposing it as a musical constant of the species. Nobody teaches it. It is the first music transmitted entirely child-to-child.</p>
+
+    <h3>The rhymes</h3>
+    <p>The words of playground rhymes barely matter and are barely words. Their grammar is <em>reduplication</em> and <em>ablaut</em> — say a nonsense syllable, say it again with the vowel shifted: eeny, meeny; icka, bicka; hickory, dickory. This machine builds each rhyme fresh from that grammar, so every pressing chants verses that have never existed, yet all of them sound like something you half-remember from a yard somewhere. The rhythm follows the system Constantin Brăiloiu described in <em>La rythmique enfantine</em> (1956): strictly syllabic, built from short binary units, the same the world over regardless of the language spoken on top of it.</p>
+
+    <h3>Counting-out</h3>
+    <p>The counting-out rhyme is the playground's court of law: it decides who is It, and its verdict cannot be appealed. The chant travels round the ring, one syllable per child, and whoever the last syllable lands on is out; the ring closes and it begins again, until one child remains. It is an elimination process — a cousin of the Josephus problem, permutation mathematics performed by six-year-olds with total solemnity. Henry Carrington Bolton collected over eight hundred such rhymes in 1888 and traced some across a dozen countries. In this machine each elimination is real: that voice leaves the chorus and does not return.</p>
+
+    <h3>The games</h3>
+    <p>Clapping games and skip rope share one dramatic form: repetition under acceleration until the body fails. The verse comes round again a little faster, and again, and the game does not end so much as break — a fumbled clap, a foot in the rope — followed by the only correct response, which is laughter. The ring game is older and gentler: walk the circle, sing the round, and on the last line everybody falls down. This machine plays all of these honestly, mistakes included; the trip and the fumble are found by the seed, not by you.</p>
+
+    <h3>The voices</h3>
+    <p>Each child is synthesized as a small formant voice — two resonances shaped by the vowel being sung — and no two are tuned alike. A yard of children never sings in tune or in time, and must not: every voice here carries its own flat-or-sharpness and its own eagerness, arriving early or late by its own habit. Turn ROWDY off and they behave suspiciously well.</p>
+
+    <h3>The lore, and the name</h3>
+    <p>Iona and Peter Opie, who spent their lives collecting this material (<em>The Lore and Language of Schoolchildren</em>, 1959; <em>The Singing Game</em>, 1985), showed that playground rhymes travel faster than newspapers and persist for centuries, conserved by children who believe them to be brand new. The tradition is ancient: Horace, around 20 BC, quotes the children of Rome chanting <em>rex eris si recte facies</em> — "you'll be king if you play it right" — in their games, and the Latin word for such a jingle is <em>nenia</em>. Op. X takes that word: the small song, beneath literature, older than it.</p>
+  </div>
+
+  <footer class="mono">
+    <span>op. X · <a href="../">opvscvla</a></span>
+    <span>keys: space=play · r=another · c=cut</span>
+  </footer>
+</div>
+
+<script>
+'use strict';
+/* ============================== NENIA ==============================
+   op. X · playground lore · single-file web audio object
+   series conventions: seeded mulberry32 · hash permalink · space/r/c ·
+   deterministic 16-bit WAV cut · __iosAudio unlock · ≤30fps canvas
+==================================================================== */
+
+/* ---------- PRNG ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function pick(rng,arr){return arr[(rng()*arr.length)|0]}
+function irange(rng,a,b){return a+((rng()*(b-a+1))|0)}
+
+/* ---------- params & hash ---------- */
+const GAMES=['TAUNT','COUNTING-OUT','CLAPPING','SKIP ROPE','RING'];
+const KEYS=[392.00,440.00,466.16,523.25]; // sol frequency
+const P={v:1, seed:(Math.random()*0x7fffffff)|0, game:1, kids:5, key:1, tempo:104, yard:0, rowdy:1, gig:1};
+
+function writeHash(){
+  location.hash=[P.v,P.seed.toString(36),P.game,P.kids,P.key,P.tempo,P.yard,(P.rowdy|0)+((P.gig|0)<<1)].join('.');
+}
+function readHash(){
+  const h=location.hash.replace(/^#/,'').split('.');
+  if(h.length<8||+h[0]!==1)return false;
+  P.seed=parseInt(h[1],36)||1; P.game=Math.min(4,Math.max(0,+h[2]|0));
+  P.kids=Math.min(8,Math.max(3,+h[3]|0)); P.key=Math.min(3,Math.max(0,+h[4]|0));
+  P.tempo=Math.min(140,Math.max(80,+h[5]|0)); P.yard=(+h[6]|0)?1:0;
+  const f=+h[7]|0; P.rowdy=f&1; P.gig=(f>>1)&1;
+  return true;
+}
+
+/* ---------- UI refs ---------- */
+const $=id=>document.getElementById(id);
+const ui={game:$('game'),kids:$('kids'),key:$('keysel'),yard:$('yard'),tempo:$('tempo'),
+  tempoVal:$('tempoVal'),rowdy:$('rowdy'),gig:$('giggles'),play:$('playBtn'),
+  another:$('anotherBtn'),cut:$('cutBtn'),gameName:$('gameName'),status:$('status'),
+  matric:$('matric'),rhyme:$('rhyme'),cv:$('cv')};
+
+function uiToP(){P.game=+ui.game.value;P.kids=+ui.kids.value;P.key=+ui.key.value;
+  P.yard=+ui.yard.value;P.tempo=+ui.tempo.value;P.rowdy=ui.rowdy.checked?1:0;P.gig=ui.gig.checked?1:0}
+function pToUI(){ui.game.value=P.game;ui.kids.value=P.kids;ui.key.value=P.key;ui.yard.value=P.yard;
+  ui.tempo.value=P.tempo;ui.tempoVal.textContent=P.tempo;ui.rowdy.checked=!!P.rowdy;ui.gig.checked=!!P.gig}
+
+/* ================= ENGINE-BEGIN ================= */
+
+/* ---------- rhyme grammar: reduplication + ablaut ---------- */
+const ONSETS=['m','n','b','d','l','w','y','ch','k','t','s','p','h','z'];
+const VOWS=['ee','ay','ah','oh','oo','y']; // 'y' ≈ "eye"
+const ABLAUT=[['ee','ay'],['ee','oh'],['i','ah'],['ee','oo'],['ay','oh']];
+function vowelOf(s){for(const v of ['ee','ay','ah','oh','oo','y','i'])if(s.endsWith(v))return v==='i'?'ee':v;return 'ah'}
+function makeRhyme(rng,len){
+  // len syllables from a reduplicated ablaut pair, closer word distinct
+  const a=pick(rng,ONSETS); let b=pick(rng,ONSETS); while(b===a)b=pick(rng,ONSETS);
+  let c=pick(rng,ONSETS); while(c===a||c===b)c=pick(rng,ONSETS);
+  const [v1,v2]=pick(rng,ABLAUT);
+  const pool=[a+v1,b+v1,a+v2,b+v2];
+  const syls=[];
+  for(let i=0;i<len;i++){
+    if(i>=len-2) syls.push(c+(i===len-1?pick(rng,['oh','oo','ay']):v1));
+    else syls.push(pool[i%4]);
+  }
+  return syls;
+}
+const NUMSYL=['one','two','three','four','five','six','sev','en','eight','nine','ten',
+  'lev','en','twelve','thir','teen','four','teen','fif','teen'];
+
+/* ---------- melodic cells on the trichord ----------
+   degrees relative to sol (semitones): mi=-3, sol=0, la=+2, do'=+5 */
+const MI=-3,SOL=0,LA=2,DOH=5;
+const CELLS=[
+  {deg:[SOL,SOL,MI,LA,SOL,MI],           dur:[1,1,2,1,1,2]},          // the ur-taunt
+  {deg:[SOL,SOL,MI,MI,SOL,SOL,MI],       dur:[1,1,1,1,1,1,2]},        // eeny-cell
+  {deg:[SOL,LA,SOL,MI,SOL,LA,SOL,MI],    dur:[1,1,1,1,1,1,1,1]},      // patter
+  {deg:[MI,SOL,LA,SOL,MI,SOL,MI,MI],     dur:[1,1,1,1,1,1,1,1]},      // rocking
+  {deg:[SOL,SOL,LA,LA,SOL,SOL,MI],       dur:[1,1,1,1,1,1,2]},        // rain-rain
+  {deg:[DOH,SOL,LA,SOL,MI,SOL],          dur:[1,1,1,1,2,2]},          // reach
+];
+function fitCell(rng,n){ // return {deg,dur} arrays of exactly n syllables
+  const c=pick(rng,CELLS), deg=[],dur=[];
+  for(let i=0;i<n;i++){deg.push(c.deg[i%c.deg.length]);dur.push(i===n-1?2:c.dur[i%c.dur.length])}
+  return {deg,dur};
+}
+
+/* ---------- composition: each game returns a plan ----------
+   plan = { dur, notes:[{t,dur,deg,syl,kids,shout,gliss,vel}],
+            perc:[{t,kind,pan}], marks:[{t,ev,...}], voices:[...], text }  */
+function compose(P){
+  const rng=mulberry32(P.seed);
+  const N=P.kids, e8=30/P.tempo; // eighth-note seconds
+  const rowdy=P.rowdy?1:0;
+  const voices=[];
+  for(let i=0;i<N;i++){
+    voices.push({
+      det:(rng()*2-1)*(rowdy?38:9),            // cents
+      jit:(rng()*0.5+0.5)*(rowdy?0.022:0.006), // timing sd, sec
+      pan:(N===1?0:(i/(N-1))*1.5-0.75),
+      bright:0.7+rng()*0.6
+    });
+  }
+  const notes=[],perc=[],marks=[];
+  const push=(t,dur,deg,syl,kids,o)=>notes.push(Object.assign({t,dur,deg,syl,kids,vel:1},o||{}));
+  let text='';
+
+  if(P.game===0){ /* TAUNT — two sides trade the ur-cell */
+    const L=Math.ceil(N/2), left=[],right=[];
+    for(let i=0;i<N;i++)(i<L?left:right).push(i);
+    const syls=makeRhyme(rng,6);
+    text=syls.join(' ')+' — '+syls.join(' ')+'!';
+    const cell=CELLS[0]; let t=0.2;
+    for(let round=0;round<4;round++){
+      const grp = round===3?null:(round%2?right:left);
+      marks.push({t,ev:'spot',kids:grp});
+      for(let i=0;i<cell.deg.length;i++){
+        push(t,cell.dur[i]*e8*0.92,cell.deg[i],syls[i],grp,{vel:round===3?1.25:1,shout:round===3&&i>=4});
+        t+=cell.dur[i]*e8;
+      }
+      t+=e8*(round===3?0:2);
+    }
+    marks.push({t,ev:'spot',kids:null});
+    if(P.gig){marks.push({t:t+0.1,ev:'gig'});perc.push({t:t+0.1,kind:'gig'})}
+    return {dur:t+2.2,notes,perc,marks,voices,text};
+  }
+
+  if(P.game===1){ /* COUNTING-OUT — real elimination, one syllable per child */
+    const L=pick(rng,[7,9,11,13]);
+    const syls=makeRhyme(rng,L);
+    text=syls.join(' ')+' … and one of you is It.';
+    const cell=fitCell(rng,L);
+    let alive=[...Array(N).keys()], ptr=0, t=0.3;
+    while(alive.length>1){
+      marks.push({t,ev:'round',alive:[...alive]});
+      for(let i=0;i<L;i++){
+        const kid=alive[(ptr+i)%alive.length];
+        const last=i===L-1;
+        push(t,cell.dur[i]*e8*0.9,cell.deg[i],syls[i],[kid],{vel:last?1.2:1,shout:last});
+        marks.push({t,ev:'point',kid});
+        t+=cell.dur[i]*e8;
+      }
+      const outIdx=(ptr+L-1)%alive.length, outKid=alive[outIdx];
+      // the eliminated child droops: sol falling a fourth
+      push(t,e8*2.6,SOL,'aww',[outKid],{gliss:-5,vel:0.8});
+      marks.push({t,ev:'out',kid:outKid});
+      alive.splice(outIdx,1); ptr=outIdx%Math.max(1,alive.length);
+      t+=e8*3.5;
+    }
+    // everyone shouts IT at the survivor
+    marks.push({t,ev:'it',kid:alive[0]});
+    push(t,e8*1.6,SOL,'you',null,{vel:1.3,shout:true}); t+=e8*2;
+    push(t,e8*1.6,SOL,'are',null,{vel:1.3,shout:true}); t+=e8*2;
+    push(t,e8*3.2,MI,'IT',null,{vel:1.5,shout:true}); t+=e8*4;
+    if(P.gig){marks.push({t,ev:'gig'});perc.push({t,kind:'gig'})}
+    return {dur:t+2.4,notes,perc,marks,voices,text};
+  }
+
+  if(P.game===2){ /* CLAPPING — verse repeats, accelerates, breaks */
+    const syls=makeRhyme(rng,8);
+    text=syls.join(' ')+' — faster!';
+    const cell=fitCell(rng,8);
+    const verses=4, fumbleAt=irange(rng,3,6); // syllable index in last verse
+    const clapKinds=['self','part','crossR','crossL'];
+    let t=0.3;
+    for(let v=0;v<verses;v++){
+      const f=Math.pow(1.09,v), ee=e8/f;
+      marks.push({t,ev:'verse',n:v});
+      const broken=v===verses-1;
+      const stopAt=broken?fumbleAt:99;
+      for(let i=0;i<8;i++){
+        if(i>stopAt)break;
+        perc.push({t,kind:clapKinds[i%4],pan:(i%2?0.5:-0.5)});
+        marks.push({t,ev:'clap',k:i%4});
+        if(i<=stopAt) push(t,cell.dur[i]*ee*0.9,cell.deg[i],syls[i],null,{vel:0.95});
+        if(broken&&i===stopAt){
+          const tf=t+ee*0.62; // the late, wrong clap
+          perc.push({t:tf,kind:'fumble',pan:0});
+          marks.push({t:tf,ev:'fumble'});
+          push(tf+0.12,e8*3,SOL,'aww',null,{gliss:-7,vel:0.85});
+          t=tf+e8*3;
+        }
+        t+=cell.dur[i]*ee;
+      }
+      if(!broken)t+=ee;
+    }
+    if(P.gig){marks.push({t:t+0.15,ev:'gig'});perc.push({t:t+0.15,kind:'gig'})}
+    return {dur:t+2.4,notes,perc,marks,voices,text};
+  }
+
+  if(P.game===3){ /* SKIP ROPE — verse over the rope, then count till the trip */
+    const syls=makeRhyme(rng,8);
+    const cell=fitCell(rng,8);
+    const trip=irange(rng,9,19);
+    text=syls.join(' ')+' — how many? '+trip+'… and out.';
+    const beat=e8*2; let t=0.3, rope=0;
+    const slap=(tt,acc)=>{perc.push({t:tt,kind:'whoosh'});perc.push({t:tt+beat*0.45/acc,kind:'slap'});marks.push({t:tt,ev:'rope',n:rope++})};
+    // verse: 8 syllables over 8 rope-beats
+    for(let i=0;i<8;i++){
+      slap(t,1);
+      push(t,cell.dur[i]*e8*0.95,cell.deg[i],syls[i],null,{vel:0.95});
+      t+=beat;
+    }
+    // counting, accelerating
+    let acc=1;
+    for(let n=1;n<=trip;n++){
+      acc*=1.018;
+      const b=beat/acc;
+      slap(t,acc);
+      const syl=NUMSYL[Math.min(n-1,NUMSYL.length-1)];
+      push(t,b*0.8,(n%2?SOL:LA),syl,null,{vel:1+n*0.012,shout:n>=trip-2});
+      t+=b;
+    }
+    // the trip: tangle + groan
+    perc.push({t,kind:'slap'});perc.push({t:t+0.07,kind:'slap'});perc.push({t:t+0.13,kind:'fumble'});
+    marks.push({t,ev:'trip'});
+    push(t+0.15,e8*3,LA,'ohh',null,{gliss:-8,vel:0.9});
+    t+=e8*3.5;
+    if(P.gig){marks.push({t,ev:'gig'});perc.push({t,kind:'gig'})}
+    return {dur:t+2.4,notes,perc,marks,voices,text};
+  }
+
+  /* RING — circle steps, round verse, all fall down */
+  {
+    const syls=makeRhyme(rng,8);
+    const cell=fitCell(rng,8);
+    text=syls.join(' ')+' — we all fall down.';
+    const beat=e8*2; let t=0.3;
+    const bars=3;
+    for(let b=0;b<bars;b++){
+      for(let i=0;i<8;i++){
+        if(i%2===0){perc.push({t,kind:'step',pan:(i%4?0.35:-0.35)});marks.push({t,ev:'step'})}
+        push(t,cell.dur[i]*e8*0.95,cell.deg[i],syls[i],null,{vel:0.92});
+        t+=e8*cell.dur[i]>e8?e8*cell.dur[i]:e8; // syllabic; long finals just ring
+      }
+    }
+    // final line: "all — fall — DOWN"
+    push(t,e8*1.8,SOL,'all',null,{vel:1.1}); perc.push({t,kind:'step',pan:-0.3}); t+=e8*2;
+    push(t,e8*1.8,LA,'fall',null,{vel:1.15}); perc.push({t,kind:'step',pan:0.3}); t+=e8*2;
+    push(t,e8*5,SOL,'down',null,{gliss:-12,vel:1.2});
+    marks.push({t,ev:'fall'});
+    t+=e8*4.5;
+    perc.push({t,kind:'thud'});
+    t+=0.4;
+    if(P.gig){marks.push({t,ev:'gig'});perc.push({t,kind:'gig'})}
+    return {dur:t+2.6,notes,perc,marks,voices,text};
+  }
+}
+
+/* ---------- synthesis ---------- */
+const FORMANTS={ee:[300,2300],ay:[450,2000],ah:[720,1240],oh:[500,900],oo:[330,880],y:[600,1800]};
+function vowFmt(syl){return FORMANTS[vowelOf(syl)]||FORMANTS.ah}
+
+function seededNoise(ctx,seedOff,secs){
+  const rng=mulberry32(0xBEEF+seedOff), n=Math.max(1,(secs*ctx.sampleRate)|0);
+  const b=ctx.createBuffer(1,n,ctx.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=rng()*2-1;
+  return b;
+}
+function makeVerb(ctx,yard){
+  const secs=yard?1.7:0.55, n=(secs*ctx.sampleRate)|0;
+  const rng=mulberry32(0xCAFE+yard);
+  const b=ctx.createBuffer(2,n,ctx.sampleRate);
+  for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);
+    for(let i=0;i<n;i++){const x=i/n;
+      d[i]=(rng()*2-1)*Math.pow(1-x,yard?1.8:3)* (yard?0.5:0.7);}}
+  const cv=ctx.createConvolver(); cv.buffer=b; return cv;
+}
+
+function buildGraph(ctx,plan,P,t0){
+  const solF=KEYS[P.key];
+  const master=ctx.createGain(); master.gain.value=0.5;
+  const comp=ctx.createDynamicsCompressor();
+  comp.threshold.value=-16; comp.ratio.value=4; comp.attack.value=0.004; comp.release.value=0.22;
+  master.connect(comp); comp.connect(ctx.destination);
+  const verb=makeVerb(ctx,P.yard);
+  const verbG=ctx.createGain(); verbG.gain.value=P.yard?0.28:0.14;
+  verb.connect(verbG); verbG.connect(comp);
+  const send=node=>{node.connect(master);node.connect(verb)};
+
+  const noiseB=seededNoise(ctx,P.seed&0xff,1.0);
+  const jrng=mulberry32(P.seed^0x5EED); // jitter stream — same order live & offline
+
+  // one child-voice singing one note
+  function voiceNote(v,f0,t,dur,syl,o){
+    const jt=t+ (jrng()*2-1)*v.jit;
+    const st=Math.max(t0,t0+jt), et=st+dur;
+    const f=f0*Math.pow(2,v.det/1200);
+    const [F1,F2]=vowFmt(syl);
+    const src=ctx.createOscillator(); src.type='sawtooth';
+    // scoop onto the note; optional gliss off it
+    src.frequency.setValueAtTime(f*0.94,st);
+    src.frequency.linearRampToValueAtTime(f,st+0.045);
+    if(o.gliss)src.frequency.linearRampToValueAtTime(f*Math.pow(2,o.gliss/12),et);
+    else src.frequency.linearRampToValueAtTime(f*0.985,et); // tiny droop
+    const b1=ctx.createBiquadFilter();b1.type='bandpass';b1.frequency.value=F1;b1.Q.value=5;
+    const b2=ctx.createBiquadFilter();b2.type='bandpass';b2.frequency.value=F2;b2.Q.value=7;
+    const g1=ctx.createGain();g1.gain.value=1.0;
+    const g2=ctx.createGain();g2.gain.value=0.55*v.bright;
+    const env=ctx.createGain(); env.gain.value=0;
+    const vel=(o.vel||1)*(o.shout?1.5:1)*0.16;
+    env.gain.setValueAtTime(0,st);
+    env.gain.linearRampToValueAtTime(vel,st+0.018);
+    env.gain.setValueAtTime(vel,Math.max(st+0.02,et-0.06));
+    env.gain.linearRampToValueAtTime(0,et+0.02);
+    const pan=ctx.createStereoPanner?ctx.createStereoPanner():null;
+    src.connect(b1);src.connect(b2);b1.connect(g1);b2.connect(g2);
+    g1.connect(env);g2.connect(env);
+    if(pan){pan.pan.value=v.pan*0.8;env.connect(pan);send(pan)}else send(env);
+    if(o.shout){ // breath edge on shouts
+      const ns=ctx.createBufferSource();ns.buffer=noiseB;ns.loop=true;
+      const nf=ctx.createBiquadFilter();nf.type='bandpass';nf.frequency.value=F2;nf.Q.value=2;
+      const ng=ctx.createGain();ng.gain.setValueAtTime(0,st);
+      ng.gain.linearRampToValueAtTime(vel*0.4,st+0.02);
+      ng.gain.linearRampToValueAtTime(0,st+Math.min(dur,0.18));
+      ns.connect(nf);nf.connect(ng);send(ng);ns.start(st);ns.stop(st+0.25);
+    }
+    src.start(st);src.stop(et+0.05);
+  }
+
+  for(const n of plan.notes){
+    const f0=solF*Math.pow(2,n.deg/12);
+    const kids=n.kids||plan.voices.map((_,i)=>i);
+    for(const k of kids)voiceNote(plan.voices[k],f0,n.t,n.dur,n.syl,n);
+  }
+
+  // percussion
+  function burst(t,filter,freq,Q,dur,vel,pan){
+    const s=ctx.createBufferSource();s.buffer=noiseB;s.loop=true;
+    const f=ctx.createBiquadFilter();f.type=filter;f.frequency.value=freq;f.Q.value=Q;
+    const g=ctx.createGain();g.gain.setValueAtTime(vel,t);
+    g.gain.linearRampToValueAtTime(0,t+dur);
+    s.connect(f);f.connect(g);
+    const p=ctx.createStereoPanner?ctx.createStereoPanner():null;
+    if(p){p.pan.value=pan||0;g.connect(p);send(p)}else send(g);
+    s.start(t);s.stop(t+dur+0.02);
+  }
+  function tone(t,freq,dur,vel){
+    const o=ctx.createOscillator();o.type='sine';
+    o.frequency.setValueAtTime(freq,t);o.frequency.linearRampToValueAtTime(freq*0.6,t+dur);
+    const g=ctx.createGain();g.gain.setValueAtTime(vel,t);g.gain.linearRampToValueAtTime(0,t+dur);
+    o.connect(g);send(g);o.start(t);o.stop(t+dur+0.02);
+  }
+  const grng=mulberry32(P.seed^0x616);
+  for(const p of plan.perc){
+    const t=t0+p.t;
+    switch(p.kind){
+      case 'self':   burst(t,'bandpass',1100,3,0.07,0.5,0);break;
+      case 'part':   burst(t,'bandpass',1650,3,0.07,0.55,0);break;
+      case 'crossR': burst(t,'bandpass',2100,4,0.06,0.5,0.6);break;
+      case 'crossL': burst(t,'bandpass',2100,4,0.06,0.5,-0.6);break;
+      case 'fumble': burst(t,'bandpass',700,2,0.12,0.55,0.15);tone(t,140,0.15,0.3);break;
+      case 'slap':   burst(t,'lowpass',900,1,0.05,0.65,0);tone(t,170,0.08,0.35);break;
+      case 'whoosh':{const s=ctx.createBufferSource();s.buffer=noiseB;s.loop=true;
+        const f=ctx.createBiquadFilter();f.type='bandpass';f.Q.value=4;
+        f.frequency.setValueAtTime(400,t);f.frequency.linearRampToValueAtTime(2400,t+0.16);
+        const g=ctx.createGain();g.gain.setValueAtTime(0,t);
+        g.gain.linearRampToValueAtTime(0.10,t+0.08);g.gain.linearRampToValueAtTime(0,t+0.18);
+        s.connect(f);f.connect(g);send(g);s.start(t);s.stop(t+0.2);break}
+      case 'step':   tone(t,95,0.14,0.4);burst(t,'lowpass',320,1,0.06,0.2,p.pan||0);break;
+      case 'thud':   tone(t,62,0.32,0.7);burst(t,'lowpass',200,1,0.12,0.4,0);break;
+      case 'gig':{   // scattered giggle blips
+        for(let i=0;i<10;i++){const tt=t+grng()*1.1;
+          const f=520+grng()*520;
+          const o=ctx.createOscillator();o.type='triangle';
+          o.frequency.setValueAtTime(f,tt);o.frequency.linearRampToValueAtTime(f*1.25,tt+0.05);
+          o.frequency.linearRampToValueAtTime(f*0.9,tt+0.1);
+          const g=ctx.createGain();g.gain.setValueAtTime(0,tt);
+          g.gain.linearRampToValueAtTime(0.07,tt+0.015);g.gain.linearRampToValueAtTime(0,tt+0.11);
+          const pn=ctx.createStereoPanner?ctx.createStereoPanner():null;
+          o.connect(g);if(pn){pn.pan.value=grng()*1.4-0.7;g.connect(pn);send(pn)}else send(g);
+          o.start(tt);o.stop(tt+0.13);}break}
+    }
+  }
+  return t0+plan.dur;
+}
+/* ================= ENGINE-END ================= */
+
+/* ---------- playback ---------- */
+let AC=null, playing=false, playStart=0, plan=null, stopTimer=null;
+window.__iosAudio=function(){if(AC&&AC.state==='suspended')AC.resume()};
+document.addEventListener('touchend',window.__iosAudio,{passive:true});
+document.addEventListener('mousedown',window.__iosAudio);
+
+function stopPlayback(){
+  playing=false; if(stopTimer)clearTimeout(stopTimer);
+  if(AC){try{AC.close()}catch(e){} AC=null}
+  ui.play.textContent='Play'; ui.status.textContent='READY';
+}
+function play(){
+  if(playing){stopPlayback();return}
+  uiToP(); writeHash(); regen(false);
+  AC=new (window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==='suspended')AC.resume();
+  const t0=AC.currentTime+0.12;
+  buildGraph(AC,plan,P,t0);
+  playing=true; playStart=performance.now()+120;
+  ui.play.textContent='Stop'; ui.status.textContent='PLAYING';
+  stopTimer=setTimeout(stopPlayback,(plan.dur+0.4)*1000);
+}
+
+/* ---------- WAV cut ---------- */
+async function cut(){
+  uiToP(); writeHash(); regen(false);
+  ui.cut.disabled=true; ui.status.textContent='CUTTING…';
+  try{
+    const sr=44100;
+    const oc=new OfflineAudioContext(2,Math.ceil((plan.dur+0.3)*sr),sr);
+    buildGraph(oc,plan,P,0.05);
+    const buf=await oc.startRendering();
+    const L=buf.getChannelData(0),R=buf.getChannelData(1),n=buf.length;
+    const out=new DataView(new ArrayBuffer(44+n*4));
+    const ws=(o,s)=>{for(let i=0;i<s.length;i++)out.setUint8(o+i,s.charCodeAt(i))};
+    ws(0,'RIFF');out.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+    out.setUint32(16,16,true);out.setUint16(20,1,true);out.setUint16(22,2,true);
+    out.setUint32(24,sr,true);out.setUint32(28,sr*4,true);out.setUint16(32,4,true);
+    out.setUint16(34,16,true);ws(36,'data');out.setUint32(40,n*4,true);
+    let o=44;
+    for(let i=0;i<n;i++){
+      let a=Math.max(-1,Math.min(1,L[i])),b=Math.max(-1,Math.min(1,R[i]));
+      out.setInt16(o,a<0?a*0x8000:a*0x7FFF,true);o+=2;
+      out.setInt16(o,b<0?b*0x8000:b*0x7FFF,true);o+=2;
+    }
+    const blob=new Blob([out],{type:'audio/wav'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='nenia-'+P.seed.toString(36)+'-'+GAMES[P.game].toLowerCase().replace(/[^a-z]/g,'')+'.wav';
+    a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+    ui.status.textContent='CUT';
+  }catch(e){ui.status.textContent='CUT FAILED';console.error(e)}
+  ui.cut.disabled=false;
+}
+
+/* ---------- regenerate + readout ---------- */
+function regen(newSeed){
+  if(newSeed){P.seed=(Math.random()*0x7fffffff)|0}
+  uiToP(); writeHash();
+  plan=compose(P);
+  ui.gameName.textContent=GAMES[P.game]+' · '+P.kids+' CHILDREN';
+  ui.matric.textContent=P.seed.toString(36).toUpperCase();
+  ui.rhyme.innerHTML='“'+plan.text+'”';
+}
+
+/* ---------- canvas: chalk on asphalt, ≤30fps ---------- */
+const cx=ui.cv.getContext('2d');
+const W=ui.cv.width,H=ui.cv.height;
+let lastFrame=0;
+const CHALKS=['#ece7da','#e5a4b8','#e3d08b','#a4c6e2','#a9d4a4','#e0b394','#c9aede','#ecdca8'];
+function chalkLine(x1,y1,x2,y2,c,w){cx.strokeStyle=c;cx.lineWidth=w||3;cx.lineCap='round';
+  cx.globalAlpha=0.85;cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);cx.stroke();cx.globalAlpha=1}
+function kidFig(x,y,c,scale,glow,fallen){
+  const s=scale||1;
+  if(glow){cx.shadowColor=c;cx.shadowBlur=22}else cx.shadowBlur=0;
+  cx.strokeStyle=c;cx.lineWidth=4*s;cx.lineCap='round';cx.globalAlpha=fallen?0.4:0.92;
+  if(fallen){ // horizontal
+    cx.beginPath();cx.arc(x-26*s,y,10*s,0,7);cx.stroke();
+    chalkLine(x-14*s,y,x+22*s,y,c,4*s);
+  }else{
+    cx.beginPath();cx.arc(x,y-30*s,11*s,0,7);cx.stroke();
+    chalkLine(x,y-18*s,x,y+10*s,c,4*s);
+    chalkLine(x,y-8*s,x-13*s,y+2*s,c,3.5*s);
+    chalkLine(x,y-8*s,x+13*s,y+2*s,c,3.5*s);
+    chalkLine(x,y+10*s,x-10*s,y+26*s,c,3.5*s);
+    chalkLine(x,y+10*s,x+10*s,y+26*s,c,3.5*s);
+  }
+  cx.shadowBlur=0;cx.globalAlpha=1;
+}
+function stateAt(tt){ // fold marks into a visual state
+  const st={spot:null,alive:[...Array(P.kids).keys()],out:{},point:-1,it:-1,rope:0,
+    clap:-1,fumble:false,fall:false,verse:0,trip:false};
+  if(!plan)return st;
+  for(const m of plan.marks){
+    if(m.t>tt)break;
+    if(m.ev==='spot')st.spot=m.kids;
+    if(m.ev==='round')st.alive=[...m.alive];
+    if(m.ev==='point')st.point=m.kid;
+    if(m.ev==='out'){st.out[m.kid]=true;st.point=-1}
+    if(m.ev==='it')st.it=m.kid;
+    if(m.ev==='rope')st.rope=m.t;
+    if(m.ev==='clap')st.clap=m.t;
+    if(m.ev==='verse')st.verse=m.n;
+    if(m.ev==='fumble')st.fumble=true;
+    if(m.ev==='trip')st.trip=true;
+    if(m.ev==='fall')st.fall=true;
+  }
+  return st;
+}
+function draw(now){
+  requestAnimationFrame(draw);
+  if(now-lastFrame<33)return; lastFrame=now;
+  const tt=playing?(performance.now()-playStart)/1000:-1;
+  const st=stateAt(Math.max(0,tt));
+  cx.fillStyle='#1b1a20';cx.fillRect(0,0,W,H);
+  // asphalt speckle (static, cheap)
+  cx.globalAlpha=0.05;cx.fillStyle='#ece7da';
+  for(let i=0;i<90;i++){const r=mulberry32(i*7+3)();cx.fillRect((r*W)|0,((mulberry32(i*13+1)())*H)|0,2,2)}
+  cx.globalAlpha=1;
+  const cxx=W/2,cyy=H/2+20,R=Math.min(W,H)*0.33;
+  cx.font='italic 26px Georgia';cx.fillStyle='rgba(236,231,218,.25)';
+  cx.fillText(GAMES[P.game].toLowerCase(),28,44);
+
+  if(P.game===3){ // rope arc
+    const ph=playing?Math.sin((tt-st.rope)*Math.PI*3):0.9;
+    cx.strokeStyle='rgba(236,231,218,.5)';cx.lineWidth=3;
+    cx.beginPath();
+    cx.moveTo(cxx-R*1.1,cyy-20);
+    cx.quadraticCurveTo(cxx,cyy-20+ph*150,cxx+R*1.1,cyy-20);
+    cx.stroke();
+  }
+  if(P.game===0){ // chalk line down the middle
+    cx.setLineDash([12,14]);chalkLine(cxx,60,cxx,H-40,'rgba(236,231,218,.3)',3);cx.setLineDash([]);
+  }
+  const spin=(P.game===4&&playing&&!st.fall)?tt*0.5:0;
+  for(let i=0;i<P.kids;i++){
+    let x,y;
+    if(P.game===0){const half=Math.ceil(P.kids/2),left=i<half;
+      const idx=left?i:i-half,cnt=left?half:P.kids-half;
+      x=left?W*0.28:W*0.72; y=H*0.3+ (cnt>1?idx/(cnt-1):0.5)*H*0.45;
+    }else if(P.game===2){x=W*0.35+ (i%2)*W*0.3; y=H*0.35+Math.floor(i/2)*90;
+    }else{const a=spin+ (i/P.kids)*Math.PI*2-Math.PI/2;
+      x=cxx+Math.cos(a)*R; y=cyy+Math.sin(a)*R*0.72;}
+    const c=CHALKS[i%CHALKS.length];
+    const active = tt>=0 && ((st.point===i)||(st.spot&&st.spot.includes(i))||(st.spot===null&&P.game===0&&tt>0)||st.it===i);
+    const fallen = st.out[i]|| (st.fall&&P.game===4) || (st.trip&&P.game===3&&i===0);
+    kidFig(x,y,c, st.it===i?1.25:1, active&&playing, fallen);
+    if(st.out[i]){cx.strokeStyle='rgba(229,164,184,.8)';cx.lineWidth=4;
+      cx.beginPath();cx.moveTo(x-24,y-22);cx.lineTo(x+24,y+22);
+      cx.moveTo(x+24,y-22);cx.lineTo(x-24,y+22);cx.stroke();}
+    if(st.it===i){cx.font='bold 30px Georgia';cx.fillStyle='#e3d08b';cx.fillText('IT',x-14,y-58)}
+  }
+  if(st.fumble){cx.font='italic 34px Georgia';cx.fillStyle='rgba(229,164,184,.85)';cx.fillText('…aww',cxx-46,90)}
+  // hopscotch flourish, bottom right, static chalk
+  cx.strokeStyle='rgba(236,231,218,.12)';cx.lineWidth=2;
+  for(let i=0;i<3;i++)cx.strokeRect(W-150,H-70-i*44,54,40);
+  cx.strokeRect(W-178,H-158,54,40);cx.strokeRect(W-122,H-158,54,40);
+}
+requestAnimationFrame(draw);
+
+/* ---------- wiring ---------- */
+['change','input'].forEach(ev=>{
+  for(const el of [ui.game,ui.kids,ui.key,ui.yard,ui.tempo,ui.rowdy,ui.gig])
+    el.addEventListener(ev,()=>{ui.tempoVal.textContent=ui.tempo.value;stopPlayback();regen(false)});
+});
+ui.play.addEventListener('click',play);
+ui.another.addEventListener('click',()=>{stopPlayback();regen(true)});
+ui.cut.addEventListener('click',cut);
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='SELECT'||e.target.tagName==='INPUT')return;
+  if(e.target.tagName==='BUTTON'&&e.code==='Space'){e.preventDefault();e.target.blur();play();return}
+  if(e.code==='Space'){e.preventDefault();play()}
+  else if(e.key==='r'||e.key==='R'){stopPlayback();regen(true)}
+  else if(e.key==='c'||e.key==='C'){cut()}
+});
+window.addEventListener('hashchange',()=>{if(readHash()){pToUI();stopPlayback();regen(false)}});
+
+/* ---------- init ---------- */
+if(!readHash())writeHash();
+pToUI(); regen(false);
+</script>
+</body>
+</html>
