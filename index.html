@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="opuscula — eight small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo.">
+<meta name="description" content="opuscula — nine small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming.">
 <title>OPVSCVLA — small musical machines</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -54,7 +54,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
      READER'S GUIDE — the landing page (catalogue)
      ---------------------------------------------------------------------
      This file is pure HTML + CSS. No JavaScript, no audio: it is just the
-     index card wall that links out to the eight works. Each work lives in
+     index card wall that links out to the nine works. Each work lives in
      its own folder as its own index.html; this page never loads them, it
      only links to them (href="./folder/").
 
@@ -62,7 +62,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
        .wrap      the 760px column everything sits in
        .eyebrow   the "catalogvs · mmxxvi" kicker
        h1 / .sub  the title and the one-line manifesto
-       .grid      the card wall — one <a class="card"> per work (eight total)
+       .grid      the card wall — one <a class="card"> per work (nine total)
        .notes     the shared-keys reminder (space / r / c)
        .foot      the colophon + repo link
 
@@ -85,7 +85,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
 <div class="wrap">
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
-  <div class="sub">eight small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="sub">nine small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
   <hr class="rule">
 
   <div class="grid">
@@ -278,6 +278,33 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
         <h2>Holler</h2>
         <p>Appalachian old-time banjo</p>
         <span class="tech">five right hands · sawmill &amp; open tunings · plucked strings · cut a tune</span>
+      </div>
+    </a>
+
+    <a class="card" href="./foli/" style="--bg:#b5642f">
+      <div class="emblem" aria-hidden="true">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- a djembe: goblet drum with a bone head, roped bowl and flared base -->
+          <path d="M24,27 C22,45 34,55 36,61 L30,87 L70,87 L64,61 C66,55 78,45 76,27 Z" fill="#3a2510"/>
+          <ellipse cx="50" cy="27" rx="26" ry="7.5" fill="#ece0c8"/>
+          <ellipse cx="50" cy="27" rx="26" ry="7.5" fill="none" stroke="#c9a24e" stroke-width="1.6"/>
+          <!-- vertical rope lacing down the bowl -->
+          <g stroke="#d9a441" stroke-width="1.1">
+            <line x1="27" y1="31" x2="33" y2="60"/><line x1="34" y1="30" x2="38" y2="60"/>
+            <line x1="42" y1="29" x2="43" y2="60"/><line x1="50" y1="29" x2="50" y2="60"/>
+            <line x1="58" y1="29" x2="57" y2="60"/><line x1="66" y1="30" x2="62" y2="60"/>
+            <line x1="73" y1="31" x2="67" y2="60"/>
+          </g>
+          <!-- the diamond weave (mali pulls) -->
+          <path d="M33,44 L43,40 L50,44 L57,40 L67,44" fill="none" stroke="#d9a441" stroke-width="1.3"/>
+          <path d="M33,52 L43,48 L50,52 L57,48 L67,52" fill="none" stroke="#d9a441" stroke-width="1.3"/>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="op">op. IX · MMXXVI</span>
+        <h2>Foli</h2>
+        <p>West African djembe &amp; dunun ensemble</p>
+        <span class="tech">six rhythms · interlocking parts · a composed solo · cut the groove</span>
       </div>
     </a>
 
