@@ -167,7 +167,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
 
     <div class="fld">
       <div class="lab">Tempo <span class="rd" id="tempored">116 bpm</span></div>
-      <input type="range" id="tempo" min="80" max="150" value="116" aria-label="Beats per minute">
+      <input type="range" id="tempo" min="88" max="176" value="132" aria-label="Beats per minute">
     </div>
 
     <div class="fld">
@@ -175,6 +175,15 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
       <div class="toggles">
         <button id="tgLilt" class="on">SWUNG <span class="st">old-time lilt</span></button>
         <button id="tgStraight">STRAIGHT <span class="st">even eighths</span></button>
+      </div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Backing <span class="rd">optional string band</span></div>
+      <div class="toggles">
+        <button id="bkGtr">GUITAR <span class="st">boom-chuck</span></button>
+        <button id="bkBass">BASS <span class="st">upright</span></button>
+        <button id="bkFoot">FOOT <span class="st">stomp</span></button>
       </div>
     </div>
 
@@ -195,6 +204,8 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
       <p>Clawhammer — also called <em>frailing</em> — is the old mountain hand, and it is played <em>downward</em>: the back of a fingernail strikes down onto a string for the melody note, the hand brushes down across the strings, and the thumb sounds the fifth-string drone. That figure — <em>bum-dit-ty</em>, a melody note then a brush-and-drone — is the engine of the style. <em>Drop-thumb</em> is clawhammer grown busy: the thumb "drops" off the fifth string to catch melody notes on the inner strings, filling every eighth and letting the tune move twice as fast.</p>
       <h4>The other hands</h4>
       <p>Before bluegrass there was <em>two-finger</em> up-picking — thumb leading the melody, one finger picking up on the offbeats — the lonesome older sound of the mountains. Then in the 1940s Earl Scruggs codified the <em>three-finger roll</em>: fast, syncopated arpeggios of thumb, index and middle, the melody note "picked out" of a continuous stream — the drive of bluegrass. <em>Melodic</em> (or "Keith") style, from the 1960s, spreads a scale across the strings so the notes ring into one another and fiddle runs can be played note-for-note. Same tune, five hands, five centuries of the instrument.</p>
+      <h4>The string band</h4>
+      <p>The banjo rarely played alone. In the old-time string band it sat beside a fiddle, a guitar keeping the <em>boom-chuck</em> — an alternating bass note and a strummed chord — an upright bass walking the roots, and often a foot stomping the floor for time. Switch the backing on and the machine adds those parts under the tune, following its chords; switch them off and you are back on the porch alone. The same rhythm section serves the bluegrass hand (the three-finger roll) as readily as the old-time ones.</p>
       <h4>Modes and tunings</h4>
       <p>Old-time players don't think in keys so much as in <em>tunings</em> and <em>modes</em>. A banjo is retuned for the tune: <em>Open G</em> (gDGBD) for bright major tunes, <em>Sawmill</em> (gDGCD) for the haunting modal ones, <em>Double C</em>, <em>Open D</em>. The melodies live in the church modes — <em>Ionian</em> (plain major), <em>Mixolydian</em> (major with a lowered seventh, the "Old Joe Clark" sound), <em>Dorian</em> and <em>Aeolian</em> (the minor-tinged ones). That flat-seventh drone-against-melody is the whole flavour of the modal repertoire.</p>
       <h4>Where it came from</h4>
@@ -510,10 +521,49 @@ function tuneEvents(tune, style, bpm, lilt, seed){
   return {ev, dur, eighth, bars:gi};
 }
 
+// fold a MIDI note into a register [lo,hi] by octaves
+function foldTo(m, lo, hi){ while(m>hi)m-=12; while(m<lo)m+=12; return m; }
+
+// optional string-band backing — a guitar boom-chuck, an upright bass and a
+// foot stomp — following the tune's chord in each bar. Each voice is
+// independent; together they turn the solo banjo into a string band. Beats
+// fall on eighth-slots 0,2,4,6 (four to the bar).
+function backingEvents(tune, bpm, seed, backing){
+  const rng=mulberry32((seed>>>0)^0x2545f491);
+  const eighth=(60/bpm)/2, gen=tune.gen;
+  const strains=[tune.A,tune.A,tune.B,tune.B];
+  const ev=[]; let gi=0; const hum=()=>(rng()*2-1)*0.006;
+  for(const strain of strains){
+    for(const bar of strain){
+      const root=bar.root;
+      const gRoot=foldTo(gen.degToMidi(root),40,52), gFifth=foldTo(gen.degToMidi(root+4),40,52);
+      const uRoot=foldTo(gen.degToMidi(root),28,40), uFifth=foldTo(gen.degToMidi(root+4),28,40);
+      const chord=[root,root+2,root+4].map(d=>foldTo(gen.degToMidi(d),52,64));
+      const beatT=b=>(gi*8+b*2)*eighth;                 // beats 0..3
+      if(backing.guitar){
+        ev.push({t:beatT(0)+hum(),midi:gRoot,vel:.55,kind:'gbass'});
+        chord.forEach((m,i)=>ev.push({t:beatT(1)+i*0.008+hum(),midi:m,vel:.34,kind:'gstrum'}));
+        ev.push({t:beatT(2)+hum(),midi:gFifth,vel:.5,kind:'gbass'});
+        chord.forEach((m,i)=>ev.push({t:beatT(3)+i*0.008+hum(),midi:m,vel:.34,kind:'gstrum'}));
+      }
+      if(backing.bass){
+        ev.push({t:beatT(0)+hum(),midi:uRoot,vel:.66,kind:'ubass'});
+        ev.push({t:beatT(2)+hum(),midi:uFifth,vel:.56,kind:'ubass'});
+      }
+      if(backing.foot){
+        for(let b=0;b<4;b++) ev.push({t:beatT(b)+hum(),midi:0,vel:b%2===0?.55:.36,kind:'foot'});
+      }
+      gi++;
+    }
+  }
+  return ev;
+}
+
 /* ============================ ENGINE-END ============================ */
 
 /* ------------------------------- state ---------------------------------- */
-const st={ style:'clawhammer', tuning:'openG', mode:'ionian', bpm:116, lilt:true, seed:1, playing:false };
+const st={ style:'clawhammer', tuning:'openG', mode:'ionian', bpm:132, lilt:true, seed:1, playing:false,
+  backing:{guitar:true, bass:true, foot:false} };
 
 /* ------------------------------- audio ---------------------------------- */
 const SR=44100;
@@ -540,6 +590,12 @@ function ksPluck(out, start, freq, secs, vel, tau, bright, rng){
   }
   const cn=Math.min(out.length-start, Math.floor(0.004*SR)), cd=0.0015*SR;
   for(let i=0;i<cn;i++) out[start+i]+=(rng()*2-1)*vel*0.13*Math.exp(-i/cd);
+}
+// a soft foot-stomp: a low thud with a floorboard knock (not a plucked string)
+function footHit(out,start,vel,rng){
+  const n=Math.min(out.length-start,Math.floor(0.13*SR));
+  for(let i=0;i<n;i++){const t=i/SR;
+    out[start+i]+=(Math.sin(2*Math.PI*62*t)*Math.exp(-t/0.055)+(rng()*2-1)*0.4*Math.exp(-t/0.006))*vel*0.5;}
 }
 
 // one RBJ biquad pass in place (peaking / highpass / highshelf), used to add
@@ -579,6 +635,17 @@ function renderMaster(){
     // brighter as the note climbs above the lowest string
     const bright=clamp((e.midi-open[3])/24,0,1);
     ksPluck(buf, start, midiToFreq(e.midi), (TAU[e.kind]||0.45)+(e.vel*0.2), e.vel, TAU[e.kind]||0.45, bright, rng);
+  }
+  // optional backing (guitar / upright bass / foot), synthesised into the same buffer
+  if(st.backing.guitar||st.backing.bass||st.backing.foot){
+    const bev=backingEvents(tune, st.bpm, st.seed, st.backing);
+    const BTAU={gbass:0.62,gstrum:0.5,ubass:0.3};
+    for(const e of bev){
+      const start=Math.floor(e.t*SR); if(start<0||start>=n) continue;
+      if(e.kind==='foot'){ footHit(buf,start,e.vel,rng); continue; }
+      const bright=e.kind==='gbass'?0.05:e.kind==='gstrum'?0.22:0;   // warm, dark on the low end
+      ksPluck(buf, start, midiToFreq(e.midi), (BTAU[e.kind]||0.4)+e.vel*0.15, e.vel, BTAU[e.kind]||0.4, bright, rng);
+    }
   }
   // body: trim rumble, lift the ~330 Hz pot resonance, brighten the top
   biquad(buf,'highpass',85,0.7,0);
@@ -806,19 +873,27 @@ $('tempored').textContent=st.bpm+' bpm';
 $('tgLilt').onclick=()=>{if(st.lilt)return;st.lilt=true;$('tgLilt').classList.add('on');$('tgStraight').classList.remove('on');regen();};
 $('tgStraight').onclick=()=>{if(!st.lilt)return;st.lilt=false;$('tgStraight').classList.add('on');$('tgLilt').classList.remove('on');regen();};
 
+// backing: three independent voices, each a mute/unmute toggle
+function wireBack(id,key){const b=$(id);b.classList.toggle('on',st.backing[key]);
+  b.onclick=()=>{st.backing[key]=!st.backing[key];b.classList.toggle('on',st.backing[key]);regen();};}
+wireBack('bkGtr','guitar');wireBack('bkBass','bass');wireBack('bkFoot','foot');
+
 $('pick').addEventListener('click',()=>st.playing?stop():play());
 $('cut').addEventListener('click',cut);
 
 /* ---------------------- opuscula shared: hash · keys --------------------- */
 let __applying=false;
-function __state(){return {st:st.style,tu:st.tuning,mo:st.mode,bpm:st.bpm,li:st.lilt?1:0,sd:st.seed};}
+function backMask(){return (st.backing.guitar?1:0)|(st.backing.bass?2:0)|(st.backing.foot?4:0);}
+function __state(){return {st:st.style,tu:st.tuning,mo:st.mode,bpm:st.bpm,li:st.lilt?1:0,bk:backMask(),sd:st.seed};}
 function __apply(o){
   if(o.tu){const b=$('tuning').querySelector('[data-v="'+o.tu+'"]');b&&b.click();}
   if(o.mo){const b=$('mode').querySelector('[data-v="'+o.mo+'"]');b&&b.click();}
   if(o.st){const b=$('style').querySelector('[data-v="'+o.st+'"]');b&&b.click();}
   if(o.sd!==undefined){const sd=+o.sd;if(Number.isFinite(sd)){st.seed=sd>>>0;invalidate();}}
-  if(o.bpm){st.bpm=clamp(+o.bpm|0,80,150);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' bpm';invalidate();}
+  if(o.bpm){st.bpm=clamp(+o.bpm|0,88,176);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' bpm';invalidate();}
   if(o.li!==undefined){(+o.li===1?$('tgLilt'):$('tgStraight')).click();}
+  if(o.bk!==undefined){const m=+o.bk|0;st.backing={guitar:!!(m&1),bass:!!(m&2),foot:!!(m&4)};
+    ['bkGtr','bkBass','bkFoot'].forEach((id,i)=>$(id).classList.toggle('on',!!(m&(1<<i))));invalidate();}
 }
 function __hashRead(){const h=location.hash.slice(1);if(!h)return null;const o={};
   for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}
@@ -833,7 +908,7 @@ function another(){                                // r = a different tune
   $('style').querySelector('[data-v="'+STYLE_ORDER[(Math.random()*STYLE_ORDER.length)|0]+'"]').click();
   $('tuning').querySelector('[data-v="'+TUNING_ORDER[(Math.random()*TUNING_ORDER.length)|0]+'"]').click();
   $('mode').querySelector('[data-v="'+MODE_ORDER[(Math.random()*MODE_ORDER.length)|0]+'"]').click();
-  st.bpm=100+((Math.random()*40)|0);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' bpm';
+  st.bpm=112+((Math.random()*52)|0);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' bpm';
   invalidate(); play();
 }
 addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;

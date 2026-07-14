@@ -184,13 +184,13 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
       <h4>What you're hearing</h4>
       <p>West African drumming from the Mande world — the Malinké, Susu and Bamana peoples of Guinea, Mali, Senegal, Côte d'Ivoire and beyond. It is not a beat with fills on top; it is an <em>ensemble of interlocking parts</em>, each simple on its own, that combine into a single dense, cyclical rhythm. Every rhythm here has a name, and each name belongs to an occasion — a harvest, a dance, a rite of passage — with its own fixed parts that a whole village would know.</p>
       <h4>The instruments</h4>
-      <p>The <em>djembe</em> is the goblet-shaped, rope-tuned hand drum, and it speaks in three voices: a deep <em>bass</em> from the centre of the skin, a ringing <em>tone</em> from the edge, and a cracking <em>slap</em>. Under it sit the <em>dununs</em> — three double-headed bass drums played with a stick, each with a small bell mounted on top that the same player strikes: the small high <em>kenkeni</em>, the middle <em>sangban</em> that carries the rhythm's signature phrase, and the great <em>dundunba</em> that booms underneath. Over everything rules the <em>kariñan</em> or <em>kenken</em>, a metal bell whose timeline is the clock the whole ensemble locks to.</p>
+      <p>The <em>djembe</em> is the goblet-shaped, rope-tuned hand drum, and it speaks in three voices: a deep <em>bass</em> from the centre of the skin, a ringing <em>tone</em> from the edge, and a cracking <em>slap</em>. Under it sit the <em>dununs</em> — three double-headed bass drums played with a stick, each with a small bell mounted on top that the same player strikes: the small high <em>kenkeni</em>, the middle <em>sangban</em> that carries the rhythm's signature phrase, and the great <em>dundunba</em> that booms underneath. Over everything rules the <em>kariñan</em> or <em>kenken</em>, a metal bell whose timeline is the clock the whole ensemble locks to. A gourd shaker strung with a net of beads — the <em>sékéré</em> — threads a dry rattle through the top.</p>
       <h4>How it holds together</h4>
       <p>No single part states the whole rhythm. The bell keeps an unchanging pattern; the kenkeni keeps the pulse; the sangban plays the phrase your ear learns to recognise; the dundunba drops the deep accents; the djembe accompaniments weave between them. The music lives in the <em>gaps</em> — one drum plays where another rests, so the composite runs faster and busier than any player. Mute a voice with the mixer above and you can hear the hole it leaves, and how the others still imply it.</p>
       <h4>The soloist</h4>
       <p>Above the fixed parts, one djembe leads — calling the ensemble in, signalling the dancers, and improvising. That lead is what this machine <em>composes</em>: seeded phrases, rolls, flams and accents, placed against the cycle, growing busier as you turn up the heat. The accompaniment is the law; the solo is free within it. In performance the lead also calls <em>breaks</em> — sharp signature phrases that turn the whole ensemble at once — the drummer conducting with the drum.</p>
       <h4>The rhythms</h4>
-      <p>The named rhythms fall into two feels: <em>binary</em> (four-square, in 4/4) and <em>ternary</em> (a rolling 12/8, four beats each split in three). <em>Kuku</em> is a fast circle dance from the forest region; <em>Kassa</em> accompanies the harvest in the fields; <em>Djansa</em> is a celebration rhythm. In 12/8, <em>Dundunba</em> is "the dance of the strong men" from the Hamana; <em>Tiriba</em> and <em>Mendiani</em> are great Guinean dances, Mendiani for a chosen young dancer. The bell timeline of the 12/8 rhythms — a seven-stroke pattern — is one of the most widespread rhythmic figures on earth, shared across West and Central Africa and carried into the Americas.</p>
+      <p>The named rhythms fall into two feels: <em>binary</em> (four-square, in 4/4) and <em>ternary</em> (a rolling 12/8, four beats each split in three). <em>Kuku</em> is a fast circle dance from the forest region; <em>Kassa</em> accompanies the harvest in the fields; <em>Djansa</em> and <em>Sunu</em> are celebration rhythms. In 12/8, <em>Dundunba</em> is "the dance of the strong men" from the Hamana; <em>Tiriba</em> and <em>Mendiani</em> are great Guinean dances, Mendiani for a chosen young dancer; <em>Soli</em> accompanies a rite of passage. The bell timeline of the 12/8 rhythms — a seven-stroke pattern — is one of the most widespread rhythmic figures on earth, shared across West and Central Africa and carried into the Americas.</p>
       <h4>Where it comes from — and a note on faithfulness</h4>
       <p>This is a living oral tradition: parts vary by village, teacher and lineage, and there is no single written score. The bell timelines here are the canonical ones; the drum parts are honest <em>arrangements</em> in the tradition's idiom rather than a claim to one true version — the same spirit in which the tradition itself is passed on, hand to hand. The djembe reached the world stage through Guinea's national ensembles — Les Ballets Africains, founded by Fodéba Keïta — and the teaching of master drummers (<em>djembefola</em>) like Mamady Keïta and Famoudou Konaté.</p>
       <h4>How the sound is made</h4>
@@ -332,18 +332,36 @@ const RHYTHMS={
     dundunba:{s:'O.....O.O...', b:'x.....x.....'},
     dj1:       'S.TS.TS.TS.T',
     dj2:       '.B...B.B...B'}},
+  sunu:    {label:'Sunu',    meter:'4/4', steps:16, bpm:112, gloss:'celebration rhythm', parts:{
+    bell:      'x.xx.x.x.xx.x.x.',
+    kenkeni:{s:'O.O.O.O.O.O.O.O.', b:'x.x.x.x.x.x.x.x.'},
+    sangban:{s:'...O...O...O...O', b:'x.......x.......'},
+    dundunba:{s:'O.....O.O.......', b:'x.....x.x.......'},
+    dj1:       'B.T.S.T.B.T.S.T.',
+    dj2:       '..S...B...S...B.'}},
+  soli:    {label:'Soli',    meter:'12/8',steps:12, bpm:92,  gloss:'rite of passage', parts:{
+    bell:      'x.x.xx.x.x.x',
+    kenkeni:{s:'O..O..O..O..', b:'x..x..x..x..'},
+    sangban:{s:'..O.O..O.O..', b:'x.....x.....'},
+    dundunba:{s:'O.....O.....', b:'x.....x.....'},
+    dj1:       'B.TS.TB.TS.T',
+    dj2:       '.S.T..S.T...'}},
 };
-const RHYTHM_ORDER=['kuku','kassa','djansa','dundunba','tiriba','mendiani'];
+const RHYTHM_ORDER=['kuku','kassa','djansa','sunu','dundunba','tiriba','mendiani','soli'];
 
-// the seven ensemble voices, in ring order (outer → inner) + colour + pan + gain
+// the sékéré (gourd shaker) plays a steady rattle by meter, one line for all rhythms
+const SHAKER={'4/4':'x.xxx.x.x.xxx.x.', '12/8':'xx.xx.xx.xx.'};
+
+// the ensemble voices, in ring order (outer → inner) + colour + pan + gain
 const VOICES=[
-  {id:'bell',    label:'Bell',     col:'#d9a441', pan: 0.30, gain:0.42},
+  {id:'bell',    label:'Bell',     col:'#d9a441', pan: 0.30, gain:0.5 },
   {id:'kenkeni', label:'Kenkeni',  col:'#c9a24e', pan: 0.22, gain:0.5 },
   {id:'sangban', label:'Sangban',  col:'#c26a3a', pan:-0.12, gain:0.72},
-  {id:'dundunba',label:'Dundunba', col:'#9c4a2a', pan: 0.02, gain:0.95},
+  {id:'dundunba',label:'Dundunba', col:'#9c4a2a', pan: 0.02, gain:0.85},
   {id:'dj1',     label:'Djembe 1', col:'#e0c07a', pan:-0.34, gain:0.72},
   {id:'dj2',     label:'Djembe 2', col:'#8fae86', pan: 0.34, gain:0.66},
   {id:'solo',    label:'Soloist',  col:'#ece0c8', pan:-0.06, gain:0.82},
+  {id:'shaker',  label:'Sékéré',   col:'#b7c4a0', pan: 0.14, gain:0.34},
 ];
 const VOICE_BY=Object.fromEntries(VOICES.map(v=>[v.id,v]));
 
@@ -411,6 +429,7 @@ function assemble(st){
     sangban:{s:pat(R.parts.sangban.s,steps),b:pat(R.parts.sangban.b,steps)},
     dundunba:{s:pat(R.parts.dundunba.s,steps),b:pat(R.parts.dundunba.b,steps)},
     dj1:pat(R.parts.dj1,steps), dj2:pat(R.parts.dj2,steps),
+    shaker:pat(SHAKER[meter]||SHAKER['4/4'],steps),
   };
   const ev=[]; const mut=st.mutes;
   const push=(t,voice,tone,vel,pan)=>ev.push({t,voice,tone,vel:clamp(vel,0,1.2),pan});
@@ -433,6 +452,8 @@ function assemble(st){
         const tone=tk==='B'?'bass':tk==='T'?'tone':'slap';
         push(t+hum(),dj,tone,(tone==='bass'?0.92:0.72)*ac+rng()*0.08,VOICE_BY[dj].pan);
       }
+      if(!mut.shaker && P.shaker[s]==='x')
+        push(t+hum(),'shaker','sh',0.55*(s%stepsPerBeat===0?1:0.72),VOICE_BY.shaker.pan);
     }
     if(!mut.solo){
       for(const s of soloEvents(rng,R,c,st.heat,beatDur)){
@@ -447,7 +468,7 @@ function assemble(st){
 
 /* ------------------------------- state ---------------------------------- */
 const st={ rhythm:'kuku', bpm:120, heat:1, seed:1, playing:false,
-  mutes:{bell:false,kenkeni:false,sangban:false,dundunba:false,dj1:false,dj2:false,solo:false} };
+  mutes:{bell:false,kenkeni:false,sangban:false,dundunba:false,dj1:false,dj2:false,solo:false,shaker:false} };
 
 /* ------------------------------- audio ---------------------------------- */
 const SR=44100;
@@ -474,6 +495,13 @@ function synSlap(rng){
     o[i]=hp*Math.exp(-t/0.026)*0.95 + Math.sin(2*Math.PI*720*t)*Math.exp(-t/0.02)*0.28;}
   return o;
 }
+// the sékéré: a dry seed-net rattle — a short burst of highpassed noise
+function synShaker(rng){
+  const n=Math.floor(0.055*SR), o=new Float32Array(n); let prev=0;
+  for(let i=0;i<n;i++){const t=i/SR,nz=rng()*2-1,hp=nz-prev*0.55;prev=nz;
+    o[i]=hp*Math.exp(-t/0.017)*0.7;}
+  return o;
+}
 // a metal bell: a cluster of inharmonic partials + a chiff of noise
 function synBell(base, rng){
   const P=[1,1.5,2.42,3.66,5.1], n=Math.floor(0.18*SR), o=new Float32Array(n);
@@ -497,6 +525,7 @@ function bakeKit(){
   make('dundunba.open',  r=>synMembrane(72,0.42,0.6,0.25,0.005,r));
   make('dundunba.mute',  r=>synMembrane(72,0.13,0.6,0.12,0.005,r));
   make('dundunba.dbell', r=>synBell(500,r));
+  make('shaker.sh',      r=>synShaker(r));
   for(const v of ['dj1','dj2','solo']){
     make(v+'.bass', r=>synMembrane(94,0.2,0.95,0.2,0.004,r));
     make(v+'.tone', r=>synMembrane(320,0.12,0.28,0.5,0.006,r));
