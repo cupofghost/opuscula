@@ -1241,8 +1241,12 @@ function updateHint(){
   catch(e){window.addEventListener('pointerdown',kick,true)}
   window.addEventListener('keydown',kick,true);
   document.addEventListener('visibilitychange',function(){
-    if(!document.hidden)kick();
+    // stop the sound when backgrounded (locked, app switched or closed);
+    // a playback-session context otherwise keeps rendering in the background
+    if(document.hidden){ if(ctx&&ctx.state==='running')ctx.suspend().catch(function(){}); }
+    else kick();
   });
+  window.addEventListener('pagehide',function(){try{if(ctx&&ctx.state==='running')ctx.suspend()}catch(e){}});
 })();
 
 /* -------------------------------- init ----------------------------------- */
