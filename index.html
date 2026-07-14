@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="opuscula — nine small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming.">
+<meta name="description" content="opuscula — ten small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant.">
 <title>OPVSCVLA — small musical machines</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -54,7 +54,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
      READER'S GUIDE — the landing page (catalogue)
      ---------------------------------------------------------------------
      This file is pure HTML + CSS. No JavaScript, no audio: it is just the
-     index card wall that links out to the nine works. Each work lives in
+     index card wall that links out to the ten works. Each work lives in
      its own folder as its own index.html; this page never loads them, it
      only links to them (href="./folder/").
 
@@ -62,7 +62,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
        .wrap      the 760px column everything sits in
        .eyebrow   the "catalogvs · mmxxvi" kicker
        h1 / .sub  the title and the one-line manifesto
-       .grid      the card wall — one <a class="card"> per work (nine total)
+       .grid      the card wall — one <a class="card"> per work (ten total)
        .notes     the shared-keys reminder (space / r / c)
        .foot      the colophon + repo link
 
@@ -85,7 +85,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
 <div class="wrap">
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
-  <div class="sub">nine small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="sub">ten small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
   <hr class="rule">
 
   <div class="grid">
@@ -305,6 +305,34 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
         <h2>Foli</h2>
         <p>West African djembe &amp; dunun ensemble</p>
         <span class="tech">eight rhythms · interlocking parts · a composed solo · cut the groove</span>
+      </div>
+    </a>
+
+    <a class="card" href="./nenia/" style="--bg:#1a191f">
+      <div class="emblem" aria-hidden="true">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- a hopscotch court chalked on the asphalt -->
+          <g fill="none" stroke="#ece7da" stroke-width="2" stroke-linejoin="round" opacity="0.85">
+            <rect x="38" y="76" width="24" height="15"/>
+            <rect x="38" y="59" width="24" height="15"/>
+            <rect x="26" y="42" width="24" height="15"/><rect x="50" y="42" width="24" height="15"/>
+            <rect x="38" y="25" width="24" height="15"/>
+            <rect x="26" y="8" width="24" height="15"/><rect x="50" y="8" width="24" height="15"/>
+          </g>
+          <g font-family="Georgia,serif" font-size="8" text-anchor="middle">
+            <text x="50" y="86.5" fill="#ece7da">1</text>
+            <text x="50" y="69.5" fill="#e5a4b8">2</text>
+            <text x="38" y="52.5" fill="#e3d08b">3</text><text x="62" y="52.5" fill="#a4c6e2">4</text>
+            <text x="50" y="35.5" fill="#a9d4a4">5</text>
+            <text x="38" y="18.5" fill="#e5a4b8">6</text><text x="62" y="18.5" fill="#e3d08b">7</text>
+          </g>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="op">op. X · MMXXVI</span>
+        <h2>Nenia</h2>
+        <p>playground chant &amp; counting-out</p>
+        <span class="tech">five games · invented rhymes · child-voice formants · cut a rhyme</span>
       </div>
     </a>
 
