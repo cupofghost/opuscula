@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="opuscula — seven small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing.">
+<meta name="description" content="opuscula — eight small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo.">
 <title>OPVSCVLA — small musical machines</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -54,7 +54,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
      READER'S GUIDE — the landing page (catalogue)
      ---------------------------------------------------------------------
      This file is pure HTML + CSS. No JavaScript, no audio: it is just the
-     index card wall that links out to the seven works. Each work lives in
+     index card wall that links out to the eight works. Each work lives in
      its own folder as its own index.html; this page never loads them, it
      only links to them (href="./folder/").
 
@@ -62,7 +62,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
        .wrap      the 760px column everything sits in
        .eyebrow   the "catalogvs · mmxxvi" kicker
        h1 / .sub  the title and the one-line manifesto
-       .grid      the card wall — one <a class="card"> per work (seven total)
+       .grid      the card wall — one <a class="card"> per work (eight total)
        .notes     the shared-keys reminder (space / r / c)
        .foot      the colophon + repo link
 
@@ -85,7 +85,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
 <div class="wrap">
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
-  <div class="sub">seven small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="sub">eight small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
   <hr class="rule">
 
   <div class="grid">
@@ -244,6 +244,40 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
         <h2>Bolg</h2>
         <p>uilleann piping in just intonation</p>
         <span class="tech">three drones · cuts · rolls · crans · cut a set</span>
+      </div>
+    </a>
+
+    <a class="card" href="./holler/" style="--bg:#6e3a1b">
+      <div class="emblem" aria-hidden="true">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- a five-string banjo: bone head (the pot), a neck of strings, and
+               the short fifth-string peg partway up the neck -->
+          <circle cx="63" cy="63" r="25" fill="#e7d8b8"/>
+          <circle cx="63" cy="63" r="25" fill="none" stroke="#c69a4e" stroke-width="2.4"/>
+          <circle cx="63" cy="63" r="18" fill="none" stroke="#8a6a2f" stroke-width="1"/>
+          <!-- bridge on the head -->
+          <rect x="57" y="68" width="12" height="3" fill="#3a2510"/>
+          <!-- neck up to the peghead (top-left) -->
+          <path d="M22,18 L34,14 L52,52 L46,56 Z" fill="#3a2510"/>
+          <!-- tuning pegs at the peghead -->
+          <g fill="#e7d8b8"><circle cx="24" cy="16" r="2.2"/><circle cx="29" cy="14.5" r="2.2"/>
+            <circle cx="21" cy="21" r="2.2"/><circle cx="26" cy="19.5" r="2.2"/></g>
+          <!-- fifth-string peg, partway down the neck -->
+          <circle cx="41" cy="40" r="2.6" fill="#c69a4e"/>
+          <!-- four long strings running neck → over head to the tailpiece -->
+          <g stroke="#d9cdb0" stroke-width="1">
+            <line x1="27" y1="17" x2="70" y2="80"/><line x1="29" y1="16" x2="66" y2="82"/>
+            <line x1="24" y1="19" x2="61" y2="83"/><line x1="26" y1="18" x2="56" y2="83"/>
+          </g>
+          <!-- the short fifth string, from its peg to the head -->
+          <line x1="41" y1="40" x2="72" y2="76" stroke="#c69a4e" stroke-width="1.1"/>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="op">op. VIII · MMXXVI</span>
+        <h2>Holler</h2>
+        <p>Appalachian old-time banjo</p>
+        <span class="tech">five right hands · sawmill &amp; open tunings · plucked strings · cut a tune</span>
       </div>
     </a>
 

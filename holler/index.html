@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#171009">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>HOLLER — Appalachian old-time banjo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   HOLLER — a porch board for old-time banjo
+   Walnut #171009 · banjo-head bone #e7d8b8 · brass tone-ring #c69a4e
+   clawhammer rust (the down-strike) #c1553a · drone brass
+   The look is worn wood and a bone banjo head: an instrument on a porch
+   at dusk. Named in Appalachian English — a "holler" is both a hollow in
+   the hills and the sound that carries out of one.
+   ===================================================================== */
+:root{
+  color-scheme:dark;
+  --wood:#171009; --panel:#0f0a05; --bone:#e7d8b8; --brass:#c69a4e; --brass2:#8a6a2f;
+  --txt:#eadfca; --dim:#a89a7f; --hair:rgba(198,154,78,.20); --hair2:rgba(198,154,78,.10);
+  --rust:#c1553a; --drone:#c69a4e;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;background:var(--wood)}
+body{
+  background:var(--wood);
+  background-image:radial-gradient(120% 80% at 50% -8%, rgba(198,154,78,.07), transparent 55%);
+  color:var(--txt);font-family:'EB Garamond',Georgia,serif;
+  min-height:100vh;display:flex;justify-content:center;
+  padding:max(14px,env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom));
+}
+.porch{
+  width:100%;max-width:560px;background:var(--panel);
+  border:1.5px solid var(--brass2);
+  box-shadow:0 0 0 5px var(--wood),0 0 0 6.5px var(--hair),inset 0 0 60px rgba(0,0,0,.5);
+  display:flex;flex-direction:column;padding:0 0 18px;
+}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+/* exit to opuscula (shared) */
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:14px 0 0 14px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+
+header{padding:14px 20px 12px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.3em;color:var(--brass);text-transform:uppercase}
+h1{font-family:'Cormorant SC',serif;font-weight:700;font-size:clamp(3rem,15vw,4.4rem);
+  letter-spacing:.12em;line-height:1;color:var(--txt);margin:6px 0 8px;text-indent:.12em;
+  text-shadow:0 1px 0 rgba(198,154,78,.25)}
+.sub{font-style:italic;font-size:1rem;color:var(--txt);line-height:1.45}
+.sub b{font-style:normal;color:var(--brass)}
+.credit{font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--dim);letter-spacing:.06em;margin-top:9px;text-transform:uppercase}
+
+/* plate (canvas tablature) */
+.plate{position:relative;margin:2px 14px 0;border:1px solid var(--hair);background:var(--wood)}
+.plate canvas{display:block;width:100%;height:auto}
+.plate .tag{position:absolute;top:7px;left:10px;font-family:'IBM Plex Mono',monospace;font-size:.56rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.plate .tagr{left:auto;right:10px;text-align:right}
+.plate .tag b{color:var(--brass)}
+
+/* controls */
+.controls{padding:14px 20px 0;display:flex;flex-direction:column;gap:14px}
+.lab{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.26em;color:var(--brass);text-transform:uppercase;margin-bottom:7px;display:flex;justify-content:space-between}
+.lab .rd{color:var(--txt);letter-spacing:.05em}
+
+button{font-family:'EB Garamond',serif;color:var(--txt);background:transparent;
+  border:1px solid var(--hair);cursor:pointer;touch-action:manipulation;letter-spacing:.05em}
+button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+button:active{transform:translateY(1px)}
+button,canvas{-webkit-user-select:none;user-select:none}
+
+.pick{width:100%;padding:16px;font-family:'Cormorant SC',serif;font-weight:600;
+  font-size:1.25rem;letter-spacing:.3em;text-transform:uppercase;border-width:1.5px;
+  border-color:var(--brass2);transition:background .15s,color .15s,border-color .15s}
+.pick.on{background:var(--rust);border-color:var(--rust);color:#fff}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chips button{padding:8px 11px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--dim);letter-spacing:.04em}
+.chips button.on{background:var(--txt);color:#1a140a;border-color:var(--txt)}
+.chips button small{display:block;font-size:.82em;opacity:.7;letter-spacing:0;text-transform:none}
+.chips button.on small{opacity:.85}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--hair)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;margin-top:-9px;border-radius:50%;background:var(--panel);border:2px solid var(--brass);box-shadow:0 0 7px rgba(198,154,78,.4)}
+input[type=range]::-moz-range-track{height:2px;background:var(--hair)}
+input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--panel);border:2px solid var(--brass)}
+
+.toggles{display:flex;gap:10px}
+.toggles button{flex:1;padding:11px 6px;font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.1em;color:var(--dim)}
+.toggles button.on{color:var(--txt);border-color:var(--brass);box-shadow:inset 0 0 0 1px var(--brass)}
+.toggles button .st{color:var(--brass)}
+
+.cut{width:100%;padding:13px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;border-style:dashed;border-color:var(--hair)}
+.cut:disabled{opacity:.45;cursor:default}
+.cutnote{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim);text-align:center;margin-top:7px;min-height:1em;letter-spacing:.05em}
+
+.foot{margin:16px 20px 0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;
+  letter-spacing:.2em;color:var(--dim);text-transform:uppercase;line-height:1.9;border-top:1px solid var(--hair2);padding-top:12px}
+.foot a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* ── on this music: expandable reader notes (shared across the opuscula) ── */
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
+</style>
+</head>
+<body>
+<div class="porch">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+
+  <header>
+    <div class="eyebrow">op. VIII · Appalachian old-time banjo</div>
+    <h1>Holler</h1>
+    <div class="sub"><b>The right hand is the song.</b> One fiddle tune, played five ways — clawhammer, drop-thumb, two-finger, the three-finger roll, and melodic. The machine writes the tune; you choose the hand that strikes it.</div>
+    <div class="credit">Karplus–Strong plucked strings · AABB fiddle tune · sawmill &amp; open tunings · the modal old-time sound</div>
+  </header>
+
+  <div class="plate">
+    <canvas id="cv" width="900" height="560" aria-label="Banjo tablature: five string lines with fret numbers, scrolling left to right under a playhead; rust marks are melody strikes, brass marks the fifth-string drone"></canvas>
+    <div class="tag">TAB · <b id="tuneTag">Open G</b><br><span id="modeTag">Ionian</span></div>
+    <div class="tag tagr"><span style="color:var(--rust)">strike</span> · melody<br><span style="color:var(--brass)">drone</span> · 5th string</div>
+  </div>
+
+  <div class="controls">
+
+    <button class="pick" id="pick">Pick</button>
+
+    <div class="fld">
+      <div class="lab">Right hand <span class="rd" id="stylerd">Clawhammer</span></div>
+      <div class="chips" id="style"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Tuning <span class="rd" id="tunerd">Open G · gDGBD</span></div>
+      <div class="chips" id="tuning"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Mode <span class="rd" id="moderd">Ionian · major</span></div>
+      <div class="chips" id="mode"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Tempo <span class="rd" id="tempored">116 bpm</span></div>
+      <input type="range" id="tempo" min="80" max="150" value="116" aria-label="Beats per minute">
+    </div>
+
+    <div class="fld">
+      <div class="lab">Feel</div>
+      <div class="toggles">
+        <button id="tgLilt" class="on">SWUNG <span class="st">old-time lilt</span></button>
+        <button id="tgStraight">STRAIGHT <span class="st">even eighths</span></button>
+      </div>
+    </div>
+
+    <div class="fld">
+      <button class="cut" id="cut">Cut the tune · 16-bit WAV</button>
+      <div class="cutnote" id="cutnote">renders one time through — A A B B — then lets it ring off</div>
+    </div>
+  </div>
+
+  <details class="reader">
+    <summary>On this music · the old-time banjo</summary>
+    <div class="rbody">
+      <h4>What you're hearing</h4>
+      <p>An Appalachian fiddle tune played on the five-string banjo. Old-time tunes are short — two strains of eight bars, an <em>A</em> part and a <em>B</em> part, each played twice and then round again: <em>A A B B</em>, forever. The machine writes one such tune in the chosen mode and tuning; the control that matters most is the <em>right hand</em>, because on the banjo the picking pattern is as much the music as the notes are.</p>
+      <h4>The fifth string</h4>
+      <p>The banjo's oddity is the short fifth string, pegged halfway up the neck. It is a fixed high <em>drone</em> — you don't fret it, you just sound it — and it rings through everything, tying the tune to a single pitch the way a bagpipe's drone does. Nearly every style here uses the thumb to catch that drone on the offbeats; it is the sound your ear reads as "banjo".</p>
+      <h4>Clawhammer, and the down-stroke</h4>
+      <p>Clawhammer — also called <em>frailing</em> — is the old mountain hand, and it is played <em>downward</em>: the back of a fingernail strikes down onto a string for the melody note, the hand brushes down across the strings, and the thumb sounds the fifth-string drone. That figure — <em>bum-dit-ty</em>, a melody note then a brush-and-drone — is the engine of the style. <em>Drop-thumb</em> is clawhammer grown busy: the thumb "drops" off the fifth string to catch melody notes on the inner strings, filling every eighth and letting the tune move twice as fast.</p>
+      <h4>The other hands</h4>
+      <p>Before bluegrass there was <em>two-finger</em> up-picking — thumb leading the melody, one finger picking up on the offbeats — the lonesome older sound of the mountains. Then in the 1940s Earl Scruggs codified the <em>three-finger roll</em>: fast, syncopated arpeggios of thumb, index and middle, the melody note "picked out" of a continuous stream — the drive of bluegrass. <em>Melodic</em> (or "Keith") style, from the 1960s, spreads a scale across the strings so the notes ring into one another and fiddle runs can be played note-for-note. Same tune, five hands, five centuries of the instrument.</p>
+      <h4>Modes and tunings</h4>
+      <p>Old-time players don't think in keys so much as in <em>tunings</em> and <em>modes</em>. A banjo is retuned for the tune: <em>Open G</em> (gDGBD) for bright major tunes, <em>Sawmill</em> (gDGCD) for the haunting modal ones, <em>Double C</em>, <em>Open D</em>. The melodies live in the church modes — <em>Ionian</em> (plain major), <em>Mixolydian</em> (major with a lowered seventh, the "Old Joe Clark" sound), <em>Dorian</em> and <em>Aeolian</em> (the minor-tinged ones). That flat-seventh drone-against-melody is the whole flavour of the modal repertoire.</p>
+      <h4>Where it came from</h4>
+      <p>The banjo is an African American instrument. It descends from West African plucked lutes — the akonting, the ngoni — carried to the Americas by enslaved people, who built gourd-bodied banjos in the seventeenth and eighteenth centuries; the down-stroke, drone-string technique is African in origin. In the nineteenth century it passed into blackface minstrelsy and thence, on wax and in the hills, into Appalachian string-band music, where clawhammer and the old picking styles were kept alive. Every hand in this machine is a page of that history.</p>
+      <h4>How the sound is made</h4>
+      <p>No samples: every note is a <em>plucked string</em> modelled directly. A burst of noise is fed into a short delay line and cycled through a gentle filter — the Karplus–Strong algorithm — which is, quite literally, a mathematical plucked string: it decays bright and quick, exactly like a banjo. A little body resonance is added for the drum-head "pot", and the five right hands are just five different rules for <em>when</em> to pluck.</p>
+      <h4>The name</h4>
+      <p>op. VIII is named in Appalachian English, the mother tongue of the music: a <em>holler</em> is a hollow between the ridges — and the cry that carries down it.</p>
+    </div>
+  </details>
+
+  <div class="foot">
+    op. VIII · <a href="../">opvscvla</a> · keys: space=pick · r=another · c=cut
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* =====================================================================
+   READER'S GUIDE — HOLLER (op. VIII)
+   ---------------------------------------------------------------------
+   Appalachian old-time banjo. The premise: one generated fiddle tune,
+   rendered by five different RIGHT HANDS. On the banjo the picking style
+   is the music — clawhammer's down-stroke and the Scruggs roll play the
+   same notes and sound like different instruments — so STYLE is the
+   headline control.
+
+   THE SHARED SKELETON (every opuscula work is built the same way):
+     · an ENGINE band (below) that is PURE and DOM-free: seed + mode +
+       tuning → a tune (AABB, scale degrees), and a set of STYLE renderers
+       that turn that tune into a list of pluck events {t, midi, vel, kind}.
+       No DOM, no audio in the engine.
+     · synthesis from first principles — never a sample. Each note is a
+       Karplus–Strong plucked string (noise burst cycled through a delay +
+       lowpass = a decaying plucked tone). The whole tune is rendered once
+       into a mono buffer, body-resonance-shaped and peak-normalised.
+     · TWO renderers of that buffer, IDENTICAL signal path so the WAV is
+       what you hear:
+         realtime — the buffer loops through a small room + limiter;
+         offline  — the "cut" button renders ONE pass through the same
+                    graph into an OfflineAudioContext and encodes a WAV.
+     · a <canvas> drawing scrolling banjo TABLATURE (five string lines,
+       fret numbers, a playhead); it sleeps when idle.
+     · a hash-permalink: every control serialises into location.hash, so
+       THE URL IS THE PRESSING — copy it to reload the exact tune + hand.
+
+   THROUGH-COMPOSED: like Gradus/Cochlea/Bolg/Pas-Salé, a change of any
+   control REGENERATES the tune (it is a composition, not a loop), then
+   restarts playback. (Peal/Rille/Scala re-vibe live; a written tune does
+   not.)
+
+   KEYS (wired near the bottom, same in every work):
+       space = pick / rest   ·   r = another tune   ·   c = cut a WAV
+
+   THIS FILE: ENGINE (rng → modes/tunings → tune generator → style
+   renderers) → state → audio (Karplus–Strong, tone-shaping, graph) →
+   realtime transport → WAV cut → canvas (tab) → controls → __iosAudio →
+   hash/keys → init.
+   ===================================================================== */
+
+/* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
+function __hint(msg){
+  try{
+    const p=document.getElementById('pick')||document.querySelector('button');
+    if(!p||!p.insertAdjacentElement)return;
+    let h=document.getElementById('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin:8px 20px 0;font-style:italic;letter-spacing:.04em';
+      p.parentNode.appendChild(h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{if(document.visibilityState==='visible')kick();}catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('AUDIO SUSPENDED — tap Pick again · if still silent, check the ring/silent switch');}catch(e){}},450);
+}
+
+/* ============================ ENGINE-BEGIN ============================
+   Pure, DOM-free. seed + mode + tuning → tune; tune + style → pluck events.
+   Everything here is deterministic in the seed. A "scale degree" is an
+   integer index into the mode; 0 is the tonic, +7 an octave up, negatives
+   below. degToMidi() maps a degree to a MIDI note; the tune is written in
+   degrees and only turned into pitch at render time.                       */
+
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// seeded RNG (mulberry32) — one tune per seed
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const midiToFreq=m=>440*Math.pow(2,(m-69)/12);
+
+// The four old-time modal families, as semitone steps from the tonic.
+const MODES={
+  ionian:    {steps:[0,2,4,5,7,9,11], label:'Ionian',     tag:'major'},
+  mixolydian:{steps:[0,2,4,5,7,9,10], label:'Mixolydian', tag:'flat-7'},
+  dorian:    {steps:[0,2,3,5,7,9,10], label:'Dorian',     tag:'minor · raised-6'},
+  aeolian:   {steps:[0,2,3,5,7,8,10], label:'Aeolian',    tag:'natural minor'},
+};
+const MODE_ORDER=['ionian','mixolydian','dorian','aeolian'];
+
+// Banjo tunings. open = MIDI of strings 1..5 (string 1 = highest long string,
+// string 4 = lowest long string, string 5 = the short high drone). tonic =
+// the MIDI the melody centres on. Each retuning is a real old-time tuning.
+const TUNINGS={
+  openG:  {label:'Open G', notes:'gDGBD', open:[62,59,55,50,67], tonic:55, key:'G'},
+  sawmill:{label:'Sawmill',notes:'gDGCD', open:[62,60,55,50,67], tonic:55, key:'G modal'},
+  doubleC:{label:'Double C',notes:'gCGCD',open:[62,60,55,48,67], tonic:60, key:'C'},
+  openD:  {label:'Open D', notes:'f#DF#AD',open:[62,57,54,50,66], tonic:50, key:'D'},
+};
+const TUNING_ORDER=['openG','sawmill','doubleC','openD'];
+
+// The five right hands. label + one-word gloss; the renderer lives in STYLE_FN.
+const STYLES={
+  clawhammer:{label:'Clawhammer', gloss:'bum-dit-ty'},
+  dropthumb: {label:'Drop-thumb', gloss:'busy frail'},
+  twofinger: {label:'Two-finger', gloss:'thumb-lead'},
+  threefinger:{label:'Three-finger',gloss:'Scruggs roll'},
+  melodic:   {label:'Melodic',    gloss:'Keith · scalar'},
+};
+const STYLE_ORDER=['clawhammer','dropthumb','twofinger','threefinger','melodic'];
+
+/* ---- the tune generator ------------------------------------------------
+   A tune is two strains (A, B) of eight bars; each bar has a chord-root
+   (a scale degree) and eight eighth-note melody slots (scale degrees). The
+   melody is not a random walk: a two-bar MOTIF is generated, then each
+   strain is built as motif / answer / motif / answer, the answers steered
+   to cadence — the first phrase half-closing on the fifth, the second
+   closing home on the tonic. That AA'-per-phrase shape is what makes the
+   result hum like a real fiddle tune rather than noise.                    */
+
+// chord progressions per mode, as scale-degree roots for the 8 bars of a
+// strain. The characteristic old-time colours: Mixolydian's I–bVII double
+// tonic, Dorian's major IV, Aeolian's bVI–bVII.
+const PROG={
+  ionian:    {A:[0,0,3,0, 0,4,0,0], B:[0,0,3,3, 0,4,0,0]},
+  mixolydian:{A:[0,0,6,0, 0,6,0,0], B:[6,6,0,0, 6,6,0,0]},
+  dorian:    {A:[0,0,6,0, 0,3,0,0], B:[0,0,3,0, 0,6,0,0]},
+  aeolian:   {A:[0,0,5,6, 0,0,6,0], B:[0,6,5,6, 0,0,6,0]},
+};
+
+function makeGen(modeKey, tonic){
+  const steps=MODES[modeKey].steps, n=steps.length;
+  const degToMidi=deg=>{const oct=Math.floor(deg/n),idx=((deg%n)+n)%n;return tonic+oct*12+steps[idx];};
+  return {degToMidi, n};
+}
+
+// nearest chord tone (across octaves) to a degree d, for landing strong beats
+function nearestChordTone(d, root, scaleLen){
+  let best=d, bd=1e9;
+  for(let k=-1;k<=1;k++) for(const b of [root,root+2,root+4]){
+    const c=b+k*scaleLen; const dist=Math.abs(c-d);
+    if(dist<bd){bd=dist;best=c;}
+  }
+  return best;
+}
+
+// one bar of melody: 8 eighth-note scale degrees. Strong beats (0,4) land on
+// chord tones; the rest steps mostly by one, occasionally a skip; kept in range.
+function genBar(rng, root, startDeg, lo, hi, scaleLen){
+  const out=[]; let d=startDeg;
+  for(let e=0;e<8;e++){
+    if(e===0||e===4){ d=clamp(nearestChordTone(d,root,scaleLen),lo,hi); }
+    else{
+      const r=rng(); let step;
+      if(r<0.55) step=(rng()<0.5?-1:1);        // mostly stepwise
+      else if(r<0.78) step=0;                   // repeat
+      else step=(rng()<0.5?-2:2);               // a skip
+      d=clamp(d+step,lo,hi);
+    }
+    out.push(d);
+  }
+  return {degs:out, end:d};
+}
+
+// bend a bar's tail toward a cadence degree (a leading approach, then the target)
+function cadence(bar, target){
+  const b=bar.degs.slice();
+  b[6]=target+(b[6]>target?1:-1); if(b[6]===target)b[6]=target+1;
+  b[7]=target;
+  return {degs:b, end:target};
+}
+
+function generateTune(seed, modeKey, tuningKey){
+  const rng=mulberry32(seed>>>0);
+  const tuning=TUNINGS[tuningKey], gen=makeGen(modeKey, tuning.tonic);
+  const prog=PROG[modeKey], scaleLen=gen.n;
+  const build=(chords, loBias)=>{
+    const lo=-2+loBias, hi=10+loBias;
+    // two-bar motif
+    const m0=genBar(rng, chords[0], loBias>0?4:0, lo, hi, scaleLen);
+    const m1=genBar(rng, chords[1], m0.end, lo, hi, scaleLen);
+    const bars=[];
+    bars[0]={root:chords[0], mel:m0.degs};
+    bars[1]={root:chords[1], mel:m1.degs};
+    // bars 2-3: restate motif bar0 varied, half-cadence to the fifth
+    const v2=genBar(rng, chords[2], m1.end, lo, hi, scaleLen);
+    bars[2]={root:chords[2], mel:v2.degs};
+    bars[3]={root:chords[3], mel:cadence(genBar(rng,chords[3],v2.end,lo,hi,scaleLen),4).degs};
+    // bars 4-5: motif again
+    bars[4]={root:chords[4], mel:m0.degs.slice()};
+    bars[5]={root:chords[5], mel:m1.degs.slice()};
+    // bars 6-7: vary, then close home on the tonic
+    const v6=genBar(rng, chords[6], m1.end, lo, hi, scaleLen);
+    bars[6]={root:chords[6], mel:v6.degs};
+    bars[7]={root:chords[7], mel:cadence(genBar(rng,chords[7],v6.end,lo,hi,scaleLen),0).degs};
+    return bars;
+  };
+  const A=build(prog.A,0), B=build(prog.B,3);   // B strain sits a third higher
+  return {A,B,gen,tuning,modeKey};
+}
+
+/* ---- style renderers: tune → pluck events ------------------------------
+   Each renderer takes one bar (its 8 melody degrees + chord root) and the
+   voicing context, and returns 8 SLOTS; a slot is a list of notes
+   {midi, vel, kind, strum}. kind ∈ strike|thumb|brush|roll|melodic drives
+   both the tab colour and a little of the timbre. The differences between
+   these functions ARE the difference between the styles.                   */
+
+// chord tones voiced down near the low strings (for brushes / roll fills)
+function chordVoicing(gen, tonic, root){
+  const lo=tonic-6, hi=tonic+6, out=[];
+  for(const t of [root,root+2,root+4]){
+    let m=gen.degToMidi(t); while(m>hi)m-=12; while(m<lo)m+=12; out.push(m);
+  }
+  out.sort((a,b)=>a-b);
+  return out;
+}
+function brush(voicing, topMidi, vel){
+  // a downward brush low→high, the melody note riding on top
+  const notes=voicing.map((m,i)=>({midi:m,vel:vel*(0.72+0.09*i),kind:'brush',strum:i*0.007}));
+  notes.push({midi:topMidi,vel:vel*1.05,kind:'brush',strum:voicing.length*0.007});
+  return notes;
+}
+
+function styleBar(style, bar, ctx){
+  const {gen, tonic, drone}=ctx;
+  const M=bar.mel.map(d=>gen.degToMidi(d));       // this bar's melody in MIDI
+  const V=chordVoicing(gen, tonic, bar.root);
+  const S=[[],[],[],[],[],[],[],[]];
+  const strike=(i,m,v)=>S[i].push({midi:m,vel:v,kind:'strike'});
+  const thumb =(i,m,v)=>S[i].push({midi:m,vel:v,kind:'thumb'});
+  if(style==='clawhammer'){
+    strike(0,M[0],.96);
+    brush(V,M[2],.5).forEach(nn=>S[2].push(nn)); thumb(3,drone,.5);
+    strike(4,M[4],.9);
+    brush(V,M[6],.5).forEach(nn=>S[6].push(nn)); thumb(7,drone,.5);
+  }else if(style==='dropthumb'){
+    strike(0,M[0],.96); thumb(1,M[1],.62);
+    strike(2,M[2],.84); thumb(3,drone,.55);
+    strike(4,M[4],.9);  thumb(5,M[5],.62);
+    strike(6,M[6],.84); thumb(7,drone,.55);
+  }else if(style==='twofinger'){
+    // thumb leads the melody on the beats; index up-picks on the offbeats
+    const hi1=ctx.open[0];                          // open 1st string, the up-pick target
+    for(const e of [0,2,4,6]) thumb(e,M[e],.82);
+    S[1].push({midi:hi1,vel:.5,kind:'strike'});
+    S[3].push({midi:drone,vel:.5,kind:'thumb'});
+    S[5].push({midi:hi1,vel:.5,kind:'strike'});
+    S[7].push({midi:drone,vel:.5,kind:'thumb'});
+  }else if(style==='threefinger'){
+    // a forward roll: the melody is picked out on the down positions, the
+    // rest filled with chord tones and the fifth-string drone (syncopated)
+    const hiTone=V[V.length-1];
+    strike(0,M[0],.92);
+    S[1].push({midi:V[1%V.length],vel:.5,kind:'roll'});
+    S[2].push({midi:M[2]>=tonic?M[2]:M[2]+12,vel:.6,kind:'roll'});
+    thumb(3,drone,.55);
+    strike(4,M[4],.82);
+    S[5].push({midi:hiTone+12,vel:.55,kind:'roll'});
+    strike(6,M[6],.82);
+    S[7].push({midi:drone,vel:.5,kind:'thumb'});
+  }else{ // melodic (Keith) — the full eighth-note line, clean, ringing
+    for(let e=0;e<8;e++) S[e].push({midi:M[e],vel:e%2===0?.84:.72,kind:'melodic'});
+  }
+  return S;
+}
+
+// whole tune → time-stamped events. playOrder is the strains actually played.
+function tuneEvents(tune, style, bpm, lilt, seed){
+  const rng=mulberry32((seed>>>0)^0x9e3779b9);
+  const eighth=(60/bpm)/2;
+  const ctx={gen:tune.gen, tonic:tune.tuning.tonic, drone:tune.tuning.open[4], open:tune.tuning.open};
+  const strains=[tune.A,tune.A,tune.B,tune.B];    // A A B B
+  const ev=[]; let gi=0;
+  for(const strain of strains){
+    for(const bar of strain){
+      const S=styleBar(style, bar, ctx);
+      for(let e=0;e<8;e++) for(const nte of S[e]){
+        let t=(gi*8+e)*eighth;
+        if(lilt && (e%2===1)) t+=eighth*0.17;       // swing the offbeats
+        t+=(nte.strum||0);
+        t+=(rng()*2-1)*0.006;                        // humanise timing
+        const vel=clamp(nte.vel*(0.93+rng()*0.13),0,1.2);
+        ev.push({t:Math.max(0,t), midi:nte.midi, vel, kind:nte.kind});
+      }
+      gi++;
+    }
+  }
+  const dur=gi*8*eighth;
+  return {ev, dur, eighth, bars:gi};
+}
+
+/* ============================ ENGINE-END ============================ */
+
+/* ------------------------------- state ---------------------------------- */
+const st={ style:'clawhammer', tuning:'openG', mode:'ionian', bpm:116, lilt:true, seed:1, playing:false };
+
+/* ------------------------------- audio ---------------------------------- */
+const SR=44100;
+
+// Karplus–Strong plucked string: a burst of noise cycled through a one-sample
+// averaging lowpass and a feedback gain — a decaying, bright plucked tone. An
+// amplitude envelope sets the note length; a tiny noise chip is the nail/skin
+// attack. brightness lowers the loop-filter blend for higher strings.
+function ksPluck(out, start, freq, secs, vel, tau, bright, rng){
+  const N=Math.max(2, Math.round(SR/freq));
+  const buf=new Float32Array(N);
+  let e=0; for(let i=0;i<N;i++){ e+=((rng()*2-1)-e)*0.85; buf[i]=e; }  // warmed noise
+  const blend=clamp(0.5-bright*0.14,0.32,0.5), g=0.9945;
+  const total=Math.min(out.length-start, Math.floor(secs*SR));
+  if(total<=0) return;
+  const atk=Math.max(1,Math.floor(0.002*SR)), td=tau*SR;
+  let idx=0, prev=0;
+  for(let i=0;i<total;i++){
+    const cur=buf[idx];
+    buf[idx]=(cur*(1-blend)+prev*blend)*g; prev=cur;
+    const a=i<atk ? i/atk : Math.exp(-(i-atk)/td);
+    out[start+i]+=cur*vel*a;
+    idx=(idx+1)%N;
+  }
+  const cn=Math.min(out.length-start, Math.floor(0.004*SR)), cd=0.0015*SR;
+  for(let i=0;i<cn;i++) out[start+i]+=(rng()*2-1)*vel*0.13*Math.exp(-i/cd);
+}
+
+// one RBJ biquad pass in place (peaking / highpass / highshelf), used to add
+// the banjo's drum-head body resonance and a little string sparkle.
+function biquad(x, type, f0, Q, gainDB){
+  const w0=2*Math.PI*f0/SR, cw=Math.cos(w0), sw=Math.sin(w0);
+  const A=Math.pow(10,gainDB/40), alpha=sw/(2*Q);
+  let b0,b1,b2,a0,a1,a2;
+  if(type==='peaking'){
+    b0=1+alpha*A; b1=-2*cw; b2=1-alpha*A; a0=1+alpha/A; a1=-2*cw; a2=1-alpha/A;
+  }else if(type==='highpass'){
+    b0=(1+cw)/2; b1=-(1+cw); b2=(1+cw)/2; a0=1+alpha; a1=-2*cw; a2=1-alpha;
+  }else{ // highshelf
+    const s=2*Math.sqrt(A)*alpha;
+    b0=A*((A+1)+(A-1)*cw+s); b1=-2*A*((A-1)+(A+1)*cw); b2=A*((A+1)+(A-1)*cw-s);
+    a0=(A+1)-(A-1)*cw+s; a1=2*((A-1)-(A+1)*cw); a2=(A+1)-(A-1)*cw-s;
+  }
+  b0/=a0;b1/=a0;b2/=a0;a1/=a0;a2/=a0;
+  let x1=0,x2=0,y1=0,y2=0;
+  for(let i=0;i<x.length;i++){
+    const xi=x[i], yi=b0*xi+b1*x1+b2*x2-a1*y1-a2*y2;
+    x2=x1;x1=xi;y2=y1;y1=yi;x[i]=yi;
+  }
+}
+
+// render the whole tune ONCE into a mono buffer (deterministic in the seed).
+// per-kind ring lengths mimic how hard/long each stroke sounds on the banjo.
+function renderMaster(){
+  const tune=generateTune(st.seed, st.mode, st.tuning);
+  const {ev,dur,eighth,bars}=tuneEvents(tune, st.style, st.bpm, st.lilt, st.seed);
+  const tail=1.1, n=Math.ceil((dur+tail)*SR), buf=new Float32Array(n);
+  const rng=mulberry32((st.seed>>>0)^0x51ed270b);
+  const TAU={strike:0.5,thumb:0.34,brush:0.4,roll:0.32,melodic:0.55};
+  const open=tune.tuning.open;
+  for(const e of ev){
+    const start=Math.floor(e.t*SR);
+    // brighter as the note climbs above the lowest string
+    const bright=clamp((e.midi-open[3])/24,0,1);
+    ksPluck(buf, start, midiToFreq(e.midi), (TAU[e.kind]||0.45)+(e.vel*0.2), e.vel, TAU[e.kind]||0.45, bright, rng);
+  }
+  // body: trim rumble, lift the ~330 Hz pot resonance, brighten the top
+  biquad(buf,'highpass',85,0.7,0);
+  biquad(buf,'peaking',330,0.9,3.5);
+  biquad(buf,'highshelf',3200,0.7,2.5);
+  // peak-normalise to 0.9 — guarantees no clipping in the WAV by construction
+  let mx=0; for(let i=0;i<n;i++){const a=Math.abs(buf[i]); if(a>mx)mx=a;}
+  if(mx>0){const k=0.9/mx; for(let i=0;i<n;i++)buf[i]*=k;}
+  return {buf, dur, eighth, bars, tune};
+}
+
+// audio buffer from the mono float data
+function toAudioBuffer(ctx, data){
+  const b=ctx.createBuffer(1,data.length,SR); b.getChannelData(0).set(data); return b;
+}
+// a small, dry porch room
+function makeRoomIR(ctx,sec,exp){
+  const len=Math.max(1,Math.floor(sec*ctx.sampleRate)),b=ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,exp);lp+=0.22*((Math.random()*2-1)-lp);d[i]=lp*e*1.6;}}
+  return b;
+}
+// the fixed signal path — identical realtime & offline so the WAV is faithful.
+function buildGraph(ctx, monoData, loop){
+  const G={ctx};
+  G.master=ctx.createGain(); G.master.gain.value=0.92;
+  G.lim=ctx.createDynamicsCompressor();
+  G.lim.threshold.value=-2;G.lim.knee.value=0;G.lim.ratio.value=20;G.lim.attack.value=0.003;G.lim.release.value=0.08;
+  G.master.connect(G.lim).connect(ctx.destination);
+  G.verb=ctx.createConvolver(); G.verb.buffer=makeRoomIR(ctx,0.34,3.0);
+  G.wet=ctx.createGain(); G.wet.gain.value=0.10; G.verb.connect(G.wet).connect(G.master);
+  G.dry=ctx.createGain(); G.dry.gain.value=1; G.dry.connect(G.master);
+  G.src=ctx.createBufferSource(); G.src.buffer=toAudioBuffer(ctx,monoData); G.src.loop=!!loop;
+  G.src.connect(G.dry); G.src.connect(G.verb);
+  return G;
+}
+
+/* -------------------------- realtime transport --------------------------- */
+let RT=null;   // {ctx,G,t0,dur,eighth,bars,tune}
+function play(){
+  const R=renderMaster();
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ctx);
+  const G=buildGraph(ctx, R.buf, true);
+  RT={ctx,G,t0:ctx.currentTime+0.08,dur:R.dur,eighth:R.eighth,bars:R.bars,tune:R.tune};
+  G.src.start(RT.t0);
+  st.playing=true; $('pick').textContent='Rest'; $('pick').classList.add('on');
+  invalidate();
+}
+function stop(){
+  if(!RT)return;
+  const g=RT.G.master.gain,ct=RT.ctx.currentTime;
+  try{g.cancelScheduledValues(ct);g.setValueAtTime(g.value,ct);g.linearRampToValueAtTime(0,ct+0.25);}catch(e){}
+  const c=RT.ctx;setTimeout(()=>{try{c.close();}catch(e){}},400);
+  RT=null; st.playing=false; $('pick').textContent='Pick'; $('pick').classList.remove('on');
+  invalidate();
+}
+// through-composed: any control change regenerates and (if playing) restarts
+function regen(){ if(RT){ stop(); play(); } else { invalidate(); } }
+
+/* ------------------------------ cut · WAV -------------------------------- */
+function encodeWav(L,R,sr){
+  const n=L.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');d.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  ws(36,'data');d.setUint32(40,n*4,true);
+  let o=44;for(let i=0;i<n;i++){d.setInt16(o,clamp(L[i],-1,1)*32767,true);o+=2;d.setInt16(o,clamp(R[i],-1,1)*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+async function cut(){
+  const btn=$('cut'),note=$('cutnote');btn.disabled=true;note.textContent='picking…';
+  try{
+    const R=renderMaster();
+    const total=R.buf.length/SR;
+    const ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
+    const G=buildGraph(ctx, R.buf, false);
+    G.src.start(0);
+    const rb=await ctx.startRendering();
+    const blob=encodeWav(rb.getChannelData(0),rb.getChannelData(1),SR);
+    const key=TUNINGS[st.tuning].key.replace(/[^a-z0-9]/gi,'').toLowerCase();
+    saveWav(blob,`holler_${st.style}_${st.tuning}_${st.mode}_${key}.wav`);
+    note.textContent=`cut · ${R.bars} bars · ${STYLES[st.style].label.toLowerCase()}`;
+  }catch(e){note.textContent='render failed — '+e.message;}
+  btn.disabled=false;
+}
+
+/* ------------------------------- canvas ---------------------------------- */
+// Scrolling banjo tablature: five horizontal string lines, time flowing
+// left→right past a fixed playhead. Each pluck is drawn as a fret number on
+// its string, coloured by stroke. When idle the tune sits still from the top.
+const cv=$('cv'),cx=cv.getContext('2d');
+const CW=cv.width,CH=cv.height;
+const KIND_COL={strike:'#d98a72',thumb:'#c69a4e',brush:'#9a8a68',roll:'#e7d8b8',melodic:'#d98a72'};
+
+// pick a plausible string+fret for a MIDI note (drone → string 5)
+function tabPos(midi, tuning){
+  if(midi===tuning.open[4]) return {s:5,fret:0};
+  let best={s:3,fret:midi-tuning.open[2]}, bd=1e9;
+  for(let s=1;s<=4;s++){
+    const fret=midi-tuning.open[s-1];
+    if(fret<0) continue;
+    const score=fret + (fret>7?100:0);
+    if(score<bd){bd=score;best={s,fret};}
+  }
+  if(best.fret<0) best.fret=0;
+  return best;
+}
+
+// cache the current tune's events for drawing (regenerated when state changes)
+let VIEW=null;   // {ev,dur,eighth,bars,tune}
+function refreshView(){
+  const tune=generateTune(st.seed, st.mode, st.tuning);
+  const T=tuneEvents(tune, st.style, st.bpm, st.lilt, st.seed);
+  VIEW={ev:T.ev,dur:T.dur,eighth:T.eighth,bars:T.bars,tune};
+}
+let needsDraw=true;const invalidate=()=>{needsDraw=true;VIEW=null;};
+
+function draw(){
+  cx.clearRect(0,0,CW,CH);
+  if(!VIEW) refreshView();
+  const {ev,dur,eighth,tune}=VIEW;
+  const barDur=eighth*8;
+  // playhead position in seconds (looped) — fixed at 22% from the left
+  let now=0, playing=false;
+  if(RT){ playing=true; now=((RT.ctx.currentTime-RT.t0)%dur+dur)%dur; }
+  const secPerPx=(barDur*4)/CW;                 // ~4 bars across the plate
+  const headX=CW*0.22;
+  const originSec = playing ? now : 0;
+  const xOf=t=>headX + (t-originSec)/secPerPx;
+
+  // five string lines (string 1 top … string 5 bottom drone)
+  const top=CH*0.16, gap=(CH*0.70)/4;
+  const yOf=s=>top+(s-1)*gap;
+  cx.strokeStyle='rgba(198,154,78,.22)';cx.lineWidth=1;
+  for(let s=1;s<=5;s++){cx.beginPath();cx.moveTo(0,yOf(s));cx.lineTo(CW,yOf(s));cx.stroke();}
+  // string labels
+  cx.fillStyle='rgba(168,154,127,.7)';cx.font='500 '+Math.round(CH*0.032)+'px "IBM Plex Mono",monospace';
+  cx.textAlign='left';cx.textBaseline='middle';
+  const names=['1','2','3','4','5'];
+  for(let s=1;s<=5;s++) cx.fillText(names[s-1], 5, yOf(s));
+
+  // bar lines + A/B labels across the window
+  cx.textAlign='center';
+  for(let b=0;b<=tune.A.length*4;b++){
+    const x=xOf(b*barDur);
+    if(x<-40||x>CW+40) continue;
+    cx.strokeStyle='rgba(198,154,78,.13)';cx.lineWidth=1;
+    cx.beginPath();cx.moveTo(x,top-gap*0.5);cx.lineTo(x,yOf(5)+gap*0.5);cx.stroke();
+    if(b<tune.A.length*4 && b%8===0){
+      cx.fillStyle='rgba(198,154,78,.5)';cx.font='600 '+Math.round(CH*0.03)+'px "IBM Plex Mono",monospace';
+      cx.fillText(b<8?'A':'B', xOf(b*barDur)+14, top-gap*0.72);
+    }
+  }
+
+  // the playhead
+  cx.strokeStyle='rgba(193,85,58,.85)';cx.lineWidth=2;
+  cx.beginPath();cx.moveTo(headX,top-gap*0.6);cx.lineTo(headX,yOf(5)+gap*0.6);cx.stroke();
+
+  // the notes
+  cx.font='600 '+Math.round(CH*0.036)+'px "IBM Plex Mono",monospace';
+  cx.textAlign='center';cx.textBaseline='middle';
+  for(const e of ev){
+    // draw this event and its loop-neighbours so the scroll is seamless
+    for(const off of [-dur,0,dur]){
+      const x=xOf(e.t+off);
+      if(x<-14||x>CW+14) continue;
+      const pos=tabPos(e.midi, tune.tuning), y=yOf(pos.s);
+      const passed=playing && (((e.t+off)-originSec)<0.02) && (((e.t+off)-originSec)>-dur*0.5);
+      cx.globalAlpha=e.kind==='brush'?0.5:0.92; if(passed)cx.globalAlpha*=0.55;
+      // little seat under the number
+      cx.fillStyle='rgba(15,10,5,.85)';
+      const r=Math.round(CH*0.028);
+      cx.beginPath();cx.arc(x,y,r,0,2*Math.PI);cx.fill();
+      cx.fillStyle=KIND_COL[e.kind]||'#e7d8b8';
+      cx.fillText(String(pos.fret), x, y+1);
+    }
+  }
+  cx.globalAlpha=1;
+}
+function loop(){
+  const playing=!!RT;
+  if(playing||needsDraw){draw();if(!playing)needsDraw=false;}
+  setTimeout(()=>requestAnimationFrame(loop),playing?(RM?100:45):200);
+}
+requestAnimationFrame(loop);
+
+/* ------------------------------ controls --------------------------------- */
+function chipSel(container,items,current,onPick){
+  container.innerHTML='';
+  items.forEach(([val,label,sub])=>{
+    const b=document.createElement('button');b.dataset.v=String(val);
+    b.innerHTML=sub?(label+'<small>'+sub+'</small>'):label;
+    if(String(val)===String(current))b.classList.add('on');
+    b.onclick=()=>{container.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');onPick(val);};
+    container.appendChild(b);
+  });
+}
+
+chipSel($('style'), STYLE_ORDER.map(k=>[k,STYLES[k].label,STYLES[k].gloss]), st.style, v=>{
+  st.style=v; $('stylerd').textContent=STYLES[v].label; regen();
+});
+chipSel($('tuning'), TUNING_ORDER.map(k=>[k,TUNINGS[k].label,TUNINGS[k].notes]), st.tuning, v=>{
+  st.tuning=v; $('tunerd').textContent=TUNINGS[v].label+' · '+TUNINGS[v].notes;
+  $('tuneTag').textContent=TUNINGS[v].label; regen();
+});
+chipSel($('mode'), MODE_ORDER.map(k=>[k,MODES[k].label,MODES[k].tag]), st.mode, v=>{
+  st.mode=v; $('moderd').textContent=MODES[v].label+' · '+MODES[v].tag;
+  $('modeTag').textContent=MODES[v].label; regen();
+});
+$('stylerd').textContent=STYLES[st.style].label;
+$('tunerd').textContent=TUNINGS[st.tuning].label+' · '+TUNINGS[st.tuning].notes;
+$('moderd').textContent=MODES[st.mode].label+' · '+MODES[st.mode].tag;
+$('tuneTag').textContent=TUNINGS[st.tuning].label;
+$('modeTag').textContent=MODES[st.mode].label;
+
+// tempo: show live on drag, but only regenerate the buffer on release
+$('tempo').value=st.bpm;
+$('tempo').addEventListener('input',e=>{st.bpm=+e.target.value;$('tempored').textContent=st.bpm+' bpm';});
+$('tempo').addEventListener('change',()=>{invalidate();if(RT)regen();});
+$('tempored').textContent=st.bpm+' bpm';
+
+$('tgLilt').onclick=()=>{if(st.lilt)return;st.lilt=true;$('tgLilt').classList.add('on');$('tgStraight').classList.remove('on');regen();};
+$('tgStraight').onclick=()=>{if(!st.lilt)return;st.lilt=false;$('tgStraight').classList.add('on');$('tgLilt').classList.remove('on');regen();};
+
+$('pick').addEventListener('click',()=>st.playing?stop():play());
+$('cut').addEventListener('click',cut);
+
+/* ---------------------- opuscula shared: hash · keys --------------------- */
+let __applying=false;
+function __state(){return {st:st.style,tu:st.tuning,mo:st.mode,bpm:st.bpm,li:st.lilt?1:0,sd:st.seed};}
+function __apply(o){
+  if(o.tu){const b=$('tuning').querySelector('[data-v="'+o.tu+'"]');b&&b.click();}
+  if(o.mo){const b=$('mode').querySelector('[data-v="'+o.mo+'"]');b&&b.click();}
+  if(o.st){const b=$('style').querySelector('[data-v="'+o.st+'"]');b&&b.click();}
+  if(o.sd!==undefined){const sd=+o.sd;if(Number.isFinite(sd)){st.seed=sd>>>0;invalidate();}}
+  if(o.bpm){st.bpm=clamp(+o.bpm|0,80,150);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' bpm';invalidate();}
+  if(o.li!==undefined){(+o.li===1?$('tgLilt'):$('tgStraight')).click();}
+}
+function __hashRead(){const h=location.hash.slice(1);if(!h)return null;const o={};
+  for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}
+function __hashWrite(){if(__applying)return;
+  try{const o=__state();history.replaceState(null,'','#'+Object.entries(o).map(([k,v])=>k+'='+v).join('&'));}catch(e){}}
+document.addEventListener('click',()=>setTimeout(__hashWrite,120),true);
+document.addEventListener('change',()=>setTimeout(__hashWrite,120),true);
+
+function another(){                                // r = a different tune
+  if(RT)stop();
+  st.seed=1+((Math.random()*1e6)|0);
+  $('style').querySelector('[data-v="'+STYLE_ORDER[(Math.random()*STYLE_ORDER.length)|0]+'"]').click();
+  $('tuning').querySelector('[data-v="'+TUNING_ORDER[(Math.random()*TUNING_ORDER.length)|0]+'"]').click();
+  $('mode').querySelector('[data-v="'+MODE_ORDER[(Math.random()*MODE_ORDER.length)|0]+'"]').click();
+  st.bpm=100+((Math.random()*40)|0);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' bpm';
+  invalidate(); play();
+}
+addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
+  if(e.code==='Space'){e.preventDefault();$('pick').click();}
+  else if(e.key==='r'||e.key==='R'){e.preventDefault();another();}
+  else if(e.key==='c'||e.key==='C')$('cut').click();
+});
+
+(function init(){const o=__hashRead();
+  if(o){__applying=true;try{__apply(o);}catch(e){}__applying=false;}
+  __hashWrite();invalidate();
+})();
+
+/* ---- robust WAV save (shared) ----------------------------------------------
+   Auto-downloads where the browser allows it (desktop Chrome/Firefox/Edge,
+   Android), and ALWAYS shows a tappable "Save WAV" pill. The pill is the
+   reliable path on Safari/iOS, where a programmatic download fired after the
+   async render is blocked — a real tap on the link is a fresh user gesture,
+   which iOS honours (offering the file to Save to Files / share).            */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(14,14,16,.92);color:#e9e2d2;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#e9e2d2;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
+</script>
+
+</body>
+</html>
