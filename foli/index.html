@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#161008">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>FOLI — West African djembe &amp; dunun ensemble</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   FOLI — a rhythm wheel for the Mande drum ensemble
+   Warm black-brown #161008 · terracotta #c26a3a · ochre #d9a441
+   indigo #33557a · bone #ece0c8 · the mud-cloth (bogolan) palette.
+   The look is earth and metal: a turning wheel of interlocking parts.
+   Named in Maninka (Malinké) — "foli" is the playing, the rhythm itself.
+   ===================================================================== */
+:root{
+  color-scheme:dark;
+  --ground:#161008; --panel:#0f0b05; --bone:#ece0c8; --ochre:#d9a441;
+  --clay:#c26a3a; --indigo:#5a7ba6; --brass:#c9a24e; --brass2:#8a6a2f;
+  --txt:#ece0c8; --dim:#a99a7d; --hair:rgba(217,164,65,.20); --hair2:rgba(217,164,65,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;background:var(--ground)}
+body{
+  background:var(--ground);
+  background-image:radial-gradient(120% 80% at 50% -8%, rgba(217,164,65,.07), transparent 55%);
+  color:var(--txt);font-family:'EB Garamond',Georgia,serif;
+  min-height:100vh;display:flex;justify-content:center;
+  padding:max(14px,env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom));
+}
+.pit{
+  width:100%;max-width:560px;background:var(--panel);
+  border:1.5px solid var(--brass2);
+  box-shadow:0 0 0 5px var(--ground),0 0 0 6.5px var(--hair),inset 0 0 60px rgba(0,0,0,.5);
+  display:flex;flex-direction:column;padding:0 0 18px;
+}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+/* exit to opuscula (shared) */
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:14px 0 0 14px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+
+header{padding:14px 20px 12px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.3em;color:var(--ochre);text-transform:uppercase}
+h1{font-family:'Cormorant SC',serif;font-weight:700;font-size:clamp(3rem,15vw,4.4rem);
+  letter-spacing:.12em;line-height:1;color:var(--txt);margin:6px 0 8px;text-indent:.12em;
+  text-shadow:0 1px 0 rgba(217,164,65,.25)}
+.sub{font-style:italic;font-size:1rem;color:var(--txt);line-height:1.45}
+.sub b{font-style:normal;color:var(--ochre)}
+.credit{font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--dim);letter-spacing:.06em;margin-top:9px;text-transform:uppercase}
+
+/* plate (canvas ring) */
+.plate{position:relative;margin:2px 14px 0;border:1px solid var(--hair);background:var(--ground)}
+.plate canvas{display:block;width:100%;height:auto}
+.plate .tag{position:absolute;top:7px;left:10px;font-family:'IBM Plex Mono',monospace;font-size:.56rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.plate .tagr{left:auto;right:10px;text-align:right}
+.plate .tag b{color:var(--ochre)}
+
+/* controls */
+.controls{padding:14px 20px 0;display:flex;flex-direction:column;gap:14px}
+.lab{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.26em;color:var(--ochre);text-transform:uppercase;margin-bottom:7px;display:flex;justify-content:space-between}
+.lab .rd{color:var(--txt);letter-spacing:.05em}
+
+button{font-family:'EB Garamond',serif;color:var(--txt);background:transparent;
+  border:1px solid var(--hair);cursor:pointer;touch-action:manipulation;letter-spacing:.05em}
+button:focus-visible{outline:2px solid var(--ochre);outline-offset:2px}
+button:active{transform:translateY(1px)}
+button,canvas{-webkit-user-select:none;user-select:none}
+
+.pick{width:100%;padding:16px;font-family:'Cormorant SC',serif;font-weight:600;
+  font-size:1.25rem;letter-spacing:.3em;text-transform:uppercase;border-width:1.5px;
+  border-color:var(--brass2);transition:background .15s,color .15s,border-color .15s}
+.pick.on{background:var(--clay);border-color:var(--clay);color:#fff}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chips button{padding:8px 11px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--dim);letter-spacing:.04em}
+.chips button.on{background:var(--txt);color:#1a140a;border-color:var(--txt)}
+.chips button small{display:block;font-size:.82em;opacity:.7;letter-spacing:0;text-transform:none}
+.chips button.on small{opacity:.85}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--hair)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;margin-top:-9px;border-radius:50%;background:var(--panel);border:2px solid var(--ochre);box-shadow:0 0 7px rgba(217,164,65,.4)}
+input[type=range]::-moz-range-track{height:2px;background:var(--hair)}
+input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--panel);border:2px solid var(--ochre)}
+
+/* the track mutes — the drum-machine mixer */
+.tracks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tracks button{padding:9px 6px;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.06em;color:var(--dim);
+  display:flex;align-items:center;gap:.5em;justify-content:center;text-transform:uppercase}
+.tracks button .dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.35;flex:none}
+.tracks button.on{color:var(--txt);border-color:var(--hair)}
+.tracks button.on .dot{opacity:1}
+
+.cut{width:100%;padding:13px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;border-style:dashed;border-color:var(--hair)}
+.cut:disabled{opacity:.45;cursor:default}
+.cutnote{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim);text-align:center;margin-top:7px;min-height:1em;letter-spacing:.05em}
+
+.foot{margin:16px 20px 0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;
+  letter-spacing:.2em;color:var(--dim);text-transform:uppercase;line-height:1.9;border-top:1px solid var(--hair2);padding-top:12px}
+.foot a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* ── on this music: expandable reader notes (shared across the opuscula) ── */
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
+</style>
+</head>
+<body>
+<div class="pit">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+
+  <header>
+    <div class="eyebrow">op. IX · West African drum ensemble</div>
+    <h1>Foli</h1>
+    <div class="sub"><b>The parts lock; the wheel turns.</b> A Mande djembe-and-dunun ensemble — bell, three bass drums, two hand drums — plays a named rhythm while the machine improvises the solo over the top. Mute a voice to hear how it holds up the rest.</div>
+    <div class="credit">kariñan bell · kenkeni · sangban · dundunba · djembe accompaniment &amp; solo — all synthesized, no samples</div>
+  </header>
+
+  <div class="plate">
+    <canvas id="cv" width="900" height="900" aria-label="Rhythm wheel: concentric rings, one per drum, with a dot at each stroke; a radial playhead sweeps the cycle clockwise"></canvas>
+    <div class="tag">RHYTHM · <b id="rhyTag">Kuku</b><br><span id="meterTag">4/4</span></div>
+    <div class="tag tagr"><span id="cycTag">cycle</span></div>
+  </div>
+
+  <div class="controls">
+
+    <button class="pick" id="pick">Play</button>
+
+    <div class="fld">
+      <div class="lab">Rhythm <span class="rd" id="rhyrd">Kuku · forest circle dance</span></div>
+      <div class="chips" id="rhythm"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Tempo <span class="rd" id="tempored">120 bpm</span></div>
+      <input type="range" id="tempo" min="70" max="170" value="120" aria-label="Beats per minute">
+    </div>
+
+    <div class="fld">
+      <div class="lab">Soloist <span class="rd" id="heatrd">Steady</span></div>
+      <div class="chips" id="heat"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">The ensemble <span class="rd">tap to mute a voice</span></div>
+      <div class="tracks" id="tracks"></div>
+    </div>
+
+    <div class="fld">
+      <button class="cut" id="cut">Cut the groove · 16-bit WAV</button>
+      <div class="cutnote" id="cutnote">renders a full turn of the wheel, then lets it ring off</div>
+    </div>
+  </div>
+
+  <details class="reader">
+    <summary>On this music · the Mande drum ensemble</summary>
+    <div class="rbody">
+      <h4>What you're hearing</h4>
+      <p>West African drumming from the Mande world — the Malinké, Susu and Bamana peoples of Guinea, Mali, Senegal, Côte d'Ivoire and beyond. It is not a beat with fills on top; it is an <em>ensemble of interlocking parts</em>, each simple on its own, that combine into a single dense, cyclical rhythm. Every rhythm here has a name, and each name belongs to an occasion — a harvest, a dance, a rite of passage — with its own fixed parts that a whole village would know.</p>
+      <h4>The instruments</h4>
+      <p>The <em>djembe</em> is the goblet-shaped, rope-tuned hand drum, and it speaks in three voices: a deep <em>bass</em> from the centre of the skin, a ringing <em>tone</em> from the edge, and a cracking <em>slap</em>. Under it sit the <em>dununs</em> — three double-headed bass drums played with a stick, each with a small bell mounted on top that the same player strikes: the small high <em>kenkeni</em>, the middle <em>sangban</em> that carries the rhythm's signature phrase, and the great <em>dundunba</em> that booms underneath. Over everything rules the <em>kariñan</em> or <em>kenken</em>, a metal bell whose timeline is the clock the whole ensemble locks to.</p>
+      <h4>How it holds together</h4>
+      <p>No single part states the whole rhythm. The bell keeps an unchanging pattern; the kenkeni keeps the pulse; the sangban plays the phrase your ear learns to recognise; the dundunba drops the deep accents; the djembe accompaniments weave between them. The music lives in the <em>gaps</em> — one drum plays where another rests, so the composite runs faster and busier than any player. Mute a voice with the mixer above and you can hear the hole it leaves, and how the others still imply it.</p>
+      <h4>The soloist</h4>
+      <p>Above the fixed parts, one djembe leads — calling the ensemble in, signalling the dancers, and improvising. That lead is what this machine <em>composes</em>: seeded phrases, rolls, flams and accents, placed against the cycle, growing busier as you turn up the heat. The accompaniment is the law; the solo is free within it. In performance the lead also calls <em>breaks</em> — sharp signature phrases that turn the whole ensemble at once — the drummer conducting with the drum.</p>
+      <h4>The rhythms</h4>
+      <p>The named rhythms fall into two feels: <em>binary</em> (four-square, in 4/4) and <em>ternary</em> (a rolling 12/8, four beats each split in three). <em>Kuku</em> is a fast circle dance from the forest region; <em>Kassa</em> accompanies the harvest in the fields; <em>Djansa</em> is a celebration rhythm. In 12/8, <em>Dundunba</em> is "the dance of the strong men" from the Hamana; <em>Tiriba</em> and <em>Mendiani</em> are great Guinean dances, Mendiani for a chosen young dancer. The bell timeline of the 12/8 rhythms — a seven-stroke pattern — is one of the most widespread rhythmic figures on earth, shared across West and Central Africa and carried into the Americas.</p>
+      <h4>Where it comes from — and a note on faithfulness</h4>
+      <p>This is a living oral tradition: parts vary by village, teacher and lineage, and there is no single written score. The bell timelines here are the canonical ones; the drum parts are honest <em>arrangements</em> in the tradition's idiom rather than a claim to one true version — the same spirit in which the tradition itself is passed on, hand to hand. The djembe reached the world stage through Guinea's national ensembles — Les Ballets Africains, founded by Fodéba Keïta — and the teaching of master drummers (<em>djembefola</em>) like Mamady Keïta and Famoudou Konaté.</p>
+      <h4>How the sound is made</h4>
+      <p>No samples: every stroke is synthesized. The drums are struck membranes — a pitched tone with a fast downward pitch-drop and a stick or hand transient — the bells a cluster of inharmonic metallic partials. Bass, tone and slap are three different membrane strikes; muffled dunun strokes simply decay faster. The whole turning wheel is rendered to one buffer and looped, so the WAV you cut is exactly what you hear.</p>
+      <h4>The name</h4>
+      <p>op. IX is named in Maninka, the mother tongue of the music: <em>foli</em> is the playing itself — the rhythm, the act of drumming. "There is no movement without rhythm."</p>
+    </div>
+  </details>
+
+  <div class="foot">
+    op. IX · <a href="../">opvscvla</a> · keys: space=play · r=another · c=cut
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* =====================================================================
+   READER'S GUIDE — FOLI (op. IX)
+   ---------------------------------------------------------------------
+   The Mande (West African) djembe-and-dunun ensemble as a drum machine.
+   The premise mirrors the music: a named RHYTHM fixes the interlocking
+   parts (bell · kenkeni · sangban · dundunba · two djembe accompaniments),
+   and the machine COMPOSES the lead djembe SOLO over the top. You pick the
+   rhythm, mute voices, set the tempo and the solo's heat.
+
+   THE SHARED SKELETON (every opuscula work is built the same way):
+     · an ENGINE band (below) that is PURE and DOM-free: a rhythm (patterns
+       on a 16- or 12-step grid) + a seeded, generated soloist → a list of
+       stroke events {t, voice, tone, vel, pan}. No DOM, no audio here.
+     · synthesis from first principles — never a sample. Each drum is a
+       struck membrane (a pitched tone with a fast pitch-drop and a hand/
+       stick transient); each bell a cluster of inharmonic partials. The
+       whole cycle is rendered once into a stereo buffer and peak-normalised.
+     · TWO renderers of that buffer, IDENTICAL signal path so the WAV is
+       what you hear:
+         realtime — the buffer loops through a small room + limiter;
+         offline  — the "cut" button renders one turn of the wheel through
+                    the same graph into an OfflineAudioContext → 16-bit WAV.
+     · a <canvas> drawing the polyrhythm as concentric RINGS (one per voice)
+       with a sweeping playhead; it sleeps when idle.
+     · a hash-permalink: every control serialises into location.hash, so
+       THE URL IS THE PRESSING — copy it to reload the exact groove.
+
+   THROUGH-COMPOSED: like Gradus/Cochlea/Bolg/Pas-Salé/Holler, a change of
+   any control REGENERATES the buffer (it is a fixed arrangement plus a
+   composed solo, not a live loop) and restarts playback.
+
+   KEYS (wired near the bottom, same in every work):
+       space = play/stop   ·   r = another groove   ·   c = cut a WAV
+
+   THIS FILE: ENGINE (rng → rhythm patterns → soloist → events) → state →
+   audio (membrane & bell synth, mix, graph) → realtime transport → WAV cut
+   → canvas (rings) → controls → __iosAudio → hash/keys → init.
+   ===================================================================== */
+
+/* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
+function __hint(msg){
+  try{
+    const p=document.getElementById('pick')||document.querySelector('button');
+    if(!p||!p.insertAdjacentElement)return;
+    let h=document.getElementById('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin:8px 20px 0;font-style:italic;letter-spacing:.04em';
+      p.parentNode.appendChild(h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{if(document.visibilityState==='visible')kick();}catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('AUDIO SUSPENDED — tap Play again · if still silent, check the ring/silent switch');}catch(e){}},450);
+}
+
+/* ============================ ENGINE-BEGIN ============================
+   Pure, DOM-free. A rhythm is a set of PATTERNS over a step grid (16 steps
+   for 4/4, 12 for a ternary 12/8). Tokens: bells 'x'; dunun skins 'O' open
+   / 'm' muffled; djembes 'B' bass / 'T' tone / 'S' slap; '.' rest. The bell
+   timelines are the canonical ones; the drum parts are idiomatic
+   arrangements in the tradition's style (see the reader notes).            */
+
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+// The rhythms. meter fixes the grid; parts are step strings (padded to steps).
+// dunun voices carry two lines: s = skin (drum), b = mounted bell.
+const RHYTHMS={
+  kuku:    {label:'Kuku',    meter:'4/4', steps:16, bpm:120, gloss:'forest circle dance', parts:{
+    bell:      'x.x.xx.x.x.xx.x.',
+    kenkeni:{s:'O...O...O...O...', b:'x...x...x...x...'},
+    sangban:{s:'....O.O...O.....', b:'x.......x.......'},
+    dundunba:{s:'O.......O..O....', b:'x.......x.......'},
+    dj1:       'B..T.S..B..T.S..',
+    dj2:       '.S..T...S..T....'}},
+  kassa:   {label:'Kassa',   meter:'4/4', steps:16, bpm:128, gloss:'harvest in the fields', parts:{
+    bell:      'x.xx.xx.x.xx.xx.',
+    kenkeni:{s:'O.O.O.O.O.O.O.O.', b:'x.x.x.x.x.x.x.x.'},
+    sangban:{s:'..O...O...O...O.', b:'....x.......x...'},
+    dundunba:{s:'O...O.....O.....', b:'x...x.....x.....'},
+    dj1:       'T.S.B.T.S.B.T.S.',
+    dj2:       '..B...T...B...T.'}},
+  djansa:  {label:'Djansa',  meter:'4/4', steps:16, bpm:116, gloss:'celebration rhythm', parts:{
+    bell:      'x..x.x..x..x.x..',
+    kenkeni:{s:'O.O.O.O.O.O.O.O.', b:'x.x.x.x.x.x.x.x.'},
+    sangban:{s:'....O..O....O..O', b:'x.......x.......'},
+    dundunba:{s:'..O.....O.......', b:'..x.....x.......'},
+    dj1:       'B.T.T.B.T.T.B.T.',
+    dj2:       '.S...S.S...S...S'}},
+  dundunba:{label:'Dundunba',meter:'12/8',steps:12, bpm:104, gloss:'dance of the strong men', parts:{
+    bell:      'x.x.xx.x.x.x',
+    kenkeni:{s:'O..O..O..O..', b:'x..x..x..x..'},
+    sangban:{s:'...O..O.O...', b:'x.....x.....'},
+    dundunba:{s:'O.....O.....', b:'x.....x.....'},
+    dj1:       'B..T.SB..T.S',
+    dj2:       '.S.T..S.T...'}},
+  tiriba:  {label:'Tiriba',  meter:'12/8',steps:12, bpm:100, gloss:'Guinean dance', parts:{
+    bell:      'x.x.xx.x.x.x',
+    kenkeni:{s:'O.O.O.O.O.O.', b:'x.x.x.x.x.x.'},
+    sangban:{s:'..O.O...O.O.', b:'x.....x.....'},
+    dundunba:{s:'O...O..O....', b:'x...x..x....'},
+    dj1:       'T.ST.ST.ST.S',
+    dj2:       'B...B..B...B'}},
+  mendiani:{label:'Mendiani',meter:'12/8',steps:12, bpm:120, gloss:"young dancer's dance", parts:{
+    bell:      'x.x.xx.x.x.x',
+    kenkeni:{s:'O.O.O.O.O.O.', b:'x.x.x.x.x.x.'},
+    sangban:{s:'.O..O.O..O.O', b:'...x.....x..'},
+    dundunba:{s:'O.....O.O...', b:'x.....x.....'},
+    dj1:       'S.TS.TS.TS.T',
+    dj2:       '.B...B.B...B'}},
+};
+const RHYTHM_ORDER=['kuku','kassa','djansa','dundunba','tiriba','mendiani'];
+
+// the seven ensemble voices, in ring order (outer → inner) + colour + pan + gain
+const VOICES=[
+  {id:'bell',    label:'Bell',     col:'#d9a441', pan: 0.30, gain:0.42},
+  {id:'kenkeni', label:'Kenkeni',  col:'#c9a24e', pan: 0.22, gain:0.5 },
+  {id:'sangban', label:'Sangban',  col:'#c26a3a', pan:-0.12, gain:0.72},
+  {id:'dundunba',label:'Dundunba', col:'#9c4a2a', pan: 0.02, gain:0.95},
+  {id:'dj1',     label:'Djembe 1', col:'#e0c07a', pan:-0.34, gain:0.72},
+  {id:'dj2',     label:'Djembe 2', col:'#8fae86', pan: 0.34, gain:0.66},
+  {id:'solo',    label:'Soloist',  col:'#ece0c8', pan:-0.06, gain:0.82},
+];
+const VOICE_BY=Object.fromEntries(VOICES.map(v=>[v.id,v]));
+
+const pat=(s,steps)=>{const a=[];for(let i=0;i<steps;i++)a.push(s[i%s.length]||'.');return a;};
+
+// accent map: strong on the main beats, lighter off them (per meter)
+function accentAt(step, meter, stepsPerBeat){
+  const inBeat=step%stepsPerBeat;
+  if(inBeat===0) return 1.0;               // downbeat of a main pulse
+  if(meter==='4/4'&&inBeat===2) return 0.86;
+  return 0.7;
+}
+
+/* ---- the soloist: the machine's composed lead djembe ---------------------
+   Over the fixed cycle the lead improvises. Heat (0..3) sets density. It
+   draws from a small vocabulary of licks (relative step offsets + tone),
+   drops rolls into the beats, and every fourth cycle throws a "break" — a
+   sharp signature phrase, the drummer conducting. Times are in SECONDS
+   within one cycle; rolls subdivide a beat so they run faster than the grid. */
+const LICKS=[
+  [[0,'T'],[.5,'S']],
+  [[0,'S'],[.5,'T'],[.75,'T']],
+  [[0,'T'],[.33,'T'],[.66,'S']],
+  [[0,'B'],[.5,'T'],[1,'S']],
+  [[0,'S'],[.25,'S'],[.5,'T'],[.75,'S']],
+];
+function soloEvents(rng, rhythm, cycleIndex, heat, beatDur){
+  if(heat<=0) return [];
+  const beats=4, out=[], dens=[0,0.28,0.55,0.85][heat];
+  const isBreak=(cycleIndex%4===3)&&heat>=1;             // a signature turn every 4 cycles
+  for(let b=0;b<beats;b++){
+    const t0=b*beatDur;
+    // a roll into a downbeat, more likely when hot
+    if(rng()<dens*0.5 && (b===beats-1||rng()<0.3)){
+      const n=3+((rng()*(2+heat))|0);
+      for(let k=0;k<n;k++){const tone=(k===n-1)?'S':(rng()<0.5?'T':'S');
+        out.push({t:t0+beatDur*(k/n)*0.9, tone, vel:0.5+0.45*(k/n)});}
+      continue;
+    }
+    if(rng()<dens){
+      const lk=LICKS[(rng()*LICKS.length)|0];
+      for(const [off,tone] of lk) out.push({t:clamp(t0+off*beatDur,0,beats*beatDur-0.01), tone, vel:tone==='B'?0.95:0.7+rng()*0.25});
+    }
+  }
+  if(isBreak){                                           // the break lands on the last beat
+    const t0=(beats-1)*beatDur;
+    out.length=0;                                        // the break clears the bar it turns
+    [['0','S'],['.25','T'],['.5','S'],['.75','S'],['1','B']].forEach(([o,tone])=>
+      out.push({t:t0+parseFloat(o)*beatDur*0.9, tone, vel:tone==='B'?1:0.9}));
+  }
+  return out;
+}
+
+// assemble the whole groove (N cycles) into time-stamped stroke events.
+function assemble(st){
+  const R=RHYTHMS[st.rhythm], steps=R.steps, meter=R.meter;
+  const stepsPerBeat=(meter==='4/4')?4:3;
+  const stepDur=(60/st.bpm)/stepsPerBeat;
+  const cycleDur=steps*stepDur, beatDur=stepsPerBeat*stepDur;
+  const cycles=clamp(Math.round(30/cycleDur),8,18);
+  const rng=mulberry32((st.seed>>>0)^0x1b873593);
+  const P={
+    bell:pat(R.parts.bell,steps),
+    kenkeni:{s:pat(R.parts.kenkeni.s,steps),b:pat(R.parts.kenkeni.b,steps)},
+    sangban:{s:pat(R.parts.sangban.s,steps),b:pat(R.parts.sangban.b,steps)},
+    dundunba:{s:pat(R.parts.dundunba.s,steps),b:pat(R.parts.dundunba.b,steps)},
+    dj1:pat(R.parts.dj1,steps), dj2:pat(R.parts.dj2,steps),
+  };
+  const ev=[]; const mut=st.mutes;
+  const push=(t,voice,tone,vel,pan)=>ev.push({t,voice,tone,vel:clamp(vel,0,1.2),pan});
+  for(let c=0;c<cycles;c++){
+    const base=c*cycleDur;
+    for(let s=0;s<steps;s++){
+      const t=base+s*stepDur, ac=accentAt(s,meter,stepsPerBeat);
+      const hum=()=>(rng()*2-1)*0.004;
+      if(!mut.bell && P.bell[s]==='x') push(t+hum(),'bell','bell',0.7*ac+rng()*0.05,VOICE_BY.bell.pan);
+      for(const dn of ['kenkeni','sangban','dundunba']){
+        if(mut[dn]) continue;
+        const sk=P[dn].s[s];
+        if(sk==='O') push(t+hum(),dn,'open',0.9*ac+rng()*0.06,VOICE_BY[dn].pan);
+        else if(sk==='m') push(t+hum(),dn,'mute',0.7*ac,VOICE_BY[dn].pan);
+        if(P[dn].b[s]==='x') push(t+hum(),dn,'dbell',0.5*ac,VOICE_BY[dn].pan+0.08);
+      }
+      for(const dj of ['dj1','dj2']){
+        if(mut[dj]) continue;
+        const tk=P[dj][s]; if(tk==='.') continue;
+        const tone=tk==='B'?'bass':tk==='T'?'tone':'slap';
+        push(t+hum(),dj,tone,(tone==='bass'?0.92:0.72)*ac+rng()*0.08,VOICE_BY[dj].pan);
+      }
+    }
+    if(!mut.solo){
+      for(const s of soloEvents(rng,R,c,st.heat,beatDur)){
+        const tone=s.tone==='B'?'bass':s.tone==='T'?'tone':'slap';
+        push(base+s.t,'solo',tone,s.vel,VOICE_BY.solo.pan);
+      }
+    }
+  }
+  return {ev,cycleDur,beatDur,stepDur,steps,cycles,meter,dur:cycles*cycleDur};
+}
+/* ============================ ENGINE-END ============================ */
+
+/* ------------------------------- state ---------------------------------- */
+const st={ rhythm:'kuku', bpm:120, heat:1, seed:1, playing:false,
+  mutes:{bell:false,kenkeni:false,sangban:false,dundunba:false,dj1:false,dj2:false,solo:false} };
+
+/* ------------------------------- audio ---------------------------------- */
+const SR=44100;
+
+// a struck membrane: sine with a fast downward pitch-drop + harmonic + a
+// hand/stick transient. The heart of every drum voice.
+function synMembrane(f0, decay, drop, harm, click, rng){
+  const dur=Math.max(0.06,decay*4.5), n=Math.floor(dur*SR), o=new Float32Array(n);
+  let ph=0;
+  for(let i=0;i<n;i++){
+    const t=i/SR, f=f0*(1+drop*Math.exp(-t/0.013));
+    ph+=2*Math.PI*f/SR;
+    const a=Math.exp(-t/decay);
+    o[i]=(Math.sin(ph)+harm*Math.sin(2*ph)*a)*a;
+  }
+  const cn=Math.floor(click*SR);
+  for(let i=0;i<cn;i++) o[i]+=(rng()*2-1)*0.6*Math.exp(-i/(0.0013*SR));
+  return o;
+}
+// a bright cracking slap: highpassed noise + a short high ping
+function synSlap(rng){
+  const n=Math.floor(0.13*SR), o=new Float32Array(n); let prev=0;
+  for(let i=0;i<n;i++){const t=i/SR,nz=rng()*2-1,hp=nz-prev;prev=nz;
+    o[i]=hp*Math.exp(-t/0.026)*0.95 + Math.sin(2*Math.PI*720*t)*Math.exp(-t/0.02)*0.28;}
+  return o;
+}
+// a metal bell: a cluster of inharmonic partials + a chiff of noise
+function synBell(base, rng){
+  const P=[1,1.5,2.42,3.66,5.1], n=Math.floor(0.18*SR), o=new Float32Array(n);
+  for(const p of P){const f=base*p;for(let i=0;i<n;i++){const t=i/SR;o[i]+=Math.sin(2*Math.PI*f*t)*Math.exp(-t/0.052)/P.length;}}
+  const cn=Math.floor(0.005*SR);
+  for(let i=0;i<cn;i++) o[i]+=(rng()*2-1)*0.35*Math.exp(-i/(0.0016*SR));
+  return o;
+}
+// one prerendered unit hit per voice+tone (drums repeat, so we synth once).
+// three variants each, chosen round-robin, so identical strokes don't machine-gun.
+function bakeKit(){
+  const rng=mulberry32(0x9e3779b1), K=3, kit={};
+  const make=(key,fn)=>{const arr=[];for(let v=0;v<K;v++)arr.push(fn(rng));kit[key]=arr;};
+  make('bell.bell',      r=>synBell(820,r));
+  make('kenkeni.open',   r=>synMembrane(186,0.16,0.5,0.2,0.004,r));
+  make('kenkeni.mute',   r=>synMembrane(186,0.06,0.5,0.1,0.004,r));
+  make('kenkeni.dbell',  r=>synBell(560,r));
+  make('sangban.open',   r=>synMembrane(116,0.27,0.55,0.22,0.004,r));
+  make('sangban.mute',   r=>synMembrane(116,0.09,0.55,0.1,0.004,r));
+  make('sangban.dbell',  r=>synBell(540,r));
+  make('dundunba.open',  r=>synMembrane(72,0.42,0.6,0.25,0.005,r));
+  make('dundunba.mute',  r=>synMembrane(72,0.13,0.6,0.12,0.005,r));
+  make('dundunba.dbell', r=>synBell(500,r));
+  for(const v of ['dj1','dj2','solo']){
+    make(v+'.bass', r=>synMembrane(94,0.2,0.95,0.2,0.004,r));
+    make(v+'.tone', r=>synMembrane(320,0.12,0.28,0.5,0.006,r));
+    make(v+'.slap', r=>synSlap(r));
+  }
+  return kit;
+}
+
+// equal-power pan mix of a unit hit into L/R at a sample offset
+function mixHit(L,R,off,mono,pan,gain){
+  const a=(pan+1)*Math.PI/4, gL=Math.cos(a)*gain, gR=Math.sin(a)*gain;
+  const end=Math.min(L.length,off+mono.length);
+  for(let i=off,j=0;i<end;i++,j++){const s=mono[j];L[i]+=s*gL;R[i]+=s*gR;}
+}
+
+// render the whole groove ONCE into stereo (deterministic in the seed).
+function renderMaster(){
+  const A=assemble(st);
+  const tail=1.0, n=Math.ceil((A.dur+tail)*SR);
+  const L=new Float32Array(n), R=new Float32Array(n);
+  const kit=bakeKit(); const idx={};
+  for(const e of A.ev){
+    const key=e.voice+'.'+e.tone, bank=kit[key]||kit['dj1.tone'];
+    idx[key]=((idx[key]||0)+1)%bank.length;
+    const mono=bank[idx[key]];
+    const vg=(VOICE_BY[e.voice]||{gain:0.7}).gain;
+    mixHit(L,R,Math.floor(e.t*SR),mono,e.pan,e.vel*vg);
+  }
+  // peak-normalise to 0.9 — guarantees no clipping in the WAV by construction
+  let mx=0; for(let i=0;i<n;i++){const a=Math.abs(L[i]);if(a>mx)mx=a;const b=Math.abs(R[i]);if(b>mx)mx=b;}
+  if(mx>0){const k=0.9/mx;for(let i=0;i<n;i++){L[i]*=k;R[i]*=k;}}
+  return {L,R,dur:A.dur,cycleDur:A.cycleDur,cycles:A.cycles,meter:A.meter};
+}
+
+function toStereoBuffer(ctx,L,R){const b=ctx.createBuffer(2,L.length,SR);b.getChannelData(0).set(L);b.getChannelData(1).set(R);return b;}
+function makeRoomIR(ctx,sec,exp){
+  const len=Math.max(1,Math.floor(sec*ctx.sampleRate)),b=ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,exp);lp+=0.25*((Math.random()*2-1)-lp);d[i]=lp*e*1.5;}}
+  return b;
+}
+// the fixed signal path — identical realtime & offline so the WAV is faithful.
+function buildGraph(ctx, L, R, loop){
+  const G={ctx};
+  G.master=ctx.createGain(); G.master.gain.value=0.95;
+  G.lim=ctx.createDynamicsCompressor();
+  G.lim.threshold.value=-2;G.lim.knee.value=0;G.lim.ratio.value=20;G.lim.attack.value=0.003;G.lim.release.value=0.09;
+  G.master.connect(G.lim).connect(ctx.destination);
+  G.verb=ctx.createConvolver(); G.verb.buffer=makeRoomIR(ctx,0.28,3.2);
+  G.wet=ctx.createGain(); G.wet.gain.value=0.08; G.verb.connect(G.wet).connect(G.master);
+  G.dry=ctx.createGain(); G.dry.gain.value=1; G.dry.connect(G.master);
+  G.src=ctx.createBufferSource(); G.src.buffer=toStereoBuffer(ctx,L,R); G.src.loop=!!loop;
+  G.src.connect(G.dry); G.src.connect(G.verb);
+  return G;
+}
+
+/* -------------------------- realtime transport --------------------------- */
+let RT=null;
+function play(){
+  const M=renderMaster();
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ctx);
+  const G=buildGraph(ctx,M.L,M.R,true);
+  RT={ctx,G,t0:ctx.currentTime+0.08,dur:M.dur,cycleDur:M.cycleDur,cycles:M.cycles};
+  G.src.start(RT.t0);
+  st.playing=true; $('pick').textContent='Stop'; $('pick').classList.add('on');
+  invalidate();
+}
+function stop(){
+  if(!RT)return;
+  const g=RT.G.master.gain,ct=RT.ctx.currentTime;
+  try{g.cancelScheduledValues(ct);g.setValueAtTime(g.value,ct);g.linearRampToValueAtTime(0,ct+0.2);}catch(e){}
+  const c=RT.ctx;setTimeout(()=>{try{c.close();}catch(e){}},360);
+  RT=null; st.playing=false; $('pick').textContent='Play'; $('pick').classList.remove('on');
+  invalidate();
+}
+// through-composed: any change regenerates and (if playing) restarts
+function regen(){ if(RT){ stop(); play(); } else { invalidate(); } }
+
+/* ------------------------------ cut · WAV -------------------------------- */
+function encodeWav(L,R,sr){
+  const n=L.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');d.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  ws(36,'data');d.setUint32(40,n*4,true);
+  let o=44;for(let i=0;i<n;i++){d.setInt16(o,clamp(L[i],-1,1)*32767,true);o+=2;d.setInt16(o,clamp(R[i],-1,1)*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+async function cut(){
+  const btn=$('cut'),note=$('cutnote');btn.disabled=true;note.textContent='drumming…';
+  try{
+    const M=renderMaster();
+    const total=M.L.length/SR;
+    const ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
+    const G=buildGraph(ctx,M.L,M.R,false);
+    G.src.start(0);
+    const rb=await ctx.startRendering();
+    const blob=encodeWav(rb.getChannelData(0),rb.getChannelData(1),SR);
+    saveWav(blob,`foli_${st.rhythm}_${st.bpm}bpm.wav`);
+    note.textContent=`cut · ${M.cycles} cycles · ${RHYTHMS[st.rhythm].label}`;
+  }catch(e){note.textContent='render failed — '+e.message;}
+  btn.disabled=false;
+}
+
+/* ------------------------------- canvas ---------------------------------- */
+// The polyrhythm as concentric rings — one per voice, outermost the bell —
+// with a dot at every stroke and a radial playhead sweeping the cycle. This
+// is the natural shape of the music: a wheel of interlocking cycles.
+const cv=$('cv'),cx=cv.getContext('2d');
+const CW=cv.width,CH=cv.height,CX=CW/2,CY=CH/2;
+let VIEW=null;
+function refreshView(){ VIEW=assemble(st); }
+let needsDraw=true;const invalidate=()=>{needsDraw=true;VIEW=null;};
+
+function draw(){
+  cx.clearRect(0,0,CW,CH);
+  if(!VIEW) refreshView();
+  const V=VIEW, steps=V.steps;
+  // playhead phase 0..1 within the current cycle
+  let phase=0, playing=false;
+  if(RT){ playing=true; const e=((RT.ctx.currentTime-RT.t0)%V.cycleDur+V.cycleDur)%V.cycleDur; phase=e/V.cycleDur; }
+  const A0=-Math.PI/2;                               // step 0 at the top
+  const rOuter=CW*0.46, rInner=CW*0.12, ringGap=(rOuter-rInner)/VOICES.length;
+
+  // beat spokes
+  const stepsPerBeat=(V.meter==='4/4')?4:3;
+  cx.strokeStyle='rgba(217,164,65,.10)';cx.lineWidth=1;
+  for(let s=0;s<steps;s++){
+    const major=(s%stepsPerBeat===0);
+    const ang=A0+s/steps*2*Math.PI;
+    cx.globalAlpha=major?0.55:0.25;
+    cx.beginPath();cx.moveTo(CX+Math.cos(ang)*rInner,CY+Math.sin(ang)*rInner);
+    cx.lineTo(CX+Math.cos(ang)*rOuter,CY+Math.sin(ang)*rOuter);cx.stroke();
+  }
+  cx.globalAlpha=1;
+
+  // gather onsets per voice for this cycle from the first cycle's events
+  const onsets={}; VOICES.forEach(v=>onsets[v.id]=[]);
+  for(const e of V.ev){ if(e.t>=V.cycleDur) break;
+    onsets[e.voice] && onsets[e.voice].push({frac:e.t/V.cycleDur,tone:e.tone,vel:e.vel}); }
+
+  VOICES.forEach((v,vi)=>{
+    const r=rOuter-vi*ringGap-ringGap*0.5;
+    const muted=st.mutes[v.id];
+    // ring guide
+    cx.strokeStyle=muted?'rgba(160,150,120,.10)':'rgba(217,164,65,.14)';cx.lineWidth=1;
+    cx.beginPath();cx.arc(CX,CY,r,0,2*Math.PI);cx.stroke();
+    // label
+    cx.fillStyle=muted?'rgba(160,150,120,.35)':v.col;
+    cx.font='500 '+Math.round(CW*0.02)+'px "IBM Plex Mono",monospace';
+    cx.textAlign='left';cx.textBaseline='middle';
+    cx.globalAlpha=muted?0.5:0.9; cx.fillText(v.label.toUpperCase(), CX-CW*0.5*0+6, CY-r); cx.globalAlpha=1;
+    if(muted) return;
+    // onset dots
+    for(const on of onsets[v.id]){
+      const ang=A0+on.frac*2*Math.PI;
+      const x=CX+Math.cos(ang)*r, y=CY+Math.sin(ang)*r;
+      // light up as the playhead passes
+      let d=phase-on.frac; d=((d%1)+1)%1; const hot=playing&&d<0.06;
+      const rad=(v.id==='dundunba'?CW*0.017:CW*0.013)*(0.7+on.vel*0.5)*(hot?1.5:1);
+      cx.beginPath();cx.arc(x,y,rad,0,2*Math.PI);
+      cx.fillStyle=v.col; cx.globalAlpha=hot?1:0.62; cx.fill();
+      if(hot){cx.globalAlpha=0.3;cx.beginPath();cx.arc(x,y,rad*2.1,0,2*Math.PI);cx.fillStyle=v.col;cx.fill();}
+      cx.globalAlpha=1;
+    }
+  });
+
+  // the playhead
+  const pang=A0+phase*2*Math.PI;
+  cx.strokeStyle='rgba(194,106,58,.9)';cx.lineWidth=2;
+  cx.beginPath();cx.moveTo(CX,CY);cx.lineTo(CX+Math.cos(pang)*rOuter,CY+Math.sin(pang)*rOuter);cx.stroke();
+  cx.fillStyle='rgba(194,106,58,.9)';cx.beginPath();cx.arc(CX,CY,CW*0.012,0,2*Math.PI);cx.fill();
+
+  // cycle readout
+  if(playing){const cyc=Math.floor(((RT.ctx.currentTime-RT.t0)/V.cycleDur))%V.cycles;
+    $('cycTag').textContent='cycle '+(cyc+1)+'/'+V.cycles;}
+  else $('cycTag').textContent=V.cycles+' cycles';
+}
+function loop(){
+  const playing=!!RT;
+  if(playing||needsDraw){draw();if(!playing)needsDraw=false;}
+  setTimeout(()=>requestAnimationFrame(loop),playing?(RM?90:40):200);
+}
+requestAnimationFrame(loop);
+
+/* ------------------------------ controls --------------------------------- */
+function chipSel(container,items,current,onPick){
+  container.innerHTML='';
+  items.forEach(([val,label,sub])=>{
+    const b=document.createElement('button');b.dataset.v=String(val);
+    b.innerHTML=sub?(label+'<small>'+sub+'</small>'):label;
+    if(String(val)===String(current))b.classList.add('on');
+    b.onclick=()=>{container.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');onPick(val);};
+    container.appendChild(b);
+  });
+}
+
+chipSel($('rhythm'), RHYTHM_ORDER.map(k=>[k,RHYTHMS[k].label,RHYTHMS[k].meter]), st.rhythm, v=>{
+  st.rhythm=v; const R=RHYTHMS[v];
+  st.bpm=R.bpm; $('tempo').value=R.bpm; $('tempored').textContent=R.bpm+' bpm';
+  $('rhyrd').textContent=R.label+' · '+R.gloss; $('rhyTag').textContent=R.label; $('meterTag').textContent=R.meter;
+  regen();
+});
+const HEATS=[['0','Rest','tacet'],['1','Steady','tasteful'],['2','Busy','driving'],['3','Hot','on fire']];
+chipSel($('heat'), HEATS.map(([v,l,s])=>[v,l,s]), String(st.heat), v=>{
+  st.heat=+v; $('heatrd').textContent=HEATS[+v][1]; regen();
+});
+function syncRhythmReadouts(){const R=RHYTHMS[st.rhythm];
+  $('rhyrd').textContent=R.label+' · '+R.gloss;$('rhyTag').textContent=R.label;$('meterTag').textContent=R.meter;
+  $('heatrd').textContent=HEATS[st.heat][1];}
+syncRhythmReadouts();
+
+// tempo: live readout on drag, regenerate only on release
+$('tempo').value=st.bpm;
+$('tempo').addEventListener('input',e=>{st.bpm=+e.target.value;$('tempored').textContent=st.bpm+' bpm';});
+$('tempo').addEventListener('change',()=>{invalidate();if(RT)regen();});
+$('tempored').textContent=st.bpm+' bpm';
+
+// the ensemble mixer — one mute toggle per voice
+function buildTracks(){
+  const c=$('tracks'); c.innerHTML='';
+  VOICES.forEach(v=>{
+    const b=document.createElement('button'); b.dataset.v=v.id;
+    b.innerHTML='<span class="dot" style="color:'+v.col+'"></span>'+v.label;
+    if(!st.mutes[v.id]) b.classList.add('on');
+    b.onclick=()=>{st.mutes[v.id]=!st.mutes[v.id];b.classList.toggle('on',!st.mutes[v.id]);regen();};
+    c.appendChild(b);
+  });
+}
+buildTracks();
+
+$('pick').addEventListener('click',()=>st.playing?stop():play());
+$('cut').addEventListener('click',cut);
+
+/* ---------------------- opuscula shared: hash · keys --------------------- */
+let __applying=false;
+function muteMask(){return VOICES.reduce((m,v,i)=>m|((st.mutes[v.id]?1:0)<<i),0);}
+function applyMask(m){VOICES.forEach((v,i)=>st.mutes[v.id]=!!(m&(1<<i)));}
+function __state(){return {r:st.rhythm,bpm:st.bpm,h:st.heat,m:muteMask(),sd:st.seed};}
+function __apply(o){
+  if(o.r){const b=$('rhythm').querySelector('[data-v="'+o.r+'"]');b&&b.click();}
+  if(o.h!==undefined){const b=$('heat').querySelector('[data-v="'+(+o.h)+'"]');b&&b.click();}
+  if(o.bpm){st.bpm=clamp(+o.bpm|0,70,170);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' bpm';invalidate();}
+  if(o.m!==undefined){applyMask(+o.m|0);buildTracks();invalidate();}
+  if(o.sd!==undefined){const sd=+o.sd;if(Number.isFinite(sd)){st.seed=sd>>>0;invalidate();}}
+}
+function __hashRead(){const h=location.hash.slice(1);if(!h)return null;const o={};
+  for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}
+function __hashWrite(){if(__applying)return;
+  try{const o=__state();history.replaceState(null,'','#'+Object.entries(o).map(([k,v])=>k+'='+v).join('&'));}catch(e){}}
+document.addEventListener('click',()=>setTimeout(__hashWrite,120),true);
+document.addEventListener('change',()=>setTimeout(__hashWrite,120),true);
+
+function another(){                                // r = a different groove
+  if(RT)stop();
+  st.seed=1+((Math.random()*1e6)|0);
+  $('rhythm').querySelector('[data-v="'+RHYTHM_ORDER[(Math.random()*RHYTHM_ORDER.length)|0]+'"]').click();
+  $('heat').querySelector('[data-v="'+(1+((Math.random()*3)|0))+'"]').click();
+  // clear any mutes for a full ensemble
+  VOICES.forEach(v=>st.mutes[v.id]=false); buildTracks();
+  invalidate(); play();
+}
+addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
+  if(e.code==='Space'){e.preventDefault();$('pick').click();}
+  else if(e.key==='r'||e.key==='R'){e.preventDefault();another();}
+  else if(e.key==='c'||e.key==='C')$('cut').click();
+});
+
+(function init(){const o=__hashRead();
+  if(o){__applying=true;try{__apply(o);}catch(e){}__applying=false;}
+  __hashWrite();invalidate();
+})();
+
+/* ---- robust WAV save (shared) ----------------------------------------------
+   Auto-downloads where the browser allows it (desktop Chrome/Firefox/Edge,
+   Android), and ALWAYS shows a tappable "Save WAV" pill. The pill is the
+   reliable path on Safari/iOS, where a programmatic download fired after the
+   async render is blocked — a real tap on the link is a fresh user gesture,
+   which iOS honours (offering the file to Save to Files / share).            */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(14,14,16,.92);color:#e9e2d2;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#e9e2d2;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
+</script>
+
+</body>
+</html>

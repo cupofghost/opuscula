@@ -1,6 +1,6 @@
 # OPVSCVLA
 
-Eight small musical machines. Each is a single self-contained HTML file of pure
+Nine small musical machines. Each is a single self-contained HTML file of pure
 Web Audio — no build, no dependencies, no samples, no trackers. The machine
 composes; you set the law it obeys.
 
@@ -16,6 +16,7 @@ composes; you set the law it obeys.
 | VI | [BOLG](./bolg/) | Generative uilleann piping — named in Irish, the music's mother tongue. A just-intonation chanter over three standing drones; cuts, rolls and crans with the regulators vamping underneath. Reels, jigs, slip jigs, hornpipes and slow airs. |
 | VII | [PEAL](./peal/) | English change-ringing — the bells sound permutations, not tunes. Choose a method (Plain Hunt, Plain Bob, Grandsire, Reverse/Double Bob) on five to twelve bells — Doubles through Maximus — and the machine rings every distinct row once and comes round; the "blue line" traces a bell through the changes. On Plain Bob a conductor can call a *touch* — Bobs and Singles splice the courses, each touch searched to be true (no row rung twice). Every method and touch is verified *true*. Synthesized tower bells with true partials — hum, prime, tierce, quint, nominal. |
 | VIII | [HOLLER](./holler/) | Appalachian old-time banjo — named in Appalachian English, the music's mother tongue. One generated AABB fiddle tune, played by five right hands: clawhammer, drop-thumb, two-finger, the three-finger (Scruggs) roll, and melodic. On the banjo the picking pattern *is* the music. Sawmill and open tunings, the four old-time modes (Ionian, Mixolydian, Dorian, Aeolian), and a fixed fifth-string drone. Every note a Karplus–Strong plucked string — no samples. |
+| IX | [FOLI](./foli/) | West African djembe & dunun ensemble — named in Maninka (Malinké), where *foli* means the rhythm, the playing itself. Six named Mande rhythms (Kuku, Kassa, Djansa; Dundunba, Tiriba, Mendiani) of interlocking parts — kariñan bell, three dununs, two djembe accompaniments — with a machine-composed lead djembe solo over the top. Mute any voice to hear the hole it leaves. Binary and 12/8 feels; struck-membrane and metal-bell synthesis, no samples. The bell timelines are canonical; the drum parts are idiomatic arrangements. |
 
 ## Shared grammar
 
