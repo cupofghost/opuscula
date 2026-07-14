@@ -309,12 +309,19 @@ function __iosAudio(ac){
   const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
   kick();
   try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
-  const onVis=()=>{try{if(document.visibilityState==='visible')kick();}catch(e){}};
+  // stop the sound when the page is backgrounded (phone locked, app switched
+  // or closed) — a playback-session AudioContext otherwise keeps rendering in
+  // the background. Suspend on hidden; only auto-resume while visible.
+  const onVis=()=>{try{
+    if(document.visibilityState==='visible')kick();
+    else if(ac.state==='running')ac.suspend().catch(()=>{});
+  }catch(e){}};
   document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
   try{ac.addEventListener('statechange',()=>{
     if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
     if(ac.state==='running')__hint('');
-    else setTimeout(kick,60);
+    else if(document.visibilityState==='visible')setTimeout(kick,60);
   });}catch(e){}
   setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
     __hint('AUDIO SUSPENSUM — tap play again · if still silent, check the ring/silent switch');}catch(e){}},450);
