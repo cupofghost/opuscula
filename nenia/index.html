@@ -31,8 +31,11 @@ body{
 a{color:var(--blue); text-decoration:none; border-bottom:1px dotted var(--chalkdim)}
 a:hover{color:var(--chalk)}
 .mono{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace; font-size:.78rem; letter-spacing:.06em}
-nav{margin-bottom:1.4rem}
-nav a{border-bottom:none; color:var(--chalkdim)}
+/* exit to opuscula (shared across the opuscula) */
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:14px 0 0 14px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
 .opline{color:var(--chalkdim); font-variant:small-caps; letter-spacing:.14em; font-size:.85rem}
 h1{
   font-size:3rem; font-weight:400; letter-spacing:.02em; line-height:1.05;
@@ -94,11 +97,24 @@ button.big:hover{box-shadow:0 0 16px rgba(227,208,139,.25)}
 button:disabled{opacity:.4; cursor:default; box-shadow:none}
 .cutnote{color:var(--chalkdim); font-size:.78rem; font-style:italic; margin-bottom:2rem}
 
-.essay{border-top:1px solid var(--line); padding-top:1.4rem; margin-top:1.6rem}
-.essay h2{font-size:1.05rem; font-weight:700; margin-bottom:1rem}
-.essay h3{font-size:.92rem; font-weight:700; margin:1.1rem 0 .35rem; color:var(--chalk)}
-.essay p{color:#cfcabf; font-size:.94rem; margin-bottom:.6rem}
-.essay em{color:var(--chalk)}
+/* on this music: expandable reader notes (shared across the opuscula) */
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box;border-top:1px solid var(--line);padding-top:1.4rem}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:.94rem;line-height:1.66;opacity:.92;color:#cfcabf}
+.rbody h4{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500;color:var(--chalk)}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic;color:var(--chalk)}
 footer{
   margin-top:2.2rem; padding-top:1rem; border-top:1px solid var(--line);
   color:var(--chalkdim); font-size:.8rem; display:flex; justify-content:space-between;
@@ -109,7 +125,7 @@ footer{
 </head>
 <body>
 <div class="wrap">
-  <nav><a href="../">←&thinsp;opvscvla</a></nav>
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
   <div class="opline">op. X · playground lore</div>
   <h1>Nenia<span class="dot">.</span></h1>
   <p class="thesis"><b>The oldest song anyone learns.</b> Two notes and a taunt, passed child to child with no adult in the chain — this machine makes up rhymes nobody wrote and plays the games everybody knows.</p>
@@ -176,27 +192,29 @@ footer{
   </div>
   <p class="cutnote">renders the whole game, then lets the yard go quiet · the URL hash <em>is</em> the rhyme — copy the address and the exact game reloads anywhere</p>
 
-  <div class="essay">
-    <h2>On this music · playground lore</h2>
+  <details class="reader">
+    <summary>On this music · playground lore</summary>
+    <div class="rbody">
 
-    <h3>What you're hearing</h3>
+      <h4>What you're hearing</h4>
     <p>Almost the whole of it is three notes: a note, the note a minor third below, and the note a tone above — <em>sol, mi, la</em>. This is the teasing chant, the "nyah-nyah" figure, and it is very nearly universal: children arrive at it across languages and continents, and Leonard Bernstein opened his 1973 Norton lectures by proposing it as a musical constant of the species. Nobody teaches it. It is the first music transmitted entirely child-to-child.</p>
 
-    <h3>The rhymes</h3>
+      <h4>The rhymes</h4>
     <p>The words of playground rhymes barely matter and are barely words. Their grammar is <em>reduplication</em> and <em>ablaut</em> — say a nonsense syllable, say it again with the vowel shifted: eeny, meeny; icka, bicka; hickory, dickory. This machine builds each rhyme fresh from that grammar, so every pressing chants verses that have never existed, yet all of them sound like something you half-remember from a yard somewhere. The rhythm follows the system Constantin Brăiloiu described in <em>La rythmique enfantine</em> (1956): strictly syllabic, built from short binary units, the same the world over regardless of the language spoken on top of it.</p>
 
-    <h3>Counting-out</h3>
+      <h4>Counting-out</h4>
     <p>The counting-out rhyme is the playground's court of law: it decides who is It, and its verdict cannot be appealed. The chant travels round the ring, one syllable per child, and whoever the last syllable lands on is out; the ring closes and it begins again, until one child remains. It is an elimination process — a cousin of the Josephus problem, permutation mathematics performed by six-year-olds with total solemnity. Henry Carrington Bolton collected over eight hundred such rhymes in 1888 and traced some across a dozen countries. In this machine each elimination is real: that voice leaves the chorus and does not return.</p>
 
-    <h3>The games</h3>
+      <h4>The games</h4>
     <p>Clapping games and skip rope share one dramatic form: repetition under acceleration until the body fails. The verse comes round again a little faster, and again, and the game does not end so much as break — a fumbled clap, a foot in the rope — followed by the only correct response, which is laughter. The ring game is older and gentler: walk the circle, sing the round, and on the last line everybody falls down. This machine plays all of these honestly, mistakes included; the trip and the fumble are found by the seed, not by you.</p>
 
-    <h3>The voices</h3>
+      <h4>The voices</h4>
     <p>Each child is synthesized as a small formant voice — two resonances shaped by the vowel being sung — and no two are tuned alike. A yard of children never sings in tune or in time, and must not: every voice here carries its own flat-or-sharpness and its own eagerness, arriving early or late by its own habit. Turn ROWDY off and they behave suspiciously well.</p>
 
-    <h3>The lore, and the name</h3>
+      <h4>The lore, and the name</h4>
     <p>Iona and Peter Opie, who spent their lives collecting this material (<em>The Lore and Language of Schoolchildren</em>, 1959; <em>The Singing Game</em>, 1985), showed that playground rhymes travel faster than newspapers and persist for centuries, conserved by children who believe them to be brand new. The tradition is ancient: Horace, around 20 BC, quotes the children of Rome chanting <em>rex eris si recte facies</em> — "you'll be king if you play it right" — in their games, and the Latin word for such a jingle is <em>nenia</em>. Op. X takes that word: the small song, beneath literature, older than it.</p>
-  </div>
+    </div>
+  </details>
 
   <footer class="mono">
     <span>op. X · <a href="../">opvscvla</a></span>
