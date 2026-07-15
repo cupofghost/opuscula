@@ -167,7 +167,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
 
     <div class="fld">
       <div class="lab">Tempo <span class="rd" id="tempored">116 bpm</span></div>
-      <input type="range" id="tempo" min="88" max="176" value="132" aria-label="Beats per minute">
+      <input type="range" id="tempo" min="88" max="260" value="132" aria-label="Beats per minute">
     </div>
 
     <div class="fld">
@@ -897,7 +897,7 @@ function __apply(o){
   if(o.mo){const b=$('mode').querySelector('[data-v="'+o.mo+'"]');b&&b.click();}
   if(o.st){const b=$('style').querySelector('[data-v="'+o.st+'"]');b&&b.click();}
   if(o.sd!==undefined){const sd=+o.sd;if(Number.isFinite(sd)){st.seed=sd>>>0;invalidate();}}
-  if(o.bpm){st.bpm=clamp(+o.bpm|0,88,176);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' bpm';invalidate();}
+  if(o.bpm){st.bpm=clamp(+o.bpm|0,88,260);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' bpm';invalidate();}
   if(o.li!==undefined){(+o.li===1?$('tgLilt'):$('tgStraight')).click();}
   if(o.bk!==undefined){const m=+o.bk|0;st.backing={guitar:!!(m&1),bass:!!(m&2),foot:!!(m&4)};
     ['bkGtr','bkBass','bkFoot'].forEach((id,i)=>$(id).classList.toggle('on',!!(m&(1<<i))));invalidate();}
