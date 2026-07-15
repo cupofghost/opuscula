@@ -268,10 +268,15 @@ function pToUI(){ui.game.value=P.game;ui.kids.value=P.kids;ui.key.value=P.key;ui
 /* ================= ENGINE-BEGIN ================= */
 
 /* ---------- rhyme grammar: reduplication + ablaut ---------- */
-const ONSETS=['m','n','b','d','l','w','y','ch','k','t','s','p','h','z'];
-const VOWS=['ee','ay','ah','oh','oo','y']; // 'y' ≈ "eye"
-const ABLAUT=[['ee','ay'],['ee','oh'],['i','ah'],['ee','oo'],['ay','oh']];
-function vowelOf(s){for(const v of ['ee','ay','ah','oh','oo','y','i'])if(s.endsWith(v))return v==='i'?'ee':v;return 'ah'}
+const ONSETS=['m','n','b','d','l','w','y','ch','k','t','s','p','h','z',
+  'r','g','j','f','sh','v','bl','gr','tr','cl','sk','fl','th','shr'];
+const VOWS=['ee','ay','ah','oh','oo','y','i','o','a','aw']; // 'y' ≈ "eye"
+// ablaut reduplication: the same shape said twice with the vowel shifted — the
+// deep pattern under tick-tock, zig-zag, clap-clop, see-saw, ping-pong, hickory-
+// dickory. English overwhelmingly fronts the high vowel first (i→a→o).
+const ABLAUT=[['ee','ay'],['ee','oh'],['i','ah'],['ee','oo'],['ay','oh'],
+  ['i','o'],['i','a'],['a','o'],['ee','aw'],['oo','ay'],['i','oh'],['i','aw']];
+function vowelOf(s){for(const v of ['aw','ah','ay','ee','oh','oo','o','a','y','i'])if(s.endsWith(v))return v;return 'ah'}
 function makeRhyme(rng,len){
   // len syllables from a reduplicated ablaut pair, closer word distinct
   const a=pick(rng,ONSETS); let b=pick(rng,ONSETS); while(b===a)b=pick(rng,ONSETS);
@@ -298,6 +303,10 @@ const CELLS=[
   {deg:[MI,SOL,LA,SOL,MI,SOL,MI,MI],     dur:[1,1,1,1,1,1,1,1]},      // rocking
   {deg:[SOL,SOL,LA,LA,SOL,SOL,MI],       dur:[1,1,1,1,1,1,2]},        // rain-rain
   {deg:[DOH,SOL,LA,SOL,MI,SOL],          dur:[1,1,1,1,2,2]},          // reach
+  {deg:[SOL,MI,SOL,MI,LA,SOL,MI],        dur:[1,1,1,1,1,1,2]},        // tease-back
+  {deg:[LA,LA,SOL,MI,SOL,MI],            dur:[1,1,1,1,1,2]},          // sing-song
+  {deg:[SOL,DOH,LA,SOL,MI,SOL,MI],       dur:[1,1,1,1,1,1,2]},        // skip-up
+  {deg:[MI,MI,SOL,LA,LA,SOL,MI,SOL],     dur:[1,1,1,1,1,1,1,2]},      // ring-round
 ];
 function fitCell(rng,n){ // return {deg,dur} arrays of exactly n syllables
   const c=pick(rng,CELLS), deg=[],dur=[];
@@ -468,7 +477,8 @@ function compose(P){
 }
 
 /* ---------- synthesis ---------- */
-const FORMANTS={ee:[300,2300],ay:[450,2000],ah:[720,1240],oh:[500,900],oo:[330,880],y:[600,1800]};
+const FORMANTS={ee:[300,2300],ay:[450,2000],ah:[720,1240],oh:[500,900],oo:[330,880],y:[600,1800],
+  i:[400,1900],o:[520,1000],a:[760,1550],aw:[590,850]};
 function vowFmt(syl){return FORMANTS[vowelOf(syl)]||FORMANTS.ah}
 
 function seededNoise(ctx,seedOff,secs){
