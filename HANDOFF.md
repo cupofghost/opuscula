@@ -2,6 +2,48 @@
 
 Working notes for in-flight changes. Newest first.
 
+## RILLE — hiss pumped with the kick; added a pause button
+
+**Branch:** `claude/rille-hiss-pause-4dojix`
+**File touched:** `rille/index.html`
+**Status:** Done, verified headless. No PR opened yet.
+
+### The report
+"Lower the hiss a bit and make sure it doesn't get sidechained — doesn't make
+sense if it was pressed on a record. Also add a pause button."
+
+### Hiss — lowered + un-pumped
+The surface hiss (the `h` noise loop in `startDust`, part `pulvis`/STAUB) ran
+through the per-part gain → `G.pre` → master shaper → **master compressor** →
+out. That glue compressor ducks the whole bus on every kick, so the "constant"
+hiss pumped in time with the beat — nothing a real pressing does; vinyl surface
+noise is a steady floor under the stylus.
+
+**Fix:** added `G.floor`, a gain tapped *straight to `ac.destination`*, after the
+master compressor. The hiss now routes into `G.floor` instead of the part bus, so
+it can't be sidechained by the master comp. Level dropped `.006 → .004` (× the
+mood's `dust`). STAUB mute still gates the hiss: the mute handler now also rides
+`G.floor.gain` when `pulvis` toggles (and `G.floor` inits from `st.mutes.pulvis`).
+The crackle/pops stay on the part bus — the request was about the hiss.
+
+### Pause button
+New `#pause` button beside SPIEL (+ `p` key). `togglePause()` suspends/resumes the
+AudioContext; because every scheduler + the disc `tick()` are keyed off
+`ac.currentTime` (frozen while suspended), the transport and visuals hold and
+resume exactly where they left off — no re-sync. Button reads PAUSE↔WEITER,
+disabled unless playing, reset by start/stop. `tick()` bails while paused so the
+rAF loop ends and resume restarts a single loop.
+
+**Gotcha:** the iOS audio-unlock `kick()` auto-resumes any non-running context on
+`statechange`/visibility while the page is visible — it was instantly undoing the
+pause. Guarded it with `if(!st.paused)`; `st.paused` is the deliberate-pause flag.
+
+### Verification
+Headless Chromium: pause freezes `ac.currentTime` (state→suspended) and resume
+advances it; `p` key toggles; STAUB mute drives both `part.pulvis` and `floor` to
+0/1; offline WAV render (shared `buildGraph`/`startDust`) renders with the floor
+node, no errors.
+
 ## RILLE — chord progressions sounded broken/clunky
 
 **Branch:** `claude/rille-chord-dissonance-io1zr6`

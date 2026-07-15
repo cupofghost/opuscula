@@ -164,7 +164,10 @@ button,canvas,.centerlabel{-webkit-user-select:none;user-select:none}
 
   <div class="controls">
 
-    <button class="playbtn" id="play">SPIEL</button>
+    <div style="display:flex;gap:10px">
+      <button class="playbtn" id="play" style="flex:1">SPIEL</button>
+      <button class="playbtn" id="pause" style="flex:0 0 34%" disabled>PAUSE</button>
+    </div>
 
     <div>
       <div class="lab">Affekt · Stimmung wählen</div>
@@ -253,7 +256,7 @@ button,canvas,.centerlabel{-webkit-user-select:none;user-select:none}
        included) is written into location.hash, so THE URL IS THE PRESSING.
 
    KEYS (shown in German, but the physical keys are the same everywhere):
-       space = play/stop   ·   r = another version   ·   c = cut a WAV
+       space = play/stop   ·   p = pause/resume   ·   r = another version   ·   c = cut a WAV
 
    THIS FILE: helpers → ENGINE (diatonic chords → pattern generation) →
    state → audio graph → voices → bar scheduler → realtime transport →
@@ -274,7 +277,9 @@ function __hint(msg){
 }
 function __iosAudio(ac){
   try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
-  const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  // don't auto-resume a context the user paused on purpose — only revive one the
+  // OS/browser suspended (backgrounding, interruption). st.paused is the intent flag.
+  const kick=()=>{try{if(!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
   kick();
   try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
   // stop the sound when the page is backgrounded (phone locked, app switched
@@ -534,7 +539,7 @@ function newArrange(g,rng){
 const $=id=>document.getElementById(id);
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const st={mood:0,seed:(Math.random()*0xffffffff)>>>0,bpm:MOODS[0].bpm,g:null,
-  prog:0,follow:undefined,mutes:{},playing:false,bar:0,step:0};
+  prog:0,follow:undefined,mutes:{},playing:false,paused:false,bar:0,step:0};
 PARTS.forEach(p=>st.mutes[p]=false);
 
 // regenerate the patterns for the current mood/prog/seed (no transport change)
@@ -613,6 +618,11 @@ function buildGraph(ac,g){
   G.comp=ac.createDynamicsCompressor();
   G.comp.threshold.value=-12;G.comp.ratio.value=5;G.comp.attack.value=.004;G.comp.release.value=.18;
   G.pre.connect(G.shape).connect(G.comp).connect(ac.destination);
+  // record-surface floor: taps straight to the output, AFTER the master
+  // shaper/compressor, so the constant hiss of the pressing is never pumped by
+  // the kick the way a mix-bus signal would be. A real dubplate's surface noise
+  // sits under the stylus as a steady floor, not a sidechained one.
+  G.floor=ac.createGain();G.floor.gain.value=st.mutes.pulvis?0:1;G.floor.connect(ac.destination);
   // sends
   G.verb=ac.createConvolver();G.verb.buffer=makeIR(ac,M.verb.sec);
   G.vret=ac.createGain();G.vret.gain.value=M.verb.mix;G.verb.connect(G.vret).connect(G.pre);
@@ -756,8 +766,8 @@ function startDust(G,when){
   c.connect(lp).connect(cg).connect(G.part.pulvis);c.start(when);
   const h=ac.createBufferSource();h.buffer=G.noise;h.loop=true;
   const hlp=ac.createBiquadFilter();hlp.type='lowpass';hlp.frequency.value=6000;
-  const hg=ac.createGain();hg.gain.value=.006*M.dust;
-  h.connect(hlp).connect(hg).connect(G.part.pulvis);h.start(when);
+  const hg=ac.createGain();hg.gain.value=.004*M.dust;
+  h.connect(hlp).connect(hg).connect(G.floor);h.start(when);
   G.sendV(cg,.3);
   return [c,h];
 }
@@ -850,8 +860,9 @@ function startPlay(){
       if(RT.bars.length>48)RT.bars.splice(0,RT.bars.length-48);
     }
   },40);
-  st.playing=true;
+  st.playing=true;st.paused=false;
   $('play').textContent='STOPP';$('play').classList.add('on');
+  $('pause').disabled=false;$('pause').textContent='PAUSE';$('pause').classList.remove('on');
   tick();
 }
 function stopPlay(){
@@ -859,14 +870,15 @@ function stopPlay(){
   clearInterval(RT.timer);
   const c=RT.ac;RT=null;
   setTimeout(()=>c.close(),150);
-  st.playing=false;
+  st.playing=false;st.paused=false;
   $('play').textContent='SPIEL';$('play').classList.remove('on');
+  $('pause').disabled=true;$('pause').textContent='PAUSE';$('pause').classList.remove('on');
   const sn=$('secname');if(sn)sn.textContent='—';
   drawDisc(0,0,null);
 }
 let lastT=0,__frameKey='';
 function tick(ts){
-  if(!RT)return;
+  if(!RT||st.paused)return;                              // paused: let the rAF loop end; resume restarts it
   const minMs=RM?240:33;                                 // 30fps cap
   if(!ts||ts-lastT>=minMs){
     const now=RT.ac.currentTime;
@@ -887,6 +899,18 @@ function tick(ts){
   requestAnimationFrame(tick);
 }
 $('play').addEventListener('click',()=>st.playing?stopPlay():startPlay());
+// PAUSE: suspend/resume the AudioContext. All scheduling is keyed off
+// ac.currentTime, which freezes while suspended, so the transport and the disc
+// hold in place and pick up exactly where they left off — the platter, stopped
+// under the stylus, then spun back up.
+function togglePause(){
+  if(!RT||!st.playing)return;
+  if(st.paused){st.paused=false;RT.ac.resume();
+    $('pause').textContent='PAUSE';$('pause').classList.remove('on');tick();}
+  else{st.paused=true;RT.ac.suspend();
+    $('pause').textContent='WEITER';$('pause').classList.add('on');}
+}
+$('pause').addEventListener('click',togglePause);
 
 /* ---------------- disc drawing ---------------- */
 const cvs=$('disc'),ctx=cvs.getContext('2d');
@@ -1060,7 +1084,8 @@ PARTS.forEach(p=>{
   b.addEventListener('click',()=>{
     st.mutes[p]=!st.mutes[p];
     b.classList.toggle('off',st.mutes[p]);
-    if(RT)RT.G.part[p].gain.setTargetAtTime(st.mutes[p]?0:1,RT.ac.currentTime,.02);
+    if(RT){RT.G.part[p].gain.setTargetAtTime(st.mutes[p]?0:1,RT.ac.currentTime,.02);
+      if(p==='pulvis')RT.G.floor.gain.setTargetAtTime(st.mutes[p]?0:1,RT.ac.currentTime,.02);}
     if(!st.playing)drawDisc(0,0,null);
   });
   stripEl.appendChild(b);
@@ -1098,6 +1123,7 @@ document.addEventListener('change',()=>setTimeout(__hashWrite,120),true);
 addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
   if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
   if(e.code==='Space'){e.preventDefault();$('play').click();}
+  else if(e.key==='p'||e.key==='P')togglePause();
   else if(e.key==='r'||e.key==='R')$('aliud').click();
   else if(e.key==='c'||e.key==='C')$('cut').click();});
 (function(){const o=__hashRead();
