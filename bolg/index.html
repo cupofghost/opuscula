@@ -763,7 +763,10 @@ var ctx=null, graph=null, rendering=false;
 var live={playing:false,iter:null,next:null,timer:null,active:[],uiQ:[],
           drones:[],state:{r:0,s:0,b:0}};
 
-var NOMINAL={cal:0.9,bor:0.5,rgl:0.6};
+/* bor (drones) lifted 0.5→0.66: the uilleann drone is a constant, present
+   ground under the chanter, not a background hint — at 0.5 it was masked and
+   read as "no drone, just the regulators vamping". */
+var NOMINAL={cal:0.9,bor:0.66,rgl:0.6};
 var SENDS={cal:0.16,bor:0.06,rgl:0.1};
 
 function makeIR(ac){
