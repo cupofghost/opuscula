@@ -369,12 +369,32 @@ const scaleAt=(mode,i)=>mode[((i%7)+7)%7]+12*Math.floor(i/7);
 function buildChord(mode,root,deg,style){
   const base=scaleAt(mode,deg);
   const rel=k=>scaleAt(mode,deg+k)-base;
+  // Diatonic extensions, de-clashed. The raw diatonic 9th comes out a ♭9 — a
+  // minor ninth against the root, the harshest interval available — on any degree
+  // whose upper neighbour is a semitone (Phrygian i, Aeolian ii/v, Dorian ii/vi).
+  // That is what made the stabs sound broken rather than dark. Fold such a ♭9 down
+  // to the octave: still in the mode, still four voices, no clang. Likewise a sus
+  // whose diatonic 4th lands on the tritone grinds a semitone under the 5th; fold
+  // it to a clean perfect 4th over a perfect 5th, the frame that makes it a sus
+  // chord in the first place rather than a semitone cluster.
+  const nine=()=>{const n=rel(8);return n===13?12:n;};
+  const sus=()=>{const n=rel(3);return n===6?5:n;};      // aug 4th → perfect 4th
+  const fif=()=>{const n=rel(4);return n===6?7:n;};      // dim 5th → perfect 5th (sus only)
   let offs;
-  if(style==='cluster')offs=[0,6,13];
-  else if(style==='sus9')offs=[0,rel(3),rel(4),rel(8)];
-  else if(style==='stack9')offs=[0,rel(2),rel(4),rel(8)];
-  else offs=[0,rel(2),rel(6),rel(8)];                    // shell9: 1-3-7-9
-  const cr=root+12+base;
+  if(style==='cluster')offs=[0,6,13];                    // ferrum: deliberately harsh
+  else if(style==='sus9')offs=[0,sus(),fif(),nine()];
+  else if(style==='stack9')offs=[0,rel(2),rel(4),nine()];
+  else offs=[0,rel(2),rel(6),nine()];                    // shell9: 1-3-7-9
+  // Keep the stab in one register (kill the "clunk"). Left alone the chord root is
+  // root+12+base, so as the degree climbs the whole voicing jumps up toward an
+  // octave and every stab lands in a different register. Anchor it instead: place
+  // the chord root in the octave nearest the key root, so every stab sits in the
+  // same ~octave band (span ≤10, worst step ≤9) and can never drift down into the
+  // bass — the parallel-stab idiom, and loop-stable. The internal voicing is
+  // untouched by the octave shift, so this never introduces a new clash.
+  let cr=root+12+base;
+  while(cr-(root+12)>6)cr-=12;
+  while((root+12)-cr>6)cr+=12;
   return {rootMidi:cr,notes:offs.map(o=>cr+o)};
 }
 function chordQual(mode,deg){
@@ -405,6 +425,9 @@ function genAll(seed,mi,bpm,progIdx,follow){
   g.progDeg=(PROGS[progIdx||0].deg||M.progDeg).slice();
   g.follow=(follow===undefined)?M.follow:follow;
   g.vstyle=M.vstyle;
+  // Pre-voice the progression once: each stab anchored to the key-root register so
+  // the chords stay in one octave band instead of leaping around (see buildChord).
+  g.chords=g.progDeg.map(d=>buildChord(M.mode,g.root,d,g.vstyle));
 
   // kick velocities per 16 steps
   g.kick=new Array(16).fill(0);
@@ -777,9 +800,8 @@ function scheduleBar(G,arr,g,bar,t0,stepDur,rng){
   // clap / rim
   if(arr.gate('manus',bar))for(let s=0;s<16;s++)
     if(g.clap[s]>0)vClap(G,t0+s*stepDur+sw(s),g.clap[s],g.clapKind);
-  // current chord of the 2-bar cycle
-  const deg=g.progDeg[(bar>>1)%g.progDeg.length];
-  const ch=buildChord(M.mode,g.root,deg,g.vstyle);
+  // current chord of the 2-bar cycle (pre-voiced/register-anchored in genAll)
+  const ch=g.chords[(bar>>1)%g.chords.length];
   // bass: pedal on the key root, or follow the chord root (kept in the bass register)
   if(arr.gate('bassus',bar)){
     let bRoot=g.follow?ch.rootMidi-12:g.root;
