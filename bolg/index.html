@@ -763,7 +763,10 @@ var ctx=null, graph=null, rendering=false;
 var live={playing:false,iter:null,next:null,timer:null,active:[],uiQ:[],
           drones:[],state:{r:0,s:0,b:0}};
 
-var NOMINAL={cal:0.9,bor:0.5,rgl:0.6};
+/* bor (drones) lifted 0.5→0.66: the uilleann drone is a constant, present
+   ground under the chanter, not a background hint — at 0.5 it was masked and
+   read as "no drone, just the regulators vamping". */
+var NOMINAL={cal:0.9,bor:0.66,rgl:0.9};
 var SENDS={cal:0.16,bor:0.06,rgl:0.1};
 
 function makeIR(ac){
@@ -892,10 +895,10 @@ function scheduleReg(ac,g,ev,active){
     var bp=ac.createBiquadFilter(); bp.type='bandpass';
     bp.frequency.value=650; bp.Q.value=1.3;
     var env=ac.createGain();
-    var pk=0.085*ev.vel;
-    env.gain.setValueAtTime(0,T);
-    env.gain.linearRampToValueAtTime(pk,T+0.008);
-    env.gain.setTargetAtTime(0,T+0.02,Math.max(0.05,D*0.5));
+    var pk=0.30*ev.vel;                 // was 0.085 — the vamp sat ~28 dB under
+    env.gain.setValueAtTime(0,T);       // the mix (masked by the chanter and by
+    env.gain.linearRampToValueAtTime(pk,T+0.008);  // the drone it shares pitches
+    env.gain.setTargetAtTime(0,T+0.02,Math.max(0.07,D*0.6));  // with); now it reads
     o.connect(bp); bp.connect(env); env.connect(g.bus.rgl);
     o.start(T); o.stop(T+D+0.4); nodes.push(o);
   }
