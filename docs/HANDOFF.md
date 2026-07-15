@@ -1,9 +1,16 @@
 # OPVSCVLA — project handoff & conventions
 
-> Global handoff for future sessions. Read this once; then read **only** the
-> one file under `docs/works/<name>.md` for the work you're touching. Do **not**
-> read a whole 40–60 KB `index.html` just to orient — the per-work file plus the
-> header comment block inside each file's `<script>` already summarize the engine.
+> **How to load this:** this file does **not** auto-load — it lives at
+> `docs/HANDOFF.md`, not root `CLAUDE.md`, on purpose. Start a code chat by
+> pointing Claude at it (see "Starting a chat" below). Read this once; then read
+> **only** the one file under `docs/works/<name>.md` for the work you're
+> touching. Do **not** read a whole 40–60 KB `index.html` just to orient — the
+> per-work file plus the header comment block inside each file's `<script>`
+> already summarize the engine.
+>
+> **Starting a chat:**
+> - *Global / architecture / new work / cross-cutting:* `Read docs/HANDOFF.md`.
+> - *One machine (e.g. Bolg):* `Read docs/HANDOFF.md and docs/works/bolg.md`.
 
 **What this is:** twelve self-contained web-audio pieces ("small musical
 machines"), op. I–XII. Each is one `index.html` of vanilla HTML/CSS/JS Web

@@ -1,6 +1,6 @@
 # Per-work handoffs
 
-Compact engineering handoffs — one per work. Read the **root `CLAUDE.md`** first
+Compact engineering handoffs — one per work. Read **`docs/HANDOFF.md`** first
 for the shared conventions, then open **only** the file for the work you're
 touching. Each captures the musical concept, the engine, the execution model
 (live re-vibe vs. through-composed), synthesis method, and the specific
