@@ -3,8 +3,9 @@
 Compact engineering handoffs — one per work. Read **`docs/HANDOFF.md`** first
 for the shared conventions, then open **only** the file for the work you're
 touching. Each captures the musical concept, the engine, the execution model
-(live re-vibe vs. through-composed), synthesis method, and the specific
-mix/quirk notes the user has cared about.
+(live re-vibe vs. through-composed), synthesis method, the specific
+mix/quirk notes the user has cared about, and a **hash-params table**
+(every `#…` control, its meaning and value range).
 
 | op. | work | file |
 |-----|------|------|

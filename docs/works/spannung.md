@@ -18,3 +18,16 @@ Berlin School.
 **Structure:** engine (clock → sequencer → S&H → voices → drums → mixer/FX) →
 state/RNG → audio graph → canvas (self-patching rack) → realtime step engine →
 OfflineAudioContext WAV → controls → `__iosAudio` → hash/keys → init.
+
+## Hash params (`#t=&c=&r=&s=&d=&f=&sd`)
+| key | control | values (all 0–100 unless noted) |
+|-----|---------|--------|
+| `t` | tempo | 108–140 bpm |
+| `c` | cutoff | 0–100 |
+| `r` | resonance | 0–100 |
+| `s` | space (delay+reverb) | 0–100 |
+| `d` | density (patch) | 0–100 |
+| `f` | drift (analogue) | 0–100 |
+| `sd` | seed | mulberry32 |
+
+*Live re-vibe: the 16-step engine re-patches on any control while it runs.*

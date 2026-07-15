@@ -24,3 +24,14 @@ Maninka (Malinké): *foli* = the rhythm, the playing itself.
   turns without a seam. Preserve this if you change the render length.
 
 **Both renderers share an identical signal path** so the WAV matches playback.
+
+## Hash params (`#r=&bpm=&h=&m=&sd`)
+| key | control | values |
+|-----|---------|--------|
+| `r` | rhythm | `kuku, kassa, djansa, dundunba, tiriba, mendiani, sunu, soli` |
+| `bpm` | tempo | rhythm sets the default (e.g. Kuku 120, Soli 92) |
+| `h` | heat | lead-djembe solo intensity |
+| `m` | mute bitmask | ensemble voices in VOICES order (bell, kenkeni, sangban, dundunba, two djembes, shaker, solo) |
+| `sd` | seed | mulberry32 |
+
+*Through-composed: any change regenerates the buffer and restarts.*

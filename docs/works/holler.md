@@ -25,3 +25,16 @@ right hands.**
   de-clashed twice. Keep the backing supporting, not fighting, the banjo.
 
 **Both renderers share an identical signal path**, so the WAV is what you hear.
+
+## Hash params (`#st=&tu=&mo=&bpm=&li=&bk=&sd`)
+| key | control | values |
+|-----|---------|--------|
+| `st` | style (right hand) | `clawhammer, dropthumb, twofinger, threefinger, melodic` |
+| `tu` | tuning | `openG, sawmill, doubleC, openD` |
+| `mo` | mode | `ionian, mixolydian, dorian, aeolian` |
+| `bpm` | tempo | up to 260 (ceiling raised from 176) |
+| `li` | lilt (swing) | toggle 0/1 |
+| `bk` | backing bitmask | `guitar=1, bass=2, foot=4` |
+| `sd` | seed | mulberry32 |
+
+*Through-composed: any change regenerates the tune and restarts.*

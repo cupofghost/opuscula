@@ -20,3 +20,15 @@ their original (Latin-ish) tongue**. Object keys (`fundus`, `bassus`, `crepitus`
 - **Visualization:** spinning disc/label canvas; sleeps when idle.
 - **Structure:** helpers → engine (diatonic chords → patterns) → state → audio →
   voices → bar scheduler → realtime → disc drawing → WAV cut → UI → permalink.
+
+## Hash params (`#s=&a=&p=&f=&t=&m`)
+| key | control | values |
+|-----|---------|--------|
+| `s` | seed | hex (`mulberry32`) |
+| `a` | affectus (mood) | index 0–5: `tenebrae, umbra, lacrimae, ferrum, aurora, vacuum` |
+| `p` | prog (progression) | index: `suum` (mood's own), `p1`…`p4` |
+| `f` | follow-bass | toggle 0/1 |
+| `t` | tempo | bpm |
+| `m` | mute bitmask | PARTS order: `fundus, bassus, crepitus, manus, chordae, cantus, pulvis` |
+
+*(ids are Latin on purpose — see the localization rule above; never rename.)*

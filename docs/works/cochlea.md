@@ -17,3 +17,15 @@ return home — except in pure tuning the lattice **never quite closes**.
 - **Structure:** ENGINE (fractions → walk → analysis → plan → WAV) → state → audio
   → SECO/WAV → regen → ledger → spiral canvas → permalink → controls → `__iosAudio`
   → init.
+
+## Hash params (`#p=&s=&t=&g=&n=&d=&7=&reg`)
+| key | control | values |
+|-----|---------|--------|
+| `p` | pump | id: `syntonica, diesis, septimalis, kleisma, cyclus` |
+| `s` | seed | hex (`mulberry32`) |
+| `t` | tempo | bpm |
+| `g` | genus | `maior` / `minor` |
+| `n` | passus | number of steps/laps |
+| `d` | direction | walk direction |
+| `7` | septimal | toggle 0/1 (admit the 7-limit) |
+| `reg` | register bits | 4-char string, order `fund, harm, cymb, puls` (each 0/1) |

@@ -22,3 +22,15 @@ itself). One voice, two pitches.
 **Structure:** engine → state/RNG → audio (glottal source + cascaded bandpass) →
 canvas (ladder) → realtime → OfflineAudioContext WAV → controls → `__iosAudio`
 (near bottom) → hash/keys → init.
+
+## Hash params (`#st=&k=&p=&b=&g=&sd`)
+| key | control | values |
+|-----|---------|--------|
+| `st` | style (manner) | `khoomei, sygyt, kargyraa` |
+| `k` | drone key | index 0–3: `G(98), A(110), C(131), D(147)` Hz |
+| `p` | pace | 34–132 (overtone melody pace) |
+| `b` | breath | 0–100 (air/noise in the source) |
+| `g` | ground (morin khuur) | toggle 0/1 |
+| `sd` | seed | mulberry32 |
+
+*Live re-vibe: controls change while the drone keeps sounding.*

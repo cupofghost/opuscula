@@ -23,3 +23,13 @@ mother tongue.
 
 **Structure:** ENGINE (grammar → ornaments → tuning → WAV) → state → audio →
 GEARR/WAV → regen → ledger canvas → permalink → controls → `__iosAudio` → init.
+
+## Hash params (`#f=&m=&st=&t=&s=&reg`)
+| key | control | values |
+|-----|---------|--------|
+| `f` | forma (tune type) | `ril` (reel) · `port` (jig) · `slip` (slip jig) · `corn` (hornpipe) · `fonn` (slow air) |
+| `m` | modus (mode) | id (e.g. `reion`, …) |
+| `st` | stilus (ornament density) | `oscailte` (open) · `teann` (tight) · `lom` (bare) |
+| `t` | tempo | bpm (forma sets the default: reel 108, jig 116, air 46…) |
+| `s` | seed | hex (`mulberry32`) |
+| `reg` | regulator bits | 3-char string, order `cal, bor, rgl` (each 0/1) |

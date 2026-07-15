@@ -27,3 +27,19 @@
 
 **Engine band is pure:** method + N + start row → sequence of permutations, no
 DOM/audio, provably true.
+
+## Hash params (`#me=&n=&s=&k=&ms=&g=&mu=&tc=&sd=&rv`)
+| key | control | values |
+|-----|---------|--------|
+| `me` | method | `Plain Hunt, Plain Bob, Grandsire, Reverse Bob, Double Bob` |
+| `n` | bells (stage) | 5–12 (Doubles → Maximus) |
+| `s` | start row | starting permutation |
+| `k` | key | index |
+| `ms` | strike interval | milliseconds per blow (= speed) |
+| `g` | open handstroke gap | toggle 0/1 |
+| `mu` | muffled | toggle 0/1 |
+| `tc` | touch (conductor) | toggle 0/1 (Plain Bob only; calls verified-true Bobs/Singles) |
+| `sd` | seed | mulberry32 |
+| `rv` | reverse | toggle 0/1 |
+
+*Live re-vibe: key (`k`) and speed (`ms`) change on the fly.*

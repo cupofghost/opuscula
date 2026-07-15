@@ -16,3 +16,15 @@
 - **Structure:** helpers/PRNG → `ENGINE-BEGIN…ENGINE-END` (cantus firmus →
   counterpoint search; pure, no DOM/audio) → state & driver → notation plate →
   audio → WAV → UI → permalink.
+
+## Hash params (`#s=&m=&sp=&v=&c=&l=&t=&r`)
+| key | control | values |
+|-----|---------|--------|
+| `s` | seed | hex (`mulberry32`) |
+| `m` | mode (modus) | index: `dorius, phrygius, lydius, …` |
+| `sp` | species | `1`–`4` (I–IV, `data-s`) |
+| `v` | voice placement | `1` infra (below) · `0` supra (above) |
+| `c` | cantus firmus source | `1` fux · `0` novus |
+| `l` | length (longitudo) | 8–13 brevia (default 11) |
+| `t` | tempo | slider value |
+| `r` | rule bitmask | 6 RULEDEFS: `parallels, direct, crossing, leapfix, contrary, climax` |

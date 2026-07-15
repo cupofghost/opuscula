@@ -15,3 +15,14 @@ that seems to rise/fall forever without going anywhere.
 - **`r` = alia** (next ratio).
 - **Structure:** constants → state → audio graph → realtime → loop cutter →
   controls → spiral canvas → permalink.
+
+## Hash params (`#p=&m=&t=&d=&b`)
+| key | control | values |
+|-----|---------|--------|
+| `p` | preset (ratio set) | index 0–4: `4:5:6` · `10:12:15` · `4:5:6:7` · `6:7:9` · `16:20:25` |
+| `m` | motus (glide) | `1` ascendit · `0` stat · `-1` descendit |
+| `t` | tempo | slider value |
+| `d` | drone | toggle 0/1 |
+| `b` | bell | toggle 0/1 |
+
+*Not seeded (endless glissando, no RNG).*

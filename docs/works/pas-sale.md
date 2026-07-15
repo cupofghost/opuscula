@@ -20,3 +20,12 @@ Zydeco two-step for a synthesized Creole band, **G major, 148 bpm**.
   sound before shipping — don't re-land an unfaithful render.
 - Because it's fixed-form, don't add a "seed" control expecting mulberry32
   reproducibility; the reproducibility here is the form itself.
+
+## Hash params (`#s=&t=&m`)
+| key | control | values |
+|-----|---------|--------|
+| `s` | song seed | hex; reshuffled by ENCORE (not a mulberry32 seed) |
+| `t` | tempo | 120–168 bpm (default 148) |
+| `m` | mute bitmask | bits in order `acc, frot, dr, bs, gt` (accordion, frottoir, drums, bass, guitar) |
+
+*No seed-reproducibility knob — the fixed 70-bar form is the reproducibility.*
