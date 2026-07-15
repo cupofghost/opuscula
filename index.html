@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="opuscula — eleven small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing.">
+<meta name="description" content="opuscula — eleven small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis.">
 <title>OPVSCVLA — small musical machines</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -56,13 +56,13 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
      This file is pure HTML + CSS. No JavaScript, no audio: it is just the
      index card wall that links out to the ten works. Each work lives in
      its own folder as its own index.html; this page never loads them, it
-     only links to them (href="./folder/"). Eleven works.
+     only links to them (href="./folder/"). Twelve works.
 
      Anatomy, top to bottom:
        .wrap      the 760px column everything sits in
        .eyebrow   the "catalogvs · mmxxvi" kicker
        h1 / .sub  the title and the one-line manifesto
-       .grid      the card wall — one <a class="card"> per work (eleven total)
+       .grid      the card wall — one <a class="card"> per work (twelve total)
        .notes     the shared-keys reminder (space / r / c)
        .foot      the colophon + repo link
 
@@ -85,7 +85,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
 <div class="wrap">
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
-  <div class="sub">eleven small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="sub">twelve small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
   <hr class="rule">
 
   <div class="grid">
@@ -360,6 +360,32 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
         <h2>Khöömei</h2>
         <p>Mongolian overtone singing</p>
         <span class="tech">three manners · the overtone scale · morin-khuur ground · cut a drone</span>
+      </div>
+    </a>
+
+    <a class="card" href="./spannung/" style="--bg:#17171b">
+      <div class="emblem" aria-hidden="true">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- a patch panel: jacks and a knob, wired with sagging cables -->
+          <rect x="15" y="15" width="70" height="70" rx="4" fill="none" stroke="#e4e2da" stroke-width="1.3" opacity="0.26"/>
+          <circle cx="50" cy="31" r="7.5" fill="none" stroke="#e6a94b" stroke-width="2"/>
+          <line x1="50" y1="31" x2="55" y2="26" stroke="#e6a94b" stroke-width="2" stroke-linecap="round"/>
+          <g fill="#101012" stroke="#e4e2da" stroke-width="1.4">
+            <circle cx="30" cy="34" r="5"/><circle cx="70" cy="34" r="5"/>
+            <circle cx="30" cy="66" r="5"/><circle cx="70" cy="66" r="5"/>
+          </g>
+          <path d="M30,34 Q22,52 30,66" fill="none" stroke="#d8483c" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M70,34 Q90,52 70,66" fill="none" stroke="#5aa6e0" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M30,66 Q50,88 70,66" fill="none" stroke="#e6c04a" stroke-width="2.6" stroke-linecap="round"/>
+          <circle cx="30" cy="34" r="2.1" fill="#d8483c"/><circle cx="70" cy="34" r="2.1" fill="#5aa6e0"/>
+          <circle cx="30" cy="66" r="2.1" fill="#e6c04a"/><circle cx="70" cy="66" r="2.1" fill="#e6c04a"/>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="op">op. XII · MMXXVI</span>
+        <h2>Spannung</h2>
+        <p>modular synthesizer jam</p>
+        <span class="tech">twelve modules · clock, CV &amp; gate · dub delay · cut a loop</span>
       </div>
     </a>
 
