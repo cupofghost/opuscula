@@ -549,9 +549,14 @@ function mixHit(L,R,off,mono,pan,gain){
 }
 
 // render the whole groove ONCE into stereo (deterministic in the seed).
-function renderMaster(){
+// tail = 2.0s covers the longest voice tail (dundunba ≈1.89s) so nothing is
+// truncated. loop=true folds that tail overhang back over the loop point so
+// the groove's last strokes ring into its top: a seamless loop with no gap
+// (the source loops exactly [0,dur)). loop=false keeps the natural decay tail
+// for the one-shot WAV cut.
+function renderMaster(loop){
   const A=assemble(st);
-  const tail=1.0, n=Math.ceil((A.dur+tail)*SR);
+  const tail=2.0, n=Math.ceil((A.dur+tail)*SR);
   const L=new Float32Array(n), R=new Float32Array(n);
   const kit=bakeKit(); const idx={};
   for(const e of A.ev){
@@ -561,10 +566,17 @@ function renderMaster(){
     const vg=(VOICE_BY[e.voice]||{gain:0.7}).gain;
     mixHit(L,R,Math.floor(e.t*SR),mono,e.pan,e.vel*vg);
   }
+  let oL=L, oR=R, oN=n;
+  if(loop){
+    const durS=Math.round(A.dur*SR);
+    const fL=new Float32Array(durS), fR=new Float32Array(durS);
+    for(let i=0;i<n;i++){const j=i%durS; fL[j]+=L[i]; fR[j]+=R[i];}   // wrap tails to the top
+    oL=fL; oR=fR; oN=durS;
+  }
   // peak-normalise to 0.9 — guarantees no clipping in the WAV by construction
-  let mx=0; for(let i=0;i<n;i++){const a=Math.abs(L[i]);if(a>mx)mx=a;const b=Math.abs(R[i]);if(b>mx)mx=b;}
-  if(mx>0){const k=0.9/mx;for(let i=0;i<n;i++){L[i]*=k;R[i]*=k;}}
-  return {L,R,dur:A.dur,cycleDur:A.cycleDur,cycles:A.cycles,meter:A.meter};
+  let mx=0; for(let i=0;i<oN;i++){const a=Math.abs(oL[i]);if(a>mx)mx=a;const b=Math.abs(oR[i]);if(b>mx)mx=b;}
+  if(mx>0){const k=0.9/mx;for(let i=0;i<oN;i++){oL[i]*=k;oR[i]*=k;}}
+  return {L:oL,R:oR,dur:A.dur,cycleDur:A.cycleDur,cycles:A.cycles,meter:A.meter};
 }
 
 function toStereoBuffer(ctx,L,R){const b=ctx.createBuffer(2,L.length,SR);b.getChannelData(0).set(L);b.getChannelData(1).set(R);return b;}
@@ -592,7 +604,7 @@ function buildGraph(ctx, L, R, loop){
 /* -------------------------- realtime transport --------------------------- */
 let RT=null;
 function play(){
-  const M=renderMaster();
+  const M=renderMaster(true);
   const ctx=new (window.AudioContext||window.webkitAudioContext)();
   __iosAudio(ctx);
   const G=buildGraph(ctx,M.L,M.R,true);
@@ -626,7 +638,7 @@ function encodeWav(L,R,sr){
 async function cut(){
   const btn=$('cut'),note=$('cutnote');btn.disabled=true;note.textContent='drumming…';
   try{
-    const M=renderMaster();
+    const M=renderMaster(false);
     const total=M.L.length/SR;
     const ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
     const G=buildGraph(ctx,M.L,M.R,false);
