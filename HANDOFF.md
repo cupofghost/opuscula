@@ -2,6 +2,75 @@
 
 Working notes for in-flight changes. Newest first.
 
+## RILLE — harmonic auto-mixing between generated tracks (DJ set)
+
+**Branch:** `claude/rille-hiss-pause-4dojix`
+**File touched:** `rille/index.html`
+**Status:** Done, verified headless. No PR opened yet.
+
+### The report
+"Expand RILLE to mix between songs. Follow harmonic principles (Camelot wheel).
+Use research on what makes minimal techno good and follow the guidelines."
+Chosen UX (asked): continuous auto-set + manual trigger; next key "mostly smooth,
+occasional lift".
+
+### What it does now
+A new **AUTO-SET** toggle turns RILLE from one track into an endless DJ set: every
+`SET_BARS` (48) it beatmatches and blends into a fresh generated track in a
+**Camelot-compatible key**, over a long phrase-aligned crossfade with a **bass
+swap**. **JETZT →** triggers the next blend by hand (keys: `m` mix, `x` auto).
+A readout under the controls shows the current Camelot key and the queued move.
+
+### Harmonic model (Camelot)
+Every mood is a minor-family mode, so every track sits on the Camelot **A ring**;
+its key = tonic pitch-class. `CAMELOT_PC`/`PC_CAMELOT` map both ways; ±1 Camelot =
+a perfect fifth/fourth. Moves rendered (all minor→minor, all wheel-legal): same
+key, +1 (fifth ↑), −1 (fourth ↑), and the two energy boosts +7 (semitone ↑) and
++2 (whole-tone ↑). `pickHarmonicMove` weights fifths/fourths highest, same-key
+sometimes, an energy lift now and then. **B-ring / relative-major moves are not
+rendered** — the engine has no major mode. Mood keys: FINSTERNIS 4A, SCHATTEN 1A,
+TRÄNEN 8A, EISEN 9A, DÄMMERUNG 7A, LEERE 5A. `genAll` gained a `rootOverride` so a
+track can be transposed to any target key; `st.root` carries the live key.
+
+### Minimal-techno principles (from the research)
+Long blends (`BLEND_BARS`=16, phrase-aligned), **beatmatch** (both decks share one
+bar clock at `st.bpm`), **bass swap** (incoming tops rise first with its low end
+held out by a highpass, kick+bass handed over at the mid-blend bar so two
+basslines never stack), and **transition by subtraction** (at the swap the
+outgoing track's stabs/claps/melody are stripped, then it fades). Incoming starts
+from its intro and builds.
+
+### Architecture — dual deck
+`buildGraph` is now a shared **mixer** (master shaper→comp→out + shared reverb/
+delay sends). `makeDeck()` hangs a full channel-strip per track: part gains, its
+own sidechain duck bus, stab filter, kick drive, sends, a **fader** (crossfader),
+a **bassKill** highpass (the bass swap), and a post-comp **deckFloor** for the
+hiss (still never pumped, now crossfades per deck). Voice functions are unchanged
+— their first arg is still called `G` but now receives a deck exposing the same
+field names. `RT.decks[]` holds live decks (normally 1, two during a blend);
+`schedTick` advances/schedules each at the same `t`. `startMix`/`doSwap`/
+`finishMix` run the blend; the outgoing deck is retired and the incoming promoted
+to primary (`st.g` etc.), with chips/ledger/hash resynced. Hash gained `k` (key)
+and `x` (auto) so a shared link restores the exact key and set mode. `cutPlate`
+builds one deck; the offline WAV is still a single track.
+
+### Verification (headless Chromium)
+- Camelot: 400 random moves all legal; pc↔number round-trips; mood key table
+  correct.
+- Full blend sampled live: incoming fader 0→1 over the first half with lows
+  killed (bassKill 230), swap hands the low end over (outgoing bassKill 20→230,
+  incoming 230→20), outgoing fader →0. End-to-end via the scheduler: `4A→5A`,
+  ÜBERGANG section seen, promoted at bar 24 (=start+16), decks 2→1, no errors.
+- Auto-set fires a compatible mix; manual JETZT queues one at the next phrase.
+- Regressions: pause suspends, multi-deck STAUB mute → part+floor 0, offline WAV
+  renders (peak .97). No console/page errors in any run.
+
+### If picking this up
+- Only the A ring is reachable; a major-mode voicing would unlock relative/
+  diagonal (B-ring) moves and the full wheel.
+- `SET_BARS`/`BLEND_BARS` are consts near the Camelot helpers if the set pacing
+  wants tuning.
+
 ## RILLE — hiss pumped with the kick; added a pause button
 
 **Branch:** `claude/rille-hiss-pause-4dojix`

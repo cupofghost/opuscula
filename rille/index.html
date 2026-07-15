@@ -192,6 +192,15 @@ button,canvas,.centerlabel{-webkit-user-select:none;user-select:none}
     </div>
 
     <div>
+      <div class="lab">Mix · harmonisch überblenden nach Camelot</div>
+      <div class="chips" style="grid-template-columns:2fr 1fr;margin-bottom:6px">
+        <button id="automix">AUTO-SET<span class="en">endlos · harmonisch mischen</span></button>
+        <button id="mixnow" disabled>JETZT →<span class="en">nächste Tonart</span></button>
+      </div>
+      <div class="cutnote" id="harm">—</div>
+    </div>
+
+    <div>
       <div class="lab">Spuren · die Teile</div>
       <div class="strip" id="strip"></div>
     </div>
@@ -212,13 +221,15 @@ button,canvas,.centerlabel{-webkit-user-select:none;user-select:none}
         <p>Techno was born in the mid-1980s in Detroit, in the drum-machines and synthesizers of Juan Atkins, Derrick May and Kevin Saunderson. <em>Minimal</em> techno pared it back to the barest hypnotic essentials. After the Wall fell in 1989 Berlin became its second home, and in the city's studios Basic Channel — Moritz von Oswald and Mark Ernestus — fused techno with the echo, reverb and cavernous space of Jamaican <em>dub</em>. The result trades melody for the slow, patient evolution of a single groove: the loop <em>is</em> the composition.</p>
         <h4>Affect and law</h4>
         <p>Six <em>Affekte</em> — moods — set the key, tempo, palette, spread and density; a diatonic engine keeps the chords in the mode while the arrangement writes itself. A “dubplate”, or white label, is the one-off acetate a DJ cuts to road-test a track before anyone else can get a copy.</p>
+        <h4>Mixing in key</h4>
+        <p>Turn on <em>AUTO-SET</em> and RILLE stops being one track and becomes a set: it beatmatches and blends into a fresh generated track every so often, the way a DJ threads a night together. It chooses the next key by the <em>Camelot wheel</em>, the harmonic-mixing system where adjacent numbers are a perfect fifth apart — so the move is a fifth up or down, the same key, or now and then a semitone/whole-tone <em>energy</em> lift. Each blend is a long, phrase-aligned crossfade with a <em>bass swap</em>: the incoming record's tops come up first while its low end is held back, then kick and bass are handed over cleanly at the bar so two basslines never fight. <em>JETZT →</em> triggers the next blend by hand. Every transition stays in key.</p>
         <h4>The name</h4>
         <p>German <em>Rille</em> — the groove cut into a record. Berlin is techno's adopted mother city, so the work speaks German; the visible interface is translated throughout, while the code beneath keeps its original names.</p>
       </div>
     </details>
 
     <div class="colophon">33⅓ U/min · stereo · ohne Kompromiss<br>
-    op. IV · <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:2px">opvscvla</a> · Tasten: Leertaste=Spiel · r=Neupressung · c=Schnitt</div>
+    op. IV · <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:2px">opvscvla</a> · Tasten: Leertaste=Spiel · p=Pause · m=Mischen · x=Auto-Set · r=Neupressung · c=Schnitt</div>
   </div>
 </div>
 
@@ -256,7 +267,8 @@ button,canvas,.centerlabel{-webkit-user-select:none;user-select:none}
        included) is written into location.hash, so THE URL IS THE PRESSING.
 
    KEYS (shown in German, but the physical keys are the same everywhere):
-       space = play/stop   ·   p = pause/resume   ·   r = another version   ·   c = cut a WAV
+       space = play/stop   ·   p = pause/resume   ·   m = mix into next key   ·
+       x = auto-set   ·   r = another version   ·   c = cut a WAV
 
    THIS FILE: helpers → ENGINE (diatonic chords → pattern generation) →
    state → audio graph → voices → bar scheduler → realtime transport →
@@ -309,6 +321,52 @@ const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
 const NOTE=['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'];
 const mtof=m=>440*Math.pow(2,(m-69)/12);
+
+/* ---------------- Camelot wheel · harmonic mixing ----------------
+   Every RILLE mood is a minor-family mode (phrygian/dorian/aeolian all carry a
+   ♭3), so every generated track sits on the Camelot "A" (minor) ring. Its key is
+   just the pitch-class of its tonic. Adjacent Camelot numbers are a perfect fifth
+   apart, so a step of ±1 = ±7 semitones (the fifth/fourth move, the backbone of
+   harmonic mixing). We stay on the A ring — the engine has no major mode to reach
+   the B ring / relative-major moves — but that still gives the wheel's core:
+   same key, ±1 neighbours, and the two energy boosts (+7 numbers = up a semitone,
+   +2 numbers = up a whole tone). pc→number and back: */
+const CAMELOT_PC=[5,12,7,2,9,4,11,6,1,8,3,10];              // pitch-class → Camelot A-number
+const PC_CAMELOT=(()=>{const a=[];CAMELOT_PC.forEach((n,pc)=>a[n]=pc);return a;})(); // number → pitch-class
+const camelotOf=root=>CAMELOT_PC[((root%12)+12)%12];        // MIDI/pc → 1..12 (A ring)
+const camelotLabel=root=>camelotOf(root)+'A';
+// the harmonic moves we can render, all minor→minor and all Camelot-legal.
+// d = step in Camelot NUMBERS (mod 12); the resulting semitone shift is in the tag.
+const HARM_MOVES=[
+  {d:0, tag:'gleiche Tonart', kind:'smooth'},               // same key, new track
+  {d:1, tag:'Quinte ↑',       kind:'smooth'},               // +1 = up a perfect fifth
+  {d:-1,tag:'Quarte ↑',       kind:'smooth'},               // −1 = up a perfect fourth
+  {d:7, tag:'Energie · Halbton ↑', kind:'lift'},            // +7 numbers = up a semitone
+  {d:2, tag:'Energie · Ganzton ↑', kind:'lift'},            // +2 numbers = up a whole tone
+];
+// "mostly smooth, occasional lift" — a DJ's pacing. Fifth/fourth moves dominate,
+// same-key sometimes, an energy boost now and then.
+function pickHarmonicMove(rng){
+  const w=[[0,.15],[1,.30],[2,.30],[3,.12],[4,.13]];        // indices into HARM_MOVES
+  let r=rng(),acc=0;
+  for(const [i,p] of w){acc+=p;if(r<acc)return HARM_MOVES[i];}
+  return HARM_MOVES[1];
+}
+// resolve a move from a current Camelot number to the target number + tonic pc
+function applyMove(curNum,mv){
+  const num=((curNum-1+mv.d)%12+12)%12+1;
+  return {num, pc:PC_CAMELOT[num], label:num+'A', tag:mv.tag, kind:mv.kind};
+}
+// a MIDI root with pitch-class pc, in the bass register the moods live in
+// (36–45), nearest to a reference root so the key doesn't leap octaves.
+function nearestRoot(pc,ref){
+  let best=null,bd=1e9;
+  for(let m=pc+24;m<=pc+48;m+=12){if(m<33||m>47)continue;const d=Math.abs(m-ref);if(d<bd){bd=d;best=m;}}
+  if(best==null){best=pc+36;while(best>47)best-=12;while(best<33)best+=12;}
+  return best;
+}
+const BLEND_BARS=16;                                       // length of a DJ blend (phrase-aligned)
+const SET_BARS=48;                                         // bars a track holds before the auto-set segues
 
 const PARTS=['fundus','bassus','crepitus','manus','chordae','cantus','pulvis'];
 const PARTLABEL={fundus:'KICK',bassus:'BASS',crepitus:'HATS',manus:'CLAP',chordae:'AKKORDE',cantus:'MELODIE',pulvis:'STAUB'};
@@ -424,9 +482,11 @@ function chordLetters(mode,root,degs){
 }
 
 /* ---------------- pattern generation ---------------- */
-function genAll(seed,mi,bpm,progIdx,follow){
+function genAll(seed,mi,bpm,progIdx,follow,rootOverride){
   const M=MOODS[mi],rng=mulberry32(seed);
-  const g={mood:mi,bpm,root:M.root,seed};
+  // rootOverride transposes the whole track to a target key (used by the harmonic
+  // mixer). Every note derives from g.root, so overriding it transposes cleanly.
+  const g={mood:mi,bpm,root:(rootOverride==null?M.root:rootOverride),seed};
   g.progDeg=(PROGS[progIdx||0].deg||M.progDeg).slice();
   g.follow=(follow===undefined)?M.follow:follow;
   g.vstyle=M.vstyle;
@@ -490,7 +550,7 @@ function genAll(seed,mi,bpm,progIdx,follow){
   // cantus: 5-note motif on minor pentatonic, over 2 bars, sparse
   g.cantus=[];
   if(M.cantus){
-    const root=M.root;
+    const root=g.root;
     const pent=[0,3,5,7,10];
     let deg=(rng()*5)|0;
     const steps=[0,6,10,16,22].map(x=>x+((rng()*2)|0));
@@ -522,7 +582,7 @@ function newArrange(g,rng){
         if(r<.22){this.frac=4;this.section='BRUCH';}
         else if(r<.36){this.active.crepitus=false;this.section='SCHWEBE';}
         else{this.active.crepitus=true;
-          if(st.g.M.cantus)this.active.cantus=true;      // live mood
+          if(g.M.cantus)this.active.cantus=true;         // this deck's own mood
           this.section='VOLL';}
       }
     },
@@ -539,13 +599,15 @@ function newArrange(g,rng){
 const $=id=>document.getElementById(id);
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const st={mood:0,seed:(Math.random()*0xffffffff)>>>0,bpm:MOODS[0].bpm,g:null,
-  prog:0,follow:undefined,mutes:{},playing:false,paused:false,bar:0,step:0};
+  prog:0,follow:undefined,mutes:{},playing:false,paused:false,auto:false,root:null,bar:0,step:0};
 PARTS.forEach(p=>st.mutes[p]=false);
 
 // regenerate the patterns for the current mood/prog/seed (no transport change)
 function regenPatterns(newSeed){
   if(newSeed)st.seed=(Math.random()*0xffffffff)>>>0;
-  st.g=genAll(st.seed,st.mood,st.bpm,st.prog,st.follow);
+  // st.root carries the current key (a transposition set by the harmonic mixer);
+  // null means use the mood's own key.
+  st.g=genAll(st.seed,st.mood,st.bpm,st.prog,st.follow,st.root);
   applyMoodSkin();renderLedger();
   $('matrix').textContent='MATRIZE '+st.seed.toString(16).toUpperCase().padStart(8,'0');
 }
@@ -555,24 +617,27 @@ function regenPatterns(newSeed){
 // If stopped, just refresh the preview and reset to the top.
 function applyChange(newSeed){
   regenPatterns(newSeed);
-  if(RT) applyMoodFX(RT.G,st.g.M,RT.ac.currentTime);
-  else { st.bar=0;st.step=0; drawDisc(0,0,null); }
+  if(RT){ applySharedFX(RT.G,st.g.M,RT.ac.currentTime); applyDeckFX(RT.decks[0].D,st.g.M,RT.ac.currentTime); updateHarm(); }
+  else { st.bar=0;st.step=0; drawDisc(0,0,null); updateHarm(); }
 }
-// ramp the mood-dependent effects (reverb, echo, chord filter, kick drive) to
-// a new mood while playing. The reverb IR is swapped under a brief duck so the
-// convolver doesn't click.
-function applyMoodFX(G,M,t){
+// ramp the shared send FX (reverb, echo) to a mood. The reverb IR is swapped
+// under a brief duck so the convolver doesn't click. Lives on the master, so a
+// mid-blend swap moves the whole mixer's FX toward the incoming track.
+function applySharedFX(G,M,t){
   const ramp=(p,v)=>{try{p.cancelScheduledValues(t);p.setValueAtTime(p.value,t);p.linearRampToValueAtTime(v,t+.25);}catch(e){}};
   if(G.dret)ramp(G.dret.gain,M.dly.mix);
   if(G.dfb)ramp(G.dfb.gain,M.dly.fb);
-  try{G.stabBP.type=M.stab.pad?'lowpass':'bandpass';G.stabBP.frequency.setTargetAtTime(M.stab.bp,t,.1);G.stabBP.Q.setTargetAtTime(M.stab.q,t,.1);}catch(e){}
-  try{G.kickDrive.curve=shaperCurve(M.kick.drive);}catch(e){}
   if(G.vret&&G.verb){                                   // duck → swap IR → restore
     const g=G.vret.gain;
     try{g.cancelScheduledValues(t);g.setValueAtTime(g.value,t);g.linearRampToValueAtTime(0,t+.05);}catch(e){}
     setTimeout(()=>{try{G.verb.buffer=makeIR(G.ac,M.verb.sec);const t2=G.ac.currentTime;
       g.setValueAtTime(0,t2);g.linearRampToValueAtTime(M.verb.mix,t2+.2);}catch(e){}},70);
   }
+}
+// ramp a deck's own voice-chain FX (chord filter, kick drive) to a mood.
+function applyDeckFX(D,M,t){
+  try{D.stabBP.type=M.stab.pad?'lowpass':'bandpass';D.stabBP.frequency.setTargetAtTime(M.stab.bp,t,.1);D.stabBP.Q.setTargetAtTime(M.stab.q,t,.1);}catch(e){}
+  try{D.kickDrive.curve=shaperCurve(M.kick.drive);}catch(e){}
 }
 function applyMoodSkin(){
   const M=MOODS[st.mood];
@@ -581,6 +646,25 @@ function applyMoodSkin(){
   $('lgloss').textContent=M.gloss;
   $('ltech').textContent=st.bpm+' BPM · '+NOTE[st.g.root%12].toUpperCase()+' '+M.modeName;
   $('temprd').textContent=st.bpm+' bpm';
+}
+// the harmonic readout: current Camelot key, and — while a blend is running —
+// the compatible key we're mixing into and what kind of move it is.
+function updateHarm(){
+  const el=$('harm'); if(!el||!st.g)return;
+  const base=camelotLabel(st.g.root)+' · '+NOTE[st.g.root%12].toUpperCase()+MOODS[st.mood].modeName.charAt(0);
+  if(RT&&RT.mix){
+    const m=RT.mix.move;
+    el.innerHTML='<b>'+base+'</b> &nbsp;→&nbsp; <b>'+m.label+' · '+NOTE[m.pc].toUpperCase()+'</b> · '+m.tag;
+  }else{
+    el.innerHTML='<b>'+base+'</b> · '+(RT&&RT.auto?'Auto-Set läuft':(st.playing?'harmonisch bereit':'—'));
+  }
+}
+// after a blend promotes a new track, re-sync the affect/tempo/progression chips.
+function refreshChips(){
+  const affEl=$('aff');
+  if(affEl)affEl.querySelectorAll('button').forEach((x,k)=>x.classList.toggle('on',k===st.mood));
+  $('tempo').value=st.bpm;$('temprd').textContent=st.bpm+' bpm';
+  if(typeof renderProgChips==='function')renderProgChips();
 }
 function renderLedger(){
   const M=MOODS[st.mood],g=st.g;
@@ -609,21 +693,20 @@ function makeIR(ac,sec){const len=Math.max(1,Math.floor(sec*ac.sampleRate)),b=ac
 function shaperCurve(k){const n=1024,c=new Float32Array(n);
   for(let i=0;i<n;i++){const x=i/(n-1)*2-1;c[i]=Math.tanh(x*k)/Math.tanh(k);}return c;}
 
+// The mixer: shared master bus (shaper→comp→out) and shared send FX (reverb,
+// delay) — like a DJ mixer, both decks feed one master and share the FX unit.
+// makeDeck() hangs a full channel-strip off it per track so two tracks can play
+// and be crossfaded at once. cutPlate and single-track play just make one deck.
 function buildGraph(ac,g){
-  const M=g.M,G={ac,g};
+  const M=g.M,G={ac};
   G.noise=makeNoise(ac);G.crackle=makeCrackle(ac);
-  // master: shaper -> comp -> out
+  // master: pre -> shaper -> comp -> out
   G.pre=ac.createGain();G.pre.gain.value=.9;
   G.shape=ac.createWaveShaper();G.shape.curve=shaperCurve(1.6);G.shape.oversample='2x';
   G.comp=ac.createDynamicsCompressor();
   G.comp.threshold.value=-12;G.comp.ratio.value=5;G.comp.attack.value=.004;G.comp.release.value=.18;
   G.pre.connect(G.shape).connect(G.comp).connect(ac.destination);
-  // record-surface floor: taps straight to the output, AFTER the master
-  // shaper/compressor, so the constant hiss of the pressing is never pumped by
-  // the kick the way a mix-bus signal would be. A real dubplate's surface noise
-  // sits under the stylus as a steady floor, not a sidechained one.
-  G.floor=ac.createGain();G.floor.gain.value=st.mutes.pulvis?0:1;G.floor.connect(ac.destination);
-  // sends
+  // shared send FX
   G.verb=ac.createConvolver();G.verb.buffer=makeIR(ac,M.verb.sec);
   G.vret=ac.createGain();G.vret.gain.value=M.verb.mix;G.verb.connect(G.vret).connect(G.pre);
   G.dly=ac.createDelay(2);G.dfb=ac.createGain();G.dfb.gain.value=M.dly.fb;
@@ -631,29 +714,49 @@ function buildGraph(ac,g){
   const dhp=ac.createBiquadFilter();dhp.type='highpass';dhp.frequency.value=300;
   G.dly.connect(dlp).connect(dhp).connect(G.dfb).connect(G.dly);
   G.dret=ac.createGain();G.dret.gain.value=M.dly.mix;dhp.connect(G.dret).connect(G.pre);
-  G.sendV=(n,a)=>{const s=ac.createGain();s.gain.value=a;n.connect(s).connect(G.verb);};
-  G.sendD=(n,a)=>{const s=ac.createGain();s.gain.value=a;n.connect(s).connect(G.dly);};
-  // duck bus (musical parts)
-  G.duck=ac.createGain();G.duck.gain.value=1;G.duck.connect(G.pre);
+  G.makeDeck=dg=>makeDeck(G,dg);
+  return G;
+}
+// A deck = one track's channel strip. All voices route into D.* (same field names
+// the old single graph used), so the voice functions are unchanged. Everything
+// sums to D.fader (the crossfader) → master, via D.bassKill (a highpass used for
+// the bass swap). The hiss taps post-comp through D.deckFloor so it is never
+// pumped, and crossfades with the deck.
+function makeDeck(G,g){
+  const ac=G.ac,M=g.M;
+  const D={ac,g,G,noise:G.noise,crackle:G.crackle,openHats:[]};
+  // channel: parts → sum → bassKill → fader → master.pre
+  D.fader=ac.createGain();D.fader.gain.value=1;
+  D.bassKill=ac.createBiquadFilter();D.bassKill.type='highpass';
+  D.bassKill.frequency.value=20;D.bassKill.Q.value=.7;      // 20Hz ≈ open (passes lows)
+  D.sum=ac.createGain();D.sum.gain.value=1;
+  D.sum.connect(D.bassKill).connect(D.fader).connect(G.pre);
+  // this deck's sends into the shared FX
+  D.sendV=(n,a)=>{const s=ac.createGain();s.gain.value=a;n.connect(s).connect(G.verb);};
+  D.sendD=(n,a)=>{const s=ac.createGain();s.gain.value=a;n.connect(s).connect(G.dly);};
+  // per-deck sidechain duck bus (its own kick ducks its own musical parts)
+  D.duck=ac.createGain();D.duck.gain.value=1;D.duck.connect(D.sum);
   // per-part gains
-  G.part={};
+  D.part={};
   for(const p of PARTS){
     const gn=ac.createGain();gn.gain.value=st.mutes[p]?0:1;
-    gn.connect(['bassus','chordae','cantus'].includes(p)?G.duck:G.pre);
-    G.part[p]=gn;
+    gn.connect(['bassus','chordae','cantus'].includes(p)?D.duck:D.sum);
+    D.part[p]=gn;
   }
   // kick drive chain
-  G.kickDrive=ac.createWaveShaper();G.kickDrive.curve=shaperCurve(M.kick.drive);G.kickDrive.oversample='2x';
-  G.kickDrive.connect(G.part.fundus);
+  D.kickDrive=ac.createWaveShaper();D.kickDrive.curve=shaperCurve(M.kick.drive);D.kickDrive.oversample='2x';
+  D.kickDrive.connect(D.part.fundus);
   // chord filter bus
-  G.stabBP=ac.createBiquadFilter();G.stabBP.type=M.stab.pad?'lowpass':'bandpass';
-  G.stabBP.frequency.value=M.stab.bp;G.stabBP.Q.value=M.stab.q;
-  G.stabBP.connect(G.part.chordae);
-  G.sendV(G.part.chordae,.5);G.sendD(G.part.chordae,.6);
-  G.sendV(G.part.manus,.35);G.sendD(G.part.crepitus,.1);
-  G.sendV(G.part.cantus,.5);G.sendD(G.part.cantus,.7);
-  G.openHats=[];
-  return G;
+  D.stabBP=ac.createBiquadFilter();D.stabBP.type=M.stab.pad?'lowpass':'bandpass';
+  D.stabBP.frequency.value=M.stab.bp;D.stabBP.Q.value=M.stab.q;
+  D.stabBP.connect(D.part.chordae);
+  D.sendV(D.part.chordae,.5);D.sendD(D.part.chordae,.6);
+  D.sendV(D.part.manus,.35);D.sendD(D.part.crepitus,.1);
+  D.sendV(D.part.cantus,.5);D.sendD(D.part.cantus,.7);
+  // record-surface floor: hiss straight to output, post-comp (never pumped),
+  // scaled by this deck's floor gain so it crossfades with the deck.
+  D.deckFloor=ac.createGain();D.deckFloor.gain.value=st.mutes.pulvis?0:1;D.deckFloor.connect(ac.destination);
+  return D;
 }
 
 /* ---------------- voices ---------------- */
@@ -767,7 +870,7 @@ function startDust(G,when){
   const h=ac.createBufferSource();h.buffer=G.noise;h.loop=true;
   const hlp=ac.createBiquadFilter();hlp.type='lowpass';hlp.frequency.value=6000;
   const hg=ac.createGain();hg.gain.value=.004*M.dust;
-  h.connect(hlp).connect(hg).connect(G.floor);h.start(when);
+  h.connect(hlp).connect(hg).connect(G.deckFloor);h.start(when);
   G.sendV(cg,.3);
   return [c,h];
 }
@@ -781,7 +884,7 @@ function vSweep(G,t,bars,stepDur){                       // break riser
   gn.gain.setValueAtTime(.0001,t);
   gn.gain.exponentialRampToValueAtTime(.14,t+len*.9);
   gn.gain.linearRampToValueAtTime(0,t+len);
-  s.connect(bp).connect(gn).connect(G.pre);
+  s.connect(bp).connect(gn).connect(G.fader);
   G.sendV(gn,.5);
   s.start(t);s.stop(t+len+.1);
 }
@@ -835,35 +938,118 @@ function scheduleBar(G,arr,g,bar,t0,stepDur,rng){
   }
 }
 
-/* ---------------- realtime transport ---------------- */
+/* ---------------- realtime transport ----------------
+   RT.decks is a list of live tracks. Normally one. During a harmonic blend a
+   second deck runs alongside it, beatmatched to the same bar clock, and the two
+   are crossfaded with a bass swap. decks[0] is always the primary (front) track:
+   it reads the LIVE st.g so the on-screen controls edit it, and it drives the
+   disc and ledger. */
 function startPlay(){
   const ac=new(window.AudioContext||window.webkitAudioContext)();
   __iosAudio(ac);
   const G=buildGraph(ac,st.g);
+  const D=G.makeDeck(st.g);
   const rng=mulberry32(st.seed^0xA5A5A5A5);
   const arr=newArrange(st.g,rng);
-  const dust=startDust(G,ac.currentTime+.05);
+  const dust=startDust(D,ac.currentTime+.05);
   const t0=ac.currentTime+.1, stepDur=60/st.bpm/4;
   // bars: a running log of {bar,t,dur,section} so tempo can change mid-flow and
   // the visuals still know which bar is sounding.
-  RT={ac,G,arr,rng,dust,timer:null,bars:[{bar:0,t:t0,dur:stepDur,section:arr.section}]};
-  scheduleBar(G,arr,st.g,0,t0,stepDur,rng);
-  RT.timer=setInterval(()=>{
-    if(!RT)return;
-    const cur=RT.bars[RT.bars.length-1], endT=cur.t+16*cur.dur;
-    if(ac.currentTime>endT-0.35){
-      const bar=cur.bar+1, dur=60/st.bpm/4, t=endT;      // LIVE tempo, each bar
-      arr.tickBar();
-      if(bar%8===0){arr.advance(bar);if(arr.frac>0)vSweep(G,t,4,dur);}
-      scheduleBar(G,arr,st.g,bar,t,dur,rng);             // LIVE patterns (st.g)
-      RT.bars.push({bar,t,dur,section:arr.section});
-      if(RT.bars.length>48)RT.bars.splice(0,RT.bars.length-48);
-    }
-  },40);
+  RT={ac,G,decks:[{D,g:st.g,arr,rng,dust}],timer:null,mix:null,mixQueued:false,
+      auto:st.auto,sinceMix:0,bars:[{bar:0,t:t0,dur:stepDur,section:arr.section}]};
+  scheduleBar(D,arr,st.g,0,t0,stepDur,rng);
+  RT.timer=setInterval(schedTick,40);
   st.playing=true;st.paused=false;
   $('play').textContent='STOPP';$('play').classList.add('on');
   $('pause').disabled=false;$('pause').textContent='PAUSE';$('pause').classList.remove('on');
+  $('mixnow').disabled=false;
+  updateHarm();
   tick();
+}
+// one scheduler step: at each bar boundary, maybe start a mix, then advance and
+// schedule every live deck at the same time t (beatmatch), then run mix phases.
+function schedTick(){
+  if(!RT)return;
+  const cur=RT.bars[RT.bars.length-1], endT=cur.t+16*cur.dur;
+  if(RT.ac.currentTime>endT-0.35){
+    const bar=cur.bar+1, dur=60/st.bpm/4, t=endT;        // LIVE tempo, each bar
+    // begin a blend on a phrase boundary — queued by hand, or by the auto-set
+    if(bar%8===0 && !RT.mix && (RT.mixQueued || (RT.auto && RT.sinceMix>=SET_BARS))){
+      RT.mixQueued=false; startMix(bar,t,dur);
+    }
+    for(const ds of RT.decks){                           // every live deck, same clock
+      ds.arr.tickBar();
+      if(bar%8===0){ds.arr.advance(bar); if(ds.arr.frac>0)vSweep(ds.D,t,4,dur);}
+      const g=(ds===RT.decks[0])?st.g:ds.g;              // primary reads LIVE patterns
+      scheduleBar(ds.D,ds.arr,g,bar,t,dur,ds.rng);
+    }
+    if(RT.mix){
+      if(!RT.mix.swapped && bar>=RT.mix.swapBar) doSwap();
+      if(bar>=RT.mix.endBar) finishMix();
+    }
+    RT.sinceMix++;
+    RT.bars.push({bar,t,dur,section:RT.decks[0].arr.section});
+    if(RT.bars.length>48)RT.bars.splice(0,RT.bars.length-48);
+  }
+}
+// Begin a harmonic blend into a fresh, key-compatible track. Picks a Camelot
+// move, generates the incoming track transposed to the target key (beatmatched
+// to the current tempo), spins up a second deck stripped to its intro, and
+// schedules the whole crossfade + bass-swap envelope up front.
+function startMix(atBar,atT,dur){
+  const A=RT.decks[0], curG=st.g;                          // st.g = the primary's LIVE patterns
+  const mv=applyMove(camelotOf(curG.root),pickHarmonicMove(Math.random));
+  let mi=(curG.mood+1+((Math.random()*(MOODS.length-1))|0))%MOODS.length;   // a different affect
+  const root=nearestRoot(mv.pc,curG.root);
+  const seed=(Math.random()*0xffffffff)>>>0;
+  const g2=genAll(seed,mi,st.bpm,0,undefined,root);      // beatmatched; its own progression
+  const D=RT.G.makeDeck(g2);
+  const rng=mulberry32(seed^0xA5A5A5A5);
+  const arr=newArrange(g2,rng);
+  const dust=startDust(D,atT);
+  const barDur=16*dur, HALF=BLEND_BARS/2, tSwap=atT+HALF*barDur, tEnd=atT+BLEND_BARS*barDur;
+  const floorTgt=st.mutes.pulvis?0:1;
+  // incoming: silent, lows removed. Tops rise over the first half; low end is
+  // handed over at the swap (bassKill opens from 230Hz → 20Hz).
+  D.fader.gain.setValueAtTime(0,atT);      D.fader.gain.linearRampToValueAtTime(1,tSwap);
+  D.deckFloor.gain.setValueAtTime(0,atT);  D.deckFloor.gain.linearRampToValueAtTime(floorTgt,tSwap);
+  D.bassKill.frequency.setValueAtTime(230,atT); D.bassKill.frequency.setValueAtTime(230,tSwap);
+  D.bassKill.frequency.linearRampToValueAtTime(20,tSwap+.5);
+  // outgoing: hold full through the swap, then drop its lows and fade out.
+  const AF=A.D.fader.gain, ABK=A.D.bassKill.frequency, ADF=A.D.deckFloor.gain;
+  try{AF.cancelScheduledValues(atT);}catch(e){}
+  AF.setValueAtTime(AF.value,atT); AF.setValueAtTime(1,tSwap); AF.linearRampToValueAtTime(0,tEnd);
+  ABK.setValueAtTime(20,tSwap); ABK.linearRampToValueAtTime(230,tSwap+.5);
+  ADF.setValueAtTime(ADF.value,tSwap); ADF.linearRampToValueAtTime(0,tEnd);
+  RT.decks.push({D,g:g2,arr,rng,dust});
+  RT.mix={outgoing:A,incoming:RT.decks[RT.decks.length-1],
+          startBar:atBar,swapBar:atBar+HALF,endBar:atBar+BLEND_BARS,swapped:false,
+          from:camelotLabel(curG.root),move:mv};
+  updateHarm();
+}
+// swap point: the outgoing track hands over the low end, so strip its send-heavy
+// parts (a clean, subtractive handover) and move the shared FX to the incoming
+// mood. The bassKill envelopes were already scheduled in startMix.
+function doSwap(){
+  const A=RT.mix.outgoing;
+  A.arr.active.chordae=false;A.arr.active.cantus=false;A.arr.active.manus=false;
+  A.arr.section='ÜBERGANG';
+  applySharedFX(RT.G,RT.mix.incoming.g.M,RT.ac.currentTime);
+  RT.mix.swapped=true;
+  updateHarm();
+}
+// blend done: retire the outgoing deck and promote the incoming track to primary.
+function finishMix(){
+  const A=RT.mix.outgoing, B=RT.mix.incoming;
+  try{A.dust.forEach(s=>{try{s.stop(RT.ac.currentTime+.3);}catch(e){}});}catch(e){}
+  setTimeout(()=>{try{A.D.sum.disconnect();A.D.bassKill.disconnect();A.D.fader.disconnect();A.D.deckFloor.disconnect();}catch(e){}},700);
+  RT.decks=RT.decks.filter(d=>d!==A);
+  st.mood=B.g.mood; st.seed=B.g.seed; st.root=B.g.root; st.g=B.g;   // incoming is now the live track
+  st.prog=0; st.follow=undefined;                                   // incoming was generated with its own defaults
+  RT.mix=null; RT.sinceMix=0;
+  applyMoodSkin(); renderLedger(); refreshChips();
+  $('matrix').textContent='MATRIZE '+st.seed.toString(16).toUpperCase().padStart(8,'0');
+  updateHarm(); __hashWrite();
 }
 function stopPlay(){
   if(!RT)return;
@@ -873,8 +1059,9 @@ function stopPlay(){
   st.playing=false;st.paused=false;
   $('play').textContent='SPIEL';$('play').classList.remove('on');
   $('pause').disabled=true;$('pause').textContent='PAUSE';$('pause').classList.remove('on');
+  $('mixnow').disabled=true;
   const sn=$('secname');if(sn)sn.textContent='—';
-  drawDisc(0,0,null);
+  drawDisc(0,0,null); updateHarm();
 }
 let lastT=0,__frameKey='';
 function tick(ts){
@@ -889,7 +1076,7 @@ function tick(ts){
     const key=bar+':'+(RM?Math.floor(step):Math.round(step*24));
     if(key!==__frameKey){                                // skip identical frames
       __frameKey=key;
-      drawDisc(bar,step,RT.arr);
+      drawDisc(bar,step,RT.decks[0].arr);
       const sn=$('secname'),bn=$('barno');
       if(sn&&sn.textContent!==e.section)sn.textContent=e.section;
       if(bn)bn.textContent=bar+1;
@@ -1000,9 +1187,10 @@ async function cutPlate(){
     const total=BARS*16*stepDur+3;
     const ac=new OfflineAudioContext(2,Math.ceil(total*44100),44100);
     const G=buildGraph(ac,g);
+    const D=G.makeDeck(g);
     const rng=mulberry32(st.seed^0xA5A5A5A5);
     const arr=newArrange(g,rng);
-    startDust(G,0.02);
+    startDust(D,0.02);
     let t=0.06;
     for(let bar=0;bar<BARS;bar++){
       arr.tickBar();
@@ -1012,9 +1200,9 @@ async function cutPlate(){
           arr.active.chordae=false;arr.active.cantus=false;arr.active.manus=false;
           if(bar>=BARS-4){arr.active.bassus=false;arr.active.crepitus=false;}
           arr.section='AUSKLANG';
-        }else{arr.advance(bar);if(arr.frac>0)vSweep(G,t,4,stepDur);}
+        }else{arr.advance(bar);if(arr.frac>0)vSweep(D,t,4,stepDur);}
       }
-      scheduleBar(G,arr,g,bar,t,stepDur,rng);
+      scheduleBar(D,arr,g,bar,t,stepDur,rng);
       t+=16*stepDur;
     }
     const rb=await ac.startRendering();
@@ -1035,7 +1223,7 @@ MOODS.forEach((m,i)=>{
   if(i===0)b.classList.add('on');
   b.addEventListener('click',()=>{
     st.mood=i;st.bpm=m.bpm;$('tempo').value=m.bpm;$('temprd').textContent=m.bpm+' bpm';
-    st.prog=0;st.follow=undefined;
+    st.prog=0;st.follow=undefined;st.root=null;           // picking an affect honours its own key
     affEl.querySelectorAll('button').forEach((x,k)=>x.classList.toggle('on',k===i));
     renderProgChips();
     applyChange(false);                                  // re-vibe live; the groove keeps running
@@ -1076,6 +1264,18 @@ function renderProgChips(){
 $('tempo').addEventListener('input',e=>{st.bpm=+e.target.value;$('temprd').textContent=st.bpm+' bpm';});
 $('tempo').addEventListener('change',()=>{st.g.bpm=st.bpm;applyMoodSkin();renderLedger();});
 $('aliud').addEventListener('click',()=>applyChange(true));   // a new pressing — live if running
+// AUTO-SET: run RILLE as an endless harmonic set (auto-segue every SET_BARS).
+$('automix').addEventListener('click',()=>{
+  st.auto=!st.auto; if(RT)RT.auto=st.auto;
+  $('automix').classList.toggle('on',st.auto);
+  updateHarm();
+});
+// JETZT: blend into the next key-compatible track at the coming phrase boundary.
+$('mixnow').addEventListener('click',()=>{
+  if(!RT||RT.mix)return;
+  RT.mixQueued=true;
+  $('harm').innerHTML='<b>'+camelotLabel(st.g.root)+'</b> · Übergang eingereiht…';
+});
 
 const stripEl=$('strip');
 PARTS.forEach(p=>{
@@ -1084,8 +1284,9 @@ PARTS.forEach(p=>{
   b.addEventListener('click',()=>{
     st.mutes[p]=!st.mutes[p];
     b.classList.toggle('off',st.mutes[p]);
-    if(RT){RT.G.part[p].gain.setTargetAtTime(st.mutes[p]?0:1,RT.ac.currentTime,.02);
-      if(p==='pulvis')RT.G.floor.gain.setTargetAtTime(st.mutes[p]?0:1,RT.ac.currentTime,.02);}
+    if(RT){const v=st.mutes[p]?0:1;                        // apply to every live deck
+      RT.decks.forEach(ds=>{ds.D.part[p].gain.setTargetAtTime(v,RT.ac.currentTime,.02);
+        if(p==='pulvis')ds.D.deckFloor.gain.setTargetAtTime(v,RT.ac.currentTime,.02);});}
     if(!st.playing)drawDisc(0,0,null);
   });
   stripEl.appendChild(b);
@@ -1101,7 +1302,10 @@ let __applying=false;
 function __muteBits(){let m=0;PARTS.forEach((p,i)=>{if(st.mutes[p])m|=1<<i;});return m;}
 function __state(){
   const f=(st.follow===undefined)?MOODS[st.mood].follow:st.follow;
-  return {s:st.seed.toString(16),a:st.mood,p:st.prog,f:f?1:0,t:st.bpm,m:__muteBits()};
+  const o={s:st.seed.toString(16),a:st.mood,p:st.prog,f:f?1:0,t:st.bpm,m:__muteBits()};
+  if(st.root!=null)o.k=st.root;                            // transposed key (from a mix)
+  if(st.auto)o.x=1;                                        // auto-set armed
+  return o;
 }
 function __apply(o){
   if(o.a!==undefined)affEl.children[+o.a]&&affEl.children[+o.a].click();
@@ -1112,6 +1316,8 @@ function __apply(o){
   if(o.m!==undefined){const want=+o.m;
     PARTS.forEach((p,i)=>{const w=!!(want&(1<<i));
       if(st.mutes[p]!==w)stripEl.children[i].click();});}
+  if(o.x!==undefined&&!!+o.x){st.auto=true;$('automix').classList.add('on');}
+  if(o.k!==undefined)st.root=+o.k;                         // restore the exact key (overrides affect native)
   if(o.s){st.seed=parseInt(o.s,16)>>>0;applyChange(false);}
 }
 function __hashRead(){const h=location.hash.slice(1);if(!h)return null;const o={};
@@ -1124,6 +1330,8 @@ addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
   if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
   if(e.code==='Space'){e.preventDefault();$('play').click();}
   else if(e.key==='p'||e.key==='P')togglePause();
+  else if(e.key==='m'||e.key==='M')$('mixnow').click();
+  else if(e.key==='x'||e.key==='X')$('automix').click();
   else if(e.key==='r'||e.key==='R')$('aliud').click();
   else if(e.key==='c'||e.key==='C')$('cut').click();});
 (function(){const o=__hashRead();
