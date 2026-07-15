@@ -493,23 +493,29 @@ function toBuffer(ctx,data){
   const b=ctx.createBuffer(1,data.length,ctx.sampleRate);
   b.getChannelData(0).set(data); return b;
 }
-function makeIR(ctx){                   // small dancehall room
+function makeIR(ctx){                   // small dancehall room — seeded so every
   const sr=ctx.sampleRate, L=(1.3*sr)|0, ir=ctx.createBuffer(2,L,sr);
-  for(let c=0;c<2;c++){ const d=ir.getChannelData(c);
-    for(let i=0;i<L;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/L,2.4)*.5; }
+  let rs=0x1a2b3c4d;                    // makeBuses() call gets the identical room
+  const rr=()=>{ rs=(rs*1103515245+12345)&0x7fffffff; return rs/0x7fffffff; };
+  for(let c=0;c<2;c++){ const d=ir.getChannelData(c);   // (windowed render stays coherent
+    for(let i=0;i<L;i++) d[i]=(rr()*2-1)*Math.pow(1-i/L,2.4)*.5; }   // seam-to-seam)
   return ir;
 }
 
 const MUTES = {acc:0, frot:0, dr:0, bs:0, gt:0};
 const LEVEL = {acc:.85, frot:.55, dr:1, bs:.8, gt:.55};
 
-function makeBuses(ctx){
+function makeBuses(ctx, bypassComp){
   const B={ctx};
-  B.comp=ctx.createDynamicsCompressor();
-  B.comp.threshold.value=-14; B.comp.knee.value=18; B.comp.ratio.value=3;
-  B.comp.attack.value=.004; B.comp.release.value=.22;
   B.out=ctx.createGain(); B.out.gain.value=.9;
-  B.out.connect(B.comp); B.comp.connect(ctx.destination);
+  if(bypassComp){                       // pass-1 windows tap the pre-compressor mix;
+    B.out.connect(ctx.destination);     // the master compressor is applied once, globally, in pass 2
+  }else{
+    B.comp=ctx.createDynamicsCompressor();
+    B.comp.threshold.value=-14; B.comp.knee.value=18; B.comp.ratio.value=3;
+    B.comp.attack.value=.004; B.comp.release.value=.22;
+    B.out.connect(B.comp); B.comp.connect(ctx.destination);
+  }
   B.rev=ctx.createConvolver(); B.rev.buffer=makeIR(ctx);
   const rg=ctx.createGain(); rg.gain.value=.6;
   B.rev.connect(rg); rg.connect(B.out);
@@ -726,16 +732,61 @@ function encodeWav(ab){
   }
   return new Blob([buf],{type:'audio/wav'});
 }
+/* Windowed offline render. One monster OfflineAudioContext holds every voice
+   (~3.5k on a full take) resident at once — fine on a desktop, but on a phone
+   it's a long, feedback-less, memory-heavy stall. The cost is the voice count,
+   not the buffer, so we split the work in two passes:
+
+   Pass 1 (linear) — the voice graph up to the master bus is linear (the only
+   non-linear node is the master compressor; the bass tanh is memoryless). We
+   render the take in non-overlapping windows with the compressor bypassed,
+   each window carrying only its own events (disjoint) plus TAIL seconds of
+   context so every voice's tail (crash ~2.6s + 1.3s reverb ≈ 3.9s) fully
+   decays inside the window, then overlap-ADD each window into the master. By
+   superposition this equals the single-shot pre-compressor mix exactly, while
+   never holding more than one window's voices at once.
+
+   Pass 2 (compress) — run that whole pre-compressor buffer through a single
+   bufferSource → DynamicsCompressor (≈2 nodes, trivial memory) so the master
+   compressor sees the true global signal, identical to the one-shot render.
+
+   Net: perceptually identical to the old render, peak memory bounded by one
+   window, and a real per-window progress readout. */
+async function renderWindowed(s, sr, onProgress){
+  const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+  const lead=.05, total=s.DUR+.5;        // finished-audio length (s)
+  const WL=24, TAIL=4;                   // window / tail-decay budget (s)
+  const N=Math.ceil(total*sr);
+  const L=new Float32Array(N), R=new Float32Array(N);
+  const nWin=Math.max(1, Math.ceil(total/WL));
+  for(let w=0; w<nWin; w++){                        // ---- pass 1: linear windows ----
+    const Sk=w*WL, Ek=Math.min(total, Sk+WL);
+    const oc=new OAC(2, Math.ceil((lead+(Ek-Sk)+TAIL)*sr), sr);
+    const OB=makeBuses(oc, true);                   // compressor bypassed
+    for(const e of s.EV) if(e.t>=Sk && e.t<Ek) playEvent(OB, (e.t-Sk)+lead, e);
+    const ab=await oc.startRendering();
+    const cl=ab.getChannelData(0), cr=ab.getChannelData(1), base=Math.round(Sk*sr);
+    for(let j=0, M=ab.length; j<M; j++){ const g=base+j;   // overlap-add (tails included)
+      if(g>=0 && g<N){ L[g]+=cl[j]; R[g]+=cr[j]; } }
+    if(onProgress) onProgress((w+1)/nWin*0.92);
+  }
+  const p2=new OAC(2, N, sr);                        // ---- pass 2: global compressor ----
+  const mb=p2.createBuffer(2, N, sr); mb.copyToChannel(L,0); mb.copyToChannel(R,1);
+  const src=p2.createBufferSource(); src.buffer=mb;
+  const comp=p2.createDynamicsCompressor();          // same settings as makeBuses()
+  comp.threshold.value=-14; comp.knee.value=18; comp.ratio.value=3;
+  comp.attack.value=.004; comp.release.value=.22;
+  src.connect(comp); comp.connect(p2.destination); src.start(0);
+  const fin=await p2.startRendering();
+  if(onProgress) onProgress(1);
+  return fin;
+}
 async function cutSide(){
   if(rendering) return; rendering=true;
-  const old=waxBtn.innerHTML; waxBtn.textContent='CUTTING…'; waxBtn.disabled=true;
+  const old=waxBtn.innerHTML; waxBtn.textContent='CUTTING… 0%'; waxBtn.disabled=true;
   try{
-    const OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
-    const sr=44100, s=compile(bpm),
-          oc=new OAC(2, Math.ceil((s.DUR+.5)*sr), sr),
-          OB=makeBuses(oc);
-    for(const e of s.EV) playEvent(OB, .05+e.t, e);
-    const ab=await oc.startRendering();
+    const sr=44100, s=compile(bpm);
+    const ab=await renderWindowed(s, sr, p=>{ waxBtn.textContent='CUTTING… '+Math.round(p*100)+'%'; });
     saveWav(encodeWav(ab),'pas-sale_two-step_'+bpm+'bpm.wav');
   }catch(err){ counter.textContent='render failed: '+err.message; }
   waxBtn.innerHTML=old; waxBtn.disabled=false; rendering=false;
