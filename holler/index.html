@@ -167,7 +167,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
 
     <div class="fld">
       <div class="lab">Tempo <span class="rd" id="tempored">116 bpm</span></div>
-      <input type="range" id="tempo" min="88" max="176" value="132" aria-label="Beats per minute">
+      <input type="range" id="tempo" min="88" max="260" value="132" aria-label="Beats per minute">
     </div>
 
     <div class="fld">
@@ -646,11 +646,14 @@ function renderMaster(){
   // optional backing (guitar / upright bass / foot), synthesised into the same buffer
   if(st.backing.guitar||st.backing.bass||st.backing.foot){
     const bev=backingEvents(tune, st.bpm, st.seed, st.backing);
-    const BTAU={gbass:0.62,gstrum:0.5,ubass:0.3};
+    // gstrum is the boom-CHUCK chop: short + dark so it reads as a muted
+    // rhythmic chunk under the banjo, not a second bright plucked chord ringing
+    // in the same octave (that overlap was the clash).
+    const BTAU={gbass:0.62,gstrum:0.16,ubass:0.3};
     for(const e of bev){
       const start=Math.floor(e.t*SR); if(start<0||start>=n) continue;
       if(e.kind==='foot'){ footHit(buf,start,e.vel,rng); continue; }
-      const bright=e.kind==='gbass'?0.05:e.kind==='gstrum'?0.22:0;   // warm, dark on the low end
+      const bright=e.kind==='gbass'?0.05:e.kind==='gstrum'?0.10:0;   // warm, dark on the low end
       ksPluck(buf, start, midiToFreq(e.midi), (BTAU[e.kind]||0.4)+e.vel*0.15, e.vel, BTAU[e.kind]||0.4, bright, rng);
     }
   }
@@ -897,7 +900,7 @@ function __apply(o){
   if(o.mo){const b=$('mode').querySelector('[data-v="'+o.mo+'"]');b&&b.click();}
   if(o.st){const b=$('style').querySelector('[data-v="'+o.st+'"]');b&&b.click();}
   if(o.sd!==undefined){const sd=+o.sd;if(Number.isFinite(sd)){st.seed=sd>>>0;invalidate();}}
-  if(o.bpm){st.bpm=clamp(+o.bpm|0,88,176);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' bpm';invalidate();}
+  if(o.bpm){st.bpm=clamp(+o.bpm|0,88,260);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' bpm';invalidate();}
   if(o.li!==undefined){(+o.li===1?$('tgLilt'):$('tgStraight')).click();}
   if(o.bk!==undefined){const m=+o.bk|0;st.backing={guitar:!!(m&1),bass:!!(m&2),foot:!!(m&4)};
     ['bkGtr','bkBass','bkFoot'].forEach((id,i)=>$(id).classList.toggle('on',!!(m&(1<<i))));invalidate();}
