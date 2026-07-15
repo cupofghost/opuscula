@@ -1,6 +1,6 @@
 # OPVSCVLA
 
-Eleven small musical machines. Each is a single self-contained HTML file of pure
+Twelve small musical machines. Each is a single self-contained HTML file of pure
 Web Audio — no build, no dependencies, no samples, no trackers. The machine
 composes; you set the law it obeys.
 
@@ -19,6 +19,7 @@ composes; you set the law it obeys.
 | IX | [FOLI](./foli/) | West African djembe & dunun ensemble — named in Maninka (Malinké), where *foli* means the rhythm, the playing itself. Eight named Mande rhythms (Kuku, Kassa, Djansa, Sunu; Dundunba, Tiriba, Mendiani, Soli) of interlocking parts — kariñan bell, three dununs, sékéré shaker, two djembe accompaniments — with a machine-composed lead djembe solo over the top. Mute any voice to hear the hole it leaves. Binary and 12/8 feels; struck-membrane and metal-bell synthesis, no samples. The bell timelines are canonical; the drum parts are idiomatic arrangements. |
 | X | [NENIA](./nenia/) | Playground lore — named in Latin (*nenia*, the small jingle beneath literature). The universal children's chant, built on the sol–mi–la trichord. Five games — taunt, counting-out, clapping, skip rope, ring — each a fresh nonsense rhyme generated from reduplication-and-ablaut, sung by a yard of detuned formant child-voices. Counting-out really eliminates; clapping and skip rope accelerate until the seed trips them. The URL hash *is* the rhyme. |
 | XI | [KHÖÖMEI](./khoomei/) | Mongolian throat singing — named in Mongolian (*khöömei*, хөөмий, the pharynx itself). One synthesized voice holds a low drone while a razor-narrow resonance amplifies a single harmonic of it: a melody sung out of the drone's own overtone series, the scale fixed by physics. Three manners — khöömei, the piercing whistle *sygyt*, and the sub-octave growl *kargyraa* — with an optional morin-khuur (horse-head fiddle) drone-and-fifth beneath. Rich glottal source, cascaded high-Q bandpass whistle; no samples. |
+| XII | [SPANNUNG](./spannung/) | A modular synthesizer — named in German (*Spannung*, voltage and tension both; *Steuerspannung*, control voltage), after the format Doepfer defined in Germany and the Berlin School that ran modular patches for the length of a side. A self-patching Eurorack rack: a master clock drives a sixteen-step sequencer through a quantizer into a voltage-controlled chain (VCO → VCF → VCA), a sample-and-hold throws a random line locked to the loop, noise and envelopes make the drums, an LFO drifts the filter — mixed out through dub delay and reverb into a four-bar loop. Cutoff, resonance, space, density and analogue drift are the controls; the rack draws itself, patch cables and all. |
 
 ## Shared grammar
 

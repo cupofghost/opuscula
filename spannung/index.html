@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#141416">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="spannung — a modular synthesizer as a small musical machine: a rack of voltage-controlled oscillators, filters, envelopes and sequencers, patched into one another until the system plays itself. subtractive synthesis, control voltage, a four-bar loop. op. XII of the opuscula.">
+<title>SPANNUNG — voltage-controlled system</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --rack:#141416; --panel:#1c1c20; --panel2:#232329; --rail:#0c0c0e;
+  --txt:#e4e2da; --dim:rgba(228,226,218,.58); --line:rgba(228,226,218,.14);
+  --amber:#e6a94b; --led:#e05a44; --ledg:#69c98a;
+  --cRed:#d8483c; --cYel:#e6c04a; --cBlu:#5aa6e0; --cGrn:#5fb87f;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--rack);-webkit-text-size-adjust:100%}
+body{background:
+    radial-gradient(120% 60% at 50% -6%, rgba(230,169,75,.06), transparent 55%),
+    var(--rack);
+  color:var(--txt);font-family:'EB Garamond',Georgia,serif;font-size:16px;line-height:1.55;
+  min-height:100vh;display:flex;justify-content:center;
+  padding:max(14px,env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom));}
+.board{width:100%;max-width:660px;display:flex;flex-direction:column}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+/* exit to opuscula (shared) */
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:0 0 12px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(8,8,10,.6);border:1px solid rgba(228,226,218,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(228,226,218,.7);background:rgba(8,8,10,.9);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
+h1{font-size:2.8rem;font-weight:400;letter-spacing:.03em;line-height:1.02;margin:.1rem 0 .5rem}
+.sub{font-style:italic;font-size:1.02rem;margin-bottom:.3rem}
+.sub b{font-weight:700;font-style:normal}
+.tagline{font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-bottom:1rem}
+
+.plate{position:relative;border:1px solid var(--line);border-radius:6px;overflow:hidden;
+  background:linear-gradient(180deg, #17171b, #101012);margin-bottom:.7rem;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.6)}
+canvas{display:block;width:100%;height:auto}
+.readout{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  padding:.45rem .75rem;border-top:1px solid var(--line);color:var(--dim);
+  font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.08em}
+.readout .live{color:var(--amber)}
+
+.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem .9rem;margin-bottom:.8rem}
+@media(max-width:520px){.controls{grid-template-columns:1fr 1fr}}
+.fld{display:flex;flex-direction:column;gap:.3rem}
+.lab{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.2em;color:var(--dim);text-transform:uppercase;display:flex;justify-content:space-between;gap:.4em}
+.lab .rd{color:var(--txt);letter-spacing:.08em}
+input[type=range]{width:100%;height:1.5rem;accent-color:var(--amber);background:transparent}
+
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.35rem}
+button.act{font-family:'IBM Plex Mono',monospace;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;
+  background:transparent;color:var(--txt);border:1px solid var(--dim);border-radius:4px;padding:.55rem 1.4rem;cursor:pointer;transition:all .15s}
+button.act:hover{border-color:var(--txt);box-shadow:0 0 14px rgba(230,169,75,.12)}
+button.act.big{border-color:var(--amber);color:var(--amber)}
+button.act.big.on{background:var(--amber);color:#141416}
+button.act:disabled{opacity:.4;cursor:default;box-shadow:none}
+.cutnote{font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--dim);letter-spacing:.05em;min-height:1.2em;margin-bottom:1.4rem}
+
+/* on this music: expandable reader notes (shared across the opuscula) */
+.reader{margin:8px auto 4px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid var(--line);border-radius:4px;color:var(--dim);
+  -webkit-user-select:none;user-select:none;transition:color .15s,border-color .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{color:var(--txt);border-color:rgba(228,226,218,.4);outline:none}
+.reader[open]>summary{color:var(--txt);margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;color:#d3d1c9}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--dim);margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic;color:var(--txt)}
+footer{margin-top:1.6rem;padding-top:1rem;border-top:1px solid var(--line);
+  font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.12em;color:var(--dim);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem;text-transform:uppercase}
+footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="board">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+
+  <div class="eyebrow">op. XII · steuerspannung</div>
+  <h1>Spannung</h1>
+  <p class="sub"><b>Everything is voltage.</b> A rack of oscillators, filters, envelopes and sequencers patched into one another — control voltage steering control voltage — until the system locks to a loop and plays itself.</p>
+  <p class="tagline">clock · gate · patch — after the modular synthesizer</p>
+
+  <div class="plate">
+    <canvas id="cv" width="1320" height="760" aria-label="A eurorack modular system: module panels with knobs and patch points, coloured cables carrying clock, control voltage, gates and audio between them, and a sixteen-step sequencer lit at the running step"></canvas>
+    <div class="readout mono">
+      <span id="bpmRd">— BPM</span>
+      <span id="status">PATCHED</span>
+      <span>STEP · <span id="stepRd" class="live">—</span></span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="fld">
+      <div class="lab">Tempo <span class="rd" id="tempoRd">126</span></div>
+      <input type="range" id="tempo" min="108" max="140" value="126" aria-label="Tempo">
+    </div>
+    <div class="fld">
+      <div class="lab">Cutoff <span class="rd" id="cutoffRd">55</span></div>
+      <input type="range" id="cutoff" min="0" max="100" value="55" aria-label="Filter cutoff">
+    </div>
+    <div class="fld">
+      <div class="lab">Resonance <span class="rd" id="resRd">45</span></div>
+      <input type="range" id="res" min="0" max="100" value="45" aria-label="Filter resonance">
+    </div>
+    <div class="fld">
+      <div class="lab">Space <span class="rd" id="spaceRd">40</span></div>
+      <input type="range" id="space" min="0" max="100" value="40" aria-label="Reverb and delay space">
+    </div>
+    <div class="fld">
+      <div class="lab">Density <span class="rd" id="densRd">55</span></div>
+      <input type="range" id="dens" min="0" max="100" value="55" aria-label="Patch density">
+    </div>
+    <div class="fld">
+      <div class="lab">Drift <span class="rd" id="driftRd">30</span></div>
+      <input type="range" id="drift" min="0" max="100" value="30" aria-label="Analogue drift">
+    </div>
+  </div>
+
+  <div class="btnrow">
+    <button class="act big" id="play">Patch in</button>
+    <button class="act" id="another" title="re-patch (r)">Re-patch</button>
+    <button class="act" id="cut" title="cut a WAV (c)">Cut · WAV</button>
+  </div>
+  <div class="cutnote" id="cutnote"></div>
+
+  <details class="reader">
+    <summary>On this music · the modular synthesizer</summary>
+    <div class="rbody">
+      <h4>What you're hearing</h4>
+      <p>A modular synthesizer is a synthesizer taken apart. Instead of one instrument with fixed wiring, it is a rack of separate modules — a module that makes a tone, a module that shapes its loudness over time, a module that filters its brightness, a module that keeps time — and none of them are connected until you connect them, with patch cables, by hand. What you hear is <em>subtractive synthesis</em>: a raw, harmonically-rich waveform from an oscillator, carved down by a filter and gated by an envelope into a note.</p>
+      <h4>Control voltage</h4>
+      <p>The idea that makes it a system is that everything is the same kind of signal: a voltage. The pitch of an oscillator is a voltage; so is the brightness of a filter, the position of a note in a bar, the shape of an envelope. Because they are all voltages, any output can steer any input — an envelope can open a filter, a slow oscillator can wobble a pitch, a sequencer can play a melody by sending a staircase of voltages to an oscillator. A <em>gate</em> is the simplest of these: a voltage that is either on or off, the on-or-off that says <em>now</em>. Patching is composing: you decide what steers what.</p>
+      <h4>The rack here</h4>
+      <p>This one is patched for a techno loop, the way such systems usually are. A master clock divides into a sixteen-step sequencer; the sequencer's pitch voltage runs through a quantizer so it can only land on notes of the scale, then into an oscillator, a resonant low-pass filter and an amplifier — the classic voltage-controlled chain, VCO → VCF → VCA. A second oscillator takes its pitch from a <em>sample-and-hold</em>, which grabs a random voltage on each clock and holds it: a machine for melodies nobody wrote. A noise source and a pair of envelopes make the drums. A low-frequency oscillator drifts the filter open and shut. Everything meets in a mixer and runs out through delay and reverb.</p>
+      <h4>The format</h4>
+      <p>The modules are drawn in <em>Eurorack</em>, the small format defined by Dieter Doepfer in Germany in 1996, which turned modular synthesis from furniture into something you could carry and made an enormous cottage industry of module builders. The music itself descends from the <em>Berlin School</em> — Tangerine Dream, Klaus Schulze, Manuel Göttsching — who in the 1970s let sequenced modular patches run and evolve for the length of a side, and from the Detroit and Berlin techno that inherited the machines.</p>
+      <h4>The name</h4>
+      <p><em>Spannung</em> is the German word for voltage — and, in the same breath, for tension. Op. XII is named for the thing the whole rack is made of: control voltage, <em>Steuerspannung</em>, one signal steering another until the system plays.</p>
+    </div>
+  </details>
+
+  <footer>
+    <span>op. XII · <a href="../">opvscvla</a></span>
+    <span>space=run · r=re-patch · c=cut</span>
+  </footer>
+</div>
+
+<script>
+'use strict';
+/* ===================================================================
+   SPANNUNG — a modular synthesizer · op. XII · single-file web audio
+   -------------------------------------------------------------------
+   A self-patching Eurorack system: a master clock drives a 16-step
+   sequencer (bass), a sample-and-hold (a random melody line locked to
+   the loop), a noise source + envelopes (drums), an LFO drifting the
+   filter, all meeting in a mixer → delay → reverb. Subtractive voices
+   (VCO → VCF → VCA) synthesized from scratch. Live step engine that
+   re-vibes on any control while it runs; offline WAV cut of the loop.
+   Shared series conventions: sticky .exit, <details> reader, __iosAudio
+   unlock + suspend-on-hidden, saveWav pill, hash permalink, space/r/c.
+   =================================================================== */
+
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>x<a?a:x>b?b:x;
+const mtof=m=>440*Math.pow(2,(m-69)/12);
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const pick=(rng,arr)=>arr[(rng()*arr.length)|0];
+
+/* ---- iOS audio unlock: playback session, gesture resume, suspend on hidden ---- */
+function __hint(msg){
+  try{
+    const p=$('play')||document.querySelector('button');
+    if(!p||!p.insertAdjacentElement)return;
+    let h=$('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin:6px 0 0;font-style:italic;letter-spacing:.04em';
+      p.parentElement.insertAdjacentElement('afterend',h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{
+    if(document.visibilityState==='visible')kick();
+    else if(ac.state==='running')ac.suspend().catch(()=>{});
+  }catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else if(document.visibilityState==='visible')setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('audio suspended — tap Patch in again · if still silent, check the ring/silent switch');}catch(e){}},450);
+}
+
+/* ------------------------------- constants ------------------------------- */
+const SR=44100;
+const STEPS=16, BARS=4, LOOP=STEPS*BARS;          // a four-bar loop
+const ROOT=33;                                     // A1
+const SCALE=[0,2,3,5,7,8,10];                      // natural minor
+const PENT=[0,3,5,7,10];                           // pentatonic for the S&H line
+function quant(semi){ // fold a semitone offset to the nearest scale degree
+  const oct=Math.floor(semi/12), pc=((semi%12)+12)%12;
+  let best=SCALE[0],bd=99; for(const d of SCALE){const dd=Math.abs(d-pc); if(dd<bd){bd=dd;best=d;}}
+  return oct*12+best;
+}
+
+/* ------------------------------- state ---------------------------------- */
+const st={ tempo:126, cutoff:55, res:45, space:40, dens:55, drift:30, seed:1, playing:false };
+const macro=()=>({
+  baseCut: 170*Math.pow(64, st.cutoff/100),         // ~170 Hz .. ~10.9 kHz
+  Q: 2+ (st.res/100)*20,                            // 2 .. 22
+  space: st.space/100,
+  dens: st.dens/100,
+  drift: st.drift/100,
+});
+
+/* -------------------- the patch: sequences from a seed ------------------
+   Kept deliberately plain — four-on-the-floor, a root-heavy bass, a
+   backbeat clap, offbeat hats, and a sample-and-hold line over the top. */
+function makePatch(seed){
+  const rng=mulberry32((seed>>>0)^0x2c1b3a9f);
+  // kick: four on the floor
+  const kick=Array(STEPS).fill(0); for(let i=0;i<STEPS;i+=4)kick[i]=1;
+  // clap on the backbeat (beats 2 and 4)
+  const clap=Array(STEPS).fill(0); clap[4]=1; clap[12]=1;
+  // hats: offbeat eighths, closed; an open hat before the turnaround
+  const hat=Array(STEPS).fill(0); for(let i=2;i<STEPS;i+=4)hat[i]=1; hat[14]=2;
+  // bass: on every kick + a few offbeat sixteenths, mostly the root
+  const bassDeg=[0,0,0,3,0,0,7,0,0,0,3,0,0,10,0,0];  // scale degrees (index into SCALE)
+  const bass=Array(STEPS).fill(null);
+  for(let i=0;i<STEPS;i++){
+    if(kick[i]) bass[i]={deg:0,acc:1};
+    else if(rng()<0.4) bass[i]={deg:bassDeg[i]||0,acc:0};
+  }
+  // sample-and-hold melody: one random pentatonic note per clock, held; sparse,
+  // locked across the whole four bars (clocked S&H = a repeating "random" line)
+  const sh=Array(LOOP).fill(null);
+  for(let s=0;s<LOOP;s++){ if(rng()<0.42){ const p=pick(rng,PENT); const oct=pick(rng,[24,24,36]); sh[s]=ROOT+quant(p)+oct; } }
+  return {kick,clap,hat,bass,sh};
+}
+
+/* ------------------------------- audio ---------------------------------- */
+function noiseBuffer(ctx,secs){
+  const n=Math.max(1,Math.floor(secs*ctx.sampleRate)),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=Math.random()*2-1; return b;
+}
+function makeIR(ctx,sec,exp){
+  const len=Math.max(1,Math.floor(sec*ctx.sampleRate)),b=ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,exp);lp+=0.2*((Math.random()*2-1)-lp);d[i]=lp*e*1.5;}}
+  return b;
+}
+// the fixed signal path — mixer → delay → reverb → limiter, identical live & offline.
+function buildGraph(ctx){
+  const G={ctx};
+  G.master=ctx.createGain(); G.master.gain.value=0.8;
+  G.lim=ctx.createDynamicsCompressor();
+  G.lim.threshold.value=-3;G.lim.knee.value=0;G.lim.ratio.value=20;G.lim.attack.value=0.003;G.lim.release.value=0.12;
+  G.master.connect(G.lim).connect(ctx.destination);
+  // mix bus (everything dry lands here) and two aux sends
+  G.mix=ctx.createGain(); G.mix.gain.value=1; G.mix.connect(G.master);
+  // reverb send
+  G.verb=ctx.createConvolver(); G.verb.buffer=makeIR(ctx,2.2,2.4);
+  G.verbSend=ctx.createGain(); G.verbSend.gain.value=1; G.verbWet=ctx.createGain(); G.verbWet.gain.value=0.25;
+  G.verbSend.connect(G.verb); G.verb.connect(G.verbWet); G.verbWet.connect(G.master);
+  // tempo-synced feedback delay (dub)
+  G.delay=ctx.createDelay(1.5); G.delayFb=ctx.createGain(); G.delayFb.gain.value=0.34;
+  G.delayLp=ctx.createBiquadFilter(); G.delayLp.type='lowpass'; G.delayLp.frequency.value=2200;
+  G.delaySend=ctx.createGain(); G.delaySend.gain.value=1; G.delayOut=ctx.createGain(); G.delayOut.gain.value=0.5;
+  G.delaySend.connect(G.delay); G.delay.connect(G.delayLp); G.delayLp.connect(G.delayFb); G.delayFb.connect(G.delay);
+  G.delay.connect(G.delayOut); G.delayOut.connect(G.master); G.delayOut.connect(G.verbSend);
+  G.noise=noiseBuffer(ctx,2.4);
+  return G;
+}
+function nz(G,t){const s=G.ctx.createBufferSource();s.buffer=G.noise;s.playbackRate.value=0.85+Math.random()*0.3;s.start(t,Math.random()*2);return s;}
+
+function kick(G,t){
+  const ctx=G.ctx, o=ctx.createOscillator(); o.type='sine';
+  o.frequency.setValueAtTime(135,t); o.frequency.exponentialRampToValueAtTime(46,t+0.09);
+  const g=ctx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.95,t+0.004);
+  g.gain.setTargetAtTime(0,t+0.03,0.09);
+  o.connect(g); g.connect(G.mix); o.start(t); o.stop(t+0.4);
+  const c=nz(G,t), hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=1600;
+  const cg=ctx.createGain(); cg.gain.setValueAtTime(0.25,t); cg.gain.setTargetAtTime(0,t,0.004);
+  c.connect(hp); hp.connect(cg); cg.connect(G.mix); c.stop(t+0.03);
+}
+function clap(G,t){
+  const ctx=G.ctx;
+  for(let i=0;i<3;i++){const tt=t+i*0.011; const n=nz(G,tt), bp=ctx.createBiquadFilter(); bp.type='bandpass';
+    bp.frequency.value=1500; bp.Q.value=1.1;
+    const g=ctx.createGain(); g.gain.setValueAtTime(0.5,tt); g.gain.setTargetAtTime(0,tt,0.012);
+    n.connect(bp); bp.connect(g); g.connect(G.mix); g.connect(G.verbSend); n.stop(tt+0.06);}
+  const n=nz(G,t+0.02), bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1300; bp.Q.value=0.7;
+  const g=ctx.createGain(); g.gain.setValueAtTime(0.4,t+0.02); g.gain.setTargetAtTime(0,t+0.02,0.05);
+  n.connect(bp); bp.connect(g); g.connect(G.mix); g.connect(G.verbSend); n.stop(t+0.2);
+}
+function hat(G,t,open){
+  const ctx=G.ctx, n=nz(G,t), hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=7600;
+  const g=ctx.createGain(); const dec=open?0.18:0.035; g.gain.setValueAtTime(open?0.3:0.34,t); g.gain.setTargetAtTime(0,t,dec);
+  n.connect(hp); hp.connect(g); g.connect(G.mix); if(open)g.connect(G.verbSend); n.stop(t+(open?0.32:0.08));
+}
+// the voltage-controlled chain: VCO(saw)+sub → VCF(res lowpass, env+lfo) → VCA(env)
+function bass(G,t,midi,acc,m,lfo){
+  const ctx=G.ctx, f=mtof(midi), det=(Math.random()*2-1)*m.drift*10;
+  const o=ctx.createOscillator(); o.type='sawtooth'; o.frequency.value=f; o.detune.value=det;
+  const sub=ctx.createOscillator(); sub.type='square'; sub.frequency.value=f/2; sub.detune.value=det*0.5;
+  const sg=ctx.createGain(); sg.gain.value=0.6; sub.connect(sg);
+  const vcf=ctx.createBiquadFilter(); vcf.type='lowpass'; vcf.Q.value=m.Q;
+  const base=clamp(m.baseCut*(1+0.5*lfo)*(acc?1.5:1),80,14000), env=base*(acc?3.2:2.2);
+  vcf.frequency.setValueAtTime(clamp(base+env,80,17000),t);
+  vcf.frequency.exponentialRampToValueAtTime(clamp(base,80,17000),t+(acc?0.22:0.14));
+  const vca=ctx.createGain(); const pk=acc?0.5:0.34;
+  vca.gain.setValueAtTime(0,t); vca.gain.linearRampToValueAtTime(pk,t+0.006); vca.gain.setTargetAtTime(0,t+0.05,0.11);
+  o.connect(vcf); sg.connect(vcf); vcf.connect(vca); vca.connect(G.mix);
+  o.start(t); sub.start(t); o.stop(t+0.5); sub.stop(t+0.5);
+}
+// the sample-and-hold bleep: pulse VCO → bandpass → short pluck, sent to delay
+function bleep(G,t,midi,m){
+  const ctx=G.ctx, f=mtof(midi);
+  const o=ctx.createOscillator(); o.type='square'; o.frequency.value=f; o.detune.value=(Math.random()*2-1)*m.drift*8;
+  const bp=ctx.createBiquadFilter(); bp.type='lowpass'; bp.frequency.value=clamp(f*4,600,7000); bp.Q.value=6;
+  const g=ctx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.22,t+0.005); g.gain.setTargetAtTime(0,t+0.02,0.09);
+  o.connect(bp); bp.connect(g); g.connect(G.mix); g.connect(G.delaySend); g.connect(G.verbSend);
+  o.start(t); o.stop(t+0.4);
+}
+
+function applySends(G,m){
+  const ct=G.ctx.currentTime;
+  G.verbWet.gain.setTargetAtTime(0.08+m.space*0.42,ct,0.1);
+  G.delayFb.gain.setTargetAtTime(0.2+m.space*0.34,ct,0.1);
+  G.delayOut.gain.setTargetAtTime(0.25+m.space*0.4,ct,0.1);
+}
+function setDelayTime(G,bpm){ const st16=(60/bpm)/4; try{G.delay.delayTime.setTargetAtTime(st16*3,G.ctx.currentTime,0.05);}catch(e){} }
+
+/* -------------------------- realtime transport --------------------------- */
+let RT=null;
+function play(){
+  if(RT){stop();return;}
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ctx);
+  const G=buildGraph(ctx);
+  RT={ctx,G,patch:makePatch(st.seed),step:0,nextT:ctx.currentTime+0.12,fires:{},lastStepT:ctx.currentTime};
+  setDelayTime(G,st.tempo); applySends(G,macro());
+  RT.timer=setInterval(sched,25);
+  st.playing=true; $('play').textContent='Stop'; $('play').classList.add('on'); $('status').textContent='RUNNING';
+}
+function stepDur(){ return (60/st.tempo)/4; }
+function sched(){
+  if(!RT)return;
+  const m=macro(), ahead=RT.ctx.currentTime+0.11;
+  while(RT.nextT<ahead){
+    const s=RT.step%LOOP, st16=s%STEPS, t=RT.nextT, p=RT.patch;
+    // swing: nudge the odd sixteenths a hair late
+    const sw=(st16%2)?stepDur()*0.14:0;
+    const tt=t+sw;
+    const lfo=Math.sin((RT.step/ (STEPS*2)) *2*Math.PI); // one cycle every two bars
+    const fire={};
+    if(p.kick[st16]){kick(RT.G,tt); fire.kick=1;}
+    if(m.dens>0.30 && p.clap[st16]){clap(RT.G,tt); fire.clap=1;}
+    if(m.dens>0.12){const h=p.hat[st16]; if(h){ if(h===2&&m.dens<0.5){} else {hat(RT.G,tt,h===2); fire.hat=1;} }}
+    const b=p.bass[st16]; if(b){bass(RT.G,tt,ROOT+SCALE[b.deg%SCALE.length],b.acc,m,lfo); fire.bass=1; RT.curNote=ROOT+SCALE[b.deg%SCALE.length];}
+    if(m.dens>0.5){const sn=p.sh[s]; if(sn!=null){bleep(RT.G,tt,sn,m); fire.sh=1;}}
+    RT.fires=fire; RT.step++; RT.nextT+=stepDur(); RT.lastStepT=t;
+    RT.viz={step:s, at:t, fire};
+  }
+}
+function stop(){
+  if(!RT)return;
+  const g=RT.G.master.gain,ct=RT.ctx.currentTime;
+  try{g.cancelScheduledValues(ct);g.setValueAtTime(g.value,ct);g.linearRampToValueAtTime(0.0001,ct+0.15);}catch(e){}
+  clearInterval(RT.timer);
+  const c=RT.ctx; setTimeout(()=>{try{c.close();}catch(e){}},260);
+  RT=null; st.playing=false; $('play').textContent='Patch in'; $('play').classList.remove('on'); $('status').textContent='PATCHED';
+}
+// live re-vibe: sends/tempo update immediately; cutoff/res/drift take on the next step.
+function reVibe(fromSeed){
+  writeHash();
+  if(!RT)return;
+  if(fromSeed) RT.patch=makePatch(st.seed);
+  setDelayTime(RT.G,st.tempo); applySends(RT.G,macro());
+}
+
+/* ------------------------------ cut · WAV -------------------------------- */
+function encodeWav(L,R,sr){
+  const n=L.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');d.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  ws(36,'data');d.setUint32(40,n*4,true);
+  let o=44;for(let i=0;i<n;i++){d.setInt16(o,clamp(L[i],-1,1)*32767,true);o+=2;d.setInt16(o,clamp(R[i],-1,1)*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+async function cut(){
+  const btn=$('cut'),note=$('cutnote'); btn.disabled=true; note.textContent='rendering the loop…';
+  try{
+    const m=macro(), sd=stepDur(), reps=2, total=LOOP*reps*sd+2.0; // two laps of the four-bar loop + tail
+    const ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
+    const G=buildGraph(ctx); setDelayTime(G,st.tempo); applySends(G,m);
+    const p=makePatch(st.seed);
+    let t=0.1;
+    for(let step=0;step<LOOP*reps;step++){
+      const s=step%LOOP, st16=s%STEPS;
+      const sw=(st16%2)?sd*0.14:0, tt=t+sw;
+      const lfo=Math.sin((step/(STEPS*2))*2*Math.PI);
+      if(p.kick[st16])kick(G,tt);
+      if(m.dens>0.30 && p.clap[st16])clap(G,tt);
+      if(m.dens>0.12){const h=p.hat[st16]; if(h && !(h===2&&m.dens<0.5))hat(G,tt,h===2);}
+      const b=p.bass[st16]; if(b)bass(G,tt,ROOT+SCALE[b.deg%SCALE.length],b.acc,m,lfo);
+      if(m.dens>0.5){const sn=p.sh[s]; if(sn!=null)bleep(G,tt,sn,m);}
+      t+=sd;
+    }
+    G.master.gain.setValueAtTime(0.8,t-0.1); G.master.gain.linearRampToValueAtTime(0.0001,total-0.1);
+    const rb=await ctx.startRendering();
+    let L=rb.getChannelData(0),R=rb.getChannelData(1),mx=0;
+    for(let i=0;i<L.length;i++){const a=Math.abs(L[i]);if(a>mx)mx=a;const b=Math.abs(R[i]);if(b>mx)mx=b;}
+    if(mx>0){const k=0.9/mx;for(let i=0;i<L.length;i++){L[i]*=k;R[i]*=k;}}
+    saveWav(encodeWav(L,R,SR),`spannung_${st.tempo}bpm.wav`);
+    note.textContent=`cut · ${st.tempo} bpm · four-bar loop`;
+  }catch(e){ note.textContent='render failed — '+e.message; }
+  btn.disabled=false;
+}
+
+/* ------------------------------ controls -------------------------------- */
+function slider(id,rd,key,fmt,onLive){
+  $(id).addEventListener('input',e=>{st[key]=+e.target.value; $(rd).textContent=fmt?fmt(st[key]):st[key]; if(onLive)onLive();});
+  $(id).addEventListener('change',()=>reVibe(false));
+}
+slider('tempo','tempoRd','tempo',null,()=>{if(RT)setDelayTime(RT.G,st.tempo);});
+slider('cutoff','cutoffRd','cutoff');
+slider('res','resRd','res');
+slider('space','spaceRd','space',null,()=>{if(RT)applySends(RT.G,macro());});
+slider('dens','densRd','dens');
+slider('drift','driftRd','drift');
+$('play').addEventListener('click',play);
+$('another').addEventListener('click',()=>{st.seed=(Math.random()*0x7fffffff)|0; reVibe(true);});
+$('cut').addEventListener('click',cut);
+
+/* ------------------------------ canvas: the rack ------------------------- */
+const cv=$('cv'), cx=cv.getContext('2d'), CW=cv.width, CH=cv.height;
+// twelve modules across two rows; each a eurorack panel with knobs + jacks.
+const MODS=[
+  {n:'CLOCK'},{n:'SEQ·16'},{n:'QUANT'},{n:'S & H'},{n:'NOISE'},{n:'VCO'},
+  {n:'LFO'},{n:'VCF'},{n:'ADSR'},{n:'VCA'},{n:'MIX'},{n:'DELAY'}
+];
+const COLS=6, ROWS=2, PADX=26, PADY=20, GAP=12;
+const MW=(CW-PADX*2-GAP*(COLS-1))/COLS, MH=(CH-PADY*2-GAP*(ROWS-1))/ROWS;
+MODS.forEach((mo,i)=>{
+  const c=i%COLS, r=(i/COLS)|0;
+  mo.x=PADX+c*(MW+GAP); mo.y=PADY+r*(MH+GAP); mo.w=MW; mo.h=MH;
+  mo.jacks=[0,1,2].map(j=>({x:mo.x+mo.w*(0.25+0.25*j), y:mo.y+mo.h-22}));
+  mo.knobs=[0,1].map(k=>({x:mo.x+mo.w*(0.33+0.34*k), y:mo.y+mo.h*0.42, v:Math.random()}));
+});
+// patch cables: [fromMod, fromJack, toMod, toJack, type] ; type sets colour + life
+const CABLES=[
+  [0,2,1,0,'clk'],[0,2,3,0,'clk'],[0,1,6,0,'clk'],   // clock → seq, s&h, lfo
+  [1,2,2,0,'cv'],[2,2,5,0,'cv'],                       // seq → quant → vco
+  [3,2,5,1,'cv'],[4,2,9,0,'aud'],                      // s&h → vco ; noise → vca(drums)
+  [5,2,7,0,'aud'],[8,2,7,1,'env'],[6,2,7,2,'lfo'],     // vco → vcf ; adsr → vcf ; lfo → vcf
+  [7,2,9,1,'aud'],[8,1,9,2,'env'],                     // vcf → vca ; adsr → vca
+  [9,2,10,0,'aud'],[10,2,11,0,'aud'],[11,2,10,1,'aud'] // vca → mix → delay → mix
+];
+const CCOL={clk:'#d8483c',cv:'#e6c04a',aud:'#5aa6e0',env:'#5fb87f',lfo:'#c07fe0'};
+function jackAbs(mi,ji){const m=MODS[mi];return m.jacks[ji];}
+let raf=0;
+function draw(now){
+  raf=requestAnimationFrame(draw);
+  const t=now/1000, m=macro();
+  const step=RT?RT.viz?RT.viz.step:0:0, fire=RT&&RT.viz?RT.viz.fire:{};
+  const sinceStep=RT?(RT.ctx.currentTime-(RT.viz?RT.viz.at:0)):9;
+  const beat=RT?(step%4===0 && sinceStep<0.12):false;
+  // background
+  cx.fillStyle='#101012'; cx.fillRect(0,0,CW,CH);
+  // rails
+  cx.fillStyle='#0a0a0c'; cx.fillRect(0,PADY-8,CW,4); cx.fillRect(0,PADY+MH+GAP-4,CW,4);
+  cx.fillRect(0,PADY+MH*2+GAP+4,CW,4);
+  // modules
+  MODS.forEach((mo,i)=>{
+    cx.fillStyle='#1b1b20'; roundRect(mo.x,mo.y,mo.w,mo.h,4); cx.fill();
+    cx.strokeStyle='rgba(228,226,218,.10)'; cx.lineWidth=1; roundRect(mo.x,mo.y,mo.w,mo.h,4); cx.stroke();
+    // mounting screws
+    cx.fillStyle='rgba(228,226,218,.16)';
+    [[mo.x+7,mo.y+7],[mo.x+mo.w-7,mo.y+7],[mo.x+7,mo.y+mo.h-7],[mo.x+mo.w-7,mo.y+mo.h-7]].forEach(p=>{cx.beginPath();cx.arc(p[0],p[1],2.4,0,7);cx.fill();});
+    // title
+    cx.fillStyle='rgba(228,226,218,.66)'; cx.font='600 15px "IBM Plex Mono",monospace'; cx.textAlign='center'; cx.textBaseline='top';
+    cx.fillText(mo.n, mo.x+mo.w/2, mo.y+12);
+    // knobs — a couple reflect the macros
+    mo.knobs.forEach((k,ki)=>{
+      let v=k.v;
+      if(mo.n==='VCF') v = ki===0?st.cutoff/100:st.res/100;
+      else if(mo.n==='CLOCK'&&ki===0) v=(st.tempo-108)/32;
+      else if(mo.n==='DELAY') v=st.space/100;
+      else if(mo.n==='MIX'&&ki===0) v=0.5+0.3*Math.sin(t*0.3+i);
+      drawKnob(k.x,k.y,Math.min(mo.w,mo.h)*0.15,v);
+    });
+    // step LEDs on the sequencer
+    if(mo.n==='SEQ·16'){
+      for(let s=0;s<16;s++){const col=s%4,row=(s/4)|0;
+        const lx=mo.x+10+col*(mo.w-20)/3.4, ly=mo.y+mo.h*0.30+row*10;
+        const on=RT&&st.playing&&(step%STEPS)===s;
+        cx.fillStyle=on?'#e6a94b':'rgba(230,169,75,.16)'; cx.beginPath(); cx.arc(lx,ly,on?3.4:2.2,0,7); cx.fill();}
+    }
+    // a running clock LED
+    if(mo.n==='CLOCK'){const on=beat||(RT&&st.playing&&sinceStep<0.06);
+      cx.fillStyle=on?'#e05a44':'rgba(224,90,68,.2)'; cx.beginPath(); cx.arc(mo.x+mo.w/2,mo.y+mo.h*0.28,4,0,7); cx.fill();}
+    // jacks
+    mo.jacks.forEach(j=>{cx.fillStyle='#0c0c0e';cx.beginPath();cx.arc(j.x,j.y,4.6,0,7);cx.fill();
+      cx.strokeStyle='rgba(228,226,218,.3)';cx.lineWidth=1.4;cx.beginPath();cx.arc(j.x,j.y,4.6,0,7);cx.stroke();});
+  });
+  // patch cables (drawn on top, glowing, sagging)
+  CABLES.forEach((cb,ci)=>{
+    const a=jackAbs(cb[0],cb[1]), b=jackAbs(cb[2],cb[3]), type=cb[4], col=CCOL[type];
+    let life=0.32; // base glow
+    if(type==='clk') life=0.3+(RT&&st.playing?(sinceStep<0.08?0.7:0.12):0);
+    else if(type==='cv') life=0.3+(RT&&st.playing?(sinceStep<0.1?0.5:0.15):0);
+    else if(type==='lfo') life=0.35+0.4*(0.5+0.5*Math.sin(t*1.2));
+    else if(type==='env') life=0.3+(fire.bass&&sinceStep<0.12?0.6:0.12);
+    else if(type==='aud') life=0.28+(RT&&st.playing?0.14+0.12*Math.sin(t*3+ci):0);
+    cable(a,b,col,life);
+  });
+  // playhead bar under the rack
+  if(RT&&st.playing){const s=step%LOOP, f=s/LOOP; cx.fillStyle='rgba(230,169,75,.5)';
+    cx.fillRect(PADX, CH-6, (CW-PADX*2)*f, 3);}
+  // readouts
+  $('bpmRd').textContent=st.tempo+' BPM';
+  $('stepRd').textContent=RT&&st.playing?('bar '+((((step%LOOP)/STEPS)|0)+1)+' · '+((step%STEPS)+1)+'/16'):'—';
+}
+function roundRect(x,y,w,h,r){cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath();}
+function drawKnob(x,y,r,v){
+  cx.fillStyle='#0e0e10'; cx.beginPath(); cx.arc(x,y,r,0,7); cx.fill();
+  cx.strokeStyle='rgba(228,226,218,.28)'; cx.lineWidth=1.4; cx.beginPath(); cx.arc(x,y,r,0,7); cx.stroke();
+  const a=(-0.7+clamp(v,0,1)*1.4)*Math.PI+Math.PI/2; // -126°..+126°
+  cx.strokeStyle='#e6a94b'; cx.lineWidth=2.2; cx.beginPath(); cx.moveTo(x,y); cx.lineTo(x+Math.cos(a)*r*0.82,y+Math.sin(a)*r*0.82); cx.stroke();
+}
+function cable(a,b,col,life){
+  const midx=(a.x+b.x)/2, sag=Math.min(70, 30+Math.abs(a.x-b.x)*0.12), midy=Math.max(a.y,b.y)+sag;
+  cx.lineCap='round';
+  cx.strokeStyle='rgba(0,0,0,.5)'; cx.lineWidth=5.5; drawCurve(a,midx,midy,b);
+  cx.strokeStyle=col; cx.globalAlpha=clamp(life,0,1); cx.lineWidth=3; drawCurve(a,midx,midy,b);
+  cx.globalAlpha=Math.min(1,life*0.5); cx.lineWidth=6; drawCurve(a,midx,midy,b);
+  cx.globalAlpha=1;
+  // plugs
+  cx.fillStyle=col; [a,b].forEach(p=>{cx.globalAlpha=clamp(life+0.3,0,1);cx.beginPath();cx.arc(p.x,p.y,3,0,7);cx.fill();}); cx.globalAlpha=1;
+}
+function drawCurve(a,mx,my,b){cx.beginPath();cx.moveTo(a.x,a.y);cx.quadraticCurveTo(mx,my,b.x,b.y);cx.stroke();}
+requestAnimationFrame(draw);
+
+/* ----------------------------- permalink -------------------------------- */
+function __state(){return {t:st.tempo,c:st.cutoff,r:st.res,s:st.space,d:st.dens,f:st.drift,sd:st.seed};}
+let __applying=false;
+function applyHash(o){
+  const set=(k,id,rd,lo,hi)=>{ if(o[k]!==undefined){st[key(id)]=clamp(+o[k]|0,lo,hi);$(id).value=st[key(id)];$(rd).textContent=st[key(id)];} };
+  function key(id){return {tempo:'tempo',cutoff:'cutoff',res:'res',space:'space',dens:'dens',drift:'drift'}[id];}
+  if(o.t!==undefined){st.tempo=clamp(+o.t|0,108,140);$('tempo').value=st.tempo;$('tempoRd').textContent=st.tempo;}
+  if(o.c!==undefined){st.cutoff=clamp(+o.c|0,0,100);$('cutoff').value=st.cutoff;$('cutoffRd').textContent=st.cutoff;}
+  if(o.r!==undefined){st.res=clamp(+o.r|0,0,100);$('res').value=st.res;$('resRd').textContent=st.res;}
+  if(o.s!==undefined){st.space=clamp(+o.s|0,0,100);$('space').value=st.space;$('spaceRd').textContent=st.space;}
+  if(o.d!==undefined){st.dens=clamp(+o.d|0,0,100);$('dens').value=st.dens;$('densRd').textContent=st.dens;}
+  if(o.f!==undefined){st.drift=clamp(+o.f|0,0,100);$('drift').value=st.drift;$('driftRd').textContent=st.drift;}
+  if(o.sd!==undefined){st.seed=(+o.sd|0)||1;}
+}
+function readHash(){const h=location.hash.slice(1);if(!h)return null;const o={};
+  for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}
+function writeHash(){if(__applying)return;
+  try{const o=__state();history.replaceState(null,'','#'+Object.entries(o).map(([k,v])=>k+'='+v).join('&'));}catch(e){}}
+
+/* ------------------------------- keys ----------------------------------- */
+addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
+  if(e.code==='Space'){e.preventDefault();$('play').click();}
+  else if(e.key==='r'||e.key==='R'){$('another').click();}
+  else if(e.key==='c'||e.key==='C'){$('cut').click();}
+});
+
+/* ------------------------------- init ----------------------------------- */
+(function(){const o=readHash(); if(o){__applying=true;try{applyHash(o);}catch(e){}__applying=false;}
+  writeHash();
+})();
+</script>
+</body>
+</html>
