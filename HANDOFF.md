@@ -106,6 +106,45 @@ keep all three (page, README, this file) in sync when adding a machine.
 
 Newest first.
 
+### RILLE — just intervals over the bass · bass rumble floor · master headroom
+**Branch:** `claude/minimal-deep-tech-guide-ta175d` · **File:** `rille/index.html`
+· **Status:** done, verified (Node JI math + Chromium peak measurement); pushed.
+
+Maintainer: "turn the chords still in the mix into just intervals in relation to
+the bass; some bass notes are too low and rumble; nothing may clip — we want
+headroom." Asked which reading of "just intervals" — answer: **both** (strip to
+intervals AND tune just). Three changes:
+
+- **Just intonation against the bass.** New `JI[]` 5-limit lattice +
+  `jf(bassMidi, note, dom)`: every harmonic tone (arps, glints, swells, cantus)
+  is tuned as an exact ratio from the bar's bass root instead of 12-TET; the
+  dominant's seventh takes the **harmonic 7/4**. `bRoot` (with the pedal/follow
+  cadence logic) is hoisted OUT of the bass gate in `scheduleBar` — it is the
+  lattice reference even when the bass is silent. Voices (`vChord`/`vArpN`/
+  `vCantus`) now take **frequencies**, not MIDI; the scheduler owns tuning.
+  Verified: every tone lands within 35 cents of its ET target (detune, never a
+  re-voicing) and >60 Hz.
+- **Swells stripped to bare intervals.** The cadence is no longer a 4-voice
+  chord: V7sus = bass + **4/3 & 7/4**; V7 = **5/4 & 7/4** (the 5/4 over the V
+  bass IS the key's leading tone); tonic = **6/5 & 3/2**. Pad-mood hover
+  underlay is a single just **3/2** fifth. Register: lattice root folded to the
+  MIDI 40–51 band, ratios ×2 → old stab register. Sus detection stays
+  `H.notes[1]-H.notes[0]===5`.
+- **Rumble floor (`vBass`):** fundamentals reached MIDI 24 (32.7 Hz) with the
+  sub-osc at **16 Hz** — infrasonic. Now: fundamental floored to ≥ MIDI 28
+  (41.2 Hz, lifted by octaves), the f/2 sub-oscillator only added when f≥82 Hz
+  (sub ≥41 Hz; below that the fundamental IS the sub and plays alone, gain
+  .8→.92 to compensate), plus a 25 Hz highpass in the bass chain.
+- **Headroom (`buildGraph`):** new `G.out` trim (.76) after the master comp;
+  `deckFloor` hiss reroutes through it (still post-comp, never pumped).
+  Measured full-mix peaks per mood, 14 bars straddling a cadence, dust on:
+  **0.78–0.89** (was 0.99–1.15 = clipping the WAV). Zero pageerrors.
+- **Pick-up:** trim constant `.76` targets ≈ −1 dBFS worst case; JI ratios and
+  the dyad choices live in `JI`/`jf` and the dom/tonic branch of `scheduleBar`.
+  If the 45/32 tritone reads too sour on EISEN's cluster, 7/5 is the softer
+  choice. WATCH: `startMix` blends two decks ≈ +3–4 dB summed — peaks stayed
+  ≤.89 single-deck; blend transients may kiss ~1.0 — if audible, drop trim to .7.
+
 ### RILLE — arpeggios instead of chord stabs
 **Branch:** `claude/minimal-deep-tech-guide-ta175d` · **File:** `rille/index.html`
 · **Status:** done, verified (Node + Chromium); pushed. Maintainer's suggestion.

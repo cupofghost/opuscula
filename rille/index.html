@@ -222,7 +222,7 @@ button,canvas,.centerlabel{-webkit-user-select:none;user-select:none}
         <h4>Affect and law</h4>
         <p>Seven <em>Affekte</em> — moods — set the key, tempo, palette, spread and density; a harmonic-narrative engine writes a long arc of longing and rare release (see below) while the arrangement writes itself. Six lean dark or industrial; the seventh, <em>SOG</em>, is the warm, rolling, stripped-back pocket of <em>minimal deep tech</em> — slower, sparser, more space between the hits. A “dubplate”, or white label, is the one-off acetate a DJ cuts to road-test a track before anyone else can get a copy.</p>
         <h4>Longing and release</h4>
-        <p>The harmony is written to ache, and it is not a loop — it is a sixty-four-bar story. Most of that story <em>hovers</em>: deep minor-ninth chords drifting among <em>i</em>, <em>iv</em> and the mood's darker neighbours, held for bars at a time, going nowhere on purpose — and never sounded whole. Each chord is <em>broken open</em> into an arpeggio, one soft tone at a time, always reaching for a shape it never states at once; each mood rolls its own way (rising, falling, rocking). Major chords are rationed by law — when a <em>♭VI</em>, <em>♭VII</em> or Neapolitan <em>♭II</em> passes through, it gets one bar and one quick upward glint, gone before it can turn bright. Resolution is rarer still: only where a phrase has charged up does the cadence come — the mode's own <em>v</em> is minor and cannot pull home, so its third is raised to a leading tone, and — for the only time in the piece — the chord sounds <em>whole</em>: a <em>V7sus</em> swells, hangs, resolves its suspension into <em>V7</em>, and finally releases into <em>i</em> as the bass walks down and home and the melody falls silent. Some moods never grant it: they end their phrases hanging on the dominant — a <em>half-cadence</em>, longing left open.</p>
+        <p>The harmony is written to ache, and it is not a loop — it is a sixty-four-bar story. Most of that story <em>hovers</em>: deep minor-ninth chords drifting among <em>i</em>, <em>iv</em> and the mood's darker neighbours, held for bars at a time, going nowhere on purpose — and never sounded whole. Each chord is <em>broken open</em> into an arpeggio, one soft tone at a time, always reaching for a shape it never states at once; each mood rolls its own way (rising, falling, rocking). And every tone above the bass is tuned in <em>just intonation</em> — exact whole-number ratios from the sounding bass root (6/5, 5/4, 4/3, 3/2), not equal temperament — so the upper voices lock beat-free onto the low end, the way the tuning works elsewhere in this catalogue. Major chords are rationed by law — when a <em>♭VI</em>, <em>♭VII</em> or Neapolitan <em>♭II</em> passes through, it gets one bar and one quick upward glint, gone before it can turn bright. Resolution is rarer still: only where a phrase has charged up does the cadence come — the mode's own <em>v</em> is minor and cannot pull home, so its third is raised to a leading tone, and the music strips to its barest: the bass and a single held interval above it. The suspension hangs at a pure 4/3 with the harmonic seventh's lean, resolves to 5/4 — the leading tone of the key, tuned just over the dominant bass — and releases home onto 6/5 and 3/2 over <em>i</em>, as the bass walks down and home and the melody falls silent. Some moods never grant it: they end their phrases hanging on the dominant — a <em>half-cadence</em>, longing left open.</p>
         <h4>Mixing in key</h4>
         <p>Turn on <em>AUTO-SET</em> and RILLE stops being one track and becomes a set: it beatmatches and blends into a fresh generated track every so often, the way a DJ threads a night together. It chooses the next key by the <em>Camelot wheel</em>, the harmonic-mixing system where adjacent numbers are a perfect fifth apart — so the move is a fifth up or down, the same key, or now and then a semitone/whole-tone <em>energy</em> lift. Each blend is a long, phrase-aligned crossfade with a <em>bass swap</em>: the incoming record's tops come up first while its low end is held back, then kick and bass are handed over cleanly at the bar so two basslines never fight. <em>JETZT →</em> triggers the next blend by hand. Every transition stays in key.</p>
         <h4>The name</h4>
@@ -473,6 +473,17 @@ function voiceAt(mode,root,deg,offs){
   while(cr-(root+12)>6)cr-=12;
   while((root+12)-cr>6)cr+=12;
   return {rootMidi:cr,notes:offs.map(o=>cr+o)};
+}
+// JUST INTONATION against the bass. Every harmonic tone above the bass is tuned
+// as an exact frequency ratio from the sounding bass root — not equal
+// temperament — so upper voices lock beat-free onto the low end (the tuning
+// tradition of the JI works in this catalogue). 5-limit lattice; the dominant's
+// seventh takes the harmonic 7/4, the strongest pull home a seventh can have.
+const JI=[1/1,16/15,9/8,6/5,5/4,4/3,45/32,3/2,8/5,5/3,9/5,15/8];
+function jf(bassMidi,note,dom){
+  const d=note-bassMidi, oct=Math.floor(d/12), st=((d%12)+12)%12;
+  const r=(dom&&st===10)?7/4:JI[st];
+  return mtof(bassMidi)*r*Math.pow(2,oct);
 }
 // per-mood hover colour (vstyle): all built on the minor-9 family — root, ♭3
 // (or sus 4), ♭7, 9 — the deep, longing voicing. cluster stays EISEN's harshness.
@@ -791,7 +802,11 @@ function buildGraph(ac,g){
   G.shape=ac.createWaveShaper();G.shape.curve=shaperCurve(1.6);G.shape.oversample='2x';
   G.comp=ac.createDynamicsCompressor();
   G.comp.threshold.value=-12;G.comp.ratio.value=5;G.comp.attack.value=.004;G.comp.release.value=.18;
-  G.pre.connect(G.shape).connect(G.comp).connect(ac.destination);
+  // output trim: the comp can still peak past full scale (measured ~1.15 on a
+  // dense mix), which hard-clips the WAV and the DAC. Leave real headroom —
+  // target ≤ ~0.9 (≈ −1 dBFS) on the densest material.
+  G.out=ac.createGain();G.out.gain.value=.76;
+  G.pre.connect(G.shape).connect(G.comp).connect(G.out).connect(ac.destination);
   // shared send FX
   G.verb=ac.createConvolver();G.verb.buffer=makeIR(ac,M.verb.sec);
   G.vret=ac.createGain();G.vret.gain.value=M.verb.mix;G.verb.connect(G.vret).connect(G.pre);
@@ -841,7 +856,7 @@ function makeDeck(G,g){
   D.sendV(D.part.cantus,.5);D.sendD(D.part.cantus,.7);
   // record-surface floor: hiss straight to output, post-comp (never pumped),
   // scaled by this deck's floor gain so it crossfades with the deck.
-  D.deckFloor=ac.createGain();D.deckFloor.gain.value=st.mutes.pulvis?0:1;D.deckFloor.connect(ac.destination);
+  D.deckFloor=ac.createGain();D.deckFloor.gain.value=st.mutes.pulvis?0:1;D.deckFloor.connect(G.out);
   return D;
 }
 
@@ -907,20 +922,32 @@ function vClap(G,t,vel,kind){
   }
 }
 function vBass(G,t,note,len,vel){
-  const ac=G.ac,f=mtof(note);
-  const o=ac.createOscillator(),o2=ac.createOscillator(),gn=ac.createGain();
+  const ac=G.ac;
+  // Rumble control. Notes could reach MIDI 24 (32.7 Hz) with the sub-octave sine
+  // then at 16 Hz — infrasonic mud that eats headroom without being heard as
+  // pitch. Floor the sounding fundamental at E1 (MIDI 28, 41.2 Hz), and only add
+  // the sub-octave when it still lands in audible sub territory (≥ ~41 Hz);
+  // below that the fundamental IS the sub, so it plays alone, slightly louder.
+  while(note<28)note+=12;
+  const f=mtof(note), sub=f>=82;
+  const o=ac.createOscillator(),gn=ac.createGain();
   o.type='triangle';o.frequency.value=f;
-  o2.type='sine';o2.frequency.value=f/2;
   const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=340;
-  const g2=ac.createGain();g2.gain.value=.6;
+  const hp=ac.createBiquadFilter();hp.type='highpass';hp.frequency.value=25;hp.Q.value=.7;
   gn.gain.setValueAtTime(0,t);
-  gn.gain.linearRampToValueAtTime(.8*vel,t+.01);
-  gn.gain.setValueAtTime(.8*vel,t+Math.max(.02,len-.05));
+  gn.gain.linearRampToValueAtTime((sub?.8:.92)*vel,t+.01);
+  gn.gain.setValueAtTime((sub?.8:.92)*vel,t+Math.max(.02,len-.05));
   gn.gain.exponentialRampToValueAtTime(.001,t+len+.06);
-  o.connect(lp);o2.connect(g2).connect(lp);lp.connect(gn).connect(G.part.bassus);
-  o.start(t);o2.start(t);o.stop(t+len+.2);o2.stop(t+len+.2);
+  o.connect(lp);
+  if(sub){
+    const o2=ac.createOscillator(),g2=ac.createGain();
+    o2.type='sine';o2.frequency.value=f/2;g2.gain.value=.6;
+    o2.connect(g2).connect(lp);o2.start(t);o2.stop(t+len+.2);
+  }
+  lp.connect(hp).connect(gn).connect(G.part.bassus);
+  o.start(t);o.stop(t+len+.2);
 }
-function vChord(G,t,notes,len,pad){
+function vChord(G,t,freqs,len,pad){                      // freqs in Hz (JI-tuned upstream)
   const ac=G.ac;
   const gn=ac.createGain();
   // Smoother, less-harsh stabs. Two things made the raw chord bite: the detuned
@@ -937,9 +964,9 @@ function vChord(G,t,notes,len,pad){
   gn.gain.setValueAtTime(pad?.16:.28,t+Math.max(a,len-rel));
   gn.gain.linearRampToValueAtTime(0,t+len+.06);
   gn.connect(warm).connect(G.stabBP);
-  for(const n of notes)for(const det of [-5,5]){
+  for(const f of freqs)for(const det of [-5,5]){
     const o=ac.createOscillator();o.type='sawtooth';
-    o.frequency.value=mtof(n);o.detune.value=det;
+    o.frequency.value=f;o.detune.value=det;
     o.connect(gn);o.start(t);o.stop(t+len+.15);
   }
 }
@@ -947,7 +974,7 @@ function vChord(G,t,notes,len,pad){
 // chords use, so the broken chord keeps the mood's colour. Short attack, notes
 // overlap slightly (legato shimmer). Routes into chordae → the duck bus, so the
 // line pumps with the kick.
-function vArpN(G,t,note,vel,len){
+function vArpN(G,t,freq,vel,len){                        // freq in Hz (JI-tuned upstream)
   const ac=G.ac,gn=ac.createGain();
   const warm=ac.createBiquadFilter();warm.type='lowpass';warm.frequency.value=2700;warm.Q.value=.4;
   gn.gain.setValueAtTime(0,t);
@@ -956,12 +983,12 @@ function vArpN(G,t,note,vel,len){
   gn.connect(warm).connect(G.stabBP);
   for(const det of [-4,4]){
     const o=ac.createOscillator();o.type='sawtooth';
-    o.frequency.value=mtof(note);o.detune.value=det;
+    o.frequency.value=freq;o.detune.value=det;
     o.connect(gn);o.start(t);o.stop(t+len+.05);
   }
 }
-function vCantus(G,t,note,len,vel){
-  const ac=G.ac,f=mtof(note);
+function vCantus(G,t,f,len,vel){                         // f in Hz (JI-tuned upstream)
+  const ac=G.ac;
   const o=ac.createOscillator(),o2=ac.createOscillator(),gn=ac.createGain();
   o.type='sine';o.frequency.value=f;
   o2.type='triangle';o2.frequency.value=f*2;
@@ -1026,45 +1053,59 @@ function scheduleBar(G,arr,g,bar,t0,stepDur,rng){
     if(g.clap[s]>0)vClap(G,t0+s*stepDur+sw(s),g.clap[s],g.clapKind);
   // this bar of the 64-bar harmonic narrative (voiced in genAll)
   const H=g.harm[bar%HARMBARS];
-  // bass: pedal on the key root, or follow the chord root (kept in the bass
-  // register). During the cadence (V and its resolution) always follow, so the
-  // V→i step is heard in the low end even when the mood otherwise pedals.
+  // the bass root of this bar — also the JUST-INTONATION reference every
+  // harmonic voice above tunes to (computed even when the bass is silent: the
+  // lattice stands where the bass would stand). Pedal on the key root, or follow
+  // the chord root; during the cadence always follow, so V→i walks the low end.
+  let bRoot=(g.follow||H.kind==='pre'||H.kind==='dom'||H.kind==='tonic')?H.rootMidi-12:g.root;
+  while(bRoot>g.root+6)bRoot-=12;
+  const isDom=H.kind==='dom';
+  const jn=n=>jf(bRoot,n,isDom);                         // ET target → just Hz over the bass
   if(arr.gate('bassus',bar)){
-    let bRoot=(g.follow||H.kind==='pre'||H.kind==='dom'||H.kind==='tonic')?H.rootMidi-12:g.root;
-    while(bRoot>g.root+6)bRoot-=12;
     for(const n of g.bass)
       vBass(G,t0+n.s*stepDur+sw(n.s),bRoot+n.off,n.len*stepDur,n.vel);
   }
-  // chords, by harmonic function
+  // chords, by harmonic function — everything above the bass is a JUST interval
   if(arr.gate('chordae',bar)){
     if(H.kind==='dom'||H.kind==='tonic'){
-      // the charged section: V7sus → V7 → i as slow sustained swells (each entry
-      // is its own swell, so the 4-3 suspension audibly resolves across them) —
-      // the arpeggio stops here; sustained harmony is the release's contrast
-      if(H.first)vChord(G,t0,H.notes,H.span*16*stepDur*.94,true);
+      // the charged section, stripped to bare intervals over the bass: no chord,
+      // just the voice that matters, tuned pure. V7sus holds the 4/3 with the
+      // harmonic-seventh lean; it resolves to the 5/4 (the leading tone of the
+      // key, a just major third over the V bass); the tonic answers 6/5 + 3/2 —
+      // home. Two octaves up puts them in the old stab register.
+      if(H.first){
+        const fB=mtof(((bRoot-28)%12+12)%12+28+12);      // lattice root, mid register
+        const sus=H.notes[1]-H.notes[0]===5;
+        const iv=H.kind==='tonic'?[6/5,3/2]:(sus?[4/3,7/4]:[5/4,7/4]);
+        vChord(G,t0,iv.map(r=>fB*r*2),H.span*16*stepDur*.94,true);
+      }
     }else if(H.kind==='maj'){
-      // passing major colour: a quick ascending three-note glint, then gone
+      // passing major colour: a quick ascending three-note glint, tuned just
       const s0=(bar%2)?8:3;
       for(let k=0;k<3;k++)
-        vArpN(G,t0+(s0+k)*stepDur+sw(s0+k),H.notes[k],.8-.15*k,stepDur*1.8);
+        vArpN(G,t0+(s0+k)*stepDur+sw(s0+k),jn(H.notes[k]),.8-.15*k,stepDur*1.8);
     }else{
       // hover (and the cadence's pre-dominant): the chord broken open — an
-      // arpeggio, always reaching, never landing all at once
+      // arpeggio of just intervals, always reaching, never landing all at once
       for(const a of g.arpSeq){
         if(Math.floor(a.s/16)!==(bar%2))continue;
         const s=a.s%16;
-        vArpN(G,t0+s*stepDur+sw(s),H.notes[a.idx%H.notes.length]+a.oct,a.vel,stepDur*2.4);
+        vArpN(G,t0+s*stepDur+sw(s),jn(H.notes[a.idx%H.notes.length]+a.oct),a.vel,stepDur*2.4);
       }
-      // pad moods keep a quiet swell UNDER the line — the ache the arp rides on
-      if(M.stab.pad&&H.first)vChord(G,t0,H.notes,H.span*16*stepDur*.94,true);
+      // pad moods keep a quiet interval UNDER the line — a bare just fifth,
+      // grounding; the arp supplies the colour above it
+      if(M.stab.pad&&H.first){
+        const fB=mtof(((bRoot-28)%12+12)%12+28+12);
+        vChord(G,t0,[fB*3/2],H.span*16*stepDur*.94,true);
+      }
     }
   }
   // cantus (2-bar motif, plays on even bars ≥ its entry) — falls silent on the
-  // dominant so the swell and the bass carry the release alone
+  // dominant so the swell and the bass carry the release alone; sung just
   if(arr.gate('cantus',bar)&&g.cantus.length&&bar%4<2&&H.kind!=='dom'){
     for(const n of g.cantus){
       const b=Math.floor(n.s/16);                        // which bar of the 2-bar phrase
-      if(b===bar%2)vCantus(G,t0+(n.s%16)*stepDur,n.note,n.len*stepDur,n.vel);
+      if(b===bar%2)vCantus(G,t0+(n.s%16)*stepDur,jn(n.note),n.len*stepDur,n.vel);
     }
   }
 }
