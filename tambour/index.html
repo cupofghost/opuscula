@@ -65,6 +65,18 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;font-size:clamp(2.8rem,14vw,
 .plate .tag{position:absolute;top:7px;left:10px;font-family:'IBM Plex Mono',monospace;font-size:.56rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
 .plate .tagr{left:auto;right:10px;text-align:right}
 .plate .tag b{color:var(--ember)}
+.viewtog{position:absolute;right:8px;bottom:8px;z-index:5;width:36px;height:36px;padding:0;
+  font-size:16px;line-height:1;color:var(--txt);background:rgba(12,14,17,.72);
+  border:1px solid var(--hair);border-radius:7px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
+  transition:border-color .15s ease}
+.viewtog:hover,.viewtog:focus-visible{border-color:var(--steel);outline:none}
+
+.sel{width:100%;padding:12px;font-family:'IBM Plex Mono',monospace;font-size:.74rem;letter-spacing:.06em;
+  color:var(--txt);background:var(--panel);border:1px solid var(--iron);border-radius:0;
+  -webkit-appearance:none;appearance:none;text-transform:uppercase;cursor:pointer;
+  background-image:linear-gradient(45deg,transparent 50%,var(--steel) 50%),linear-gradient(135deg,var(--steel) 50%,transparent 50%);
+  background-position:calc(100% - 19px) 18px,calc(100% - 14px) 18px;background-size:5px 5px;background-repeat:no-repeat}
+.sel:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
 
 /* controls */
 .controls{padding:14px 20px 0;display:flex;flex-direction:column;gap:14px}
@@ -149,6 +161,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
     <canvas id="cv" width="920" height="560" aria-label="Drum tablature: one lane per voice, stroke marks along the bar, a vertical playhead sweeping left to right"></canvas>
     <div class="tag">CALL · <b id="callTag">La Marche</b><br><span id="meterTag">2/4</span></div>
     <div class="tag tagr"><span id="cycTag">phrase</span></div>
+    <button class="viewtog" id="viewtog" title="Battlefield / score" aria-label="Toggle battlefield and score view">♪</button>
   </div>
 
   <div class="controls">
@@ -173,6 +186,11 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
     <div class="fld">
       <div class="lab">Industrie <span class="rd" id="indrd">Champ</span></div>
       <div class="chips" id="ind"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Adversaire <span class="rd" id="enemyrd">Prussia</span></div>
+      <select id="enemy" class="sel" aria-label="Enemy country"></select>
     </div>
 
     <div class="fld">
@@ -201,6 +219,8 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
       <p>The <em>clairon</em> is a bugle with no valves and no slide. It can sound only the notes physically present in one tube's harmonic series — the bugler chooses a note by lip alone — so every call is written from the same four or five pitches. That physical limit is why bugle calls the world over share a family sound; the notes here are exactly those partials and nothing between them.</p>
       <h4>Martial, industrial</h4>
       <p>The <em>Industrie</em> control slides the battery from a clean parade ground toward a foundry. As it rises the drums are driven and saturated, a struck-steel anvil doubles the hard accents, and a low steel drone — the <em>bourdon</em> — swells underneath. This is the march heard through martial-industrial music, the late-twentieth-century genre that took military drumming, orchestral menace and machine noise and made the connection between the parade and the factory floor explicit.</p>
+      <h4>The battlefield</h4>
+      <p>The graphic is a game, not a readout. Two lines meet on a scrolling field — France on the left in the <em>bleu-blanc-rouge</em>, the enemy on the right in its own colours (pick the country). The march drives the fight: the big coincident accents — bass drum, snare and cymbal landing together, the march "hitting just right" — surge the French line forward, and how far depends on how good the march is (a cadence near the regulation 120, the full battery sounding — mute the drummers and you lose the push — the fire of the <em>Industrie</em> and <em>Fantaisie</em>). The enemy leans back at a steady rate set by its country's strength. A beaten line about-faces and retreats in order; overwhelmed, it scatters and runs. Some figures are music men — a drummer and a bugler lead each side, the drummer's sticks falling on the snare — and a colour-bearer carries the flag. Toggle the ♪ button to see the drum tablature instead. (Enemy music, and its own drummers driving the other line, are a future addition.)</p>
       <h4>A note on faithfulness</h4>
       <p>The regulation calls are a real, documented tradition, but they vary by era, corps and manuscript, and much lived in oral teaching. The rudiments and the shape of each call here are idiomatic — honest arrangements in the French field-drum style — rather than a claim to one authoritative score.</p>
       <h4>How the sound is made</h4>
@@ -394,6 +414,20 @@ const VOICES=[
 ];
 const VOICE_BY=Object.fromEntries(VOICES.map(v=>[v.id,v]));
 
+// the armies. France (left) is always the tricolore — bleu coat, white belts,
+// red plume, the bleu-blanc-rouge colours. The enemy (right, chosen from the
+// dropdown) sets the opposing palette + a base strength the march must overcome.
+// (enemy music is a future addition; for now the enemy pushes at a steady rate.)
+const FRENCH={ name:'France', coat:'#20419a', cuff:'#eef0f4', hat:'#0f1836', plume:'#ef4135', flag:['#0055a4','#ffffff','#ef4135'], strength:1.0 };
+const ENEMIES={
+  prussia:{ name:'Prussia', coat:'#2b2f36', cuff:'#e6e8ec', hat:'#0c0d10', plume:'#dfe3e8', flag:['#111111','#ffffff'],             strength:1.10 },
+  britain:{ name:'Britain', coat:'#b5302a', cuff:'#efe9d8', hat:'#101010', plume:'#efe9d8', flag:['#0a2a6b','#ffffff','#c8102e'],   strength:1.18 },
+  russia: { name:'Russia',  coat:'#2f4a37', cuff:'#c23b2f', hat:'#141414', plume:'#e3dcc8', flag:['#ffffff','#0039a6','#d52b1e'],   strength:1.24 },
+  austria:{ name:'Austria', coat:'#e7e2d5', cuff:'#c23b2f', hat:'#151515', plume:'#d8b048', flag:['#c8102e','#ffffff','#c8102e'],   strength:1.00 },
+  spain:  { name:'Spain',   coat:'#e5dfce', cuff:'#8f2019', hat:'#4a2e18', plume:'#e0b83a', flag:['#c8102e','#f1bf00','#c8102e'],   strength:0.90 },
+};
+const ENEMY_ORDER=['prussia','britain','russia','austria','spain'];
+
 const padTo=(s,n)=>{let o=(s||'').replace(/[|\s]/g,'');while(o.length<n)o+='.';return o.slice(0,n);};
 
 // parse a token string into rudiment glyphs. 'r' runs collapse into one roll
@@ -535,7 +569,7 @@ function assemble(st){
 /* ============================ ENGINE-END ============================ */
 
 /* ------------------------------- state ---------------------------------- */
-const st={ battery:'la-marche', bpm:120, fantaisie:1, industrial:1, seed:1, playing:false,
+const st={ battery:'la-marche', bpm:120, fantaisie:1, industrial:1, seed:1, enemy:'prussia', playing:false,
   mutes:{clairon:false,claire:false,roulante:false,grosse:false,cymbales:false,enclume:false,bourdon:false} };
 
 /* ------------------------------- audio ---------------------------------- */
@@ -817,7 +851,7 @@ const xAt=f=>PX0+f*PLW;
 
 let needsDraw=true;const invalidate=()=>{needsDraw=true;VIEW=null;scoreDirty=true;};
 
-function refreshView(){ VIEW=assemble(st); buildScore(); scoreDirty=false; }
+function refreshView(){ VIEW=assemble(st); buildScore(); buildPulse(); BATTLE.fq=frenchQuality(); scoreDirty=false; }
 
 function laneY(i){ return PY0+i*ROWH+ROWH*0.66; }   // baseline of lane i
 
@@ -933,7 +967,7 @@ function buildScore(){
   ox.fillText('BATTERIE D’ORDONNANCE', PX0, 8);
 }
 
-function draw(){
+function drawScoreView(){
   if(scoreDirty||!VIEW) refreshView();
   cx.clearRect(0,0,CW,CH);
   cx.drawImage(oc,0,0);
@@ -961,6 +995,185 @@ function draw(){
     $('cycTag').textContent='phrase '+(cyc+1)+'/'+V.cycles;}
   else $('cycTag').textContent=V.cycles+' phrases';
 }
+
+/* ---- the battlefield ----------------------------------------------------
+   A side-scrolling clash driven by the march. The composed events feed a
+   PULSE over one phrase; big COINCIDENT accents (grosse + snare + cymbal in
+   the same instant — "when the march hits just right") spike it, and the
+   spike, scaled by how good the march is (frenchQuality: cadence near 120,
+   full ensemble — mute the snare and you lose it — industrie, fantaisie),
+   pushes the French line forward. The enemy leans back at a steady rate set
+   by its country. The tide integrates the tug of war; the ground scrolls
+   beneath both armies. A beaten side ABOUT-FACES and retreats; overwhelmed,
+   it SCATTERS and runs. Enemy music is a future addition.                  */
+let viewMode='battle';
+const BATTLE={ tide:0, scroll:0, lastMs:0, fq:0.85, meanP:0.4, p:0, pulse:null, pulseN:0, armyL:[], armyR:[] };
+
+function frenchQuality(){
+  const cad=0.55+0.45*Math.exp(-Math.pow((st.bpm-120)/44,2));  // 1 at the regulation 120, floor .55
+  const ind=0.80+0.20*(st.industrial/3);
+  const fan=0.90+0.10*(st.fantaisie/3);
+  const w={claire:0.50,grosse:0.22,roulante:0.10,cymbales:0.10,clairon:0.08}; // the snare is half the weight
+  let ens=0; for(const k in w) if(!st.mutes[k]) ens+=w[k];
+  return cad*ind*fan*(0.35+0.65*ens);                          // a full, on-cadence march ≈ 1.0
+}
+function buildPulse(){
+  const V=VIEW, B=160, P=new Float32Array(B), cd=V.cycleDur;
+  for(const e of V.ev){ if(e.t>=cd) break;                 // first phrase only (it loops)
+    const bin=Math.min(B-1,Math.floor(e.t/cd*B));
+    if(e.voice==='clairon'){ const nb=Math.max(1,Math.round(e.dur/cd*B)); for(let k=0;k<nb&&bin+k<B;k++) P[bin+k]+=0.16; continue; }
+    let w=0;
+    if(e.voice==='grosse') w=e.vel>0.8?1.1:0.5;
+    else if(e.voice==='claire') w=e.tone==='accent'?0.7:e.tone==='buzz'?0.05:0.22;
+    else if(e.voice==='roulante') w=e.tone==='accent'?0.34:0.12;
+    else if(e.voice==='cymbales') w=e.tone==='crash'?1.0:0.4;
+    else if(e.voice==='enclume') w=0.7;
+    P[bin]+=w;
+  }
+  BATTLE.pulse=P; BATTLE.pulseN=B; let s=0; for(let i=0;i<B;i++)s+=P[i]; BATTLE.meanP=s/B;
+}
+function makeArmy(side){
+  const a=[],R=Math.random,files=6;
+  for(let r=0;r<2;r++) for(let f=0;f<files-r;f++)
+    a.push({side,role:'soldier',row:r,file:f+r*0.5,jit:R(),spd:0.85+R()*0.35,runX:0,runY:0});
+  a.push({side,role:'drummer',row:0,file:1.4,jit:R(),spd:1,runX:0,runY:0});   // music guys
+  a.push({side,role:'bugler', row:0,file:3.7,jit:R(),spd:1,runX:0,runY:0});
+  a.push({side,role:'flag',   row:1,file:2.3,jit:R(),spd:1,runX:0,runY:0});   // the colours
+  return a;
+}
+function initArmies(){ BATTLE.armyL=makeArmy('L'); BATTLE.armyR=makeArmy('R'); }
+function modeFor(t){                                        // t>0 = France winning
+  if(t> .58) return {fr:'advance',en:'rout'};
+  if(t> .05) return {fr:'advance',en:'retreat'};
+  if(t< -.58) return {fr:'rout',en:'advance'};
+  if(t< -.05) return {fr:'retreat',en:'advance'};
+  return {fr:'hold',en:'hold'};
+}
+function battleStep(dt,playing,tPhase){
+  const enemy=ENEMIES[st.enemy]||ENEMIES.prussia;
+  let p=0;
+  if(playing&&BATTLE.pulse){ const B=BATTLE.pulseN,cd=VIEW.cycleDur; p=BATTLE.pulse[Math.min(B-1,Math.floor((tPhase%cd)/cd*B))]; }
+  BATTLE.p=p;
+  if(playing){
+    const push=BATTLE.fq*p*3.4, foe=enemy.strength*0.50;
+    BATTLE.tide=clamp(BATTLE.tide+(push-foe)*dt*0.5,-1,1);
+    BATTLE.scroll += ((st.bpm/120)*46 + BATTLE.tide*44)*dt;   // marching treadmill + advance bias
+  }
+}
+
+function roundRect(x,y,w,h,r){ cx.beginPath();cx.moveTo(x+r,y);cx.arcTo(x+w,y,x+w,y+h,r);cx.arcTo(x+w,y+h,x,y+h,r);cx.arcTo(x,y+h,x,y,r);cx.arcTo(x,y,x+w,y,r);cx.closePath(); }
+function drawHills(offset,y,col,amp,period){
+  cx.fillStyle=col; cx.beginPath(); cx.moveTo(0,CH);
+  for(let x=0;x<=CW;x+=8){ const wx=x+offset, yy=y-Math.sin(wx/period)*amp-Math.sin(wx/period*0.37+1)*amp*0.4; cx.lineTo(x,yy); }
+  cx.lineTo(CW,CH); cx.closePath(); cx.fill();
+}
+function drawFlag(x,y,s,face,flag,pole,beat){
+  const px=x-face*3*s, top=y-40*s, wav=Math.sin(beat*0.8+x)*1.6*s, seg=15*s/flag.length, fh=11*s;
+  cx.strokeStyle=pole;cx.lineWidth=1.6*s;cx.beginPath();cx.moveTo(px,y-2*s);cx.lineTo(px,top);cx.stroke();
+  cx.fillStyle='#c9a24e';cx.beginPath();cx.arc(px,top,1.7*s,0,7);cx.fill();
+  for(let i=0;i<flag.length;i++){ cx.fillStyle=flag[i]; cx.fillRect(px+face*(2*s+i*seg),top+wav,face*seg,fh); }
+}
+function drawSoldier(x,y,s,face,fig,beat,side,mode,march){
+  const pal=side==='L'?FRENCH:(ENEMIES[st.enemy]||ENEMIES.prussia);
+  const coat=pal.coat,cuff=pal.cuff,hat=pal.hat,plume=pal.plume,flag=pal.flag;
+  const hipY=y-13*s, shoY=y-25*s, headY=y-29*s;
+  cx.fillStyle='rgba(0,0,0,.28)'; cx.beginPath(); cx.ellipse(x,y+1,8*s,2.4*s,0,0,7); cx.fill();   // shadow
+  const stride=(march?Math.sin((beat+fig.jit)*Math.PI):0)*5*s;                                    // legs
+  cx.strokeStyle=hat; cx.lineWidth=2.4*s; cx.lineCap='round';
+  cx.beginPath();cx.moveTo(x,hipY);cx.lineTo(x-stride,y);cx.moveTo(x,hipY);cx.lineTo(x+stride,y);cx.stroke();
+  if(fig.role==='flag') drawFlag(x,y,s,face,flag,hat,beat);
+  cx.fillStyle=coat; roundRect(x-4*s,shoY,8*s,(hipY-shoY)+2*s,2*s); cx.fill();                     // coat
+  cx.strokeStyle=cuff; cx.lineWidth=1.4*s; cx.beginPath();cx.moveTo(x-4*s,shoY+2*s);cx.lineTo(x+4*s,hipY);cx.stroke(); // cross-belt
+  cx.fillStyle='#d8b48c'; cx.beginPath();cx.arc(x,headY,2.6*s,0,7);cx.fill();                      // head
+  cx.fillStyle=hat; roundRect(x-3*s,headY-9*s,6*s,8*s,1*s); cx.fill();                             // shako
+  cx.strokeStyle=plume; cx.lineWidth=1.7*s; cx.beginPath();cx.moveTo(x-face*1.5*s,headY-9*s);cx.lineTo(x-face*2.6*s,headY-15*s);cx.stroke(); // plume
+  if(fig.role==='soldier'){
+    const mx=x+face*4.2*s;
+    cx.strokeStyle='#2a2018'; cx.lineWidth=1.6*s; cx.beginPath();cx.moveTo(mx,shoY-5*s);cx.lineTo(mx,y-3*s);cx.stroke();       // musket
+    cx.strokeStyle=cuff; cx.beginPath();cx.moveTo(mx,shoY-5*s);cx.lineTo(mx,shoY-9*s);cx.stroke();                            // bayonet
+    cx.strokeStyle=coat; cx.lineWidth=2.2*s; cx.beginPath();cx.moveTo(x+face*3*s,shoY+2*s);cx.lineTo(mx,hipY);cx.stroke();    // arm
+  } else if(fig.role==='drummer'){
+    const dx=x+face*5*s;
+    cx.fillStyle='#e7e4da'; cx.beginPath();cx.ellipse(dx,hipY+2*s,4.5*s,5.5*s,0,0,7);cx.fill();
+    cx.strokeStyle=coat; cx.lineWidth=1.2*s; cx.beginPath();cx.ellipse(dx,hipY+2*s,4.5*s,5.5*s,0,0,7);cx.stroke();
+    cx.strokeStyle='#b8442f'; cx.lineWidth=1; for(let k=-1;k<=1;k++){cx.beginPath();cx.moveTo(dx-4.5*s,hipY+2*s+k*2.4*s);cx.lineTo(dx+4.5*s,hipY+2*s-k*2.4*s);cx.stroke();}
+    const hit=side==='L'?BATTLE.p:0, up=hit>0.45?-3*s:-7*s;                          // sticks strike on the snare push
+    cx.strokeStyle='#d8c8a0'; cx.lineWidth=1.4*s;
+    cx.beginPath();cx.moveTo(x+face*2*s,shoY+3*s);cx.lineTo(dx-1*s,hipY+up);cx.stroke();
+    cx.beginPath();cx.moveTo(x+face*2*s,shoY+4*s);cx.lineTo(dx+1*s,hipY+up*0.6);cx.stroke();
+  } else if(fig.role==='bugler'){
+    const bx=x+face*5*s;
+    cx.strokeStyle='#c9a24e'; cx.lineWidth=1.6*s; cx.beginPath();cx.arc(bx,shoY+1*s,3*s,-0.4,3.6);cx.stroke();
+    cx.fillStyle='#c9a24e'; cx.beginPath();cx.arc(bx+face*3*s,shoY+1*s,2*s,0,7);cx.fill();
+    cx.strokeStyle=coat; cx.lineWidth=2.2*s; cx.beginPath();cx.moveTo(x+face*3*s,shoY+2*s);cx.lineTo(bx,shoY+1*s);cx.stroke();
+  }
+}
+function drawArmy(list,side,frontX,groundY,beat,playing,dt,mode){
+  const away=side==='L'?-1:1, dirBase=side==='L'?1:-1;
+  const facing=(mode==='retreat'||mode==='rout')?-dirBase:dirBase;
+  const sorted=list.slice().sort((a,b)=>b.row-a.row);       // back rows first
+  for(const f of sorted){
+    const scale=(f.row===0?1:0.82)*1.42;
+    let x=frontX + away*(36 + f.file*32 + f.row*16);
+    if(mode==='rout'){ f.runX+=away*f.spd*95*dt*(0.7+f.jit); f.runY=Math.abs(Math.sin(beat*3+f.jit*7))*7; }
+    else { f.runX*=Math.max(0,1-dt*2.4); f.runY*=Math.max(0,1-dt*3); }
+    x+=f.runX;
+    const bob=playing?Math.abs(Math.sin((beat*0.5+f.jit)*Math.PI))*3*scale:0;
+    const feetY=groundY-(f.row?16:0)-bob-f.runY;
+    if(x<-50||x>CW+50) continue;
+    drawSoldier(x,feetY,scale,facing,f,beat,side,mode,playing);
+  }
+}
+function drawTideHUD(t){
+  const w=CW*0.46, x0=CW*0.5-w/2, y=13, h=7, mid=CW*0.5;
+  cx.fillStyle='rgba(10,12,15,.6)'; roundRect(x0-2,y-2,w+4,h+4,3); cx.fill();
+  if(t>0){ cx.fillStyle=FRENCH.coat; cx.fillRect(mid-t*w/2,y,t*w/2,h); }
+  else if(t<0){ cx.fillStyle=(ENEMIES[st.enemy]||{}).coat||'#b83026'; cx.fillRect(mid,y,-t*w/2,h); }
+  cx.strokeStyle='rgba(231,228,218,.5)'; cx.lineWidth=1; cx.beginPath();cx.moveTo(mid,y-2);cx.lineTo(mid,y+h+2);cx.stroke();
+  cx.fillStyle='rgba(231,228,218,.82)'; cx.font='600 '+Math.round(CW*0.013)+'px "IBM Plex Mono",monospace'; cx.textBaseline='top';
+  cx.textAlign='left'; cx.fillText('FRANCE',x0,y+h+3);
+  cx.textAlign='right'; cx.fillText((ENEMIES[st.enemy]||{name:'ENEMY'}).name.toUpperCase(),x0+w,y+h+3);
+}
+function drawBattle(){
+  if(!VIEW||scoreDirty) refreshView();
+  if(!BATTLE.armyL.length) initArmies();
+  const playing=!!RT;
+  const now=performance.now(); let dt=(now-(BATTLE.lastMs||now))/1000; BATTLE.lastMs=now; dt=clamp(dt,0,0.05);
+  const V=VIEW; let tPhase=0, beat=0;
+  if(playing){ const e=RT.ctx.currentTime-RT.t0; tPhase=((e%V.cycleDur)+V.cycleDur)%V.cycleDur; beat=e/V.beatDur; }
+  battleStep(dt,playing,tPhase);
+  const sc=BATTLE.scroll, tide=BATTLE.tide, modes=modeFor(tide);
+  const horizon=CH*0.50, groundY=CH*0.80, frontX=CW*0.5+tide*CW*0.26;
+
+  const g=cx.createLinearGradient(0,0,0,CH);
+  g.addColorStop(0,'#171c25');g.addColorStop(.5,'#232130');g.addColorStop(.64,'#3a2d2c');g.addColorStop(.7,'#282a2f');
+  cx.fillStyle=g; cx.fillRect(0,0,CW,CH);
+  cx.fillStyle='rgba(207,106,58,.13)'; cx.beginPath();cx.arc(frontX,horizon,130,0,7);cx.fill();   // haze behind the smoke
+
+  drawHills(sc*0.12, horizon+10,'#1c212b',16,150);
+  drawHills(sc*0.26, horizon+24,'#151922',22,95);
+  cx.fillStyle='#20242c'; cx.fillRect(0,horizon+24,CW,CH-horizon-24);
+  cx.fillStyle='#181b22'; cx.fillRect(0,groundY+2,CW,CH-groundY);
+  for(let i=0;i<28;i++){                                     // scrolling furrows / tufts
+    const x=((i*66 - sc*0.6)%(CW+132)+CW+132)%(CW+132)-66, yy=groundY-(i%3)*4;
+    cx.strokeStyle='rgba(120,130,120,.14)'; cx.lineWidth=1;
+    cx.beginPath();cx.moveTo(x,yy);cx.lineTo(x+9,yy-5);cx.lineTo(x+18,yy);cx.stroke();
+    cx.fillStyle='rgba(90,100,90,.16)'; cx.fillRect(x+34,yy-2,3,2);
+  }
+
+  drawArmy(BATTLE.armyR,'R',frontX,groundY,beat,playing,dt,modes.en);
+  drawArmy(BATTLE.armyL,'L',frontX,groundY,beat,playing,dt,modes.fr);
+
+  const inten=playing?(0.2+Math.min(1,BATTLE.p)*0.8):0;     // gunsmoke, thicker on the big hits
+  for(let i=0;i<6;i++){ const tt=now/900+i*1.4, pxs=frontX+Math.sin(tt*1.3+i)*16, pys=groundY-10-((tt*24+i*11)%70);
+    cx.fillStyle='rgba(190,186,180,'+(0.03+0.07*inten)+')'; cx.beginPath();cx.arc(pxs,pys,6+i*2.4,0,7);cx.fill(); }
+
+  drawTideHUD(tide);
+  const pct=Math.round(tide*100);
+  $('cycTag').textContent = pct>0?('FRANCE +'+pct):pct<0?((ENEMIES[st.enemy]||{name:'ENEMY'}).name.toUpperCase()+' +'+(-pct)):'HELD';
+}
+
+function draw(){ if(viewMode==='battle') drawBattle(); else drawScoreView(); }
 function loop(){
   const playing=!!RT;
   if(playing||needsDraw){draw();if(!playing)needsDraw=false;}
@@ -1019,6 +1232,24 @@ function buildTracks(){
 }
 buildTracks();
 
+// the enemy dropdown — sets the opposing palette + strength (audio is the same
+// for now; enemy music is a future addition)
+(function buildEnemy(){
+  const sel=$('enemy');
+  ENEMY_ORDER.forEach(k=>{const o=document.createElement('option');o.value=k;o.textContent=ENEMIES[k].name;sel.appendChild(o);});
+  sel.value=st.enemy; $('enemyrd').textContent=ENEMIES[st.enemy].name;
+  sel.addEventListener('change',()=>{ st.enemy=sel.value; $('enemyrd').textContent=ENEMIES[st.enemy].name; needsDraw=true; });
+})();
+
+// battlefield ↔ score toggle on the plate
+$('viewtog').textContent = viewMode==='battle'?'♪':'⚔';
+$('viewtog').addEventListener('click',()=>{
+  viewMode = viewMode==='battle'?'score':'battle';
+  $('viewtog').textContent = viewMode==='battle'?'♪':'⚔';   // shows the OTHER view's glyph
+  if(viewMode==='score') scoreDirty=true;
+  needsDraw=true;
+});
+
 $('pick').addEventListener('click',()=>st.playing?stop():play());
 $('cut').addEventListener('click',cut);
 
@@ -1026,11 +1257,12 @@ $('cut').addEventListener('click',cut);
 let __applying=false;
 function muteMask(){return VOICES.reduce((m,v,i)=>m|((st.mutes[v.id]?1:0)<<i),0);}
 function applyMask(m){VOICES.forEach((v,i)=>st.mutes[v.id]=!!(m&(1<<i)));}
-function __state(){return {b:st.battery,bpm:st.bpm,f:st.fantaisie,i:st.industrial,m:muteMask(),sd:st.seed};}
+function __state(){return {b:st.battery,bpm:st.bpm,f:st.fantaisie,i:st.industrial,en:st.enemy,m:muteMask(),sd:st.seed};}
 function __apply(o){
   if(o.b){const b=$('battery').querySelector('[data-v="'+o.b+'"]');b&&b.click();}
   if(o.f!==undefined){const b=$('fan').querySelector('[data-v="'+(+o.f)+'"]');b&&b.click();}
   if(o.i!==undefined){const b=$('ind').querySelector('[data-v="'+(+o.i)+'"]');b&&b.click();}
+  if(o.en&&ENEMIES[o.en]){st.enemy=o.en;const s=$('enemy');if(s)s.value=o.en;$('enemyrd').textContent=ENEMIES[o.en].name;needsDraw=true;}
   if(o.bpm){st.bpm=clamp(+o.bpm|0,76,176);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' pas/min';invalidate();}
   if(o.m!==undefined){applyMask(+o.m|0);buildTracks();invalidate();}
   if(o.sd!==undefined){const sd=+o.sd;if(Number.isFinite(sd)){st.seed=sd>>>0;invalidate();}}
@@ -1058,7 +1290,7 @@ addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
   else if(e.key==='c'||e.key==='C')$('cut').click();
 });
 
-(function init(){const o=__hashRead();
+(function init(){initArmies();const o=__hashRead();
   if(o){__applying=true;try{__apply(o);}catch(e){}__applying=false;}
   syncReadouts();__hashWrite();invalidate();
 })();

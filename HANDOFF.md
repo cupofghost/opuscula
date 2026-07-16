@@ -107,6 +107,56 @@ keep all three (page, README, this file) in sync when adding a machine.
 
 Newest first.
 
+### TAMBOUR — playback fixes + battlefield graphic
+**Branch:** `claude/project-working-conventions-hlurpe` · **File:**
+`tambour/index.html` · **Status:** done, verified headless (Chromium); on `main`.
+
+Two rounds of maintainer feedback after the op. XIII drop.
+
+**Round 1 — sound.**
+- *Clairon was Casio-ish:* rewrote `synClaironNote` from a static sine stack to
+  a dynamic brass model — upper partials **bloom in over the attack** (a
+  brightness envelope), a breath chiff on the onset, a ~1 kHz formant. That
+  spectral motion is the brass cue. Also pulled it back (gain .50→.30).
+- *Snares should cut through / "lots of drummers":* the snare is now a **section**
+  — `SECT` trebles the caisse claire and doubles the roulante at mix time, each
+  copy spread a few ms + across the pan field with a different kit variant and
+  seeded jitter (`sRng`). Measured: claire is the loudest voice in the mix
+  (peak 2.95 vs clairon 0.12).
+- *Patterns just repeated one bar:* calls are now genuinely varying **4-bar**
+  phrases (2/4→32 steps, 6/8→24). `'|'`/space bar separators stripped at parse;
+  `steps`/`spb`/`beatsPerBar` **derived from the pattern length** at load (see
+  the `for(k in CALLS)` block). Tablature draws per-beat + per-bar gridlines.
+
+**Round 2 — the battlefield graphic (the fun one).**
+- The `<canvas>` now has **two views**, a `viewMode` toggle (`♪`/`⚔` button on
+  the plate): the drum **tablature** (`drawScoreView`, the old view) and a
+  side-scrolling **battlefield** (`drawBattle`, default).
+- **The march drives a battle.** `buildPulse` bins one phrase's events into a
+  PULSE (grosse+snare+cymbal coincidences = the big spikes, "the march hitting
+  just right"). `frenchQuality` scores the march from state (cadence bell-curve
+  peaked at **120**, ensemble fullness with the **snare worth half**, industrie,
+  fantaisie) ≈ 0..1. `battleStep` integrates a **tide** ∈ [-1,1]:
+  `push = fq * pulse * 3.4`, `foe = enemy.strength * 0.50`, `tide += (push-foe)*dt*0.5`.
+  **Tuning is deliberate — a full on-cadence march wins vs all enemies, a plain
+  march beats Spain/Austria but stalemates Russia, a snare-muted/off-cadence
+  march is routed. Don't rescale one constant without re-running `scratchpad/sweep.mjs`.**
+- **Armies:** `FRENCH` (left, bleu-blanc-rouge) vs `ENEMIES[st.enemy]` (right;
+  dropdown `#enemy`, `ENEMY_ORDER` = prussia/britain/russia/austria/spain, each
+  a coat/cuff/hat/plume + flag + strength). Figures (`makeArmy`): soldiers +
+  a **drummer & bugler (music guys)** + a **flag bearer**, two rows. `modeFor(tide)`
+  → advance / hold / **retreat = about-face** / **rout = scatter-and-run**
+  (`fig.runX` integrates away from the front). Ground scrolls (`BATTLE.scroll`,
+  a marching treadmill + advance bias); French drummer's sticks fall on the
+  snare pulse. **Enemy music is a future addition** (their side pushes at a flat
+  rate for now — the hook is `enemy.strength`).
+- State: `st.enemy` in hash as `en`; `viewMode` is a view pref (not hashed).
+- **Verify:** `scratchpad/verify.mjs` now also asserts France advances vs a weak
+  enemy with a good march, the snare-mute quality drop, and the view toggle;
+  `scratchpad/sweep.mjs` prints the tide outcome per enemy for good/mid/weak
+  marches (the balance table). NB: the model-enum section leaves claire+grosse
+  muted (mask round-trip) — the battle section resets mutes first.
+
 ### TAMBOUR — new machine, op. XIII (French military field drum)
 **Branch:** `claude/project-working-conventions-hlurpe` · **File:**
 `tambour/index.html` · **Status:** done, verified headless (Chromium). New op.
