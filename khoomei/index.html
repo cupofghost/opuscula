@@ -232,16 +232,124 @@ function __iosAudio(ac){
 const SR=44100;
 // four drone fundamentals across the low singer's range
 const KEYS=[{n:'G',hz:97.999},{n:'A',hz:110.00},{n:'C',hz:130.81},{n:'D',hz:146.83}];
-// each manner: which harmonics the overtone melody may pick, the whistle
-// narrowness (Q), its loudness, the drone body, a sub-octave (kargyraa) and a
-// growl flag.
+// each manner: which harmonics the overtone melody may pick — that is the
+// law and stays here. The manner's numeric VOICE (whistle Q, levels, body)
+// lives in TIMBRE below, editable from the voicing bench.
 const STYLES={
-  khoomei:  {label:'Khöömei',  harms:[6,7,8,9,10,12],   Q:20, wgain:2.6, drone:0.50, bodyLP:1500, sub:0.00, growl:0, breath:0.55},
-  sygyt:    {label:'Sygyt',    harms:[8,9,10,12,13,16], Q:40, wgain:3.4, drone:0.34, bodyLP:1150, sub:0.00, growl:0, breath:0.78},
-  kargyraa: {label:'Kargyraa', harms:[4,5,6,8,9,10],    Q:15, wgain:2.2, drone:0.42, bodyLP:1250, sub:0.34, growl:1, breath:0.40},
+  khoomei:  {label:'Khöömei',  harms:[6,7,8,9,10,12]},
+  sygyt:    {label:'Sygyt',    harms:[8,9,10,12,13,16]},
+  kargyraa: {label:'Kargyraa', harms:[4,5,6,8,9,10]},
 };
 const STYLE_ORDER=['khoomei','sygyt','kargyraa'];
 const MAXH=16;                                    // ladder drawn to the 16th
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Open ../officina/ — the voicing bench — to edit these live inside the
+   running mix, save named presets, and export them. A preset saved there
+   applies even when this file is opened directly (localStorage); add
+   ?factory to the URL to hear the shipped voice. */
+const TIMBRE={
+  id:'khoomei', title:'KHÖÖMEI · op. XI',
+  doc:'One synthesized throat. A glottal buzz — 42 sine partials rolled off by 1/n^tilt — is the ONLY pitched source; everything after it is filtering. Three parallel paths shape the buzz: the DRONE body (a lowpass, its corner set per manner, then two peaking-EQ "formants" — the vowel), the WHISTLE (two cascaded razor-Q bandpasses tuned to harmonic × drone frequency, isolating a single overtone — the melody is filter automation, never a second oscillator), and BREATH (looped white noise bandpassed at the same harmonic). Kargyraa adds a half-speed copy of the buzz and a ~43 Hz tremolo growl on the drone bus. Everything meets at master gain → limiter (−3 dB, 20:1), with whistle and breath sent to a small convolved stone room; the drone stays dry, close to the chest. Which harmonics each manner may sing is the law and stays in STYLES.',
+  groups:{
+    master:{label:'master & room',doc:'The output stage, and the room send that only the whistle and breath reach.',params:{
+      gain:{v:.84,min:.3,max:1.2,step:.01,label:'master gain',doc:'overall level before the limiter; the offline WAV peak-normalises to 0.9 regardless'},
+      wet:{v:.10,min:0,max:.5,step:.01,label:'room send',doc:'how much whistle+breath reach the convolved room; the drone is always dry'},
+    }},
+    source:{label:'glottal source',doc:'The buzz itself: 42 harmonics with amplitudes 1/n^tilt, so the whistle always has partials to find. A slow LFO wobbles the pitch a few cents — the human unsteadiness.',params:{
+      tilt:{v:.62,min:.3,max:1.2,step:.01,label:'spectral tilt',doc:'roll-off exponent of the buzz harmonics (1/n^tilt): lower = brighter, more high overtones to whistle with; higher = darker, rounder drone'},
+      vibRate:{v:5.1,min:2,max:9,step:.1,unit:'Hz',label:'vibrato rate',doc:'speed of the pitch wobble on the source'},
+      vibCents:{v:5,min:0,max:25,step:.5,unit:'¢',label:'vibrato depth',doc:'width of the wobble in cents; 0 is machine-steady, past ~12 it warbles'},
+    }},
+    drone:{label:'drone body',doc:'The vowel of the chest voice: the manner\'s lowpass, then two peaking-EQ formants — the resonances that make a throat sound like a throat and not a sawtooth.',params:{
+      f1Freq:{v:360,min:150,max:900,step:5,unit:'Hz',label:'formant 1 freq',doc:'first vowel resonance; 300–400 reads as a closed "oh/oo" chest'},
+      f1Gain:{v:5,min:0,max:12,step:.5,unit:'dB',label:'formant 1 gain',doc:'how strongly the first formant is lifted'},
+      f1Q:{v:1.1,min:.4,max:6,step:.1,label:'formant 1 Q',doc:'narrowness of the first formant peak'},
+      f2Freq:{v:900,min:500,max:2200,step:10,unit:'Hz',label:'formant 2 freq',doc:'second vowel resonance; moving it changes the vowel (≈900 is "aw")'},
+      f2Gain:{v:3,min:0,max:12,step:.5,unit:'dB',label:'formant 2 gain',doc:'lift of the second formant'},
+      f2Q:{v:1.4,min:.4,max:6,step:.1,label:'formant 2 Q',doc:'narrowness of the second formant peak'},
+      lpQ:{v:.6,min:.3,max:2,step:.05,label:'body lowpass Q',doc:'resonance of the manner\'s body lowpass; higher adds a slight honk at the corner'},
+    }},
+    whistle:{label:'whistle (the overtone)',doc:'Two identical bandpasses in series, tuned to harmonic × drone frequency. Cascading squares the selectivity: one filter at Q 20 still leaks neighbours; two make the razor. Level rises with harmonic number because upper partials are weaker at the source.',params:{
+      base:{v:.42,min:.1,max:1,step:.01,label:'level base',doc:'whistle loudness floor (multiplied by the manner\'s whistle level)'},
+      slope:{v:.055,min:0,max:.15,step:.005,label:'level slope',doc:'extra gain per harmonic number — compensates the source roll-off so h12 sings as loud as h6'},
+      glide:{v:.055,min:.01,max:.25,step:.005,unit:'s',label:'glide time',doc:'portamento of the filter sweep on slurred notes — the singer sliding up the ladder'},
+      snap:{v:.010,min:.003,max:.08,step:.001,unit:'s',label:'snap time',doc:'filter move time on detached notes; keep short or every note smears'},
+    }},
+    breath:{label:'breath',doc:'A loop of white noise through its own bandpass, riding the same harmonic as the whistle — the air around the tone. On rests it stays part-open: the singer inhaling.',params:{
+      level:{v:.5,min:0,max:1.5,step:.01,label:'breath level',doc:'overall air level (also scaled by the BREATH slider and the manner\'s breathiness)'},
+      q:{v:6,min:1,max:30,step:.5,label:'breath Q',doc:'narrowness of the noise band: low = broad hiss, high = whistly air pitched at the overtone'},
+      restDuck:{v:.4,min:0,max:1,step:.05,label:'rest breath',doc:'fraction of the breath level kept sounding through rests'},
+    }},
+    growl:{label:'kargyraa growl',doc:'A sine LFO shaking the drone-bus gain — the false vocal folds beating against the true ones. Depth comes from the manner\'s growl amount.',params:{
+      rate:{v:43,min:15,max:90,step:1,unit:'Hz',label:'growl rate',doc:'tremolo speed; 30–50 Hz reads as vocal roughness, below ~25 as flutter'},
+    }},
+    ground:{label:'morin-khuur ground',doc:'The optional horse-head fiddle: two lowpassed sawtooths an octave below the voice — the tonic and its fifth — bowed underneath.',params:{
+      level:{v:.22,min:0,max:.6,step:.01,label:'ground level',doc:'level of the fiddle bus when switched on'},
+      lp:{v:520,min:200,max:2000,step:10,unit:'Hz',label:'bow darkness',doc:'lowpass on both strings; lower = further away, woodier'},
+      tonic:{v:.7,min:0,max:1,step:.02,label:'tonic string',doc:'level of the low tonic string'},
+      fifth:{v:.5,min:0,max:1,step:.02,label:'fifth string',doc:'level of the string a fifth above'},
+    }},
+    khoomei:{label:'manner · khöömei',doc:'The middle voice: warm, full overtones on a strong drone.',params:{
+      whistleQ:{v:20,min:5,max:60,step:1,label:'whistle Q',doc:'narrowness of each whistle bandpass (they cascade, so selectivity ≈ Q²)'},
+      whistleLvl:{v:2.6,min:.5,max:6,step:.1,label:'whistle level',doc:'overtone loudness for this manner'},
+      droneLvl:{v:.50,min:0,max:1,step:.01,label:'drone level',doc:'chest-voice level under the whistle'},
+      bodyLP:{v:1500,min:600,max:4000,step:10,unit:'Hz',label:'body lowpass',doc:'corner of the drone body filter — how open the mouth is'},
+      subLvl:{v:0,min:0,max:.8,step:.01,label:'sub-octave',doc:'half-speed copy of the buzz (the kargyraa chest); traditionally 0 here'},
+      growlAmt:{v:0,min:0,max:1,step:.05,label:'growl amount',doc:'false-fold tremolo depth on the drone bus'},
+      breathAmt:{v:.55,min:0,max:1.2,step:.01,label:'breathiness',doc:'this manner\'s scale on the breath path'},
+    }},
+    sygyt:{label:'manner · sygyt',doc:'"Whistle": piercing and pure, high on the ladder, the drone held back and the air forward.',params:{
+      whistleQ:{v:40,min:5,max:60,step:1,label:'whistle Q',doc:'much narrower than khöömei — the piercing purity is this number'},
+      whistleLvl:{v:3.4,min:.5,max:6,step:.1,label:'whistle level',doc:'overtone loudness for this manner'},
+      droneLvl:{v:.34,min:0,max:1,step:.01,label:'drone level',doc:'held-back chest voice'},
+      bodyLP:{v:1150,min:600,max:4000,step:10,unit:'Hz',label:'body lowpass',doc:'darker body so the whistle stands clear of it'},
+      subLvl:{v:0,min:0,max:.8,step:.01,label:'sub-octave',doc:'traditionally 0 here'},
+      growlAmt:{v:0,min:0,max:1,step:.05,label:'growl amount',doc:'traditionally 0 here'},
+      breathAmt:{v:.78,min:0,max:1.2,step:.01,label:'breathiness',doc:'the "sss" of sygyt — highest of the three manners'},
+    }},
+    kargyraa:{label:'manner · kargyraa',doc:'The voice dropped an octave into a growl: the sub-oscillator doubles the chest down, the growl LFO rattles the false folds, overtones ride lower and rougher.',params:{
+      whistleQ:{v:15,min:5,max:60,step:1,label:'whistle Q',doc:'broadest of the three — the overtones stay woven into the growl'},
+      whistleLvl:{v:2.2,min:.5,max:6,step:.1,label:'whistle level',doc:'overtone loudness for this manner'},
+      droneLvl:{v:.42,min:0,max:1,step:.01,label:'drone level',doc:'chest-voice level'},
+      bodyLP:{v:1250,min:600,max:4000,step:10,unit:'Hz',label:'body lowpass',doc:'corner of the drone body filter'},
+      subLvl:{v:.34,min:0,max:.8,step:.01,label:'sub-octave',doc:'the half-speed buzz — the doubled-down chest that defines kargyraa'},
+      growlAmt:{v:1,min:0,max:1,step:.05,label:'growl amount',doc:'full false-fold tremolo on the drone bus'},
+      breathAmt:{v:.40,min:0,max:1.2,step:.01,label:'breathiness',doc:'this manner\'s scale on the breath path'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+// a manner's full voice, merged from the law (STYLES) and the timbre (TP)
+const styleOf=id=>({label:STYLES[id].label,harms:STYLES[id].harms,
+  Q:TP[id].whistleQ,wgain:TP[id].whistleLvl,drone:TP[id].droneLvl,
+  bodyLP:TP[id].bodyLP,sub:TP[id].subLvl,growl:TP[id].growlAmt,breath:TP[id].breathAmt});
 
 /* ------------------------------- state ---------------------------------- */
 const st={ style:'khoomei', keyi:1, pace:66, breath:50, ground:false, seed:1, playing:false };
@@ -269,7 +377,7 @@ function makePhrase(style, seed){
 // overtones the whistle needs are actually present in the source.
 function glottalWave(ctx){
   const N=42, real=new Float32Array(N), imag=new Float32Array(N);
-  for(let n=1;n<N;n++) imag[n]=1/Math.pow(n,0.62);
+  for(let n=1;n<N;n++) imag[n]=1/Math.pow(n,TP.source.tilt);
   return ctx.createPeriodicWave(real,imag,{disableNormalization:false});
 }
 function noiseBuffer(ctx,secs){
@@ -290,12 +398,12 @@ function buildGraph(ctx, style, f0){
   const G={ctx};
   const wave=glottalWave(ctx);
   // ---- master + limiter + a small stone-room reverb ----
-  G.master=ctx.createGain(); G.master.gain.value=0.84;
+  G.master=ctx.createGain(); G.master.gain.value=TP.master.gain;
   G.lim=ctx.createDynamicsCompressor();
   G.lim.threshold.value=-3;G.lim.knee.value=0;G.lim.ratio.value=20;G.lim.attack.value=0.003;G.lim.release.value=0.12;
   G.master.connect(G.lim).connect(ctx.destination);
   G.verb=ctx.createConvolver(); G.verb.buffer=makeRoomIR(ctx,0.9,2.6);
-  G.wet=ctx.createGain(); G.wet.gain.value=0.10; G.verb.connect(G.wet).connect(G.master);
+  G.wet=ctx.createGain(); G.wet.gain.value=TP.master.wet; G.verb.connect(G.wet).connect(G.master);
 
   // ---- glottal source: main osc at f0 + optional sub at f0/2 (kargyraa) ----
   G.src=ctx.createGain(); G.src.gain.value=1;         // summing node
@@ -304,20 +412,20 @@ function buildGraph(ctx, style, f0){
   G.subOsc=ctx.createOscillator(); G.subOsc.setPeriodicWave(wave); G.subOsc.frequency.value=f0/2;
   G.subGain=ctx.createGain(); G.subGain.gain.value=style.sub; G.subOsc.connect(G.subGain).connect(G.src);
   // a breathing vibrato on the source pitch (subtle, human)
-  G.vibLFO=ctx.createOscillator(); G.vibLFO.frequency.value=5.1;
-  G.vibDepth=ctx.createGain(); G.vibDepth.gain.value=5;   // cents
+  G.vibLFO=ctx.createOscillator(); G.vibLFO.frequency.value=TP.source.vibRate;
+  G.vibDepth=ctx.createGain(); G.vibDepth.gain.value=TP.source.vibCents;
   G.vibLFO.connect(G.vibDepth); G.vibDepth.connect(G.mainOsc.detune); G.vibDepth.connect(G.subOsc.detune);
 
   // ---- drone body: warm, rounded vowel under the whistle ----
-  G.bodyLP=ctx.createBiquadFilter(); G.bodyLP.type='lowpass'; G.bodyLP.frequency.value=style.bodyLP; G.bodyLP.Q.value=0.6;
-  G.f1=ctx.createBiquadFilter(); G.f1.type='peaking'; G.f1.frequency.value=360; G.f1.Q.value=1.1; G.f1.gain.value=5;
-  G.f2=ctx.createBiquadFilter(); G.f2.type='peaking'; G.f2.frequency.value=900; G.f2.Q.value=1.4; G.f2.gain.value=3;
+  G.bodyLP=ctx.createBiquadFilter(); G.bodyLP.type='lowpass'; G.bodyLP.frequency.value=style.bodyLP; G.bodyLP.Q.value=TP.drone.lpQ;
+  G.f1=ctx.createBiquadFilter(); G.f1.type='peaking'; G.f1.frequency.value=TP.drone.f1Freq; G.f1.Q.value=TP.drone.f1Q; G.f1.gain.value=TP.drone.f1Gain;
+  G.f2=ctx.createBiquadFilter(); G.f2.type='peaking'; G.f2.frequency.value=TP.drone.f2Freq; G.f2.Q.value=TP.drone.f2Q; G.f2.gain.value=TP.drone.f2Gain;
   G.droneBus=ctx.createGain(); G.droneBus.gain.value=style.drone;
   G.src.connect(G.bodyLP); G.bodyLP.connect(G.f1); G.f1.connect(G.f2); G.f2.connect(G.droneBus);
   G.droneBus.connect(G.master);
   // kargyraa growl: a fast tremolo on the drone, the false-fold rattle
-  G.growlLFO=ctx.createOscillator(); G.growlLFO.type='sine'; G.growlLFO.frequency.value=43;
-  G.growlDepth=ctx.createGain(); G.growlDepth.gain.value=style.growl?style.drone*0.5:0;
+  G.growlLFO=ctx.createOscillator(); G.growlLFO.type='sine'; G.growlLFO.frequency.value=TP.growl.rate;
+  G.growlDepth=ctx.createGain(); G.growlDepth.gain.value=style.drone*0.5*style.growl;
   G.growlLFO.connect(G.growlDepth); G.growlDepth.connect(G.droneBus.gain);
 
   // ---- the whistle: two cascaded high-Q bandpasses isolate ONE harmonic ----
@@ -330,7 +438,7 @@ function buildGraph(ctx, style, f0){
 
   // ---- breath: air hiss that tracks the whistle, the "sss" of sygyt ----
   G.noise=ctx.createBufferSource(); G.noise.buffer=noiseBuffer(ctx,2.2); G.noise.loop=true;
-  G.bpNoise=ctx.createBiquadFilter(); G.bpNoise.type='bandpass'; G.bpNoise.frequency.value=h0; G.bpNoise.Q.value=6;
+  G.bpNoise=ctx.createBiquadFilter(); G.bpNoise.type='bandpass'; G.bpNoise.frequency.value=h0; G.bpNoise.Q.value=TP.breath.q;
   G.breath=ctx.createGain(); G.breath.gain.value=0.0001;
   G.noise.connect(G.bpNoise); G.bpNoise.connect(G.breath); G.breath.connect(G.master); G.breath.connect(G.verb);
 
@@ -338,10 +446,10 @@ function buildGraph(ctx, style, f0){
   G.groundBus=ctx.createGain(); G.groundBus.gain.value=0;
   [1, 1.5].forEach((mult,ix)=>{                       // tonic and the fifth
     const o=ctx.createOscillator(); o.type='sawtooth'; o.frequency.value=f0*mult*0.5;
-    const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=520; lp.Q.value=0.5;
-    const g=ctx.createGain(); g.gain.value=ix?0.5:0.7;
+    const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=TP.ground.lp; lp.Q.value=0.5;
+    const g=ctx.createGain(); g.gain.value=ix?TP.ground.fifth:TP.ground.tonic;
     o.connect(lp); lp.connect(g); g.connect(G.groundBus);
-    G['gOsc'+ix]=o; G['gLp'+ix]=lp;
+    G['gOsc'+ix]=o; G['gLp'+ix]=lp; G['gGain'+ix]=g;
   });
   G.groundBus.connect(G.master);
   return G;
@@ -358,15 +466,15 @@ function startGraph(G,t0){
 // the chosen harmonic and swell/rest its loudness.
 function scheduleNote(G,note,t,f0,style,breathAmt){
   const f=note.harm*f0;
-  const tc=note.glide?0.055:0.010;
+  const tc=note.glide?TP.whistle.glide:TP.whistle.snap;
   G.bp1.frequency.setTargetAtTime(f,t,tc);
   G.bp2.frequency.setTargetAtTime(f,t,tc);
   G.bpNoise.frequency.setTargetAtTime(f,t,tc);
   if(note.rest){
     G.whistle.gain.setTargetAtTime(0.0001,t,0.06);
-    G.breath.gain.setTargetAtTime(breathAmt*0.4,t,0.06);
+    G.breath.gain.setTargetAtTime(breathAmt*TP.breath.restDuck,t,0.06);
   }else{
-    const lvl=style.wgain*(0.42+0.055*note.harm);     // higher rungs are weaker at source → boost
+    const lvl=style.wgain*(TP.whistle.base+TP.whistle.slope*note.harm); // higher rungs are weaker at source → boost
     G.whistle.gain.setTargetAtTime(lvl,t,0.02);
     G.breath.gain.setTargetAtTime(breathAmt,t,0.03);
   }
@@ -378,7 +486,7 @@ function play(){
   if(RT){stop();return;}
   const ctx=new (window.AudioContext||window.webkitAudioContext)();
   __iosAudio(ctx);
-  const style=STYLES[st.style], f0=KEYS[st.keyi].hz;
+  const style=styleOf(st.style), f0=KEYS[st.keyi].hz;
   const G=buildGraph(ctx,style,f0);
   startGraph(G,ctx.currentTime+0.06);
   RT={ctx,G,style,f0,beat:60/st.pace,phrase:makePhrase(style,st.seed),pi:0,nextT:ctx.currentTime+0.14,cur:{harm:0,lvl:0},timer:0};
@@ -392,7 +500,7 @@ function sched(){
   while(RT.nextT<ahead){
     const note=RT.phrase[RT.pi%RT.phrase.length];
     const dur=note.dur*RT.beat;
-    scheduleNote(RT.G,note,RT.nextT,RT.f0,RT.style,st.breath/100*RT.style.breath*0.5);
+    scheduleNote(RT.G,note,RT.nextT,RT.f0,RT.style,st.breath/100*RT.style.breath*TP.breath.level);
     if(!note.rest) RT.cur={harm:note.harm,lvl:1,at:RT.nextT};
     RT.nextT+=dur; RT.pi++;
   }
@@ -408,7 +516,7 @@ function stop(){
 // through the drone, re-vibe live on any control change (no restart).
 function reVibe(){
   writeHash();
-  const style=STYLES[st.style]; $('styleName').textContent=style.label.toUpperCase();
+  const style=styleOf(st.style); $('styleName').textContent=style.label.toUpperCase();
   if(!RT)return;
   const G=RT.G, f0=KEYS[st.keyi].hz, ct=RT.ctx.currentTime;
   RT.style=style; RT.f0=f0; RT.beat=60/st.pace; RT.phrase=makePhrase(style,st.seed);
@@ -416,7 +524,7 @@ function reVibe(){
   G.subOsc.frequency.setTargetAtTime(f0/2,ct,0.09);
   G.subGain.gain.setTargetAtTime(style.sub,ct,0.1);
   G.droneBus.gain.setTargetAtTime(style.drone,ct,0.12);
-  G.growlDepth.gain.setTargetAtTime(style.growl?style.drone*0.5:0,ct,0.12);
+  G.growlDepth.gain.setTargetAtTime(style.drone*0.5*style.growl,ct,0.12);
   G.bodyLP.frequency.setTargetAtTime(style.bodyLP,ct,0.1);
   G.bp1.Q.setTargetAtTime(style.Q,ct,0.1); G.bp2.Q.setTargetAtTime(style.Q,ct,0.1);
   G.gOsc0.frequency.setTargetAtTime(f0*0.5,ct,0.1); G.gOsc1.frequency.setTargetAtTime(f0*1.5*0.5,ct,0.1);
@@ -424,10 +532,51 @@ function reVibe(){
 }
 function applyGround(){
   if(!RT)return;
-  RT.G.groundBus.gain.setTargetAtTime(st.ground?0.22:0.0001,RT.ctx.currentTime,0.2);
+  RT.G.groundBus.gain.setTargetAtTime(st.ground?TP.ground.level:0.0001,RT.ctx.currentTime,0.2);
 }
 
+/* OFFICINA live hook: push bench edits into the running graph. Style-scoped
+   params (whistle Q, drone level, sub, growl amount, body corner) ride in
+   via reVibe, which re-reads styleOf(); the rest are set here directly. */
+TIMBRE.touch=()=>{
+  if(!RT){reVibe();return;}
+  const G=RT.G, ct=RT.ctx.currentTime;
+  const w=glottalWave(RT.ctx); G.mainOsc.setPeriodicWave(w); G.subOsc.setPeriodicWave(w);
+  G.master.gain.setTargetAtTime(TP.master.gain,ct,.06);
+  G.wet.gain.setTargetAtTime(TP.master.wet,ct,.1);
+  G.vibLFO.frequency.setTargetAtTime(TP.source.vibRate,ct,.1);
+  G.vibDepth.gain.setTargetAtTime(TP.source.vibCents,ct,.1);
+  G.bodyLP.Q.setTargetAtTime(TP.drone.lpQ,ct,.06);
+  G.f1.frequency.setTargetAtTime(TP.drone.f1Freq,ct,.06); G.f1.Q.setTargetAtTime(TP.drone.f1Q,ct,.06); G.f1.gain.setTargetAtTime(TP.drone.f1Gain,ct,.06);
+  G.f2.frequency.setTargetAtTime(TP.drone.f2Freq,ct,.06); G.f2.Q.setTargetAtTime(TP.drone.f2Q,ct,.06); G.f2.gain.setTargetAtTime(TP.drone.f2Gain,ct,.06);
+  G.growlLFO.frequency.setTargetAtTime(TP.growl.rate,ct,.1);
+  G.bpNoise.Q.setTargetAtTime(TP.breath.q,ct,.1);
+  G.gLp0.frequency.setTargetAtTime(TP.ground.lp,ct,.1); G.gLp1.frequency.setTargetAtTime(TP.ground.lp,ct,.1);
+  G.gGain0.gain.setTargetAtTime(TP.ground.tonic,ct,.1); G.gGain1.gain.setTargetAtTime(TP.ground.fifth,ct,.1);
+  reVibe();
+};
+
 /* ------------------------------ cut · WAV -------------------------------- */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(14,14,16,.92);color:#e9e2d2;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#e9e2d2;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
 function encodeWav(L,R,sr){
   const n=L.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
   const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
@@ -441,7 +590,7 @@ function encodeWav(L,R,sr){
 async function cut(){
   const btn=$('cut'),note=$('cutnote'); btn.disabled=true; note.textContent='singing to disc…';
   try{
-    const style=STYLES[st.style], f0=KEYS[st.keyi].hz, beat=60/st.pace, breathAmt=st.breath/100*style.breath*0.5;
+    const style=styleOf(st.style), f0=KEYS[st.keyi].hz, beat=60/st.pace, breathAmt=st.breath/100*style.breath*TP.breath.level;
     const phrase=makePhrase(style,st.seed);
     // render whole phrases up to ~24s, then a short fade
     let span=0; for(const nn of phrase) span+=nn.dur*beat;
@@ -450,12 +599,12 @@ async function cut(){
     const ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
     const G=buildGraph(ctx,style,f0);
     startGraph(G,0.02);
-    if(st.ground)G.groundBus.gain.setValueAtTime(0.22,0.02);
+    if(st.ground)G.groundBus.gain.setValueAtTime(TP.ground.level,0.02);
     // schedule the phrase across the whole span
     let t=0.14, pi=0;
     while(t<dur){ const nn=phrase[pi%phrase.length]; scheduleNote(G,nn,t,f0,style,breathAmt); t+=nn.dur*beat; pi++; }
     // let the last note breathe, then fade the master
-    G.master.gain.setValueAtTime(0.84,dur-0.4); G.master.gain.linearRampToValueAtTime(0.0001,total-0.15);
+    G.master.gain.setValueAtTime(TP.master.gain,dur-0.4); G.master.gain.linearRampToValueAtTime(0.0001,total-0.15);
     const rb=await ctx.startRendering();
     let L=rb.getChannelData(0), R=rb.getChannelData(1);
     // peak-normalise to 0.9 — no clipping by construction
@@ -488,7 +637,7 @@ chipRow($('keyChips'), KEYS.map((k,i)=>[String(i),k.n]), String(st.keyi), v=>{
 $('pace').addEventListener('input',e=>{st.pace=+e.target.value;$('paceRd').textContent=st.pace;});
 $('pace').addEventListener('change',reVibe);
 $('breath').addEventListener('input',e=>{st.breath=+e.target.value;$('breathRd').textContent=st.breath;
-  if(RT)RT.G.breath.gain.setTargetAtTime(st.breath/100*RT.style.breath*0.5,RT.ctx.currentTime,0.1);});
+  if(RT)RT.G.breath.gain.setTargetAtTime(st.breath/100*RT.style.breath*TP.breath.level,RT.ctx.currentTime,0.1);});
 $('breath').addEventListener('change',()=>writeHash());
 $('ground').addEventListener('change',e=>{st.ground=e.target.checked;applyGround();writeHash();});
 $('play').addEventListener('click',play);
