@@ -106,6 +106,41 @@ keep all three (page, README, this file) in sync when adding a machine.
 
 Newest first.
 
+### HOLLER — just-intonation fiddle, voice fixes, faster default
+**Branch:** `claude/banjo-loop-sound-design-qjlfm4` · **File:**
+`holler/index.html` · **Status:** done, verified headless (Chromium); pushed to
+`main`.
+
+Follow-up round to the loop/mellow/fiddle work below.
+
+- **Temperament — the answer is "ET is right for the frets, wrong for the bow."**
+  Fretted instruments (banjo, guitar, bass) stay equal-tempered — that's where
+  frets sit. The **fretless fiddle** now plays **5-limit just intonation** against
+  the key tonic (a folk fiddler leans on pure intervals by ear). New `JI[]` table
+  + `jiFreq(midi,tonicMidi)` next to `midiToFreq`; the fiddle bus calls
+  `jiFreq(e.midi, tune.tuning.tonic)`, everything else still `midiToFreq`. Verified
+  exact: fifth 701.96¢, just M3 386.31¢ (ET 400), octave 1200. ♭7 kept at 16/9 to
+  avoid beating the banjo's ET ♭7 — **pick-up:** a septimal 7/4 "blue seventh" is
+  the more radical authentic option if a rougher fiddle is wanted.
+- **Fiddle was a flute → now a fiddle.** Root cause: the additive tone rolled its
+  harmonics off at ~3 kHz (hollow, few partials = flute). Fix: bright sawtooth to
+  ~7 kHz (4th-order rolloff), audible bow-scratch on the attack, ±11¢ / 5.5 Hz
+  vibrato — and, crucially, the fiddle now renders to its **own bus** shaped by
+  violin **body-formants** (peaks 300 / 560 / **3000 Hz bridge-hill**, HP 180).
+  The bridge-hill is what reads as "violin, not flute."
+- **Guitar was a harpsichord → now a guitar.** Bare Karplus–Strong strums rang
+  bright/metallic. Guitar+bass now render to their own **`bbuf`** warmed by a
+  **lowpass 2500** + a **110 Hz body lift**; strum brightness dropped (gstrum
+  .10→.06, tau .16→.14). Foot still writes straight to the main buffer.
+- **Foot stomp was inaudible → a dull thud.** The old hit was a bare 62 Hz sine at
+  ×0.5 — sub-audible on laptop/phone speakers. New `footHit`: a body swooping
+  95→55 Hz (floorboard give) **plus a one-pole-lowpassed (~1 kHz) woody "knock"**
+  so it carries on small speakers, at full level. Foot-only render RMS 0.03→0.10.
+- **Default tempo 132 → 168 bpm** (state + slider); `another()` range widened to
+  140–210 so a reroll is never slower than the default.
+- All buses render NaN-free (peak clamps to the 0.9 normalise), realtime + offline
+  WAV both clean, JI ratios exact. Tab canvas still banjo-only (per maintainer).
+
 ### RILLE — just intervals over the bass · bass rumble floor · master headroom
 **Branch:** `claude/minimal-deep-tech-guide-ta175d` · **File:** `rille/index.html`
 · **Status:** done, verified (Node JI math + Chromium peak measurement); pushed.
@@ -267,7 +302,6 @@ reworked the harmonic language (not the synthesis). Four moves:
   and the `p` prog-index both moved), so links cut before this sound different — by
   design, no hash version bump. The register anchor puts V ~a fifth below the tonic
   stabs (same band, verified in range); lift it if a mood's V feels low.
-
 ### HOLLER — clean loop, mellower tone, a fiddle lead
 **Branch:** `claude/banjo-loop-sound-design-qjlfm4` · **File:**
 `holler/index.html` · **Status:** done, verified headless (Chromium); pushed to

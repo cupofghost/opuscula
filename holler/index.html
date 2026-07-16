@@ -167,7 +167,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
 
     <div class="fld">
       <div class="lab">Tempo <span class="rd" id="tempored">116 bpm</span></div>
-      <input type="range" id="tempo" min="88" max="260" value="132" aria-label="Beats per minute">
+      <input type="range" id="tempo" min="88" max="260" value="168" aria-label="Beats per minute">
     </div>
 
     <div class="fld">
@@ -214,7 +214,9 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
       <h4>Where it came from</h4>
       <p>The banjo is an African American instrument. It descends from West African plucked lutes — the akonting, the ngoni — carried to the Americas by enslaved people, who built gourd-bodied banjos in the seventeenth and eighteenth centuries; the down-stroke, drone-string technique is African in origin. In the nineteenth century it passed into blackface minstrelsy and thence, on wax and in the hills, into Appalachian string-band music, where clawhammer and the old picking styles were kept alive. Every hand in this machine is a page of that history.</p>
       <h4>How the sound is made</h4>
-      <p>No samples: every note is a <em>plucked string</em> modelled directly. A burst of noise is fed into a short delay line and cycled through a gentle filter — the Karplus–Strong algorithm — which is, quite literally, a mathematical plucked string: it decays bright and quick, exactly like a banjo. A little body resonance is added for the drum-head "pot", and the five right hands are just five different rules for <em>when</em> to pluck.</p>
+      <p>No samples: every note is a <em>plucked string</em> modelled directly. A burst of noise is fed into a short delay line and cycled through a gentle filter — the Karplus–Strong algorithm — which is, quite literally, a mathematical plucked string: it decays bright and quick, exactly like a banjo. A little body resonance is added for the drum-head "pot", and the five right hands are just five different rules for <em>when</em> to pluck. The <em>fiddle</em> is a different animal — a <em>bowed</em> string, built instead from a bright sawtooth passed through violin body-resonances so it sings rather than plucks.</p>
+      <h4>How it's tuned</h4>
+      <p>The fretted instruments — banjo, guitar — sit in <em>equal temperament</em>, because that is literally where the frets are. But the fiddle has no frets: a fiddler finds each note by ear and leans on <em>pure</em> intervals, the way unfretted folk and vocal traditions always have. So here the fiddle is tuned in <em>just intonation</em> against the tune's key — its major third a touch lower, its fifths dead pure — which is why it rings sweet over the banjo's tempered strings, exactly the gentle friction of a real string band.</p>
       <h4>The name</h4>
       <p>op. VIII is named in Appalachian English, the mother tongue of the music: a <em>holler</em> is a hollow between the ridges — and the cry that carries down it.</p>
     </div>
@@ -319,6 +321,20 @@ const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 // seeded RNG (mulberry32) — one tune per seed
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 const midiToFreq=m=>440*Math.pow(2,(m-69)/12);
+
+// Just intonation — for the FRETLESS fiddle only. Equal temperament is accurate
+// for the fretted instruments (banjo, guitar): that is literally where the frets
+// are placed. But a fiddler stops the string by ear and leans on PURE intervals
+// against the tune's drone/tonic, the way every unfretted folk tradition does —
+// the just major third (5/4, ~14¢ flatter than ET) is the sweet old-time sound.
+// So the fiddle is tuned in 5-limit just intonation to the key tonic; everything
+// else stays ET. (A septimal 7/4 "blue seventh" is the more radical authentic
+// option — see HANDOFF; kept to 16/9 here to avoid beating the ET banjo's ♭7.)
+const JI=[1, 16/15, 9/8, 6/5, 5/4, 4/3, 45/32, 3/2, 8/5, 5/3, 16/9, 15/8];
+function jiFreq(midi, tonicMidi){
+  const semis=midi-tonicMidi, oct=Math.floor(semis/12), pc=((semis%12)+12)%12;
+  return midiToFreq(tonicMidi)*Math.pow(2,oct)*JI[pc];
+}
 
 // The four old-time modal families, as semitone steps from the tonic.
 const MODES={
@@ -602,7 +618,7 @@ function fiddleEvents(tune, bpm, lilt, seed){
 /* ============================ ENGINE-END ============================ */
 
 /* ------------------------------- state ---------------------------------- */
-const st={ style:'clawhammer', tuning:'openG', mode:'ionian', bpm:132, lilt:true, seed:1, playing:false,
+const st={ style:'clawhammer', tuning:'openG', mode:'ionian', bpm:168, lilt:true, seed:1, playing:false,
   backing:{fiddle:true, guitar:true, bass:true, foot:false} };
 
 /* ------------------------------- audio ---------------------------------- */
@@ -631,38 +647,51 @@ function ksPluck(out, start, freq, secs, vel, tau, bright, rng){
   const cn=Math.min(out.length-start, Math.floor(0.004*SR)), cd=0.0015*SR;
   for(let i=0;i<cn;i++) out[start+i]+=(rng()*2-1)*vel*0.085*Math.exp(-i/cd);  // softer nail-click (was .13) — mellows the attack
 }
-// a soft foot-stomp: a low thud with a floorboard knock (not a plucked string)
+// a boot on a porch board — a DULL THUD. A body that swoops 95→55 Hz (the give of
+// a floorboard) for weight, plus a low-passed woody "knock" transient so it reads
+// on small speakers too; the old pure-62 Hz sine was sub-audible on phones/laptops.
 function footHit(out,start,vel,rng){
-  const n=Math.min(out.length-start,Math.floor(0.13*SR));
-  for(let i=0;i<n;i++){const t=i/SR;
-    out[start+i]+=(Math.sin(2*Math.PI*62*t)*Math.exp(-t/0.055)+(rng()*2-1)*0.4*Math.exp(-t/0.006))*vel*0.5;}
+  const n=Math.min(out.length-start,Math.floor(0.20*SR));
+  let ph=0, lp=0;
+  for(let i=0;i<n;i++){
+    const t=i/SR;
+    const f=55+40*Math.exp(-t/0.028);                 // pitch drop → the floor's give
+    ph+=2*Math.PI*f/SR;
+    const body=Math.sin(ph)*Math.exp(-t/0.075);
+    lp+=((rng()*2-1)-lp)*0.16;                          // one-pole ≈1 kHz: dull, woody
+    const knock=lp*Math.exp(-t/0.016);
+    out[start+i]+=(body*1.05 + knock*0.5)*vel;
+  }
 }
-// the fiddle — a BOWED string, not a plucked one, so it can't be Karplus–Strong.
-// Additive: a 1/k sawtooth spectrum (one-pole-rolled so it stays warm), a slow
-// bowed attack/release, a little bow-noise, and a gentle ~5 Hz vibrato. This is
-// the lead voice of the old-time string band, sawing the tune over the banjo.
+// the fiddle — a BOWED string, so not Karplus–Strong. A bowed string is close to
+// a bright SAWTOOTH (all harmonics present, rich upper partials); it only reads as
+// a fiddle once violin body-resonances shape it — those formants are applied to
+// the whole fiddle bus in renderMaster. Here we make the raw sawtooth: many
+// harmonics kept bright to ~7 kHz (a soft rolloff, NOT the old ~3 kHz cut that
+// made it a hollow flute), audible bow-noise/scratch riding the attack, and a
+// ~5.5 Hz / ±11¢ vibrato. This is the lead voice, sawing the tune over the banjo.
 function fiddleNote(out,start,freq,secs,vel,rng,vibPhase){
   const n=Math.min(out.length-start,Math.floor(secs*SR));
   if(n<=0)return;
   const nyq=SR/2;
-  // harmonic weights: sawtooth 1/k, each partial rolled off by a one-pole ~3 kHz
+  // sawtooth 1/k, rolled off gently (4th-order) at ~7 kHz — stays reedy and bright
   const H=[],F=[]; let hsum=0;
-  for(let k=1;k<=14;k++){const hf=freq*k; if(hf>nyq*0.92)break;
-    const w=(1/k)/(1+Math.pow(hf/3000,2)); H.push(w); F.push(k); hsum+=w;}
+  for(let k=1;k<=40;k++){const hf=freq*k; if(hf>nyq*0.85)break;
+    const w=(1/k)/(1+Math.pow(hf/7000,4)); H.push(w); F.push(k); hsum+=w;}
   if(hsum<=0)return;
   const norm=1/hsum;
-  const atk=Math.max(1,Math.floor(0.045*SR)), rel=Math.max(1,Math.floor(0.07*SR));
-  const twoPI=2*Math.PI, vibHz=5.1, vibDepth=0.005;   // ±~9 cents
+  const atk=Math.max(1,Math.floor(0.05*SR)), rel=Math.max(1,Math.floor(0.07*SR));
+  const twoPI=2*Math.PI, vibHz=5.5, vibDepth=0.0065;   // ±~11 cents
   let ph=0;
   for(let i=0;i<n;i++){
     const t=i/SR;
     const f=freq*(1+vibDepth*Math.sin(twoPI*vibHz*t+vibPhase));
     ph+=twoPI*f/SR;
     let s=0; for(let k=0;k<H.length;k++) s+=H[k]*Math.sin(F[k]*ph);
-    s=s*norm + (rng()*2-1)*0.025;                       // + faint bow noise
     let a; if(i<atk)a=i/atk; else if(i>n-rel)a=(n-i)/rel; else a=1;
     a*=0.9+0.1*Math.sin(twoPI*0.7*t);                   // slow bow swell
-    out[start+i]+=s*vel*a;
+    const scratch=(rng()*2-1)*0.05*(0.6+0.8*(i<atk?1:0));  // bow noise, louder on attack
+    out[start+i]+=(s*norm + scratch)*vel*a;
   }
 }
 
@@ -706,27 +735,44 @@ function renderMaster(){
     const bright=clamp((e.midi-open[3])/24,0,1);
     ksPluck(buf, start, midiToFreq(e.midi), (TAU[e.kind]||0.45)+(e.vel*0.2), e.vel, TAU[e.kind]||0.45, bright, rng);
   }
-  // optional backing (guitar / upright bass / foot), synthesised into the same buffer
+  // optional backing (guitar / upright bass / foot). Guitar+bass go to their OWN
+  // bus so it can be warmed: bare Karplus–Strong plucks ring bright and metallic —
+  // that was the "harpsichord". A lowpass rolls off the plucky top and a low body
+  // lift gives the wood, so it reads as a boom-chuck acoustic guitar. Foot goes
+  // straight to the main buffer (it's a thud, not a string).
   if(st.backing.guitar||st.backing.bass||st.backing.foot){
     const bev=backingEvents(tune, st.bpm, st.seed, st.backing);
-    // gstrum is the boom-CHUCK chop: short + dark so it reads as a muted
-    // rhythmic chunk under the banjo, not a second bright plucked chord ringing
-    // in the same octave (that overlap was the clash).
-    const BTAU={gbass:0.62,gstrum:0.16,ubass:0.3};
+    const BTAU={gbass:0.62,gstrum:0.14,ubass:0.3};
+    const bbuf=(st.backing.guitar||st.backing.bass)?new Float32Array(n):null;
     for(const e of bev){
       const start=Math.floor(e.t*SR); if(start<0||start>=n) continue;
       if(e.kind==='foot'){ footHit(buf,start,e.vel,rng); continue; }
-      const bright=e.kind==='gbass'?0.05:e.kind==='gstrum'?0.10:0;   // warm, dark on the low end
-      ksPluck(buf, start, midiToFreq(e.midi), (BTAU[e.kind]||0.4)+e.vel*0.15, e.vel, BTAU[e.kind]||0.4, bright, rng);
+      const bright=e.kind==='gbass'?0.03:e.kind==='gstrum'?0.06:0;   // darker than before
+      ksPluck(bbuf, start, midiToFreq(e.midi), (BTAU[e.kind]||0.4)+e.vel*0.15, e.vel, BTAU[e.kind]||0.4, bright, rng);
+    }
+    if(bbuf){
+      biquad(bbuf,'lowpass',2500,0.7,0);    // tame the metallic pluck → acoustic guitar
+      biquad(bbuf,'peaking',110,1.0,3);     // a little box/body warmth
+      for(let i=0;i<n;i++) buf[i]+=bbuf[i];
     }
   }
-  // the fiddle lead, bowed into the same buffer (it follows the tune's melody)
+  // the fiddle lead, on its OWN bus so violin body-formants can turn the raw
+  // sawtooth into a bowed fiddle (the 3 kHz "bridge hill" is the brilliance that
+  // reads as a violin, not a flute). Pitched in JUST intonation to the key tonic —
+  // the fretless voice plays pure intervals against the drone, unlike the banjo.
   if(st.backing.fiddle){
     const fev=fiddleEvents(tune, st.bpm, st.lilt, st.seed);
+    const fbuf=new Float32Array(n);
+    const tonic=tune.tuning.tonic;
     for(const e of fev){
       const start=Math.floor(e.t*SR); if(start<0||start>=n) continue;
-      fiddleNote(buf, start, midiToFreq(e.midi), e.secs, e.vel, rng, e.vibPhase);
+      fiddleNote(fbuf, start, jiFreq(e.midi, tonic), e.secs, e.vel, rng, e.vibPhase);
     }
+    biquad(fbuf,'highpass',180,0.7,0);
+    biquad(fbuf,'peaking',300,1.1,4.5);     // main air/body resonance
+    biquad(fbuf,'peaking',560,1.4,3);       // lower body
+    biquad(fbuf,'peaking',3000,1.1,5.5);    // bridge hill — the violin's brilliance
+    for(let i=0;i<n;i++) buf[i]+=fbuf[i]*0.9;
   }
   // body: trim rumble, lift the ~330 Hz pot resonance, then MELLOW the twang —
   // a gentle lowpass rolls off the hard upper harmonics, and the top-shelf lift
@@ -1009,7 +1055,7 @@ function another(){                                // r = a different tune
   $('style').querySelector('[data-v="'+STYLE_ORDER[(Math.random()*STYLE_ORDER.length)|0]+'"]').click();
   $('tuning').querySelector('[data-v="'+TUNING_ORDER[(Math.random()*TUNING_ORDER.length)|0]+'"]').click();
   $('mode').querySelector('[data-v="'+MODE_ORDER[(Math.random()*MODE_ORDER.length)|0]+'"]').click();
-  st.bpm=112+((Math.random()*52)|0);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' bpm';
+  st.bpm=140+((Math.random()*70)|0);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' bpm';
   invalidate(); play();
 }
 addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
