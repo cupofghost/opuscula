@@ -131,7 +131,8 @@ Two rounds of maintainer feedback after the op. XIII drop.
 **Round 2 — the battlefield graphic (the fun one).**
 - The `<canvas>` now has **two views**, a `viewMode` toggle (`♪`/`⚔` button on
   the plate): the drum **tablature** (`drawScoreView`, the old view) and a
-  side-scrolling **battlefield** (`drawBattle`, default).
+  side-scrolling **battlefield** (`drawBattle`, a toggle; `viewMode` defaults to
+  `'score'`).
 - **The march drives a battle.** `buildPulse` bins one phrase's events into a
   PULSE (grosse+snare+cymbal coincidences = the big spikes, "the march hitting
   just right"). `frenchQuality` scores the march from state (cadence bell-curve
