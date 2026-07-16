@@ -8,7 +8,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="nenia — playground lore as a small musical machine: taunts, counting-out, clapping games, skip rope, ring games. the universal chant of children, synthesized.">
+<meta name="description" content="nenia — playground lore as a small musical machine: taunts, counting-out, clapping, skip rope, ball-bounce, hopscotch, ring and arch games. the universal chant of children, synthesized.">
 <title>NENIA — playground chant</title>
 <style>
 :root{
@@ -150,6 +150,9 @@ footer{
         <option value="2">Clapping — faster till it breaks</option>
         <option value="3">Skip rope — count till you trip</option>
         <option value="4">Ring — all fall down</option>
+        <option value="5">Ball-bounce — one-two-three-a-leary</option>
+        <option value="6">Hopscotch — hop the stones, count up</option>
+        <option value="7">Arch — file under till it drops</option>
       </select>
     </div>
     <div class="ctl">
@@ -157,6 +160,7 @@ footer{
       <select id="kids">
         <option>3</option><option>4</option><option selected>5</option>
         <option>6</option><option>7</option><option>8</option>
+        <option>9</option><option>10</option>
       </select>
     </div>
     <div class="ctl">
@@ -169,10 +173,19 @@ footer{
       </select>
     </div>
     <div class="ctl">
+      <label for="scalesel">Chant range</label>
+      <select id="scalesel">
+        <option value="0" selected>Trichord — sol · mi · la</option>
+        <option value="1">Tetratonic — add re</option>
+        <option value="2">Pentatonic — add re · low do</option>
+      </select>
+    </div>
+    <div class="ctl">
       <label for="yard">Yard</label>
       <select id="yard">
         <option value="0" selected>Open asphalt — dry, a little slap</option>
         <option value="1">School corridor — forbidden echo</option>
+        <option value="2">Gymnasium — a big bright bloom</option>
       </select>
     </div>
     <div class="ctl">
@@ -206,7 +219,10 @@ footer{
     <p>The counting-out rhyme is the playground's court of law: it decides who is It, and its verdict cannot be appealed. The chant travels round the ring, one syllable per child, and whoever the last syllable lands on is out; the ring closes and it begins again, until one child remains. It is an elimination process — a cousin of the Josephus problem, permutation mathematics performed by six-year-olds with total solemnity. Henry Carrington Bolton collected over eight hundred such rhymes in 1888 and traced some across a dozen countries. In this machine each elimination is real: that voice leaves the chorus and does not return.</p>
 
       <h4>The games</h4>
-    <p>Clapping games and skip rope share one dramatic form: repetition under acceleration until the body fails. The verse comes round again a little faster, and again, and the game does not end so much as break — a fumbled clap, a foot in the rope — followed by the only correct response, which is laughter. The ring game is older and gentler: walk the circle, sing the round, and on the last line everybody falls down. This machine plays all of these honestly, mistakes included; the trip and the fumble are found by the seed, not by you.</p>
+    <p>Clapping, skip rope and ball-bounce share one dramatic form: repetition under acceleration until the body fails. The verse comes round again a little faster, and again, and the game does not end so much as break — a fumbled clap, a foot in the rope, a ball gone under the leg one time too many — followed by the only correct response, which is laughter. Hopscotch is the same suspense made spatial: hop the numbered stones one by one, both feet on the rest-squares, and either wobble off or reach home. The two circle games are older and gentler: the ring walks its round until everybody falls down, and the arch — <em>London Bridge</em>, <em>Oranges and Lemons</em> — files the line under a bridge of raised arms that drops on the last word and catches whoever is beneath. This machine plays all of these honestly, mistakes included; the trip, the fumble and the capture are found by the seed, not by you.</p>
+
+      <h4>The range</h4>
+    <p>The chant is rooted in three notes, but it does not stay there. Given room it fills the gap under <em>mi</em> with <em>re</em>, and then opens the floor with a low <em>do</em> — the same widening, from trichord to tetratonic to pentatonic, that a real yard's songs undergo as the children get older. The <em>range</em> control walks that path; the trichord taunt stays pure at the root of it.</p>
 
       <h4>The voices</h4>
     <p>Each child is synthesized as a small formant voice — two resonances shaped by the vowel being sung — and no two are tuned alike. A yard of children never sings in tune or in time, and must not: every voice here carries its own flat-or-sharpness and its own eagerness, arriving early or late by its own habit. Turn ROWDY off and they behave suspiciously well.</p>
@@ -236,33 +252,35 @@ function pick(rng,arr){return arr[(rng()*arr.length)|0]}
 function irange(rng,a,b){return a+((rng()*(b-a+1))|0)}
 
 /* ---------- params & hash ---------- */
-const GAMES=['TAUNT','COUNTING-OUT','CLAPPING','SKIP ROPE','RING'];
+const GAMES=['TAUNT','COUNTING-OUT','CLAPPING','SKIP ROPE','RING','BALL-BOUNCE','HOPSCOTCH','ARCH'];
 const KEYS=[392.00,440.00,466.16,523.25]; // sol frequency
-const P={v:1, seed:(Math.random()*0x7fffffff)|0, game:1, kids:5, key:1, tempo:104, yard:0, rowdy:1, gig:1};
+const P={v:2, seed:(Math.random()*0x7fffffff)|0, game:1, kids:5, key:1, tempo:104, yard:0, rowdy:1, gig:1, scale:0};
 
 function writeHash(){
-  location.hash=[P.v,P.seed.toString(36),P.game,P.kids,P.key,P.tempo,P.yard,(P.rowdy|0)+((P.gig|0)<<1)].join('.');
+  location.hash=[P.v,P.seed.toString(36),P.game,P.kids,P.key,P.tempo,P.yard,(P.rowdy|0)+((P.gig|0)<<1),P.scale].join('.');
 }
 function readHash(){
   const h=location.hash.replace(/^#/,'').split('.');
-  if(h.length<8||+h[0]!==1)return false;
-  P.seed=parseInt(h[1],36)||1; P.game=Math.min(4,Math.max(0,+h[2]|0));
-  P.kids=Math.min(8,Math.max(3,+h[3]|0)); P.key=Math.min(3,Math.max(0,+h[4]|0));
-  P.tempo=Math.min(140,Math.max(80,+h[5]|0)); P.yard=(+h[6]|0)?1:0;
+  const v=+h[0];
+  if(h.length<8||(v!==1&&v!==2))return false;
+  P.seed=parseInt(h[1],36)||1; P.game=Math.min(7,Math.max(0,+h[2]|0));
+  P.kids=Math.min(10,Math.max(3,+h[3]|0)); P.key=Math.min(3,Math.max(0,+h[4]|0));
+  P.tempo=Math.min(140,Math.max(80,+h[5]|0)); P.yard=Math.min(2,Math.max(0,+h[6]|0));
   const f=+h[7]|0; P.rowdy=f&1; P.gig=(f>>1)&1;
+  P.scale=h.length>8?Math.min(2,Math.max(0,+h[8]|0)):0; // v1 hashes → trichord
   return true;
 }
 
 /* ---------- UI refs ---------- */
 const $=id=>document.getElementById(id);
-const ui={game:$('game'),kids:$('kids'),key:$('keysel'),yard:$('yard'),tempo:$('tempo'),
+const ui={game:$('game'),kids:$('kids'),key:$('keysel'),scale:$('scalesel'),yard:$('yard'),tempo:$('tempo'),
   tempoVal:$('tempoVal'),rowdy:$('rowdy'),gig:$('giggles'),play:$('playBtn'),
   another:$('anotherBtn'),cut:$('cutBtn'),gameName:$('gameName'),status:$('status'),
   matric:$('matric'),rhyme:$('rhyme'),cv:$('cv')};
 
-function uiToP(){P.game=+ui.game.value;P.kids=+ui.kids.value;P.key=+ui.key.value;
+function uiToP(){P.game=+ui.game.value;P.kids=+ui.kids.value;P.key=+ui.key.value;P.scale=+ui.scale.value;
   P.yard=+ui.yard.value;P.tempo=+ui.tempo.value;P.rowdy=ui.rowdy.checked?1:0;P.gig=ui.gig.checked?1:0}
-function pToUI(){ui.game.value=P.game;ui.kids.value=P.kids;ui.key.value=P.key;ui.yard.value=P.yard;
+function pToUI(){ui.game.value=P.game;ui.kids.value=P.kids;ui.key.value=P.key;ui.scale.value=P.scale;ui.yard.value=P.yard;
   ui.tempo.value=P.tempo;ui.tempoVal.textContent=P.tempo;ui.rowdy.checked=!!P.rowdy;ui.gig.checked=!!P.gig}
 
 /* ================= ENGINE-BEGIN ================= */
@@ -294,8 +312,12 @@ const NUMSYL=['one','two','three','four','five','six','sev','en','eight','nine',
   'lev','en','twelve','thir','teen','four','teen','fif','teen'];
 
 /* ---------- melodic cells on the trichord ----------
-   degrees relative to sol (semitones): mi=-3, sol=0, la=+2, do'=+5 */
-const MI=-3,SOL=0,LA=2,DOH=5;
+   degrees relative to sol (semitones): do=-7, re=-5, mi=-3, sol=0, la=+2, do'=+5.
+   the trichord sol·mi·la is the root of the chant; the "range" option widens it
+   downward — first to a tetratonic (adds re), then a pentatonic (adds low do) —
+   the way the schoolyard chant itself grows. cells carry lv: 0 trichord (always),
+   1 needs re, 2 needs low do; fitCell only draws cells the chosen range allows. */
+const DO=-7,RE=-5,MI=-3,SOL=0,LA=2,DOH=5;
 const CELLS=[
   {deg:[SOL,SOL,MI,LA,SOL,MI],           dur:[1,1,2,1,1,2]},          // the ur-taunt
   {deg:[SOL,SOL,MI,MI,SOL,SOL,MI],       dur:[1,1,1,1,1,1,2]},        // eeny-cell
@@ -307,9 +329,19 @@ const CELLS=[
   {deg:[LA,LA,SOL,MI,SOL,MI],            dur:[1,1,1,1,1,2]},          // sing-song
   {deg:[SOL,DOH,LA,SOL,MI,SOL,MI],       dur:[1,1,1,1,1,1,2]},        // skip-up
   {deg:[MI,MI,SOL,LA,LA,SOL,MI,SOL],     dur:[1,1,1,1,1,1,1,2]},      // ring-round
+  // tetratonic — the added re fills the gap under mi
+  {deg:[SOL,LA,SOL,MI,RE,MI,SOL],        dur:[1,1,1,1,1,1,2], lv:1},  // step-down
+  {deg:[MI,RE,MI,SOL,LA,SOL,MI],         dur:[1,1,1,1,1,1,2], lv:1},  // dip
+  {deg:[SOL,SOL,LA,SOL,MI,RE,MI],        dur:[1,1,1,1,1,1,2], lv:1},  // settle
+  {deg:[LA,SOL,MI,RE,MI,SOL],            dur:[1,1,1,1,1,2],   lv:1},  // lean
+  // pentatonic — the low do opens the floor
+  {deg:[LA,SOL,MI,RE,DO,RE,MI],          dur:[1,1,1,1,1,1,2], lv:2},  // low-reach
+  {deg:[SOL,MI,RE,DO,RE,MI,SOL],         dur:[1,1,1,1,1,1,2], lv:2},  // scoop
+  {deg:[DO,RE,MI,SOL,LA,SOL,MI,MI],      dur:[1,1,1,1,1,1,1,2], lv:2},// climb
 ];
-function fitCell(rng,n){ // return {deg,dur} arrays of exactly n syllables
-  const c=pick(rng,CELLS), deg=[],dur=[];
+function fitCell(rng,n,scale){ // return {deg,dur} of exactly n syllables, within range
+  const lvl=scale||0, pool=CELLS.filter(c=>(c.lv||0)<=lvl);
+  const c=pick(rng,pool), deg=[],dur=[];
   for(let i=0;i<n;i++){deg.push(c.deg[i%c.deg.length]);dur.push(i===n-1?2:c.dur[i%c.dur.length])}
   return {deg,dur};
 }
@@ -358,7 +390,7 @@ function compose(P){
     const L=pick(rng,[7,9,11,13]);
     const syls=makeRhyme(rng,L);
     text=syls.join(' ')+' … and one of you is It.';
-    const cell=fitCell(rng,L);
+    const cell=fitCell(rng,L,P.scale);
     let alive=[...Array(N).keys()], ptr=0, t=0.3;
     while(alive.length>1){
       marks.push({t,ev:'round',alive:[...alive]});
@@ -388,7 +420,7 @@ function compose(P){
   if(P.game===2){ /* CLAPPING — verse repeats, accelerates, breaks */
     const syls=makeRhyme(rng,8);
     text=syls.join(' ')+' — faster!';
-    const cell=fitCell(rng,8);
+    const cell=fitCell(rng,8,P.scale);
     const verses=4, fumbleAt=irange(rng,3,6); // syllable index in last verse
     const clapKinds=['self','part','crossR','crossL'];
     let t=0.3;
@@ -419,7 +451,7 @@ function compose(P){
 
   if(P.game===3){ /* SKIP ROPE — verse over the rope, then count till the trip */
     const syls=makeRhyme(rng,8);
-    const cell=fitCell(rng,8);
+    const cell=fitCell(rng,8,P.scale);
     const trip=irange(rng,9,19);
     text=syls.join(' ')+' — how many? '+trip+'… and out.';
     const beat=e8*2; let t=0.3, rope=0;
@@ -449,10 +481,9 @@ function compose(P){
     return {dur:t+2.4,notes,perc,marks,voices,text};
   }
 
-  /* RING — circle steps, round verse, all fall down */
-  {
+  if(P.game===4){ /* RING — circle steps, round verse, all fall down */
     const syls=makeRhyme(rng,8);
-    const cell=fitCell(rng,8);
+    const cell=fitCell(rng,8,P.scale);
     text=syls.join(' ')+' — we all fall down.';
     const beat=e8*2; let t=0.3;
     const bars=3;
@@ -474,6 +505,90 @@ function compose(P){
     if(P.gig){marks.push({t,ev:'gig'});perc.push({t,kind:'gig'})}
     return {dur:t+2.6,notes,perc,marks,voices,text};
   }
+
+  if(P.game===5){ /* BALL-BOUNCE — two-ball; every 4th beat the leg goes over */
+    const syls=makeRhyme(rng,8);
+    const cell=fitCell(rng,8,P.scale);
+    const miss=irange(rng,10,20);
+    text=syls.join(' ')+' — one, two, three, a-leary…';
+    const beat=e8*2; let t=0.3;
+    // the sung verse, one bounce per syllable, a leg-over on every fourth
+    for(let i=0;i<8;i++){
+      const over=(i+1)%4===0;
+      perc.push({t,kind:over?'legover':'bounce',pan:(i%2?0.3:-0.3)});
+      marks.push({t,ev:'bounce',over});
+      push(t,cell.dur[i]*e8*0.9,over?LA:cell.deg[i],syls[i],null,{vel:over?1.1:0.95});
+      t+=beat;
+    }
+    // then counting, accelerating, "leary" on the fours, until a miss
+    let acc=1;
+    for(let c=1;c<=miss;c++){
+      acc*=1.013; const b=beat/acc, over=c%4===0;
+      perc.push({t,kind:over?'legover':'bounce',pan:(c%2?0.3:-0.3)});
+      marks.push({t,ev:'bounce',over});
+      push(t,b*0.8,over?DOH:(c%2?SOL:MI),over?'lair':NUMSYL[Math.min(c-1,NUMSYL.length-1)],
+        null,{vel:1+c*0.01,shout:c>=miss-2});
+      t+=b;
+    }
+    // the miss — the ball gets away
+    perc.push({t,kind:'bounce'}); perc.push({t:t+0.09,kind:'roll'});
+    marks.push({t,ev:'miss'});
+    push(t+0.12,e8*3,SOL,'ohh',null,{gliss:-9,vel:0.9});
+    t+=e8*3.5;
+    if(P.gig){marks.push({t,ev:'gig'});perc.push({t,kind:'gig'})}
+    return {dur:t+2.4,notes,perc,marks,voices,text};
+  }
+
+  if(P.game===6){ /* HOPSCOTCH — hop the squares, count up, wobble or reach home */
+    const squares=irange(rng,7,10);
+    const trip=irange(rng,4,squares); // ==squares → a clean run home
+    text='hop the stones — '+squares+' squares…';
+    const beat=e8*2; let t=0.4;
+    for(let sq=1;sq<=squares;sq++){
+      const dbl=(sq===4||sq===7||sq===squares); // rest squares: both feet down
+      perc.push({t,kind:dbl?'landboth':'hop',pan:(sq%2?0.25:-0.25)});
+      marks.push({t,ev:'hop',sq,dbl});
+      push(t,beat*0.8,(sq%2?SOL:LA),NUMSYL[Math.min(sq-1,NUMSYL.length-1)],null,{vel:0.95});
+      if(sq===trip && trip<squares){ // the wobble ends it short
+        perc.push({t:t+beat*0.5,kind:'fumble'});
+        marks.push({t:t+beat*0.5,ev:'wobble',sq});
+        push(t+beat*0.6,e8*3,MI,'whoa',null,{gliss:-6,vel:0.85});
+        t+=beat+e8*3;
+        if(P.gig){marks.push({t,ev:'gig'});perc.push({t,kind:'gig'})}
+        return {dur:t+2.2,notes,perc,marks,voices,text};
+      }
+      t+=beat;
+    }
+    // clean run — turn at the top and crow
+    push(t,e8*2.2,DOH,'home',null,{vel:1.25,shout:true}); t+=e8*3;
+    if(P.gig){marks.push({t,ev:'gig'});perc.push({t,kind:'gig'})}
+    return {dur:t+2.4,notes,perc,marks,voices,text};
+  }
+
+  /* ARCH — file under the bridge, it drops and catches one (game 7 / fallback) */
+  {
+    const syls=makeRhyme(rng,10);
+    const cell=fitCell(rng,10,P.scale);
+    text=syls.join(' ')+' — here comes the chopper!';
+    let t=0.3;
+    // kids 0 & 1 make the arch; the rest are the line filing through
+    const line=[]; for(let i=2;i<N;i++)line.push(i); if(!line.length)line.push(0);
+    marks.push({t,ev:'arch'});
+    let li=0;
+    for(let i=0;i<cell.deg.length;i++){
+      if(i%2===0){marks.push({t,ev:'file',kid:line[li%line.length]});li++;}
+      push(t,cell.dur[i]*e8*0.92,cell.deg[i],syls[i],null,{vel:0.95});
+      t+=cell.dur[i]*e8;
+    }
+    // the drop — whoever is under is caught
+    const caught=line[(li-1+line.length)%line.length];
+    perc.push({t,kind:'archdrop'});
+    marks.push({t,ev:'capture',kid:caught});
+    push(t,e8*1.6,SOL,'OUT',null,{vel:1.4,shout:true}); t+=e8*2.4;
+    push(t,e8*3,MI,'you',null,{gliss:-4,vel:1.0}); t+=e8*3.5;
+    if(P.gig){marks.push({t,ev:'gig'});perc.push({t,kind:'gig'})}
+    return {dur:t+2.4,notes,perc,marks,voices,text};
+  }
 }
 
 /* ---------- synthesis ---------- */
@@ -488,12 +603,13 @@ function seededNoise(ctx,seedOff,secs){
   return b;
 }
 function makeVerb(ctx,yard){
-  const secs=yard?1.7:0.55, n=(secs*ctx.sampleRate)|0;
+  const secs=[0.55,1.7,2.6][yard]||0.55, decay=[3,1.8,1.35][yard]||3, amp=[0.7,0.5,0.46][yard]||0.7;
+  const n=(secs*ctx.sampleRate)|0;
   const rng=mulberry32(0xCAFE+yard);
   const b=ctx.createBuffer(2,n,ctx.sampleRate);
   for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);
     for(let i=0;i<n;i++){const x=i/n;
-      d[i]=(rng()*2-1)*Math.pow(1-x,yard?1.8:3)* (yard?0.5:0.7);}}
+      d[i]=(rng()*2-1)*Math.pow(1-x,decay)*amp;}}
   const cv=ctx.createConvolver(); cv.buffer=b; return cv;
 }
 
@@ -504,7 +620,7 @@ function buildGraph(ctx,plan,P,t0){
   comp.threshold.value=-16; comp.ratio.value=4; comp.attack.value=0.004; comp.release.value=0.22;
   master.connect(comp); comp.connect(ctx.destination);
   const verb=makeVerb(ctx,P.yard);
-  const verbG=ctx.createGain(); verbG.gain.value=P.yard?0.28:0.14;
+  const verbG=ctx.createGain(); verbG.gain.value=[0.14,0.28,0.34][P.yard]||0.14;
   verb.connect(verbG); verbG.connect(comp);
   const send=node=>{node.connect(master);node.connect(verb)};
 
@@ -589,6 +705,18 @@ function buildGraph(ctx,plan,P,t0){
         s.connect(f);f.connect(g);send(g);s.start(t);s.stop(t+0.2);break}
       case 'step':   tone(t,95,0.14,0.4);burst(t,'lowpass',320,1,0.06,0.2,p.pan||0);break;
       case 'thud':   tone(t,62,0.32,0.7);burst(t,'lowpass',200,1,0.12,0.4,0);break;
+      case 'bounce': tone(t,190,0.13,0.5);burst(t,'bandpass',1700,3,0.025,0.3,p.pan||0);break;
+      case 'legover':tone(t,250,0.11,0.55);burst(t,'bandpass',2500,4,0.03,0.35,p.pan||0);break;
+      case 'hop':    tone(t,120,0.10,0.4);burst(t,'lowpass',520,1,0.05,0.22,p.pan||0);break;
+      case 'landboth':tone(t,110,0.10,0.45);tone(t+0.045,124,0.10,0.4);burst(t,'lowpass',460,1,0.06,0.28,p.pan||0);break;
+      case 'archdrop':burst(t,'lowpass',680,1,0.20,0.5,0);tone(t+0.06,78,0.34,0.6);break;
+      case 'roll':{  const s=ctx.createBufferSource();s.buffer=noiseB;s.loop=true;
+        const f=ctx.createBiquadFilter();f.type='bandpass';f.Q.value=3;
+        f.frequency.setValueAtTime(1400,t);f.frequency.exponentialRampToValueAtTime(220,t+0.5);
+        const g=ctx.createGain();g.gain.setValueAtTime(0.12,t);g.gain.linearRampToValueAtTime(0,t+0.55);
+        const p2=ctx.createStereoPanner?ctx.createStereoPanner():null;
+        s.connect(f);if(p2){p2.pan.value=0.4;f.connect(g);g.connect(p2);send(p2)}else{f.connect(g);send(g)}
+        s.start(t);s.stop(t+0.6);break}
       case 'gig':{   // scattered giggle blips
         for(let i=0;i<10;i++){const tt=t+grng()*1.1;
           const f=520+grng()*520;
@@ -721,7 +849,9 @@ function kidFig(x,y,c,scale,glow,fallen){
 }
 function stateAt(tt){ // fold marks into a visual state
   const st={spot:null,alive:[...Array(P.kids).keys()],out:{},point:-1,it:-1,rope:0,
-    clap:-1,fumble:false,fall:false,verse:0,trip:false};
+    clap:-1,fumble:false,fall:false,verse:0,trip:false,
+    bounce:-1,over:false,miss:false,hopSq:0,hopDbl:false,wobble:false,
+    arch:false,fileKid:-1,caught:-1};
   if(!plan)return st;
   for(const m of plan.marks){
     if(m.t>tt)break;
@@ -736,6 +866,13 @@ function stateAt(tt){ // fold marks into a visual state
     if(m.ev==='fumble')st.fumble=true;
     if(m.ev==='trip')st.trip=true;
     if(m.ev==='fall')st.fall=true;
+    if(m.ev==='bounce'){st.bounce=m.t;st.over=!!m.over}
+    if(m.ev==='miss')st.miss=true;
+    if(m.ev==='hop'){st.hopSq=m.sq;st.hopDbl=!!m.dbl}
+    if(m.ev==='wobble')st.wobble=true;
+    if(m.ev==='arch')st.arch=true;
+    if(m.ev==='file')st.fileKid=m.kid;
+    if(m.ev==='capture')st.caught=m.kid;
   }
   return st;
 }
@@ -752,6 +889,72 @@ function draw(now){
   const cxx=W/2,cyy=H/2+20,R=Math.min(W,H)*0.33;
   cx.font='italic 26px Georgia';cx.fillStyle='rgba(236,231,218,.25)';
   cx.fillText(GAMES[P.game].toLowerCase(),28,44);
+
+  if(P.game===5){ // BALL-BOUNCE — players on a ground line, ball arcing between them
+    const gy=H*0.74;
+    chalkLine(70,gy,W-70,gy,'rgba(236,231,218,.22)',3);
+    const px=[W*0.36,W*0.64];
+    for(let i=0;i<Math.min(2,P.kids);i++){
+      const lift=(i===0&&st.over&&playing);
+      kidFig(px[i],gy-30,CHALKS[i%CHALKS.length],1,lift,false);
+      if(lift){ // the leg swings over the ball
+        cx.strokeStyle=CHALKS[i%CHALKS.length];cx.lineWidth=4;cx.globalAlpha=.9;cx.lineCap='round';
+        cx.beginPath();cx.moveTo(px[i],gy-20);cx.lineTo(px[i]+34,gy-30);cx.stroke();cx.globalAlpha=1;
+      }
+    }
+    if(tt>=0){
+      const dt=Math.max(0,tt-(st.bounce<0?tt:st.bounce));
+      const arc=Math.sin(Math.min(1,dt/0.26)*Math.PI);
+      const bx=px[0]+(st.over?46:76), by=gy-10-arc*H*0.36;
+      cx.fillStyle=st.over?'#e3d08b':'#e5a4b8';cx.globalAlpha=.92;
+      cx.beginPath();cx.arc(bx,by,13,0,7);cx.fill();cx.globalAlpha=1;
+      if(st.miss){cx.font='italic 32px Georgia';cx.fillStyle='rgba(229,164,184,.85)';cx.fillText('…ohh',px[0]+96,gy-64)}
+    }
+    return;
+  }
+  if(P.game===6){ // HOPSCOTCH — a chalk grid up the middle, a hopper climbing it
+    const sqh=44,sqw=58,base=H*0.90,maxSq=10,col=cxx;
+    const lay=[]; let y=base;
+    for(let sq=1;sq<=maxSq;sq++){lay.push({sq,x:col,y,dbl:(sq===4||sq===7||sq===maxSq)});y-=sqh+6}
+    for(const L of lay){
+      const on=st.hopSq===L.sq;
+      cx.strokeStyle=on?'#e3d08b':'rgba(236,231,218,.22)';cx.lineWidth=on?3:2;
+      if(L.dbl){cx.strokeRect(L.x-sqw-3,L.y-sqh,sqw,sqh);cx.strokeRect(L.x+3,L.y-sqh,sqw,sqh);}
+      else cx.strokeRect(L.x-sqw/2,L.y-sqh,sqw,sqh);
+      cx.font='16px Georgia';cx.fillStyle=on?'#e3d08b':'rgba(236,231,218,.34)';
+      cx.fillText(L.sq,L.x-6,L.y-sqh/2+6);
+    }
+    if(tt>=0&&st.hopSq>0){
+      const L=lay[st.hopSq-1], wob=st.wobble;
+      if(wob){cx.save();cx.translate(L.x,L.y-sqh/2-6);cx.rotate(0.28);
+        kidFig(0,0,CHALKS[2],0.7,false,false);cx.restore();
+        cx.font='italic 30px Georgia';cx.fillStyle='rgba(229,164,184,.85)';cx.fillText('whoa',L.x+44,L.y);
+      }else kidFig(L.x,L.y-sqh/2-6,CHALKS[2],0.7,playing,false);
+    }
+    return;
+  }
+  if(P.game===7){ // ARCH — two kids make a bridge, the line files through, it drops
+    const ay=H*0.60, ax1=W*0.30, ax2=W*0.70, top=H*0.22, dropped=st.caught>=0;
+    kidFig(ax1,ay,CHALKS[0],1,false,false);
+    kidFig(ax2,ay,CHALKS[1],1,false,false);
+    cx.strokeStyle='rgba(236,231,218,.6)';cx.lineWidth=4;cx.lineCap='round';cx.beginPath();
+    if(dropped){cx.moveTo(ax1,ay-40);cx.lineTo(ax1+54,ay-4);cx.moveTo(ax2,ay-40);cx.lineTo(ax2-54,ay-4);}
+    else cx.moveTo(ax1,ay-40),cx.quadraticCurveTo(cxx,top,ax2,ay-40);
+    cx.stroke();
+    const line=[];for(let i=2;i<P.kids;i++)line.push(i); if(!line.length)line.push(0);
+    const seg=(ax2-ax1+140)/line.length;
+    for(let j=0;j<line.length;j++){
+      const kid=line[j];
+      let x=ax2+70-((j+(playing?(tt*0.6)%line.length:0)))*seg;
+      while(x<ax1-70)x+=seg*line.length;
+      const yy=ay+4, caught=st.caught===kid;
+      kidFig(x,yy,CHALKS[kid%CHALKS.length],0.72,playing&&st.fileKid===kid,false);
+      if(caught){cx.strokeStyle='rgba(227,208,139,.9)';cx.lineWidth=3;
+        cx.beginPath();cx.arc(x,yy-20,28,0,7);cx.stroke();
+        cx.font='bold 22px Georgia';cx.fillStyle='#e3d08b';cx.fillText('caught!',x-34,yy+44);}
+    }
+    return;
+  }
 
   if(P.game===3){ // rope arc
     const ph=playing?Math.sin((tt-st.rope)*Math.PI*3):0.9;
@@ -792,7 +995,7 @@ requestAnimationFrame(draw);
 
 /* ---------- wiring ---------- */
 ['change','input'].forEach(ev=>{
-  for(const el of [ui.game,ui.kids,ui.key,ui.yard,ui.tempo,ui.rowdy,ui.gig])
+  for(const el of [ui.game,ui.kids,ui.key,ui.scale,ui.yard,ui.tempo,ui.rowdy,ui.gig])
     el.addEventListener(ev,()=>{ui.tempoVal.textContent=ui.tempo.value;stopPlayback();regen(false)});
 });
 ui.play.addEventListener('click',play);
