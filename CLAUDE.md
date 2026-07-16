@@ -1,0 +1,43 @@
+# CLAUDE.md
+
+Orientation for OPVSCVLA. **Read `HANDOFF.md` first** — it is the complete brief
+(architecture, key decisions, file structure, conventions, open threads). This
+file only pins the working conventions so a session follows them without being
+re-told.
+
+## Working process
+
+- **Keep `HANDOFF.md` current.** Update it at the **end of every session**
+  without being asked — architecture, key decisions, file structure,
+  conventions, and open threads. It is the single source of orientation; a new
+  chat starts by pasting it plus the files in scope, so treat that as complete
+  and don't ask the maintainer to re-explain.
+- During iteration, output **patches/diffs, not full-file rewrites.** Emit a
+  whole file only when creating it, or when changes exceed ~50% of it.
+- **Don't restate the request or recap prior turns.** Answer directly.
+- **Keep scope to the module in play**, and flag when we've drifted.
+- If a large file is pasted but only part is needed, work from that part —
+  don't reproduce the whole file back.
+
+## Repo shape (see HANDOFF.md for detail)
+
+- Twelve independent single-file Web Audio machines (`op.` dirs) + `index.html`
+  landing page. **No build, no bundler, no deps, no npm, no samples, no server.**
+- Machines share a design *grammar*, **not code** — each `index.html` is
+  deliberately standalone. Don't factor shared code across machines.
+- Deterministic + shareable: seeded generation, the URL hash *is* the pressing,
+  offline WAV render is deterministic.
+- The `op.` roman-numeral order lives in `index.html`, `README.md`, and
+  `HANDOFF.md` — keep all three in sync when adding a machine.
+
+## Verifying audio work
+
+Verify **headless (Chromium)**: enumerate the model for correctness, then
+smoke-test the transport/scheduler and the offline render for runtime errors.
+See the RILLE threads in HANDOFF.md for the pattern.
+
+## Git
+
+Develop on the feature branch, commit with descriptive messages, push. The
+music-theory / design reasoning tends to live in the commit message. **Don't
+open a PR unless asked.**
