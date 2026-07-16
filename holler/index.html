@@ -180,6 +180,9 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
 
     <div class="fld">
       <div class="lab">Backing <span class="rd">optional string band</span></div>
+      <div class="toggles" style="margin-bottom:10px">
+        <button id="bkFiddle">FIDDLE <span class="st">bowed lead</span></button>
+      </div>
       <div class="toggles">
         <button id="bkGtr">GUITAR <span class="st">boom-chuck</span></button>
         <button id="bkBass">BASS <span class="st">upright</span></button>
@@ -205,7 +208,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
       <h4>The other hands</h4>
       <p>Before bluegrass there was <em>two-finger</em> up-picking — thumb leading the melody, one finger picking up on the offbeats — the lonesome older sound of the mountains. Then in the 1940s Earl Scruggs codified the <em>three-finger roll</em>: fast, syncopated arpeggios of thumb, index and middle, the melody note "picked out" of a continuous stream — the drive of bluegrass. <em>Melodic</em> (or "Keith") style, from the 1960s, spreads a scale across the strings so the notes ring into one another and fiddle runs can be played note-for-note. Same tune, five hands, five centuries of the instrument.</p>
       <h4>The string band</h4>
-      <p>The banjo rarely played alone. In the old-time string band it sat beside a fiddle, a guitar keeping the <em>boom-chuck</em> — an alternating bass note and a strummed chord — an upright bass walking the roots, and often a foot stomping the floor for time. Switch the backing on and the machine adds those parts under the tune, following its chords; switch them off and you are back on the porch alone. The same rhythm section serves the bluegrass hand (the three-finger roll) as readily as the old-time ones.</p>
+      <p>The banjo rarely played alone. In the old-time string band it sat beside a <em>fiddle</em> — the two together are the heart of the music, sawing the same tune in a rough unison called <em>heterophony</em> — with a guitar keeping the <em>boom-chuck</em> (an alternating bass note and a strummed chord), an upright bass walking the roots, and often a foot stomping the floor for time. Switch the fiddle on and a bowed lead rides the melody an octave above the banjo; switch on the rhythm section and the guitar, bass and foot fall in under the tune, following its chords. Switch them all off and you are back on the porch alone. The same band serves the bluegrass hand (the three-finger roll) as readily as the old-time ones.</p>
       <h4>Modes and tunings</h4>
       <p>Old-time players don't think in keys so much as in <em>tunings</em> and <em>modes</em>. A banjo is retuned for the tune: <em>Open G</em> (gDGBD) for bright major tunes, <em>Sawmill</em> (gDGCD) for the haunting modal ones, <em>Double C</em>, <em>Open D</em>. The melodies live in the church modes — <em>Ionian</em> (plain major), <em>Mixolydian</em> (major with a lowered seventh, the "Old Joe Clark" sound), <em>Dorian</em> and <em>Aeolian</em> (the minor-tinged ones). That flat-seventh drone-against-melody is the whole flavour of the modal repertoire.</p>
       <h4>Where it came from</h4>
@@ -566,11 +569,41 @@ function backingEvents(tune, bpm, seed, backing){
   return ev;
 }
 
+// the fiddle lead — carries the tune's melody an octave up, bowed in slurred
+// quarter-notes with the odd passing eighth, following the same AABB score the
+// banjo plays. Held slightly longer than a beat so the strokes legato into one
+// another (a fiddler's bow doesn't stop between notes). Swings with the lilt.
+function fiddleEvents(tune, bpm, lilt, seed){
+  const rng=mulberry32((seed>>>0)^0x1b56c4e9);
+  const eighth=(60/bpm)/2, gen=tune.gen, hum=()=>(rng()*2-1)*0.006;
+  const strains=[tune.A,tune.A,tune.B,tune.B];
+  const ev=[]; let gi=0;
+  const up=deg=>foldTo(gen.degToMidi(deg)+12,66,86);        // into the fiddle register
+  for(const strain of strains){
+    for(const bar of strain){
+      for(let b=0;b<4;b++){
+        const e=b*2;
+        let t=(gi*8+e)*eighth+hum();
+        ev.push({t:Math.max(0,t), midi:up(bar.mel[e]), secs:eighth*2*1.04,
+                 vel:0.52*(0.9+rng()*0.16), vibPhase:rng()*6.28});
+        // a passing eighth on the "and", now and then, for the bowed saw
+        if(rng()<0.32){
+          let t2=(gi*8+e+1)*eighth; if(lilt) t2+=eighth*0.17; t2+=hum();
+          ev.push({t:Math.max(0,t2), midi:up(bar.mel[e+1]), secs:eighth*1.25,
+                   vel:0.4*(0.9+rng()*0.16), vibPhase:rng()*6.28});
+        }
+      }
+      gi++;
+    }
+  }
+  return ev;
+}
+
 /* ============================ ENGINE-END ============================ */
 
 /* ------------------------------- state ---------------------------------- */
 const st={ style:'clawhammer', tuning:'openG', mode:'ionian', bpm:132, lilt:true, seed:1, playing:false,
-  backing:{guitar:true, bass:true, foot:false} };
+  backing:{fiddle:true, guitar:true, bass:true, foot:false} };
 
 /* ------------------------------- audio ---------------------------------- */
 const SR=44100;
@@ -596,13 +629,41 @@ function ksPluck(out, start, freq, secs, vel, tau, bright, rng){
     idx=(idx+1)%N;
   }
   const cn=Math.min(out.length-start, Math.floor(0.004*SR)), cd=0.0015*SR;
-  for(let i=0;i<cn;i++) out[start+i]+=(rng()*2-1)*vel*0.13*Math.exp(-i/cd);
+  for(let i=0;i<cn;i++) out[start+i]+=(rng()*2-1)*vel*0.085*Math.exp(-i/cd);  // softer nail-click (was .13) — mellows the attack
 }
 // a soft foot-stomp: a low thud with a floorboard knock (not a plucked string)
 function footHit(out,start,vel,rng){
   const n=Math.min(out.length-start,Math.floor(0.13*SR));
   for(let i=0;i<n;i++){const t=i/SR;
     out[start+i]+=(Math.sin(2*Math.PI*62*t)*Math.exp(-t/0.055)+(rng()*2-1)*0.4*Math.exp(-t/0.006))*vel*0.5;}
+}
+// the fiddle — a BOWED string, not a plucked one, so it can't be Karplus–Strong.
+// Additive: a 1/k sawtooth spectrum (one-pole-rolled so it stays warm), a slow
+// bowed attack/release, a little bow-noise, and a gentle ~5 Hz vibrato. This is
+// the lead voice of the old-time string band, sawing the tune over the banjo.
+function fiddleNote(out,start,freq,secs,vel,rng,vibPhase){
+  const n=Math.min(out.length-start,Math.floor(secs*SR));
+  if(n<=0)return;
+  const nyq=SR/2;
+  // harmonic weights: sawtooth 1/k, each partial rolled off by a one-pole ~3 kHz
+  const H=[],F=[]; let hsum=0;
+  for(let k=1;k<=14;k++){const hf=freq*k; if(hf>nyq*0.92)break;
+    const w=(1/k)/(1+Math.pow(hf/3000,2)); H.push(w); F.push(k); hsum+=w;}
+  if(hsum<=0)return;
+  const norm=1/hsum;
+  const atk=Math.max(1,Math.floor(0.045*SR)), rel=Math.max(1,Math.floor(0.07*SR));
+  const twoPI=2*Math.PI, vibHz=5.1, vibDepth=0.005;   // ±~9 cents
+  let ph=0;
+  for(let i=0;i<n;i++){
+    const t=i/SR;
+    const f=freq*(1+vibDepth*Math.sin(twoPI*vibHz*t+vibPhase));
+    ph+=twoPI*f/SR;
+    let s=0; for(let k=0;k<H.length;k++) s+=H[k]*Math.sin(F[k]*ph);
+    s=s*norm + (rng()*2-1)*0.025;                       // + faint bow noise
+    let a; if(i<atk)a=i/atk; else if(i>n-rel)a=(n-i)/rel; else a=1;
+    a*=0.9+0.1*Math.sin(twoPI*0.7*t);                   // slow bow swell
+    out[start+i]+=s*vel*a;
+  }
 }
 
 // one RBJ biquad pass in place (peaking / highpass / highshelf), used to add
@@ -615,6 +676,8 @@ function biquad(x, type, f0, Q, gainDB){
     b0=1+alpha*A; b1=-2*cw; b2=1-alpha*A; a0=1+alpha/A; a1=-2*cw; a2=1-alpha/A;
   }else if(type==='highpass'){
     b0=(1+cw)/2; b1=-(1+cw); b2=(1+cw)/2; a0=1+alpha; a1=-2*cw; a2=1-alpha;
+  }else if(type==='lowpass'){
+    b0=(1-cw)/2; b1=1-cw; b2=(1-cw)/2; a0=1+alpha; a1=-2*cw; a2=1-alpha;
   }else{ // highshelf
     const s=2*Math.sqrt(A)*alpha;
     b0=A*((A+1)+(A-1)*cw+s); b1=-2*A*((A-1)+(A+1)*cw); b2=A*((A+1)+(A-1)*cw-s);
@@ -657,10 +720,21 @@ function renderMaster(){
       ksPluck(buf, start, midiToFreq(e.midi), (BTAU[e.kind]||0.4)+e.vel*0.15, e.vel, BTAU[e.kind]||0.4, bright, rng);
     }
   }
-  // body: trim rumble, lift the ~330 Hz pot resonance, brighten the top
+  // the fiddle lead, bowed into the same buffer (it follows the tune's melody)
+  if(st.backing.fiddle){
+    const fev=fiddleEvents(tune, st.bpm, st.lilt, st.seed);
+    for(const e of fev){
+      const start=Math.floor(e.t*SR); if(start<0||start>=n) continue;
+      fiddleNote(buf, start, midiToFreq(e.midi), e.secs, e.vel, rng, e.vibPhase);
+    }
+  }
+  // body: trim rumble, lift the ~330 Hz pot resonance, then MELLOW the twang —
+  // a gentle lowpass rolls off the hard upper harmonics, and the top-shelf lift
+  // is eased back so the banjo reads warm-on-a-porch, not brittle/tinny.
   biquad(buf,'highpass',85,0.7,0);
   biquad(buf,'peaking',330,0.9,3.5);
-  biquad(buf,'highshelf',3200,0.7,2.5);
+  biquad(buf,'lowpass',5200,0.6,0);
+  biquad(buf,'highshelf',3200,0.7,1.2);
   // peak-normalise to 0.9 — guarantees no clipping in the WAV by construction
   let mx=0; for(let i=0;i<n;i++){const a=Math.abs(buf[i]); if(a>mx)mx=a;}
   if(mx>0){const k=0.9/mx; for(let i=0;i<n;i++)buf[i]*=k;}
@@ -670,6 +744,20 @@ function renderMaster(){
 // audio buffer from the mono float data
 function toAudioBuffer(ctx, data){
   const b=ctx.createBuffer(1,data.length,SR); b.getChannelData(0).set(data); return b;
+}
+// build a SEAMLESS loop from the master render. The master buffer is one pass
+// (dur) plus a ring-off tail; looping it whole leaves a silent gap at the seam.
+// Instead we cut the buffer to exactly the musical length and FOLD the ring-off
+// tail back onto the head, so the last notes' decay carries over the loop point
+// exactly as it would in an endless take. Loop period is now precisely `dur`,
+// which also keeps the canvas playhead (which assumes `dur`) in sync.
+function makeLoopBuffer(buf, dur){
+  const L=Math.round(dur*SR), n=buf.length;
+  const out=new Float32Array(L);
+  const body=Math.min(L,n);
+  for(let i=0;i<body;i++) out[i]=buf[i];
+  for(let i=L;i<n;i++) out[i-L]+=buf[i];   // wrap the ring-off tail onto the head
+  return out;
 }
 // a small, dry porch room
 function makeRoomIR(ctx,sec,exp){
@@ -699,7 +787,7 @@ function play(){
   const R=renderMaster();
   const ctx=new (window.AudioContext||window.webkitAudioContext)();
   __iosAudio(ctx);
-  const G=buildGraph(ctx, R.buf, true);
+  const G=buildGraph(ctx, makeLoopBuffer(R.buf, R.dur), true);
   RT={ctx,G,t0:ctx.currentTime+0.08,dur:R.dur,eighth:R.eighth,bars:R.bars,tune:R.tune};
   G.src.start(RT.t0);
   st.playing=true; $('pick').textContent='Rest'; $('pick').classList.add('on');
@@ -886,14 +974,16 @@ $('tgStraight').onclick=()=>{if(!st.lilt)return;st.lilt=false;$('tgStraight').cl
 // backing: three independent voices, each a mute/unmute toggle
 function wireBack(id,key){const b=$(id);b.classList.toggle('on',st.backing[key]);
   b.onclick=()=>{st.backing[key]=!st.backing[key];b.classList.toggle('on',st.backing[key]);regen();};}
-wireBack('bkGtr','guitar');wireBack('bkBass','bass');wireBack('bkFoot','foot');
+wireBack('bkFiddle','fiddle');wireBack('bkGtr','guitar');wireBack('bkBass','bass');wireBack('bkFoot','foot');
 
 $('pick').addEventListener('click',()=>st.playing?stop():play());
 $('cut').addEventListener('click',cut);
 
 /* ---------------------- opuscula shared: hash · keys --------------------- */
 let __applying=false;
-function backMask(){return (st.backing.guitar?1:0)|(st.backing.bass?2:0)|(st.backing.foot?4:0);}
+// bits: guitar=1 bass=2 foot=4 fiddle=8 (fiddle added last, so old permalinks
+// without the bit reproduce fiddle-off exactly).
+function backMask(){return (st.backing.guitar?1:0)|(st.backing.bass?2:0)|(st.backing.foot?4:0)|(st.backing.fiddle?8:0);}
 function __state(){return {st:st.style,tu:st.tuning,mo:st.mode,bpm:st.bpm,li:st.lilt?1:0,bk:backMask(),sd:st.seed};}
 function __apply(o){
   if(o.tu){const b=$('tuning').querySelector('[data-v="'+o.tu+'"]');b&&b.click();}
@@ -902,8 +992,9 @@ function __apply(o){
   if(o.sd!==undefined){const sd=+o.sd;if(Number.isFinite(sd)){st.seed=sd>>>0;invalidate();}}
   if(o.bpm){st.bpm=clamp(+o.bpm|0,88,260);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' bpm';invalidate();}
   if(o.li!==undefined){(+o.li===1?$('tgLilt'):$('tgStraight')).click();}
-  if(o.bk!==undefined){const m=+o.bk|0;st.backing={guitar:!!(m&1),bass:!!(m&2),foot:!!(m&4)};
-    ['bkGtr','bkBass','bkFoot'].forEach((id,i)=>$(id).classList.toggle('on',!!(m&(1<<i))));invalidate();}
+  if(o.bk!==undefined){const m=+o.bk|0;st.backing={guitar:!!(m&1),bass:!!(m&2),foot:!!(m&4),fiddle:!!(m&8)};
+    $('bkGtr').classList.toggle('on',!!(m&1));$('bkBass').classList.toggle('on',!!(m&2));
+    $('bkFoot').classList.toggle('on',!!(m&4));$('bkFiddle').classList.toggle('on',!!(m&8));invalidate();}
 }
 function __hashRead(){const h=location.hash.slice(1);if(!h)return null;const o={};
   for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}

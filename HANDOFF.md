@@ -106,6 +106,44 @@ keep all three (page, README, this file) in sync when adding a machine.
 
 Newest first.
 
+### HOLLER — clean loop, mellower tone, a fiddle lead
+**Branch:** `claude/banjo-loop-sound-design-qjlfm4` · **File:**
+`holler/index.html` · **Status:** done, verified headless (Chromium); pushed to
+`main`.
+
+Three moves:
+
+- **Seamless loop.** The master render is one pass (`dur`) + a `tail=1.1s`
+  ring-off. Realtime looped the *whole* buffer, so every seam had a silent gap,
+  and the canvas (which assumes a period of `dur`) drifted 1.1 s per pass. Added
+  `makeLoopBuffer(buf,dur)`: cuts to exactly `round(dur*SR)` and **folds the
+  ring-off tail back onto the head** (`out[i-L]+=buf[i]` for `i≥L`) so the last
+  notes' decay carries over the loop point. `play()` now feeds that; the WAV
+  `cut()` still uses the plain one-pass `R.buf` (unchanged, non-looping). Loop
+  period is now precisely `dur`, which also re-syncs the playhead. Verified:
+  `loopLen==round(dur*SR)`, non-zero head energy (folded ring present), no NaN.
+- **Mellowed the timbre.** Softened the Karplus–Strong nail-click chip
+  (`.13→.085`); in the body chain added a gentle **lowpass 5.2 kHz Q0.6** and
+  eased the top **highshelf +2.5→+1.2 dB** (the `biquad` RBJ helper gained a
+  `lowpass` type). Reads warm-on-a-porch rather than brittle. Peaking-330 pot
+  resonance and highpass-85 untouched.
+- **Added a fiddle part** — a fourth string-band voice (**bit 8** in `backMask`;
+  old permalinks without the bit reproduce fiddle-off). It's a **bowed** string,
+  so *not* Karplus–Strong: new `fiddleNote()` is additive — a 1/k sawtooth
+  spectrum one-pole-rolled at ~3 kHz, bowed attack/release, faint bow-noise, and
+  ~5 Hz / ±9 c vibrato. `fiddleEvents()` carries the tune's **melody an octave
+  up** (`foldTo …,66,86`) in slurred quarter-notes (held `eighth*2*1.04` so they
+  legato) with the odd passing eighth, swung with the lilt; folded into the same
+  master buffer in `renderMaster` when `st.backing.fiddle`. New UI toggle
+  `#bkFiddle` on its own row above the rhythm section (it's the lead, not the
+  boom-chuck). **Default is ON** — the default hash is now `bk=11`
+  (guitar+bass+fiddle). Reader "string band" note updated (heterophony);
+  `another()` leaves backing as-is.
+- **Pick-up:** the tab canvas stays banjo-only by design (it's tablature for the
+  right hand — the fiddle isn't drawn, confirmed with the maintainer). If a
+  busier fiddle is wanted, raise the passing-eighth probability (`rng()<0.32`) or
+  drop it to the full eighth-note line for tight heterophony with the melodic hand.
+
 ### RILLE — minimal deep tech mood + smoother chords
 **Branch:** `claude/minimal-deep-tech-guide-ta175d` · **Files:** `rille/index.html`
 (+ mood-count copy in `README.md`, `index.html`) · **Status:** done, verified
@@ -139,7 +177,6 @@ Driven by a minimal-deep-tech production guide. Two moves, both additive:
   wanted, flip `stab.pad`. The guide's "warm master saturation" was deliberately
   *not* added — the ask was less-harsh, so I subtracted highs rather than adding
   harmonics. `bpm 123`/`swing .07`/`duck .42` are the feel knobs.
-
 ### NENIA — simplified visuals + childlike control labels
 **Branch:** `claude/project-working-conventions-xjaafw` · **File:**
 `nenia/index.html` (canvas revert + control copy) · **Status:** done, verified
