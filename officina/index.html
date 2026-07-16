@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#14100b">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex">
+<meta name="description" content="officina — the voicing bench of the opuscula. Every synthesized voice's parameters, editable live inside the running machine; named presets, export, factory reset. Backstage, not an op.">
+<title>OFFICINA — the voicing bench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#14100b; --panel:#1b1610; --panel2:#221c14; --line:rgba(233,226,210,.14);
+  --txt:#e9e2d2; --dim:rgba(233,226,210,.58); --brass:#c9a227; --amber:#e0a34e; --mod:#e8c86a;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg);-webkit-text-size-adjust:100%}
+body{background:
+    radial-gradient(120% 60% at 50% -10%, rgba(201,162,39,.06), transparent 55%),
+    var(--bg);
+  color:var(--txt);font-family:'EB Garamond',Georgia,serif;font-size:16px;line-height:1.55;
+  min-height:100vh;padding:max(14px,env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom))}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.wrap{max-width:1280px;margin:0 auto}
+
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:0 0 12px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,8,5,.55);border:1px solid rgba(233,226,210,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s,background .15s}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.7);background:rgba(10,8,5,.85);outline:none}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
+h1{font-size:2.6rem;font-weight:400;letter-spacing:.02em;line-height:1.05;margin:.1rem 0 .4rem;text-shadow:0 0 26px rgba(201,162,39,.18)}
+.sub{font-style:italic;font-size:1rem;margin-bottom:1rem;max-width:70ch}
+.sub b{font-weight:700}
+
+/* machine picker */
+.mchips{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+.mchips button{padding:.45rem .7rem;font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.05em;
+  color:var(--dim);background:var(--panel);border:1px solid var(--line);border-radius:5px;cursor:pointer;transition:all .15s}
+.mchips button:hover{color:var(--txt);border-color:rgba(233,226,210,.4)}
+.mchips button.on{color:var(--bg);background:var(--brass);border-color:var(--brass);font-weight:500}
+.mchips .rn{opacity:.6;margin-right:.45em}
+.mchips button.on .rn{opacity:.75}
+
+/* bench layout */
+.bench{display:grid;grid-template-columns:minmax(340px,620px) minmax(360px,1fr);gap:1rem;align-items:start}
+@media(max-width:900px){.bench{grid-template-columns:1fr}}
+.stage{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.stage iframe{display:block;width:100%;height:min(78vh,900px);border:0;background:#000}
+.stagehint{padding:.5rem .8rem;border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.08em;color:var(--dim)}
+
+.panel{border:1px solid var(--line);border-radius:8px;background:var(--panel);min-height:200px}
+.pad{padding: .9rem 1rem}
+.waiting{font-style:italic;color:var(--dim);padding:1.2rem 1rem}
+
+/* preset strip */
+.strip{display:flex;gap:.45rem;flex-wrap:wrap;align-items:center;padding:.7rem 1rem;border-bottom:1px solid var(--line);background:var(--panel2);border-radius:8px 8px 0 0}
+.strip select,.strip input[type=text]{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--txt);
+  background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:.4rem .5rem}
+.strip input[type=text]{width:11em}
+.strip select:focus,.strip input:focus{outline:none;border-color:var(--brass)}
+.bt{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+  background:transparent;color:var(--txt);border:1px solid var(--dim);border-radius:999px;padding:.4rem .8rem;cursor:pointer;transition:all .15s;white-space:nowrap}
+.bt:hover{border-color:var(--txt)}
+.bt.warn:hover{border-color:#d98868;color:#d98868}
+.bt.tog.on{background:var(--brass);color:var(--bg);border-color:var(--brass)}
+.stripnote{flex-basis:100%;font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.06em;color:var(--dim);min-height:1em}
+
+/* machine doc */
+details.mdoc{border-bottom:1px solid var(--line)}
+details.mdoc>summary{list-style:none;cursor:pointer;padding:.6rem 1rem;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);-webkit-user-select:none;user-select:none}
+details.mdoc>summary::-webkit-details-marker{display:none}
+details.mdoc>summary::before{content:'▸ ';display:inline-block;transition:transform .15s}
+details.mdoc[open]>summary::before{transform:rotate(90deg)}
+details.mdoc>summary:hover{color:var(--txt)}
+.mdoc .body{padding:0 1rem .8rem;max-width:72ch;font-size:.95rem;line-height:1.6;color:#d8d2c2}
+
+/* groups + params */
+details.grp{border-bottom:1px solid var(--line)}
+details.grp:last-child{border-bottom:0}
+details.grp>summary{list-style:none;cursor:pointer;display:flex;align-items:baseline;gap:.7em;padding:.6rem 1rem;-webkit-user-select:none;user-select:none}
+details.grp>summary::-webkit-details-marker{display:none}
+.gname{font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--brass)}
+.gmods{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--mod)}
+details.grp>summary::before{content:'▸';font-size:.7rem;color:var(--dim);display:inline-block;transition:transform .15s}
+details.grp[open]>summary::before{transform:rotate(90deg)}
+.gdoc{padding:0 1rem .5rem;font-size:.9rem;font-style:italic;color:var(--dim);max-width:70ch;line-height:1.5}
+.prm{padding:.35rem 1rem .55rem}
+.prm .row1{display:flex;align-items:baseline;gap:.6em}
+.prm .plabel{font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.08em;color:var(--txt)}
+.prm.mod .plabel::after{content:'●';color:var(--mod);font-size:.5rem;margin-left:.6em;vertical-align:middle}
+.prm .sp{flex:1}
+.prm input[type=number]{width:6.2em;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--txt);text-align:right;
+  background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:.15rem .3rem;-moz-appearance:textfield}
+.prm input[type=number]:focus{outline:none;border-color:var(--brass)}
+.prm .unit{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim);min-width:1.6em}
+.prm .rst{background:none;border:none;color:var(--dim);cursor:pointer;font-size:.75rem;padding:0 .2em;visibility:hidden}
+.prm.mod .rst{visibility:visible}
+.prm .rst:hover{color:var(--txt)}
+.prm input[type=range]{width:100%;height:1.15rem;accent-color:var(--brass);background:transparent;display:block;margin-top:.1rem}
+.prm .pdoc{font-size:.85rem;color:var(--dim);line-height:1.45;max-width:70ch;margin-top:.1rem}
+
+/* reader */
+.reader{margin:18px auto 4px;max-width:100%}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;padding:8px 15px;border:1px solid var(--line);border-radius:999px;color:var(--dim);-webkit-user-select:none;user-select:none;transition:color .15s,border-color .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover{color:var(--txt);border-color:rgba(233,226,210,.4)}
+.reader[open]>summary{color:var(--txt);margin-bottom:14px}
+.rbody{max-width:66ch;font-size:1rem;line-height:1.66;color:#d8d2c2}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic;color:var(--txt)}
+.rbody code{font-family:'IBM Plex Mono',monospace;font-size:.8em;background:var(--panel2);padding:.05em .35em;border-radius:3px}
+
+footer{margin-top:1.6rem;padding-top:1rem;border-top:1px solid var(--line);font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.12em;color:var(--dim);display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem;text-transform:uppercase}
+footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opvscvla"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+
+  <div class="eyebrow">backstage · not an op.</div>
+  <h1>Officina</h1>
+  <p class="sub"><b>The voicing bench.</b> Every machine keeps its synthesized voices in one documented block — its <em>timbre</em>. Pick a machine below: it runs live in its own frame while you shape those voices by ear, in the mix they actually sit in. Save what you dial in as named presets; they follow the machine everywhere on this device.</p>
+
+  <div class="mchips mono" id="mchips" role="tablist" aria-label="Machines"></div>
+
+  <div class="bench">
+    <div class="stage">
+      <iframe id="stage" title="The machine under the lamp" allow="autoplay"></iframe>
+      <div class="stagehint" id="stagehint">pick a machine to put it under the lamp</div>
+    </div>
+
+    <div class="panel" id="panel">
+      <div class="waiting" id="waiting">The bench is empty. Choose a machine above; press its play control to hear your edits inside the running mix.</div>
+    </div>
+  </div>
+
+  <details class="reader">
+    <summary>On this bench · how voicing works here</summary>
+    <div class="rbody">
+      <h4>What this is</h4>
+      <p>Organ builders call it <em>voicing</em>: the pipes are built, the music is written, and then someone stands at the instrument and adjusts each rank's speech — brighter, darker, more breath, less bite — until it sings in the room it lives in. This page is that bench for the opuscula. It is backstage machinery, not an op.; the catalogue's music is unchanged by its existence.</p>
+      <h4>Where the sound actually lives</h4>
+      <p>Each machine's source carries a <code>TIMBRE</code> block near the top of its script — every synthesis constant, named, bounded, and documented, grouped by voice. The machine's code reads those values instead of scattered magic numbers, so the numbers on this bench <em>are</em> the instrument's voice. The bench talks to the machine over <code>postMessage</code> while it plays; nothing here is a mock-up or a preview — the frame on the left is the real machine, real scheduler, real mix.</p>
+      <h4>Presets</h4>
+      <p>Edits write to this browser's storage as the machine's <em>applied</em> voice: open the machine directly — even from the catalogue — and it speaks with your voicing. Name and save any state as a preset; load, overwrite, or delete them here; export them as JSON to move between devices or to hand back for baking into the factory voice. <code>FACTORY</code> returns the shipped sound (the machine also obeys a <code>?factory</code> URL switch). The <code>A/B</code> button flips the running machine to the factory voice while lit — the honest way to hear what your tweaks are doing.</p>
+      <h4>Determinism, unharmed</h4>
+      <p>Seeds, URL-hash pressings, and the offline WAV cut all still reproduce exactly — voicing changes <em>timbre</em>, never the composition. But a WAV cut while a preset is applied is cut in that preset's voice: what you hear is what you get.</p>
+    </div>
+  </details>
+
+  <footer>
+    <span>officina · <a href="../">opvscvla</a></span>
+    <span>the bench remembers per browser · export to carry</span>
+  </footer>
+</div>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+
+/* the thirteen, in op. order — dir === TIMBRE.id */
+const MACHINES=[
+  ['I','pas-sale','PAS SALÉ'],['II','scala','SCALA'],['III','gradus','GRADUS'],
+  ['IV','rille','RILLE'],['V','cochlea','COCHLEA'],['VI','bolg','BOLG'],
+  ['VII','peal','PEAL'],['VIII','holler','HOLLER'],['IX','foli','FOLI'],
+  ['X','nenia','NENIA'],['XI','khoomei','KHÖÖMEI'],['XII','spannung','SPANNUNG'],
+  ['XIII','tambour','TAMBOUR'],
+];
+const AKEY=id=>'opvscvla.timbre.'+id;     // applied voice (machines read this at boot)
+const PKEY=id=>'opvscvla.presets.'+id;    // named presets
+
+/* ---------------------------- bench state ---------------------------- */
+const B={ id:null, schema:null, defaults:{}, vals:{}, preset:null, ab:false, waitTimer:0, saveTimer:0 };
+const EPS=1e-9;
+const fmt=(v,step)=>{const d=Math.max(0,Math.ceil(-Math.log10(step||1)));return (+v).toFixed(Math.min(6,d))};
+const isMod=k=>Math.abs(B.vals[k]-B.defaults[k])>EPS;
+const modOnly=()=>{const o={};for(const k in B.vals)if(isMod(k))o[k]=B.vals[k];return o};
+
+function loadJSON(key,fb){try{return JSON.parse(localStorage.getItem(key)||'null')??fb}catch(e){return fb}}
+function saveJSON(key,o){try{localStorage.setItem(key,JSON.stringify(o))}catch(e){}}
+
+/* ------------------------- talking to the frame ----------------------- */
+const stage=$('stage');
+const post=m=>{try{stage.contentWindow.postMessage(Object.assign({officina:1,id:B.id},m),'*')}catch(e){}};
+addEventListener('message',ev=>{
+  const m=ev.data; if(!m||m.officina!==1||m.op!=='schema'||m.id!==B.id)return;
+  clearTimeout(B.waitTimer);
+  if(!B.schema){ B.schema=m.schema;
+    B.defaults={}; for(const g in m.schema.groups){const P=m.schema.groups[g].params;for(const p in P)B.defaults[g+'.'+p]=P[p].v;}
+    B.vals=Object.assign({},m.values);
+    buildPanel();
+  }
+});
+
+function pick(id){
+  if(B.id===id)return;
+  B.id=id; B.schema=null; B.preset=null; B.ab=false;
+  const applied=loadJSON(AKEY(id),null); B.preset=applied&&applied.preset||null;
+  [...$('mchips').children].forEach(c=>c.classList.toggle('on',c.dataset.v===id));
+  const m=MACHINES.find(x=>x[1]===id);
+  $('stagehint').textContent='op. '+m[0]+' · '+m[2]+' — press its play control; edits land in the running mix';
+  $('panel').innerHTML='<div class="waiting" id="waiting">Waiting for '+m[2]+' to announce its timbre…</div>';
+  clearTimeout(B.waitTimer);
+  B.waitTimer=setTimeout(()=>{ if(!B.schema) $('panel').innerHTML=
+    '<div class="waiting">'+m[2]+' hasn’t been voiced yet — no TIMBRE block announced. (Machines are wired one by one; this one’s coming.)</div>'; },5000);
+  stage.src='../'+id+'/?bench';
+  try{history.replaceState(null,'','#m='+id)}catch(e){}
+}
+
+/* ------------------------------ persistence --------------------------- */
+function writeApplied(){
+  clearTimeout(B.saveTimer);
+  B.saveTimer=setTimeout(()=>{
+    const v=modOnly();
+    if(Object.keys(v).length||B.preset) saveJSON(AKEY(B.id),{preset:B.preset,v});
+    else localStorage.removeItem(AKEY(B.id));
+  },250);
+}
+function presets(){return loadJSON(PKEY(B.id),{})}
+
+/* ------------------------------ the panel ----------------------------- */
+function buildPanel(){
+  const S=B.schema, panel=$('panel');
+  panel.innerHTML='';
+
+  /* preset strip */
+  const strip=document.createElement('div'); strip.className='strip';
+  strip.innerHTML=
+    '<select id="psel" aria-label="Presets"></select>'+
+    '<input type="text" id="pname" placeholder="name this voicing" aria-label="Preset name" maxlength="40">'+
+    '<button class="bt" id="psave">save</button>'+
+    '<button class="bt warn" id="pdel">delete</button>'+
+    '<button class="bt warn" id="pfactory">factory</button>'+
+    '<button class="bt tog" id="pab" title="hold the factory voice up against your edits">a/b</button>'+
+    '<button class="bt" id="pcopy" title="copy only the values you changed — paste into a chat to have them baked in">copy tweaks</button>'+
+    '<button class="bt" id="pexp">export</button>'+
+    '<button class="bt" id="pimp">import</button>'+
+    '<input type="file" id="pfile" accept="application/json" style="display:none">'+
+    '<div class="stripnote" id="pnote"></div>';
+  panel.appendChild(strip);
+
+  /* machine doc */
+  const mdoc=document.createElement('details'); mdoc.className='mdoc';
+  mdoc.innerHTML='<summary>how this instrument is built</summary><div class="body"></div>';
+  mdoc.querySelector('.body').textContent=S.doc;
+  panel.appendChild(mdoc);
+
+  /* groups */
+  for(const[g,G]of Object.entries(S.groups)){
+    const det=document.createElement('details'); det.className='grp'; det.open=true; det.dataset.g=g;
+    const sum=document.createElement('summary');
+    sum.innerHTML='<span class="gname"></span><span class="gmods"></span>';
+    sum.querySelector('.gname').textContent=G.label;
+    det.appendChild(sum);
+    const gd=document.createElement('div'); gd.className='gdoc'; gd.textContent=G.doc; det.appendChild(gd);
+    for(const[p,P]of Object.entries(G.params)){
+      const k=g+'.'+p;
+      const el=document.createElement('div'); el.className='prm'; el.dataset.k=k;
+      el.innerHTML='<div class="row1"><span class="plabel"></span><span class="sp"></span>'+
+        '<input type="number"><span class="unit"></span>'+
+        '<button class="rst" title="back to factory">↺</button></div>'+
+        '<input type="range"><div class="pdoc"></div>';
+      el.querySelector('.plabel').textContent=P.label;
+      el.querySelector('.pdoc').textContent=P.doc;
+      el.querySelector('.unit').textContent=P.unit||'';
+      const num=el.querySelector('input[type=number]'), rng=el.querySelector('input[type=range]');
+      num.min=rng.min=P.min; num.max=rng.max=P.max; num.step=rng.step=P.step;
+      num.value=rng.value=B.vals[k];
+      num.title=rng.title='factory: '+fmt(P.v,P.step);
+      rng.setAttribute('aria-label',G.label+' — '+P.label);
+      el.classList.toggle('mod',isMod(k));
+      rng.addEventListener('input',()=>{setVal(k,+rng.value);num.value=fmt(B.vals[k],P.step)});
+      num.addEventListener('change',()=>{setVal(k,+num.value);num.value=fmt(B.vals[k],P.step);rng.value=B.vals[k]});
+      el.querySelector('.rst').addEventListener('click',()=>{setVal(k,P.v);num.value=fmt(P.v,P.step);rng.value=P.v});
+      det.appendChild(el);
+    }
+    panel.appendChild(det);
+  }
+  refreshMods(); refreshPresetUI();
+
+  /* strip wiring */
+  $('psel').addEventListener('change',()=>{
+    const n=$('psel').value;
+    if(n==='__factory'){doFactory();return}
+    const pr=presets()[n]; if(!pr)return;
+    B.preset=n; $('pname').value=n;
+    applyState(pr.v||{});
+    note('loaded · '+n);
+  });
+  $('psave').addEventListener('click',()=>{
+    const n=($('pname').value||'').trim();
+    if(!n){note('give the voicing a name first');$('pname').focus();return}
+    const all=presets(); all[n]={v:modOnly()}; saveJSON(PKEY(B.id),all);
+    B.preset=n; writeApplied(); refreshPresetUI(); note('saved · '+n);
+  });
+  $('pdel').addEventListener('click',()=>{
+    const n=$('psel').value; if(n==='__factory'||!n){note('nothing selected to delete');return}
+    const all=presets(); delete all[n]; saveJSON(PKEY(B.id),all);
+    if(B.preset===n){B.preset=null;writeApplied()}
+    refreshPresetUI(); note('deleted · '+n);
+  });
+  $('pfactory').addEventListener('click',doFactory);
+  $('pab').addEventListener('click',()=>{
+    B.ab=!B.ab; $('pab').classList.toggle('on',B.ab);
+    post({op:'bulk',values:B.ab?{}:modOnly()});
+    note(B.ab?'hearing the FACTORY voice — press a/b again for your edits':'hearing your edits');
+  });
+  $('pcopy').addEventListener('click',async()=>{
+    const o={machine:B.id,tweaks:modOnly()};
+    const s=JSON.stringify(o,null,1);
+    try{await navigator.clipboard.writeText(s);note('copied '+Object.keys(o.tweaks).length+' tweaked value(s)')}
+    catch(e){note('clipboard blocked — export instead')}
+  });
+  $('pexp').addEventListener('click',()=>{
+    const blob=new Blob([JSON.stringify({machine:B.id,applied:loadJSON(AKEY(B.id),null),presets:presets()},null,1)],{type:'application/json'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='officina_'+B.id+'.json';a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),30000);
+    note('exported presets for '+B.id);
+  });
+  $('pimp').addEventListener('click',()=>$('pfile').click());
+  $('pfile').addEventListener('change',async ev=>{
+    const f=ev.target.files[0]; if(!f)return; ev.target.value='';
+    try{
+      const o=JSON.parse(await f.text());
+      if(o.machine!==B.id){note('that file voices "'+o.machine+'", not '+B.id);return}
+      const all=presets(); let n=0;
+      for(const[name,pr]of Object.entries(o.presets||{})){all[name]=pr;n++}
+      saveJSON(PKEY(B.id),all);
+      if(o.applied&&o.applied.v){B.preset=o.applied.preset||null;applyState(o.applied.v)}
+      refreshPresetUI(); note('imported '+n+' preset(s)');
+    }catch(e){note('import failed — not a bench file')}
+  });
+}
+
+function note(s){const n=$('pnote');if(n)n.textContent=s}
+function refreshPresetUI(){
+  const sel=$('psel'); if(!sel)return;
+  const names=Object.keys(presets()).sort();
+  sel.innerHTML='';
+  const o0=document.createElement('option');o0.value='__factory';o0.textContent='— factory voice —';sel.appendChild(o0);
+  for(const n of names){const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o)}
+  sel.value=B.preset&&names.includes(B.preset)?B.preset:'__factory';
+  $('pname').value=B.preset||'';
+}
+function refreshMods(){
+  document.querySelectorAll('.prm').forEach(el=>el.classList.toggle('mod',isMod(el.dataset.k)));
+  document.querySelectorAll('details.grp').forEach(det=>{
+    const n=[...det.querySelectorAll('.prm')].filter(el=>isMod(el.dataset.k)).length;
+    det.querySelector('.gmods').textContent=n?n+' touched':'';
+  });
+}
+
+/* a single live edit */
+function setVal(k,v){
+  const P=paramOf(k); if(!P)return;
+  v=Math.min(P.max,Math.max(P.min,v)); if(!isFinite(v))return;
+  B.vals[k]=v;
+  if(B.ab){B.ab=false;$('pab').classList.remove('on');post({op:'bulk',values:modOnly()});}
+  else post({op:'set',path:k,value:v});
+  document.querySelectorAll('.prm[data-k="'+k+'"]').forEach(el=>el.classList.toggle('mod',isMod(k)));
+  refreshMods(); writeApplied();
+}
+function paramOf(k){const i=k.indexOf('.');const G=B.schema.groups[k.slice(0,i)];return G&&G.params[k.slice(i+1)]}
+
+/* replace the whole state (preset load / factory / import) */
+function applyState(v){
+  B.vals=Object.assign({},B.defaults,v);
+  B.ab=false; const ab=$('pab'); if(ab)ab.classList.remove('on');
+  post({op:'bulk',values:v});
+  document.querySelectorAll('.prm').forEach(el=>{
+    const k=el.dataset.k,P=paramOf(k);
+    el.querySelector('input[type=range]').value=B.vals[k];
+    el.querySelector('input[type=number]').value=fmt(B.vals[k],P.step);
+  });
+  refreshMods(); writeApplied();
+}
+function doFactory(){
+  B.preset=null; applyState({});
+  localStorage.removeItem(AKEY(B.id));
+  refreshPresetUI(); note('factory voice restored');
+}
+
+/* ------------------------------ machine picker ------------------------ */
+const chips=$('mchips');
+for(const[rn,dir,name]of MACHINES){
+  const b=document.createElement('button'); b.dataset.v=dir; b.setAttribute('role','tab');
+  b.innerHTML='<span class="rn"></span><span></span>';
+  b.querySelector('.rn').textContent=rn; b.children[1].textContent=name;
+  b.addEventListener('click',()=>pick(dir));
+  chips.appendChild(b);
+}
+stage.addEventListener('load',()=>{ if(B.id&&!B.schema) setTimeout(()=>{if(!B.schema)post({op:'hello'})},400); });
+
+/* deep link: #m=<dir> */
+(function(){
+  const m=/[#&]m=([a-z-]+)/.exec(location.hash);
+  if(m&&MACHINES.some(x=>x[1]===m[1]))pick(m[1]);
+})();
+</script>
+</body>
+</html>
