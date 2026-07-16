@@ -106,6 +106,40 @@ keep all three (page, README, this file) in sync when adding a machine.
 
 Newest first.
 
+### RILLE — minimal deep tech mood + smoother chords
+**Branch:** `claude/minimal-deep-tech-guide-ta175d` · **Files:** `rille/index.html`
+(+ mood-count copy in `README.md`, `index.html`) · **Status:** done, verified
+(Node model check + headless Chromium render); no PR opened.
+
+Driven by a minimal-deep-tech production guide. Two moves, both additive:
+
+- **New 7th mood — SOG** (`id:'gurges'`, gloss *hypnotisch*): the warm, rolling,
+  stripped-back deep-tech pocket the existing six lacked (they lean dark/
+  industrial). 123 BPM, Dorian (bright natural 6th), `root:43` → **6A** on the
+  Camelot wheel (was unused; keys are derived from `root`, no separate table).
+  Rolling deep sub (`bass:'roll'`), soft multi-burst clap, offbeat opens, gentle
+  `swing:.07`, moderate `duck:.42`, sparse **open-sus stabs** (`vstyle:'sus9'` —
+  no third, deep-house colour; `progDeg:[0,3]` = i–IV). Appended to `MOODS`, so
+  the affect button, key, arrangement and hash slot (`o.a`=6) all auto-wire and
+  every existing permalink (indices 0–5) is untouched. All moods are minor-family
+  → SOG stays on the A ring, participates in AUTO-SET harmonic mixing normally.
+- **Smoother chord sound design** (`vChord`, all moods): the stabs bit because the
+  detuned saws pushed buzzy upper harmonics through the resonant stab bandpass and
+  an 8 ms attack clicked. Added a gentle **warmth lowpass** (pad 2200 / stab 2900
+  Hz, Q .4) before `stabBP` and softened the stab attack **8 ms → 22 ms** (detune
+  ±6→±5, peak .3→.28). **Timbre only — voicing/`buildChord` untouched**, so the
+  earlier ♭9/register fixes still hold. EISEN's `[0,6,13]` cluster stays
+  deliberately harsh; the warmth filter just rounds it slightly.
+- **Verified:** Node — 7 moods, SOG=6A unique, 1600 SOG pressings compose with 0
+  problems, non-cluster ♭9 count 0. Chromium — SOG selects at 123 BPM, full graph
+  + `vChord` + `scheduleBar` + offline render run with zero pageerrors, valid
+  audio, sus9 voicings correct (G–C–D–A / C–F–G–D). Only console noise is the
+  Google-Fonts fetch the sandbox proxy blocks (cosmetic, pre-existing, all works).
+- **Pick-up:** SOG uses short sus stabs, not a pad; if a pad-underlay version is
+  wanted, flip `stab.pad`. The guide's "warm master saturation" was deliberately
+  *not* added — the ask was less-harsh, so I subtracted highs rather than adding
+  harmonics. `bpm 123`/`swing .07`/`duck .42` are the feel knobs.
+
 ### NENIA — simplified visuals + childlike control labels
 **Branch:** `claude/project-working-conventions-xjaafw` · **File:**
 `nenia/index.html` (canvas revert + control copy) · **Status:** done, verified
