@@ -106,34 +106,33 @@ keep all three (page, README, this file) in sync when adding a machine.
 
 Newest first.
 
-### NENIA — made the visuals whimsical / child-like
+### NENIA — simplified visuals + childlike control labels
 **Branch:** `claude/project-working-conventions-xjaafw` · **File:**
-`nenia/index.html` (canvas + one CSS touch) · **Status:** done, verified
+`nenia/index.html` (canvas revert + control copy) · **Status:** done, verified
 headless; no PR opened. Audio/compose untouched.
 
-Reworked the canvas from ruler-straight stick figures on bare asphalt into a
-chalk-drawn schoolyard.
+Two moves:
 
-- **Hand-drawn figures:** new `wline`/`warc` draw wobbly chalk strokes seeded
-  per figure (deterministic — holds shape frame-to-frame, no shimmer). `kidFig`
-  now takes `(…,id,mood)` and gives each child a **face** (`drawFace`: eyes +
-  grin, a sing-mouth or open-O shout by mood) and **hair by seed** (`drawHair`:
-  pigtails / spiky / topknot / bow / short), plus a skirt-vs-legs variant. So
-  each kid is a distinct little person; the toppled pose gets dizzy x-eyes.
-- **Motion:** active/singing kids **bob** to the clock and raise their arms;
-  the ball-bounce players and arch line bob too; the hopscotch hopper hops.
-- **Backdrop:** `drawDoodles` scrawls a fixed, faint set of chalk doodles — a
-  smiling **sun**, hearts, stars, a flower, a spiral, a cloud (`doodle*`
-  helpers, positions seeded once).
-- **Giggle sparkles:** `drawSparkles` showers little stars for ~1.4s on the
-  giggle mark (needs new `st.gigT` folded in `stateAt`).
-- **Bouncy lettering:** `sayWord` replaces the flat `IT`/`aww`/`whoa`/`caught`/
-  `ohh` labels with per-letter jittered, glowing hand-lettered shouts.
-- **Chrome:** the title's pink dot now gently bobs (`@keyframes dotbob`);
-  disabled under `prefers-reduced-motion` like everything else.
-- Verified headless: screenshots of counting-out / hopscotch / arch render the
-  figures + doodles cleanly; 72-combo compose + offline WAV still clean (audio
-  path unchanged).
+- **Rolled back the "whimsical" canvas layer** (the wobbly hand-drawn figures
+  with faces/hair, the chalk-doodle backdrop, giggle sparkles, bouncy
+  `sayWord` lettering, per-kid bob, and the title-dot bob) — it read as too
+  busy. Restored the clean stick-figure style by resetting `nenia/index.html`
+  to commit `1bf8558` (the "expand" state), which **keeps the new-game
+  animations** (ball arc, hopscotch grid/hopper, arch bridge + filing line).
+  `kidFig` is back to the simple `(x,y,c,scale,glow,fallen)` signature; active
+  kids just glow. If revisiting whimsy, the busy version is commit `b7a3966`.
+- **Reframed every control into child logic** (labels/option text only — all
+  `value`s and `id`s unchanged, so the hash + engine are untouched). You pick a
+  *person* to lead, not a pitch: "Who starts?" → **Marcus / Erica / Priya /
+  Baby Theo** (still map to G/A/B♭/C via the unchanged `keysel` values; Erica =
+  the old "A — the usual" default). Likewise "What are we playing?", "How many
+  of us?", "How much of a tune?" (was Chant range: trichord/tetratonic/
+  pentatonic → "Just the teasing notes / a bit more of a tune / the whole
+  sing-song"), "Where are we?" (was Yard), "How fast?" (was Pace), and "ROWDY —
+  nobody's quite in tune". The literary "on this music" notes keep the real
+  theory terms — the child-framing is only on the interactive choices.
+- Verified headless: parse clean, no console errors, clean-style arch/counting
+  canvases render, option `value`s confirmed intact (engine unchanged).
 
 ### NENIA — expanded the playground-lore machine
 **Branch:** `claude/project-working-conventions-xjaafw` · **File:**

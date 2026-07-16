@@ -42,8 +42,7 @@ h1{
   margin:.15rem 0 .6rem; color:var(--chalk);
   text-shadow:0 0 22px rgba(236,231,218,.18);
 }
-@keyframes dotbob{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-7px) rotate(-8deg)}60%{transform:translateY(0) rotate(6deg)}}
-h1 .dot{color:var(--pink); display:inline-block; transform-origin:50% 100%; animation:dotbob 1.7s ease-in-out infinite}
+h1 .dot{color:var(--pink)}
 .thesis{font-size:1.02rem; margin-bottom:.5rem}
 .thesis b{font-weight:700}
 .sub{color:var(--chalkdim); font-style:italic; font-size:.9rem; margin-bottom:1.2rem}
@@ -144,20 +143,20 @@ footer{
 
   <div class="controls">
     <div class="ctl">
-      <label for="game">Game</label>
+      <label for="game">What are we playing?</label>
       <select id="game">
-        <option value="0">Taunt — nyah-nyah, two sides</option>
-        <option value="1" selected>Counting-out — one of you is It</option>
-        <option value="2">Clapping — faster till it breaks</option>
-        <option value="3">Skip rope — count till you trip</option>
-        <option value="4">Ring — all fall down</option>
-        <option value="5">Ball-bounce — one-two-three-a-leary</option>
-        <option value="6">Hopscotch — hop the stones, count up</option>
-        <option value="7">Arch — file under till it drops</option>
+        <option value="0">Nyah-nyah — two sides tease</option>
+        <option value="1" selected>Who's It? — counting-out</option>
+        <option value="2">Clapping hands — faster!</option>
+        <option value="3">Skipping — how many?</option>
+        <option value="4">Ring-a-ring — all fall down</option>
+        <option value="5">Bouncing a ball — one, two, three…</option>
+        <option value="6">Hopscotch — hop the stones</option>
+        <option value="7">Oranges &amp; lemons — the arch</option>
       </select>
     </div>
     <div class="ctl">
-      <label for="kids">Children</label>
+      <label for="kids">How many of us?</label>
       <select id="kids">
         <option>3</option><option>4</option><option selected>5</option>
         <option>6</option><option>7</option><option>8</option>
@@ -165,36 +164,36 @@ footer{
       </select>
     </div>
     <div class="ctl">
-      <label for="keysel">Chant pitch (sol)</label>
+      <label for="keysel">Who starts?</label>
       <select id="keysel">
-        <option value="0">G — low yard</option>
-        <option value="1" selected>A — the usual</option>
-        <option value="2">B♭ — shrill</option>
-        <option value="3">C — very small children</option>
+        <option value="0">Marcus — the big kid</option>
+        <option value="1" selected>Erica — the usual</option>
+        <option value="2">Priya — sings high</option>
+        <option value="3">Baby Theo — teeny</option>
       </select>
     </div>
     <div class="ctl">
-      <label for="scalesel">Chant range</label>
+      <label for="scalesel">How much of a tune?</label>
       <select id="scalesel">
-        <option value="0" selected>Trichord — sol · mi · la</option>
-        <option value="1">Tetratonic — add re</option>
-        <option value="2">Pentatonic — add re · low do</option>
+        <option value="0" selected>Just the teasing notes</option>
+        <option value="1">A bit more of a tune</option>
+        <option value="2">The whole sing-song</option>
       </select>
     </div>
     <div class="ctl">
-      <label for="yard">Yard</label>
+      <label for="yard">Where are we?</label>
       <select id="yard">
-        <option value="0" selected>Open asphalt — dry, a little slap</option>
-        <option value="1">School corridor — forbidden echo</option>
-        <option value="2">Gymnasium — a big bright bloom</option>
+        <option value="0" selected>Out on the blacktop</option>
+        <option value="1">In the hallway (shhh!)</option>
+        <option value="2">In the big gym</option>
       </select>
     </div>
     <div class="ctl">
-      <label for="tempo">Pace <span class="val" id="tempoVal">104</span></label>
+      <label for="tempo">How fast? <span class="val" id="tempoVal">104</span></label>
       <input type="range" id="tempo" min="80" max="140" value="104" step="1">
     </div>
     <div class="toggles">
-      <label class="tog"><input type="checkbox" id="rowdy" checked><span>ROWDY — worse tuning, worse timing</span></label>
+      <label class="tog"><input type="checkbox" id="rowdy" checked><span>ROWDY — nobody's quite in tune</span></label>
       <label class="tog"><input type="checkbox" id="giggles" checked><span>GIGGLES</span></label>
     </div>
   </div>
@@ -831,134 +830,28 @@ let lastFrame=0;
 const CHALKS=['#ece7da','#e5a4b8','#e3d08b','#a4c6e2','#a9d4a4','#e0b394','#c9aede','#ecdca8'];
 function chalkLine(x1,y1,x2,y2,c,w){cx.strokeStyle=c;cx.lineWidth=w||3;cx.lineCap='round';
   cx.globalAlpha=0.85;cx.beginPath();cx.moveTo(x1,y1);cx.lineTo(x2,y2);cx.stroke();cx.globalAlpha=1}
-
-/* wobbly hand-drawn chalk. deterministic per seed, so a figure keeps its shape
-   frame to frame (no shimmer) yet reads as drawn-by-a-kid, not ruled. */
-function wline(x1,y1,x2,y2,c,w,seed){
-  const rng=mulberry32((seed>>>0)||1), segs=3, dx=(x2-x1)/segs, dy=(y2-y1)/segs;
-  cx.strokeStyle=c;cx.lineWidth=w;cx.lineCap='round';cx.lineJoin='round';cx.globalAlpha=0.9;
-  cx.beginPath();cx.moveTo(x1,y1);
-  for(let i=1;i<segs;i++)cx.lineTo(x1+dx*i+(rng()*2-1)*2.3,y1+dy*i+(rng()*2-1)*2.3);
-  cx.lineTo(x2,y2);cx.stroke();cx.globalAlpha=1;
-}
-function warc(x,y,r,c,w,seed){ // a lumpy, hand-drawn circle (head)
-  const rng=mulberry32(((seed^0x9e37)>>>0)||1), N=14;
-  cx.strokeStyle=c;cx.lineWidth=w;cx.lineCap='round';cx.lineJoin='round';cx.globalAlpha=0.92;
-  cx.beginPath();
-  for(let i=0;i<=N;i++){const a=i/N*Math.PI*2,rr=r+(rng()*2-1)*1.3,px=x+Math.cos(a)*rr,py=y+Math.sin(a)*rr;
-    i?cx.lineTo(px,py):cx.moveTo(px,py);}
-  cx.stroke();cx.globalAlpha=1;
-}
-function drawFace(x,hy,s,c,mood){
-  cx.fillStyle=c;cx.globalAlpha=.95;const ex=4*s;
-  cx.beginPath();cx.arc(x-ex,hy-1.5*s,1.7*s,0,7);cx.arc(x+ex,hy-1.5*s,1.7*s,0,7);cx.fill(); // eyes
-  cx.strokeStyle=c;cx.lineWidth=1.8*s;cx.lineCap='round';cx.beginPath();
-  if(mood==='shout')cx.arc(x,hy+4*s,3.3*s,0,7);                                  // wide open O
-  else if(mood==='sing')cx.arc(x,hy+3*s,3.1*s,0.12*Math.PI,0.88*Math.PI);        // little sing-mouth
-  else cx.arc(x,hy+2*s,4.6*s,0.12*Math.PI,0.88*Math.PI);                          // big grin
-  cx.stroke();cx.globalAlpha=1;
-}
-function drawHair(x,hy,s,c,seed){
-  const style=(seed>>>0)%5,r=11*s;
-  cx.strokeStyle=c;cx.fillStyle=c;cx.lineWidth=2.4*s;cx.lineCap='round';cx.globalAlpha=.9;
-  if(style===0){ // pigtails
-    cx.beginPath();cx.arc(x-r,hy-2*s,3.4*s,0,7);cx.arc(x+r,hy-2*s,3.4*s,0,7);cx.fill();
-    cx.beginPath();cx.moveTo(x-r,hy-4*s);cx.lineTo(x-r-3*s,hy+7*s);cx.moveTo(x+r,hy-4*s);cx.lineTo(x+r+3*s,hy+7*s);cx.stroke();
-  }else if(style===1){ // spiky
-    for(let k=-2;k<=2;k++){cx.beginPath();cx.moveTo(x+k*4*s,hy-r*0.85);cx.lineTo(x+k*4*s,hy-r-5*s);cx.stroke();}
-  }else if(style===2){ // topknot
-    cx.beginPath();cx.arc(x,hy-r-3*s,4*s,0,7);cx.fill();
-  }else if(style===3){ // bow
-    cx.beginPath();cx.moveTo(x-r*0.5,hy-r+s);cx.lineTo(x-r*0.5-5*s,hy-r-3*s);cx.lineTo(x-r*0.5-5*s,hy-r+5*s);cx.closePath();
-    cx.moveTo(x-r*0.5,hy-r+s);cx.lineTo(x-r*0.5+5*s,hy-r-3*s);cx.lineTo(x-r*0.5+5*s,hy-r+5*s);cx.closePath();cx.fill();
-  } // style 4 — short hair, nothing extra
-  cx.globalAlpha=1;
-}
-function kidFig(x,y,c,scale,glow,fallen,id,mood){
-  const s=scale||1,sd=(((id||0)+1)*2654435761)>>>0,w=4*s;
-  if(glow){cx.shadowColor=c;cx.shadowBlur=20}else cx.shadowBlur=0;
-  if(fallen){ // toppled over, dizzy
-    warc(x-24*s,y,11*s,c,w,sd);
-    wline(x-13*s,y+2*s,x+22*s,y+2*s,c,w,sd+7);
-    wline(x+4*s,y+2*s,x+6*s,y-13*s,c,w*0.85,sd+8);
-    wline(x+14*s,y+2*s,x+18*s,y+15*s,c,w*0.85,sd+9);
-    cx.strokeStyle=c;cx.lineWidth=1.5*s;cx.globalAlpha=.9; // x-eyes
-    for(const dx of [-3.5,3.5]){const ex=x-24*s+dx*s;
-      cx.beginPath();cx.moveTo(ex-2*s,y-2*s);cx.lineTo(ex+2*s,y+2*s);cx.moveTo(ex+2*s,y-2*s);cx.lineTo(ex-2*s,y+2*s);cx.stroke();}
-    cx.globalAlpha=1;cx.shadowBlur=0;return;
+function kidFig(x,y,c,scale,glow,fallen){
+  const s=scale||1;
+  if(glow){cx.shadowColor=c;cx.shadowBlur=22}else cx.shadowBlur=0;
+  cx.strokeStyle=c;cx.lineWidth=4*s;cx.lineCap='round';cx.globalAlpha=fallen?0.4:0.92;
+  if(fallen){ // horizontal
+    cx.beginPath();cx.arc(x-26*s,y,10*s,0,7);cx.stroke();
+    chalkLine(x-14*s,y,x+22*s,y,c,4*s);
+  }else{
+    cx.beginPath();cx.arc(x,y-30*s,11*s,0,7);cx.stroke();
+    chalkLine(x,y-18*s,x,y+10*s,c,4*s);
+    chalkLine(x,y-8*s,x-13*s,y+2*s,c,3.5*s);
+    chalkLine(x,y-8*s,x+13*s,y+2*s,c,3.5*s);
+    chalkLine(x,y+10*s,x-10*s,y+26*s,c,3.5*s);
+    chalkLine(x,y+10*s,x+10*s,y+26*s,c,3.5*s);
   }
-  const hy=y-30*s, skirt=(sd%3===0), armY=(mood==='sing'||mood==='shout')?y-10*s:y+2*s;
-  wline(x,y-18*s,x,y+10*s,c,w,sd+2);                       // spine
-  wline(x,y-8*s,x-13*s,armY,c,w*0.9,sd+3);                 // arms (up when singing)
-  wline(x,y-8*s,x+13*s,armY,c,w*0.9,sd+4);
-  if(skirt){wline(x,y+8*s,x-12*s,y+26*s,c,w*0.9,sd+5);wline(x,y+8*s,x+12*s,y+26*s,c,w*0.9,sd+6);
-    wline(x-12*s,y+26*s,x+12*s,y+26*s,c,w*0.8,sd+10);}     // triangle-dress hem
-  else{wline(x,y+10*s,x-10*s,y+26*s,c,w*0.9,sd+5);wline(x,y+10*s,x+10*s,y+26*s,c,w*0.9,sd+6);}
-  warc(x,hy,11*s,c,w,sd);
-  drawFace(x,hy,s,c,mood);
-  drawHair(x,hy,s,c,sd);
-  cx.shadowBlur=0;
-}
-
-/* chalk doodles scrawled on the asphalt — faint, static, hand-drawn */
-function doodleHeart(x,y,s,c){cx.strokeStyle=c;cx.lineWidth=2.2;cx.lineJoin='round';cx.beginPath();
-  cx.moveTo(x,y+s);cx.bezierCurveTo(x-s*1.3,y-s*0.5,x-s*0.4,y-s*1.1,x,y-s*0.3);
-  cx.bezierCurveTo(x+s*0.4,y-s*1.1,x+s*1.3,y-s*0.5,x,y+s);cx.stroke();}
-function doodleStar(x,y,s,c){cx.strokeStyle=c;cx.lineWidth=2.2;cx.lineJoin='round';cx.beginPath();
-  for(let i=0;i<5;i++){const a=-Math.PI/2+i*4*Math.PI/5,px=x+Math.cos(a)*s,py=y+Math.sin(a)*s;i?cx.lineTo(px,py):cx.moveTo(px,py);}
-  cx.closePath();cx.stroke();}
-function doodleFlower(x,y,s,c){cx.strokeStyle=c;cx.fillStyle=c;cx.lineWidth=2;
-  for(let i=0;i<6;i++){const a=i*Math.PI/3;cx.beginPath();cx.ellipse(x+Math.cos(a)*s*0.9,y+Math.sin(a)*s*0.9,s*0.5,s*0.28,a,0,7);cx.stroke();}
-  cx.globalAlpha=.5;cx.beginPath();cx.arc(x,y,s*0.35,0,7);cx.fill();cx.globalAlpha=1;}
-function doodleSpiral(x,y,s,c){cx.strokeStyle=c;cx.lineWidth=2;cx.beginPath();
-  for(let i=0;i<40;i++){const t=i/6,rr=t*s*0.12,px=x+Math.cos(t)*rr,py=y+Math.sin(t)*rr;i?cx.lineTo(px,py):cx.moveTo(px,py);}cx.stroke();}
-function doodleCloud(x,y,s,c){cx.strokeStyle=c;cx.lineWidth=2.2;cx.beginPath();
-  cx.arc(x-s*0.6,y,s*0.5,Math.PI*0.5,Math.PI*1.5);cx.arc(x,y-s*0.35,s*0.6,Math.PI,0);
-  cx.arc(x+s*0.7,y,s*0.45,Math.PI*1.5,Math.PI*0.5);cx.stroke();}
-function doodleSun(x,y,s,c){cx.strokeStyle=c;cx.fillStyle=c;cx.lineWidth=2.4;cx.lineCap='round';
-  cx.beginPath();cx.arc(x,y,s*0.5,0,7);cx.stroke();
-  for(let i=0;i<8;i++){const a=i*Math.PI/4;cx.beginPath();cx.moveTo(x+Math.cos(a)*s*0.68,y+Math.sin(a)*s*0.68);cx.lineTo(x+Math.cos(a)*s,y+Math.sin(a)*s);cx.stroke();}
-  cx.lineWidth=1.6;cx.beginPath();cx.arc(x,y-s*0.02,s*0.22,0.15*Math.PI,0.85*Math.PI);cx.stroke(); // tiny smile
-  cx.beginPath();cx.arc(x-s*0.16,y-s*0.12,1.3,0,7);cx.arc(x+s*0.16,y-s*0.12,1.3,0,7);cx.fill();}
-const DOODLES=[];
-(function buildDoodles(){
-  const kinds=['sun','heart','star','flower','spiral','cloud','heart','star','flower'];
-  const rng=mulberry32(0xD00D1E);
-  for(let i=0;i<9;i++)DOODLES.push({k:kinds[i],x:0.06+rng()*0.88,y:0.1+rng()*0.8,
-    s:16+rng()*14,c:CHALKS[(i*3+2)%CHALKS.length]});
-  DOODLES[0].x=0.9;DOODLES[0].y=0.16;DOODLES[0].s=30; // sun pinned to a corner
-})();
-function drawDoodles(){
-  cx.globalAlpha=0.14;
-  for(const d of DOODLES){const x=d.x*W,y=d.y*H;
-    if(d.k==='sun')doodleSun(x,y,d.s,d.c);else if(d.k==='heart')doodleHeart(x,y,d.s,d.c);
-    else if(d.k==='star')doodleStar(x,y,d.s,d.c);else if(d.k==='flower')doodleFlower(x,y,d.s,d.c);
-    else if(d.k==='spiral')doodleSpiral(x,y,d.s,d.c);else if(d.k==='cloud')doodleCloud(x,y,d.s,d.c);}
-  cx.globalAlpha=1;
-}
-function sparkle(x,y,s,c){cx.strokeStyle=c;cx.lineWidth=2;cx.lineCap='round';cx.globalAlpha=.9;
-  cx.beginPath();cx.moveTo(x-s,y);cx.lineTo(x+s,y);cx.moveTo(x,y-s);cx.lineTo(x,y+s);
-  cx.moveTo(x-s*0.6,y-s*0.6);cx.lineTo(x+s*0.6,y+s*0.6);cx.moveTo(x+s*0.6,y-s*0.6);cx.lineTo(x-s*0.6,y+s*0.6);
-  cx.stroke();cx.globalAlpha=1;}
-function drawSparkles(tt,gigT){ // a shower of little stars on the giggle
-  if(gigT<0||tt<gigT||tt-gigT>1.4)return;
-  const k=1-(tt-gigT)/1.4, rng=mulberry32(0x5A11+((gigT*100)|0));
-  for(let i=0;i<12;i++){const x=(0.1+rng()*0.8)*W,y=(0.12+rng()*0.72)*H,ph=Math.abs(Math.sin(tt*8+i))*k;
-    sparkle(x,y,4+ph*7,CHALKS[i%CHALKS.length]);}
-}
-function sayWord(x,y,text,c,size,seed){ // bouncy hand-lettered shout
-  const rng=mulberry32((seed>>>0)||7);cx.save();
-  cx.font='700 '+size+'px Georgia';cx.fillStyle=c;cx.textAlign='center';cx.shadowColor=c;cx.shadowBlur=10;
-  let px=x-(text.length-1)*size*0.28;
-  for(const ch of text){const dy=(rng()*2-1)*size*0.13,rot=(rng()*2-1)*0.2;
-    cx.save();cx.translate(px,y+dy);cx.rotate(rot);cx.fillText(ch,0,0);cx.restore();px+=size*0.56;}
-  cx.restore();
+  cx.shadowBlur=0;cx.globalAlpha=1;
 }
 function stateAt(tt){ // fold marks into a visual state
   const st={spot:null,alive:[...Array(P.kids).keys()],out:{},point:-1,it:-1,rope:0,
     clap:-1,fumble:false,fall:false,verse:0,trip:false,
     bounce:-1,over:false,miss:false,hopSq:0,hopDbl:false,wobble:false,
-    arch:false,fileKid:-1,caught:-1,gigT:-9};
+    arch:false,fileKid:-1,caught:-1};
   if(!plan)return st;
   for(const m of plan.marks){
     if(m.t>tt)break;
@@ -980,7 +873,6 @@ function stateAt(tt){ // fold marks into a visual state
     if(m.ev==='arch')st.arch=true;
     if(m.ev==='file')st.fileKid=m.kid;
     if(m.ev==='capture')st.caught=m.kid;
-    if(m.ev==='gig')st.gigT=m.t;
   }
   return st;
 }
@@ -994,7 +886,6 @@ function draw(now){
   cx.globalAlpha=0.05;cx.fillStyle='#ece7da';
   for(let i=0;i<90;i++){const r=mulberry32(i*7+3)();cx.fillRect((r*W)|0,((mulberry32(i*13+1)())*H)|0,2,2)}
   cx.globalAlpha=1;
-  drawDoodles(); // chalk sun, hearts, stars scrawled behind the yard
   const cxx=W/2,cyy=H/2+20,R=Math.min(W,H)*0.33;
   cx.font='italic 26px Georgia';cx.fillStyle='rgba(236,231,218,.25)';
   cx.fillText(GAMES[P.game].toLowerCase(),28,44);
@@ -1005,11 +896,10 @@ function draw(now){
     const px=[W*0.36,W*0.64];
     for(let i=0;i<Math.min(2,P.kids);i++){
       const lift=(i===0&&st.over&&playing);
-      const bob=playing?Math.abs(Math.sin(tt*7+i*2))*4:0;
-      kidFig(px[i],gy-30-bob,CHALKS[i%CHALKS.length],1,lift,false,i,playing?'sing':'idle');
+      kidFig(px[i],gy-30,CHALKS[i%CHALKS.length],1,lift,false);
       if(lift){ // the leg swings over the ball
         cx.strokeStyle=CHALKS[i%CHALKS.length];cx.lineWidth=4;cx.globalAlpha=.9;cx.lineCap='round';
-        cx.beginPath();cx.moveTo(px[i],gy-20-bob);cx.lineTo(px[i]+34,gy-30-bob);cx.stroke();cx.globalAlpha=1;
+        cx.beginPath();cx.moveTo(px[i],gy-20);cx.lineTo(px[i]+34,gy-30);cx.stroke();cx.globalAlpha=1;
       }
     }
     if(tt>=0){
@@ -1018,9 +908,8 @@ function draw(now){
       const bx=px[0]+(st.over?46:76), by=gy-10-arc*H*0.36;
       cx.fillStyle=st.over?'#e3d08b':'#e5a4b8';cx.globalAlpha=.92;
       cx.beginPath();cx.arc(bx,by,13,0,7);cx.fill();cx.globalAlpha=1;
-      if(st.miss)sayWord(px[0]+120,gy-70,'ohh!',CHALKS[1],34,0xB0);
+      if(st.miss){cx.font='italic 32px Georgia';cx.fillStyle='rgba(229,164,184,.85)';cx.fillText('…ohh',px[0]+96,gy-64)}
     }
-    drawSparkles(tt,st.gigT);
     return;
   }
   if(P.game===6){ // HOPSCOTCH — a chalk grid up the middle, a hopper climbing it
@@ -1035,22 +924,19 @@ function draw(now){
       cx.font='16px Georgia';cx.fillStyle=on?'#e3d08b':'rgba(236,231,218,.34)';
       cx.fillText(L.sq,L.x-6,L.y-sqh/2+6);
     }
-    // the tossed marker stone rests on the first square
-    cx.fillStyle=CHALKS[1];cx.globalAlpha=.55;cx.beginPath();cx.arc(lay[0].x-sqw*0.28,lay[0].y-sqh*0.5,5,0,7);cx.fill();cx.globalAlpha=1;
     if(tt>=0&&st.hopSq>0){
-      const L=lay[st.hopSq-1], wob=st.wobble, hop=playing&&!wob?Math.abs(Math.sin(tt*9))*6:0;
-      if(wob){cx.save();cx.translate(L.x,L.y-sqh/2-6);cx.rotate(0.3);
-        kidFig(0,0,CHALKS[2],0.72,true,false,2,'shout');cx.restore();
-        sayWord(L.x+56,L.y-8,'whoa!',CHALKS[1],28,0x77);
-      }else kidFig(L.x,L.y-sqh/2-6-hop,CHALKS[2],0.72,playing,false,2,playing?'sing':'idle');
+      const L=lay[st.hopSq-1], wob=st.wobble;
+      if(wob){cx.save();cx.translate(L.x,L.y-sqh/2-6);cx.rotate(0.28);
+        kidFig(0,0,CHALKS[2],0.7,false,false);cx.restore();
+        cx.font='italic 30px Georgia';cx.fillStyle='rgba(229,164,184,.85)';cx.fillText('whoa',L.x+44,L.y);
+      }else kidFig(L.x,L.y-sqh/2-6,CHALKS[2],0.7,playing,false);
     }
-    drawSparkles(tt,st.gigT);
     return;
   }
   if(P.game===7){ // ARCH — two kids make a bridge, the line files through, it drops
     const ay=H*0.60, ax1=W*0.30, ax2=W*0.70, top=H*0.22, dropped=st.caught>=0;
-    kidFig(ax1,ay,CHALKS[0],1,false,false,0,playing?'sing':'idle');
-    kidFig(ax2,ay,CHALKS[1],1,false,false,1,playing?'sing':'idle');
+    kidFig(ax1,ay,CHALKS[0],1,false,false);
+    kidFig(ax2,ay,CHALKS[1],1,false,false);
     cx.strokeStyle='rgba(236,231,218,.6)';cx.lineWidth=4;cx.lineCap='round';cx.beginPath();
     if(dropped){cx.moveTo(ax1,ay-40);cx.lineTo(ax1+54,ay-4);cx.moveTo(ax2,ay-40);cx.lineTo(ax2-54,ay-4);}
     else cx.moveTo(ax1,ay-40),cx.quadraticCurveTo(cxx,top,ax2,ay-40);
@@ -1061,13 +947,12 @@ function draw(now){
       const kid=line[j];
       let x=ax2+70-((j+(playing?(tt*0.6)%line.length:0)))*seg;
       while(x<ax1-70)x+=seg*line.length;
-      const caught=st.caught===kid, bob=playing&&!caught?Math.abs(Math.sin(tt*7+kid))*3:0, yy=ay+4-bob;
-      kidFig(x,yy,CHALKS[kid%CHALKS.length],0.72,playing&&st.fileKid===kid,false,kid,caught?'shout':(st.fileKid===kid?'sing':'idle'));
+      const yy=ay+4, caught=st.caught===kid;
+      kidFig(x,yy,CHALKS[kid%CHALKS.length],0.72,playing&&st.fileKid===kid,false);
       if(caught){cx.strokeStyle='rgba(227,208,139,.9)';cx.lineWidth=3;
         cx.beginPath();cx.arc(x,yy-20,28,0,7);cx.stroke();
-        sayWord(x,yy+50,'caught!',CHALKS[2],24,0xC0|kid);}
+        cx.font='bold 22px Georgia';cx.fillStyle='#e3d08b';cx.fillText('caught!',x-34,yy+44);}
     }
-    drawSparkles(tt,st.gigT);
     return;
   }
 
@@ -1094,20 +979,17 @@ function draw(now){
     const c=CHALKS[i%CHALKS.length];
     const active = tt>=0 && ((st.point===i)||(st.spot&&st.spot.includes(i))||(st.spot===null&&P.game===0&&tt>0)||st.it===i);
     const fallen = st.out[i]|| (st.fall&&P.game===4) || (st.trip&&P.game===3&&i===0);
-    const bob = (active&&playing&&!fallen)?Math.abs(Math.sin(tt*7+i*1.7))*5:0;
-    const mood = st.it===i?'shout':(active?'sing':'idle');
-    kidFig(x,y-bob,c, st.it===i?1.25:1, active&&playing, fallen, i, mood);
+    kidFig(x,y,c, st.it===i?1.25:1, active&&playing, fallen);
     if(st.out[i]){cx.strokeStyle='rgba(229,164,184,.8)';cx.lineWidth=4;
       cx.beginPath();cx.moveTo(x-24,y-22);cx.lineTo(x+24,y+22);
       cx.moveTo(x+24,y-22);cx.lineTo(x-24,y+22);cx.stroke();}
-    if(st.it===i)sayWord(x,y-64-bob,'IT!',CHALKS[2],30,0x17|i);
+    if(st.it===i){cx.font='bold 30px Georgia';cx.fillStyle='#e3d08b';cx.fillText('IT',x-14,y-58)}
   }
-  if(st.fumble)sayWord(cxx,86,'aww…',CHALKS[1],34,0xAF);
+  if(st.fumble){cx.font='italic 34px Georgia';cx.fillStyle='rgba(229,164,184,.85)';cx.fillText('…aww',cxx-46,90)}
   // hopscotch flourish, bottom right, static chalk
   cx.strokeStyle='rgba(236,231,218,.12)';cx.lineWidth=2;
   for(let i=0;i<3;i++)cx.strokeRect(W-150,H-70-i*44,54,40);
   cx.strokeRect(W-178,H-158,54,40);cx.strokeRect(W-122,H-158,54,40);
-  drawSparkles(tt,st.gigT);
 }
 requestAnimationFrame(draw);
 
