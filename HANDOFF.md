@@ -106,6 +106,38 @@ keep all three (page, README, this file) in sync when adding a machine.
 
 Newest first.
 
+### RILLE — arpeggios instead of chord stabs
+**Branch:** `claude/minimal-deep-tech-guide-ta175d` · **File:** `rille/index.html`
+· **Status:** done, verified (Node + Chromium); pushed. Maintainer's suggestion.
+
+Hover chords are no longer stabbed — they're **broken open into arpeggios**: the
+chord never sounds all at once, it's always reaching (and rolling arps are the
+minimal/deep-tech texture anyway). Cadences deliberately stay sustained swells —
+the **only** place a chord sounds whole, which is now part of the release.
+
+- **`g.arpSeq`** (genAll, replaces `chordHits`): seeded 32-step/2-bar walk of
+  chord-tone *indices* `{s,idx,oct,vel}`; notes resolve at schedule time against
+  the narrative bar (`H.notes[idx%len]+oct`). Per-mood `arp:{rate:8|16, dens,
+  dir:'up'|'dn'|'ud'|'rnd'}`: TRÄNEN rises in slow 8ths, FINSTERNIS/LEERE fall
+  sparse, SOG rolls up in 16ths, SCHATTEN/DÄMMERUNG rock, EISEN's cluster becomes
+  a dense random industrial sequence. Occasional +12 lift on the top tone ("the
+  reach"); offbeat-8th accents; some downbeats skipped (space). Swing applies.
+- **`vArpN`**: soft pluck, 2 detuned saws → warmth lowpass → `stabBP` → chordae
+  part → **duck bus** (arp pumps with the kick). Notes overlap slightly
+  (`stepDur*2.4`) for legato shimmer.
+- **Passing majors** ('maj' bars): a quick 3-note ascending **glint** via vArpN —
+  still one bar, still gone. Pre-dominant bars arpeggiate (tension rolls) before
+  the V7sus swell. Pad moods (TRÄNEN/LEERE) keep a quiet swell UNDER the line.
+- Canvas chordae ring now shows the arp step mask. `chordHits` fully removed.
+  (Cantus rng draws shifted vs. the previous commit — pressings re-voice; harm
+  timeline itself unchanged for a given seed.)
+- **Verified:** Node — arpSeq deterministic, indices/octaves/velocities in range,
+  8th-rate moods never emit 16th-offset steps, never empty; full narrative sweep
+  still PASS (3360 pressings). Chromium — all 7 moods render arp+glint+cadence
+  windows with zero pageerrors (densities: LEERE/FINSTERNIS 6 events/2 bars …
+  EISEN 21). **Pick-up:** arp note length (`stepDur*2.4`), pluck level (.24) and
+  the maj-glint shape live in `scheduleBar`/`vArpN`; direction/density per mood.
+
 ### RILLE — harmonic NARRATIVE engine (supersedes the progression rework below)
 **Branch:** `claude/minimal-deep-tech-guide-ta175d` · **Files:** `rille/index.html`
 (+ engine copy in `README.md`, `index.html`) · **Status:** done, verified (Node

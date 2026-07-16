@@ -222,7 +222,7 @@ button,canvas,.centerlabel{-webkit-user-select:none;user-select:none}
         <h4>Affect and law</h4>
         <p>Seven <em>Affekte</em> — moods — set the key, tempo, palette, spread and density; a harmonic-narrative engine writes a long arc of longing and rare release (see below) while the arrangement writes itself. Six lean dark or industrial; the seventh, <em>SOG</em>, is the warm, rolling, stripped-back pocket of <em>minimal deep tech</em> — slower, sparser, more space between the hits. A “dubplate”, or white label, is the one-off acetate a DJ cuts to road-test a track before anyone else can get a copy.</p>
         <h4>Longing and release</h4>
-        <p>The harmony is written to ache, and it is not a loop — it is a sixty-four-bar story. Most of that story <em>hovers</em>: deep minor-ninth chords drifting among <em>i</em>, <em>iv</em> and the mood's darker neighbours, held for bars at a time, going nowhere on purpose. Major chords are rationed by law — when a <em>♭VI</em>, <em>♭VII</em> or Neapolitan <em>♭II</em> passes through, it gets one bar and one brief stab, a glint of light that is gone before it can turn bright. Resolution is rarer still: only where a phrase has charged up does the cadence come — the mode's own <em>v</em> is minor and cannot pull home, so its third is raised to a leading tone, and a <em>V7sus</em> swells, hangs, resolves its suspension into <em>V7</em>, and finally releases into <em>i</em> as the bass walks down and home and the melody falls silent. Some moods never grant it: they end their phrases hanging on the dominant — a <em>half-cadence</em>, longing left open.</p>
+        <p>The harmony is written to ache, and it is not a loop — it is a sixty-four-bar story. Most of that story <em>hovers</em>: deep minor-ninth chords drifting among <em>i</em>, <em>iv</em> and the mood's darker neighbours, held for bars at a time, going nowhere on purpose — and never sounded whole. Each chord is <em>broken open</em> into an arpeggio, one soft tone at a time, always reaching for a shape it never states at once; each mood rolls its own way (rising, falling, rocking). Major chords are rationed by law — when a <em>♭VI</em>, <em>♭VII</em> or Neapolitan <em>♭II</em> passes through, it gets one bar and one quick upward glint, gone before it can turn bright. Resolution is rarer still: only where a phrase has charged up does the cadence come — the mode's own <em>v</em> is minor and cannot pull home, so its third is raised to a leading tone, and — for the only time in the piece — the chord sounds <em>whole</em>: a <em>V7sus</em> swells, hangs, resolves its suspension into <em>V7</em>, and finally releases into <em>i</em> as the bass walks down and home and the melody falls silent. Some moods never grant it: they end their phrases hanging on the dominant — a <em>half-cadence</em>, longing left open.</p>
         <h4>Mixing in key</h4>
         <p>Turn on <em>AUTO-SET</em> and RILLE stops being one track and becomes a set: it beatmatches and blends into a fresh generated track every so often, the way a DJ threads a night together. It chooses the next key by the <em>Camelot wheel</em>, the harmonic-mixing system where adjacent numbers are a perfect fifth apart — so the move is a fifth up or down, the same key, or now and then a semitone/whole-tone <em>energy</em> lift. Each blend is a long, phrase-aligned crossfade with a <em>bass swap</em>: the incoming record's tops come up first while its low end is held back, then kick and bass are handed over cleanly at the bar so two basslines never fight. <em>JETZT →</em> triggers the next blend by hand. Every transition stays in key.</p>
         <h4>The name</h4>
@@ -376,21 +376,21 @@ const PARTLABEL={fundus:'KICK',bassus:'BASS',crepitus:'HATS',manus:'CLAP',chorda
 const MOODS=[
  {id:'tenebrae',gloss:'dunkel',name:'FINSTERNIS',hue:'#2c3438',ink:'#22303a',
   bpm:130,root:41,mode:[0,1,3,5,7,8,10],modeName:'phrygisch',
-  harm:{pool:[[0,3],[1,1],[3,1.5]],cad:32,half:true},vstyle:'shell9',follow:false,stab:{bp:520,q:1.6,dec:.5,pad:false},
+  harm:{pool:[[0,3],[1,1],[3,1.5]],cad:32,half:true},arp:{rate:8,dens:.5,dir:'dn'},vstyle:'shell9',follow:false,stab:{bp:520,q:1.6,dec:.5,pad:false},
   hat16:.18,openPat:'ten',bass:'offbeat',clap:'rim',
   kick:{drive:2.6,dec:.32,pitch:120},swing:.02,dust:.5,
   verb:{sec:1.6,mix:.16},dly:{fb:.42,mix:.2},cantus:false,duck:.5,
   order:['bassus','crepitus','chordae','manus']},
  {id:'umbra',gloss:'düster',name:'SCHATTEN',hue:'#26424a',ink:'#1e3d46',
   bpm:126,root:44,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
-  harm:{pool:[[0,3],[3,1.5],[5,1],[6,1]],cad:64},vstyle:'shell9',follow:false,stab:{bp:760,q:1.3,dec:.7,pad:false},
+  harm:{pool:[[0,3],[3,1.5],[5,1],[6,1]],cad:64},arp:{rate:16,dens:.45,dir:'ud'},vstyle:'shell9',follow:false,stab:{bp:760,q:1.3,dec:.7,pad:false},
   hat16:.3,openPat:'one',bass:'offbeat',clap:'clap',
   kick:{drive:1.9,dec:.36,pitch:110},swing:.05,dust:.65,
   verb:{sec:2.6,mix:.24},dly:{fb:.55,mix:.32},cantus:false,duck:.45,
   order:['bassus','chordae','crepitus','manus']},
  {id:'lacrimae',gloss:'ergreifend',name:'TRÄNEN',hue:'#4a2c3c',ink:'#4a2338',
   bpm:123,root:45,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
-  harm:{pool:[[0,3],[3,1.5],[5,1]],cad:32},vstyle:'stack9',follow:true,
+  harm:{pool:[[0,3],[3,1.5],[5,1]],cad:32},arp:{rate:8,dens:.6,dir:'up'},vstyle:'stack9',follow:true,
   stab:{bp:900,q:.9,dec:1.6,pad:true},
   hat16:.22,openPat:'two',bass:'roll',clap:'clap',
   kick:{drive:1.6,dec:.4,pitch:105},swing:.06,dust:.4,
@@ -398,21 +398,21 @@ const MOODS=[
   order:['chordae','bassus','crepitus','manus','cantus']},
  {id:'ferrum',gloss:'industriell',name:'EISEN',hue:'#4a2a22',ink:'#57281c',
   bpm:136,root:40,mode:[0,1,3,5,7,8,10],modeName:'phrygisch',
-  harm:{pool:[[0,1]],cad:0},vstyle:'cluster',follow:false,stab:{bp:1400,q:2.2,dec:.22,pad:false},
+  harm:{pool:[[0,1]],cad:0},arp:{rate:16,dens:.8,dir:'rnd'},vstyle:'cluster',follow:false,stab:{bp:1400,q:2.2,dec:.22,pad:false},
   hat16:.85,openPat:'ten',bass:'roll',clap:'clapnoise',
   kick:{drive:4.2,dec:.3,pitch:150},swing:0,dust:.3,
   verb:{sec:1.1,mix:.12},dly:{fb:.3,mix:.12},cantus:false,duck:.55,
   order:['crepitus','bassus','manus','chordae']},
  {id:'aurora',gloss:'warm',name:'DÄMMERUNG',hue:'#4a3c22',ink:'#4d3a17',
   bpm:125,root:38,mode:[0,2,3,5,7,9,10],modeName:'dorisch',
-  harm:{pool:[[0,3],[3,1],[6,1]],cad:32},vstyle:'sus9',follow:true,stab:{bp:1050,q:.8,dec:1.0,pad:false},
+  harm:{pool:[[0,3],[3,1],[6,1]],cad:32},arp:{rate:16,dens:.5,dir:'ud'},vstyle:'sus9',follow:true,stab:{bp:1050,q:.8,dec:1.0,pad:false},
   hat16:.4,openPat:'all',bass:'offbeat',clap:'clap',
   kick:{drive:1.5,dec:.38,pitch:100},swing:.08,dust:.55,
   verb:{sec:2.2,mix:.2},dly:{fb:.45,mix:.22},cantus:false,duck:.4,
   order:['crepitus','bassus','chordae','manus']},
  {id:'vacuum',gloss:'tief',name:'LEERE',hue:'#222c42',ink:'#1e2a48',
   bpm:120,root:36,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
-  harm:{pool:[[0,4],[3,1]],cad:0},vstyle:'stack9',follow:false,stab:{bp:600,q:.7,dec:2.4,pad:true},
+  harm:{pool:[[0,4],[3,1]],cad:0},arp:{rate:8,dens:.3,dir:'dn'},vstyle:'stack9',follow:false,stab:{bp:600,q:.7,dec:2.4,pad:true},
   hat16:.08,openPat:'none',bass:'drone',clap:'rim',
   kick:{drive:1.2,dec:.5,pitch:90},swing:.03,dust:.8,
   verb:{sec:4.5,mix:.38},dly:{fb:.6,mix:.3},cantus:false,duck:.35,
@@ -423,7 +423,7 @@ const MOODS=[
  // gentle swing than the techno moods; a moderate sidechain roll. 6A on the wheel.
  {id:'gurges',gloss:'hypnotisch',name:'SOG',hue:'#33344a',ink:'#2b2a44',
   bpm:123,root:43,mode:[0,2,3,5,7,9,10],modeName:'dorisch',
-  harm:{pool:[[0,3],[3,1.5],[6,1]],cad:32},vstyle:'sus9',follow:false,stab:{bp:680,q:.7,dec:.8,pad:false},
+  harm:{pool:[[0,3],[3,1.5],[6,1]],cad:32},arp:{rate:16,dens:.55,dir:'up'},vstyle:'sus9',follow:false,stab:{bp:680,q:.7,dec:.8,pad:false},
   hat16:.28,openPat:'two',bass:'roll',clap:'clap',
   kick:{drive:1.7,dec:.34,pitch:100},swing:.07,dust:.6,
   verb:{sec:2.4,mix:.2},dly:{fb:.48,mix:.24},cantus:false,duck:.42,
@@ -606,14 +606,31 @@ function genAll(seed,mi,bpm,progIdx,follow,rootOverride){
     g.bass.push({s:0,off:-12,len:16,vel:.8});
   }
 
-  // chord hits per 2 bars (degrees resolved at schedule time)
-  g.chordHits=[];                                       // {bar2, s, len}
-  if(M.stab.pad){
-    g.chordHits.push({bar2:0,s:0,len:16*2});            // swell across 2 bars
-  }else{
-    const s1=[3,7,11][ (rng()*3)|0 ];
-    g.chordHits.push({bar2:0,s:s1,len:2+((rng()*3)|0)});
-    if(rng()<.55)g.chordHits.push({bar2:1,s:(s1+8)%16,len:2});
+  // arpeggio: the hover chord broken open instead of stabbed — the chord never
+  // sounds all at once, it is always reaching. A seeded 32-step (2-bar) walk of
+  // chord-tone INDICES (notes resolve at schedule time against the current bar
+  // of the narrative). Per-mood character: rate (8ths or 16ths), density,
+  // direction (up = yearning rise, dn = falling dark, ud = rocking, rnd = broken).
+  g.arpSeq=[];                                          // {s(0..31), idx, oct, vel}
+  {
+    const A=M.arp||{rate:16,dens:.5,dir:'up'};
+    const inc=A.rate===8?2:1;
+    let k=A.dir==='dn'?3:0;
+    for(let s=0;s<32;s+=inc){
+      // breathe: skip some downbeats (space is an instrument), thin by density
+      if(s%16===0&&rng()<.35)continue;
+      if(rng()>A.dens)continue;
+      let idx;
+      if(A.dir==='up')idx=k++%4;
+      else if(A.dir==='dn')idx=3-(k++%4);
+      else if(A.dir==='ud'){const m=k++%6;idx=m<4?m:6-m;}
+      else idx=(rng()*4)|0;
+      // occasionally lift the top tone an octave — the reach
+      const oct=(idx===3&&rng()<.3)?12:0;
+      const vel=.5+rng()*.25+((s%4===2)?.15:0);         // offbeat accent
+      g.arpSeq.push({s,idx,oct,vel});
+    }
+    if(!g.arpSeq.length)g.arpSeq.push({s:2,idx:0,oct:0,vel:.6});
   }
 
   // cantus: 5-note motif on minor pentatonic, over 2 bars, sparse
@@ -926,6 +943,23 @@ function vChord(G,t,notes,len,pad){
     o.connect(gn);o.start(t);o.stop(t+len+.15);
   }
 }
+// one arpeggio tone: a soft pluck through the same warmth+stab filters the
+// chords use, so the broken chord keeps the mood's colour. Short attack, notes
+// overlap slightly (legato shimmer). Routes into chordae → the duck bus, so the
+// line pumps with the kick.
+function vArpN(G,t,note,vel,len){
+  const ac=G.ac,gn=ac.createGain();
+  const warm=ac.createBiquadFilter();warm.type='lowpass';warm.frequency.value=2700;warm.Q.value=.4;
+  gn.gain.setValueAtTime(0,t);
+  gn.gain.linearRampToValueAtTime(.24*vel,t+.006);
+  gn.gain.exponentialRampToValueAtTime(.001,t+len);
+  gn.connect(warm).connect(G.stabBP);
+  for(const det of [-4,4]){
+    const o=ac.createOscillator();o.type='sawtooth';
+    o.frequency.value=mtof(note);o.detune.value=det;
+    o.connect(gn);o.start(t);o.stop(t+len+.05);
+  }
+}
 function vCantus(G,t,note,len,vel){
   const ac=G.ac,f=mtof(note);
   const o=ac.createOscillator(),o2=ac.createOscillator(),gn=ac.createGain();
@@ -1005,19 +1039,24 @@ function scheduleBar(G,arr,g,bar,t0,stepDur,rng){
   if(arr.gate('chordae',bar)){
     if(H.kind==='dom'||H.kind==='tonic'){
       // the charged section: V7sus → V7 → i as slow sustained swells (each entry
-      // is its own swell, so the 4-3 suspension audibly resolves across them)
+      // is its own swell, so the 4-3 suspension audibly resolves across them) —
+      // the arpeggio stops here; sustained harmony is the release's contrast
       if(H.first)vChord(G,t0,H.notes,H.span*16*stepDur*.94,true);
     }else if(H.kind==='maj'){
-      // passing major colour: one brief bright stab, then gone
-      vChord(G,t0+((bar%2)?8:3)*stepDur,H.notes,2*stepDur,false);
-    }else if(M.stab.pad){
-      // pad moods hover as one swell per chord
-      if(H.first)vChord(G,t0,H.notes,H.span*16*stepDur*.94,true);
+      // passing major colour: a quick ascending three-note glint, then gone
+      const s0=(bar%2)?8:3;
+      for(let k=0;k<3;k++)
+        vArpN(G,t0+(s0+k)*stepDur+sw(s0+k),H.notes[k],.8-.15*k,stepDur*1.8);
     }else{
-      for(const h of g.chordHits){
-        if((bar%2)!==h.bar2)continue;
-        vChord(G,t0+h.s*stepDur,H.notes,h.len*stepDur,false);
+      // hover (and the cadence's pre-dominant): the chord broken open — an
+      // arpeggio, always reaching, never landing all at once
+      for(const a of g.arpSeq){
+        if(Math.floor(a.s/16)!==(bar%2))continue;
+        const s=a.s%16;
+        vArpN(G,t0+s*stepDur+sw(s),H.notes[a.idx%H.notes.length]+a.oct,a.vel,stepDur*2.4);
       }
+      // pad moods keep a quiet swell UNDER the line — the ache the arp rides on
+      if(M.stab.pad&&H.first)vChord(G,t0,H.notes,H.span*16*stepDur*.94,true);
     }
   }
   // cantus (2-bar motif, plays on even bars ≥ its entry) — falls silent on the
@@ -1238,7 +1277,7 @@ function drawDisc(bar,step,arr){
       if(p==='bassus')v=g.bass.some(b=>b.s===s)?.9:0;
       if(p==='crepitus')v=Math.max(g.hatC[s],g.hatO[s]);
       if(p==='manus')v=g.clap[s];
-      if(p==='chordae')v=g.chordHits.some(h=>h.s===s)?1:0;
+      if(p==='chordae')v=g.arpSeq.some(a=>a.s%16===s)?.9:0;   // the arp's step mask
       if(v<=0)continue;
       const a=s/16*Math.PI*2,a2=a+Math.PI*2/16*.55;
       ctx.beginPath();ctx.arc(0,0,rr,a,a2);
