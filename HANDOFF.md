@@ -7,7 +7,7 @@ start of a session — it's meant to be enough to work without re-explaining.
 
 ## Architecture
 
-**OPVSCVLA is twelve independent single-file Web Audio machines** plus a static
+**OPVSCVLA is thirteen independent single-file Web Audio machines** plus a static
 landing page. There is **no build step, no bundler, no dependencies, no npm, no
 samples, no server-side anything.** Each `op.` is one self-contained
 `index.html` — inline `<style>`, inline `<script>`, all synthesis in the
@@ -71,6 +71,7 @@ foli/index.html      op. IX   FOLI       — West African djembe & dunun
 nenia/index.html     op. X    NENIA      — playground chant
 khoomei/index.html   op. XI   KHÖÖMEI    — Mongolian throat singing
 spannung/index.html  op. XII  SPANNUNG   — self-patching modular synth
+tambour/index.html   op. XIII TAMBOUR    — French military field drum (martial-industrial)
 ```
 
 The `op.` roman-numeral order is fixed and lives in `index.html` and `README.md`;
@@ -105,6 +106,66 @@ keep all three (page, README, this file) in sync when adding a machine.
 ## Open threads
 
 Newest first.
+
+### TAMBOUR — new machine, op. XIII (French military field drum)
+**Branch:** `claude/project-working-conventions-hlurpe` · **File:**
+`tambour/index.html` · **Status:** done, verified headless (Chromium). New op.
+Registered in `index.html` (card), `README.md` (row), and the file-structure
+list above; counts bumped twelve → thirteen everywhere.
+
+An archetypal European war-march engine — snare-focused, martial-industrial,
+French mother tongue. Built on the FOLI skeleton (prerendered kit → one master
+buffer → realtime loop + offline WAV, identical graph). Design:
+
+- **The law is the call.** Eight *batteries d'ordonnance* (`CALLS`, order in
+  `CALL_ORDER`): la-marche, la-générale, la-charge, le-rappel, la-retraite,
+  aux-champs, le-ban, la-breloque. Each fixes token patterns per voice over a
+  step grid — **2/4 → 16 steps, spb 4** or **6/8 → 12 steps, spb 3**, always
+  four walking beats to the phrase. `bpm` is the *cadence* (pas/min), the bass
+  drum falls on the foot.
+- **Rudiment token language** (`parseVoice`): `.` rest · `o` tap · `O` accent ·
+  `f` flam (fla) · `d` drag (ra) · `r` roll unit. Runs of `r` collapse into one
+  buzz roll resolving on the next stroke (`emitBuzz`, ~24 ms overlapping soft
+  strokes, velocity swelling). Bass/cymbal use only `.`/`o`/`O`.
+- **The machine composes the snare's ornaments** (`ornaments`, Fantaisie 0..3):
+  drags ahead of accents, ghost taps in gaps, roll fills at phrase ends — a full
+  flourish every 4th phrase. Seeded, so it round-trips in the hash.
+- **Voices** (`VOICES`, = lane order + mixer): clairon · caisse claire (the
+  star) · caisse roulante · grosse caisse · cymbales · enclume (anvil) · bourdon
+  (steel drone). Snare = two membrane modes + a rattle of one-pole-highpassed
+  noise for the wires; field drum = membrane, snares off; bass = deep membrane +
+  beater click; cymbals = decaying metal noise + shimmer; anvil = inharmonic
+  metal; **clairon = additive brass locked to partials of `FUND` (116.54 Hz,
+  B♭) — a valveless bugle, notes are integer partials only**, synthesised
+  per-note in `renderMaster` (durations vary).
+- **Industrie 0..3 (`st.industrial`)** is the martial→industrial slide:
+  `DRIVE_CURVE` (tanh waveshaper in `buildGraph`, harder each level) + the anvil
+  doubling hard accents (`anvilCells`) + the bourdon. **Bourdon gotcha:** it's a
+  continuous drone laid in *after* the loop-fold, its component freqs snapped to
+  integer multiples of `1/oN` (`m=round(f*oN/SR)`) so it is **perfectly
+  seamless** across the loop point — do not add it before the fold or it doubles.
+- **Negative-time gotcha:** a flam/drag/ornament grace before the phrase-head
+  downbeat rounds below 0; `push` clamps `t` to `≥0` (and `mixHit` guards
+  `off<0`). Don't remove either.
+- **Canvas is a tablature, not a wheel:** one lane per voice, rudiment glyphs
+  (accent = tall capped bar, tap = short, flam/drag = grace ticks, roll = hatch
+  band + bracket, bass = block, cymbal = burst, anvil = diamond, clairon = bar
+  at partial height, bourdon = band), L/R foot markers under the axis, a red
+  playhead. **Static score cached to an offscreen canvas (`oc`/`buildScore`);
+  only the playhead + glow redraw** — cheaper than FOLI's per-frame ring.
+- Mixer greys out (`.na`) clairon on calls with no bugle, and enclume/bourdon on
+  Parade (industrial 0) where they're silent.
+- **Verified headless** (`scratchpad/verify.mjs`, playwright-core + the bundled
+  Chromium): all 8 calls parse to well-formed events (snare-dominant, rolls
+  present, clairon partials in 2..8, no time past end), realtime context runs,
+  offline cut renders, `renderMaster` is deterministic and non-silent (peak 0.9,
+  RMS ~0.12). The only console error is the Google-Fonts CDN failing under the
+  proxy — environmental, same link every machine uses, harmless serif/mono
+  fallback.
+- **Pick-up ideas:** the calls are idiomatic arrangements, not a claim to one
+  authoritative score (stated in the reader notes) — a stricter transcription of
+  a specific ordinance is possible. A "fifre" (fife) melodic voice over the
+  drums, or a per-call default industrial level, are natural next steps.
 
 ### HOLLER — just-intonation fiddle, voice fixes, faster default
 **Branch:** `claude/banjo-loop-sound-design-qjlfm4` · **File:**

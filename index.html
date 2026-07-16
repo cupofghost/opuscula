@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="opuscula — eleven small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis.">
+<meta name="description" content="opuscula — thirteen small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum.">
 <title>OPVSCVLA — small musical machines</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -66,15 +66,15 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
      READER'S GUIDE — the landing page (catalogue)
      ---------------------------------------------------------------------
      This file is pure HTML + CSS. No JavaScript, no audio: it is just the
-     index card wall that links out to the ten works. Each work lives in
+     index card wall that links out to the works. Each work lives in
      its own folder as its own index.html; this page never loads them, it
-     only links to them (href="./folder/"). Twelve works.
+     only links to them (href="./folder/"). Thirteen works.
 
      Anatomy, top to bottom:
        .wrap      the 760px column everything sits in
        .eyebrow   the "catalogvs · mmxxvi" kicker
        h1 / .sub  the title and the one-line manifesto
-       .grid      the card wall — one <a class="card"> per work (twelve total)
+       .grid      the card wall — one <a class="card"> per work (thirteen total)
        .notes     the shared-keys reminder (space / r / c)
        .foot      the colophon + repo link
 
@@ -97,7 +97,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
 <div class="wrap">
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
-  <div class="sub">twelve small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="sub">thirteen small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
   <hr class="rule">
 
   <div class="grid">
@@ -398,6 +398,40 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
         <h2>Spannung</h2>
         <p>modular synthesizer jam</p>
         <span class="tech">twelve modules · clock, CV &amp; gate · dub delay · cut a loop</span>
+      </div>
+    </a>
+
+    <a class="card" href="./tambour/" style="--bg:#1b1e24">
+      <div class="emblem" aria-hidden="true">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- a field drum (caisse claire) with tension rods and snare wires,
+               a pair of crossed sticks behind it -->
+          <g stroke="#8b97a3" stroke-width="3.4" stroke-linecap="round">
+            <line x1="18" y1="24" x2="82" y2="82"/><line x1="82" y1="24" x2="18" y2="82"/>
+          </g>
+          <g fill="#b8442f"><circle cx="18" cy="24" r="3"/><circle cx="82" cy="24" r="3"/></g>
+          <!-- shell -->
+          <rect x="26" y="41" width="48" height="29" fill="#22262d" stroke="#454e58" stroke-width="1.5"/>
+          <!-- bottom rim + snare wires -->
+          <ellipse cx="50" cy="70" rx="24" ry="6.5" fill="#2a2f38" stroke="#454e58" stroke-width="1.5"/>
+          <g stroke="#cbd3da" stroke-width="0.8" opacity="0.75">
+            <line x1="28" y1="71" x2="72" y2="71"/><line x1="27" y1="68.5" x2="73" y2="68.5"/>
+          </g>
+          <!-- tension rods -->
+          <g stroke="#7c8895" stroke-width="1.3">
+            <line x1="31" y1="43" x2="31" y2="69"/><line x1="40.5" y1="44.5" x2="40.5" y2="70.5"/>
+            <line x1="50" y1="45" x2="50" y2="71"/><line x1="59.5" y1="44.5" x2="59.5" y2="70.5"/>
+            <line x1="69" y1="43" x2="69" y2="69"/>
+          </g>
+          <!-- top head (bone) -->
+          <ellipse cx="50" cy="41" rx="24" ry="7.5" fill="#e7e4da" stroke="#8b97a3" stroke-width="1.6"/>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="op">op. XIII · MMXXVI</span>
+        <h2>Tambour</h2>
+        <p>French military field drum</p>
+        <span class="tech">eight regulation calls · rudiments &amp; rolls · bugle &amp; anvil · cut a march</span>
       </div>
     </a>
 

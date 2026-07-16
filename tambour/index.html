@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#121418">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>TAMBOUR — French military field drum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   TAMBOUR — a war-march engine for the French military field drum.
+   Cold gunmetal #121418 · steel #7c8895 · iron #454e58 · oxidized
+   rust-red #b8442f · ember #cf6a3a · bone #e7e4da.
+   The look is steel and rust: a drummer's tablature under a cold light,
+   the martial reduced to its industrial bones. Named in French — tambour,
+   the drum and, by the old usage, the drummer who beats it.
+   ===================================================================== */
+:root{
+  color-scheme:dark;
+  --ground:#121418; --panel:#0c0e11; --bone:#e7e4da; --steel:#8b97a3;
+  --iron:#454e58; --rust:#b8442f; --ember:#cf6a3a; --brass:#c69a4e;
+  --txt:#e7e4da; --dim:#8b939d; --hair:rgba(139,151,163,.20); --hair2:rgba(139,151,163,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;background:var(--ground)}
+body{
+  background:var(--ground);
+  background-image:radial-gradient(120% 80% at 50% -8%, rgba(184,68,47,.06), transparent 55%),
+                   radial-gradient(90% 60% at 50% 110%, rgba(70,80,92,.10), transparent 60%);
+  color:var(--txt);font-family:'EB Garamond',Georgia,serif;
+  min-height:100vh;display:flex;justify-content:center;
+  padding:max(14px,env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom));
+}
+.pit{
+  width:100%;max-width:600px;background:var(--panel);
+  border:1.5px solid var(--iron);
+  box-shadow:0 0 0 5px var(--ground),0 0 0 6.5px var(--hair),inset 0 0 70px rgba(0,0,0,.55);
+  display:flex;flex-direction:column;padding:0 0 18px;
+}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+/* exit to opuscula (shared) */
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:14px 0 0 14px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,11,13,.5);border:1px solid rgba(233,226,210,.24);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.7);background:rgba(10,11,13,.82);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+
+header{padding:14px 20px 12px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.3em;color:var(--rust);text-transform:uppercase}
+h1{font-family:'Cormorant SC',serif;font-weight:700;font-size:clamp(2.8rem,14vw,4.4rem);
+  letter-spacing:.14em;line-height:1;color:var(--txt);margin:6px 0 8px;text-indent:.14em;
+  text-shadow:0 1px 0 rgba(139,151,163,.22)}
+.sub{font-style:italic;font-size:1rem;color:var(--txt);line-height:1.45}
+.sub b{font-style:normal;color:var(--ember)}
+.credit{font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--dim);letter-spacing:.06em;margin-top:9px;text-transform:uppercase}
+
+/* plate (canvas score) */
+.plate{position:relative;margin:2px 14px 0;border:1px solid var(--hair);background:var(--ground)}
+.plate canvas{display:block;width:100%;height:auto}
+.plate .tag{position:absolute;top:7px;left:10px;font-family:'IBM Plex Mono',monospace;font-size:.56rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.plate .tagr{left:auto;right:10px;text-align:right}
+.plate .tag b{color:var(--ember)}
+
+/* controls */
+.controls{padding:14px 20px 0;display:flex;flex-direction:column;gap:14px}
+.lab{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.26em;color:var(--rust);text-transform:uppercase;margin-bottom:7px;display:flex;justify-content:space-between}
+.lab .rd{color:var(--txt);letter-spacing:.05em}
+
+button{font-family:'EB Garamond',serif;color:var(--txt);background:transparent;
+  border:1px solid var(--hair);cursor:pointer;touch-action:manipulation;letter-spacing:.05em}
+button:focus-visible{outline:2px solid var(--ember);outline-offset:2px}
+button:active{transform:translateY(1px)}
+button,canvas{-webkit-user-select:none;user-select:none}
+
+.pick{width:100%;padding:16px;font-family:'Cormorant SC',serif;font-weight:600;
+  font-size:1.25rem;letter-spacing:.3em;text-transform:uppercase;border-width:1.5px;
+  border-color:var(--iron);transition:background .15s,color .15s,border-color .15s}
+.pick.on{background:var(--rust);border-color:var(--rust);color:#fff}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chips button{padding:8px 11px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--dim);letter-spacing:.04em}
+.chips button.on{background:var(--txt);color:#12140f;border-color:var(--txt)}
+.chips button small{display:block;font-size:.82em;opacity:.7;letter-spacing:0;text-transform:none}
+.chips button.on small{opacity:.85}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--hair)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;margin-top:-9px;border-radius:50%;background:var(--panel);border:2px solid var(--ember);box-shadow:0 0 7px rgba(207,106,58,.4)}
+input[type=range]::-moz-range-track{height:2px;background:var(--hair)}
+input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--panel);border:2px solid var(--ember)}
+
+/* the track mutes — the battery mixer */
+.tracks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tracks button{padding:9px 6px;font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.05em;color:var(--dim);
+  display:flex;align-items:center;gap:.5em;justify-content:center;text-transform:uppercase}
+.tracks button .dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.35;flex:none}
+.tracks button.on{color:var(--txt);border-color:var(--hair)}
+.tracks button.on .dot{opacity:1}
+.tracks button.na{opacity:.32;cursor:default}
+
+.cut{width:100%;padding:13px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;border-style:dashed;border-color:var(--hair)}
+.cut:disabled{opacity:.45;cursor:default}
+.cutnote{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim);text-align:center;margin-top:7px;min-height:1em;letter-spacing:.05em}
+
+.foot{margin:16px 20px 0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;
+  letter-spacing:.2em;color:var(--dim);text-transform:uppercase;line-height:1.9;border-top:1px solid var(--hair2);padding-top:12px}
+.foot a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* ── on this music: expandable reader notes (shared across the opuscula) ── */
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
+</style>
+</head>
+<body>
+<div class="pit">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+
+  <header>
+    <div class="eyebrow">op. XIII · French military field drum</div>
+    <h1>Tambour</h1>
+    <div class="sub"><b>The step is the law; the drum keeps it.</b> A French field battery — snare, field drum, bass drum, cymbals and bugle — beats one of the old regulation calls, from the plain march to the charge, while a steel foundry rings underneath. You set the call, the cadence, and how far it slides from parade to furnace.</div>
+    <div class="credit">caisse claire · caisse roulante · grosse caisse · cymbales · clairon · enclume · bourdon — all synthesized, no samples</div>
+  </header>
+
+  <div class="plate">
+    <canvas id="cv" width="920" height="560" aria-label="Drum tablature: one lane per voice, stroke marks along the bar, a vertical playhead sweeping left to right"></canvas>
+    <div class="tag">CALL · <b id="callTag">La Marche</b><br><span id="meterTag">2/4</span></div>
+    <div class="tag tagr"><span id="cycTag">phrase</span></div>
+  </div>
+
+  <div class="controls">
+
+    <button class="pick" id="pick">Play</button>
+
+    <div class="fld">
+      <div class="lab">Call <span class="rd" id="callrd">La Marche · the ordinary march</span></div>
+      <div class="chips" id="battery"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Cadence <span class="rd" id="tempored">120 pas/min</span></div>
+      <input type="range" id="tempo" min="76" max="176" value="120" aria-label="Steps per minute (cadence)">
+    </div>
+
+    <div class="fld">
+      <div class="lab">Fantaisie <span class="rd" id="fanrd">Mesuré</span></div>
+      <div class="chips" id="fan"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Industrie <span class="rd" id="indrd">Champ</span></div>
+      <div class="chips" id="ind"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">The battery <span class="rd">tap to mute a voice</span></div>
+      <div class="tracks" id="tracks"></div>
+    </div>
+
+    <div class="fld">
+      <button class="cut" id="cut">Cut the march · 16-bit WAV</button>
+      <div class="cutnote" id="cutnote">renders a full run of the call, then lets it ring off</div>
+    </div>
+  </div>
+
+  <details class="reader">
+    <summary>On this music · the French field drum</summary>
+    <div class="rbody">
+      <h4>What you're hearing</h4>
+      <p>The military drum is the oldest machine for moving a body of people in step. Before radio, before whistles, a regiment's day was run by sound: the <em>tambour</em> — the field drummer — and the <em>clairon</em> — the bugler — beat and blew a fixed vocabulary of signals that everyone in earshot had learned by heart. This is a French field battery playing those calls: a snare drum leads, a deeper field drum rolls under it, the bass drum marks the step, cymbals crash the accents, and a valveless bugle sounds over the top. Beneath it all a steel drone rings — the martial idea heard through its industrial descendants.</p>
+      <h4>The step is the law</h4>
+      <p>A march is built around walking. The French regulation step, the <em>pas cadencé</em>, is beaten at a fixed cadence — the ordinary march near 120 steps a minute — and the bass drum falls on the foot. Change the cadence here and the whole battery walks faster or slower; the drum does not play <em>to</em> the step, it <em>is</em> the step. That is the constraint this machine composes inside: the call fixes the figures, the cadence fixes the pace, and the snare embroiders within them.</p>
+      <h4>The calls</h4>
+      <p>Each named call is a <em>batterie d'ordonnance</em> — a regulation beating with a job. <em>La Marche</em> is the plain cadenced march. <em>La Générale</em> is the alarm that turns a whole camp out under arms — dense, rolling, urgent. <em>La Charge</em> drives the advance, fast and triplet-footed, the bugle screaming over it. <em>Le Rappel</em> recalls the troops; <em>La Retraite</em> is the dignified evening tattoo that ends the soldier's day. <em>Aux Champs</em> — "to the colours" — is the honours beating of ruffles (drum rolls) and flourishes (bugle fanfares) rendered to a person or a flag. <em>Le Ban</em> is the roll-and-stroke flourish that opens and closes a formal announcement — <em>ouvrez le ban… fermez le ban</em>. <em>La Breloque</em> dismisses the men to their own time, loosest of all.</p>
+      <h4>The rudiments</h4>
+      <p>French rudimental drumming is built from a small set of named strokes, and the snare here is written in them: the <em>coup simple</em> (a single tap), the <em>fla</em> (a flam — a grace note struck a hair before the main), the <em>ra</em> or drag (two grace notes crushed in ahead of the beat), and the <em>roulement</em> — the roll, a stream of bounced strokes that turns a series of hits into a sustained tone. The roll is the drum's held note; a march lives on the tension between the roll and the crack of an accent landing out of it.</p>
+      <h4>The bugle</h4>
+      <p>The <em>clairon</em> is a bugle with no valves and no slide. It can sound only the notes physically present in one tube's harmonic series — the bugler chooses a note by lip alone — so every call is written from the same four or five pitches. That physical limit is why bugle calls the world over share a family sound; the notes here are exactly those partials and nothing between them.</p>
+      <h4>Martial, industrial</h4>
+      <p>The <em>Industrie</em> control slides the battery from a clean parade ground toward a foundry. As it rises the drums are driven and saturated, a struck-steel anvil doubles the hard accents, and a low steel drone — the <em>bourdon</em> — swells underneath. This is the march heard through martial-industrial music, the late-twentieth-century genre that took military drumming, orchestral menace and machine noise and made the connection between the parade and the factory floor explicit.</p>
+      <h4>A note on faithfulness</h4>
+      <p>The regulation calls are a real, documented tradition, but they vary by era, corps and manuscript, and much lived in oral teaching. The rudiments and the shape of each call here are idiomatic — honest arrangements in the French field-drum style — rather than a claim to one authoritative score.</p>
+      <h4>How the sound is made</h4>
+      <p>No samples. The snare is a struck membrane plus a rattle of highpassed noise for the wires; the field and bass drums are membranes without the rattle; the cymbals are decaying metallic noise; the bugle is an additive brass tone locked to its partials; the anvil is a cluster of inharmonic metal. The whole phrase is rendered once to a buffer, driven through a shaper and a room, and looped — so the WAV you cut is exactly what you hear.</p>
+      <h4>The name</h4>
+      <p>op. XIII is named in French, the mother tongue of these calls: <em>tambour</em> is the drum, and in the old military usage the man who beats it — the boy at the head of the column whose two sticks set a thousand feet down together.</p>
+    </div>
+  </details>
+
+  <div class="foot">
+    op. XIII · <a href="../">opvscvla</a> · keys: space=play · r=another · c=cut
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* =====================================================================
+   READER'S GUIDE — TAMBOUR (op. XIII)
+   ---------------------------------------------------------------------
+   The French military field drum as a war-march engine. The premise
+   mirrors the music: a named CALL (batterie d'ordonnance) fixes the
+   figures for each voice — caisse claire (snare) · caisse roulante
+   (field drum) · grosse caisse (bass) · cymbales · clairon (bugle) —
+   the CADENCE fixes the walking pace, and the machine COMPOSES the
+   snare's ornaments (drags, ruffs, roll fills) over the top. An
+   INDUSTRIE control drives the whole battery from parade to foundry,
+   adding a struck-steel anvil (enclume) and a low steel drone (bourdon).
+
+   THE SHARED SKELETON (every opuscula work is built the same way):
+     · an ENGINE band (below) that is PURE and DOM-free: a call (token
+       patterns on a step grid) → parsed rudiment glyphs → a seeded,
+       composed snare embellishment → a list of stroke events
+       {t, voice, tone, vel, pan}. No DOM, no audio here.
+     · synthesis from first principles — never a sample. The snare is a
+       membrane + a rattle of noise (the wires); field/bass drums are
+       membranes without the rattle; cymbals are decaying metal noise;
+       the bugle is additive brass locked to its harmonic partials; the
+       anvil is inharmonic metal. Rendered once to a stereo buffer,
+       driven, and peak-normalised.
+     · TWO renderers of that buffer, IDENTICAL signal path so the WAV is
+       what you hear:
+         realtime — the buffer loops through a shaper + room + limiter;
+         offline  — the "cut" button renders one run of the call through
+                    the same graph into an OfflineAudioContext → 16-bit WAV.
+     · a <canvas> drawing the call as a drummer's TABLATURE — one lane
+       per voice, stroke marks along the bar, a sweeping playhead. The
+       static score is cached to an offscreen bitmap; only the playhead
+       and its glow redraw. It sleeps when idle.
+     · a hash-permalink: every control serialises into location.hash, so
+       THE URL IS THE PRESSING — copy it to reload the exact march.
+
+   THROUGH-COMPOSED: like Foli/Gradus/Holler, a change of any control
+   REGENERATES the buffer (a fixed call plus composed ornaments, not a
+   live loop) and restarts playback.
+
+   KEYS (wired near the bottom, same in every work):
+       space = play/stop   ·   r = another march   ·   c = cut a WAV
+
+   THIS FILE: ENGINE (rng → parse → assemble events) → state → audio
+   (membrane/snare/cymbal/bugle/anvil synth, drive, mix, graph) →
+   realtime transport → WAV cut → canvas (tablature) → controls →
+   __iosAudio → hash/keys → init.
+   ===================================================================== */
+
+/* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
+function __hint(msg){
+  try{
+    const p=document.getElementById('pick')||document.querySelector('button');
+    if(!p||!p.insertAdjacentElement)return;
+    let h=document.getElementById('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin:8px 20px 0;font-style:italic;letter-spacing:.04em';
+      p.parentNode.appendChild(h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{
+    if(document.visibilityState==='visible')kick();
+    else if(ac.state==='running')ac.suspend().catch(()=>{});
+  }catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else if(document.visibilityState==='visible')setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('AUDIO SUSPENDED — tap Play again · if still silent, check the ring/silent switch');}catch(e){}},450);
+}
+
+/* ============================ ENGINE-BEGIN ============================
+   Pure, DOM-free. A CALL is a set of token PATTERNS over a step grid
+   (16 steps = two bars of 2/4; 12 steps = two bars of 6/8 — four walking
+   beats either way). Snare/field tokens: '.' rest · 'o' tap · 'O' accent
+   · 'f' flam (fla) · 'd' drag (ra) · 'r' roll unit (buzz, extends over a
+   run of r's, resolving on the next stroke). Bass & cymbal use '.'/'o'/'O'.
+   The calls are idiomatic arrangements in the French field-drum style. */
+
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+const FUND=116.54;   // the clairon's fundamental (B♭); notes are its partials
+
+// The calls. meter fixes the grid (2/4→16 steps, 6/8→12), spb = steps per
+// walking beat, so four beats to the phrase. bpm = cadence (pas/min).
+const CALLS={
+  'la-marche': {label:'La Marche', meter:'2/4', steps:16, spb:4, bpm:120, gloss:'the ordinary march', parts:{
+    claire:  'f.oof.oof.oof.oo',
+    roulante:'..............rr',
+    grosse:  'O...o...O...o...',
+    cymbales:'O.......o.......'}, clairon:null},
+  'la-generale':{label:'La Générale', meter:'2/4', steps:16, spb:4, bpm:126, gloss:'the call to arms', parts:{
+    claire:  'rrO.rrO.rrO.rrO.',
+    roulante:'O.......O.......',
+    grosse:  'O...O...O...O...',
+    cymbales:'O.......O.......'}, clairon:[
+      {t:0,p:4,dur:.45,vel:.55},{t:.5,p:6,dur:.45,vel:.55},{t:1,p:4,dur:.45,vel:.55},
+      {t:1.5,p:6,dur:.45,vel:.55},{t:2,p:5,dur:.9,vel:.6},{t:3,p:6,dur:.9,vel:.62}]},
+  'la-charge':{label:'La Charge', meter:'6/8', steps:12, spb:3, bpm:152, gloss:'the charge', parts:{
+    claire:  'OooOooOooOoo',
+    roulante:'o..o..o..o..',
+    grosse:  'O..o..O..o..',
+    cymbales:'O.....O.....'}, clairon:[
+      {t:0,p:4,dur:.16,vel:.6},{t:.33,p:5,dur:.16,vel:.6},{t:.66,p:6,dur:.34,vel:.66},
+      {t:1,p:4,dur:.16,vel:.6},{t:1.33,p:5,dur:.16,vel:.6},{t:1.66,p:6,dur:.34,vel:.66},
+      {t:2,p:6,dur:.16,vel:.62},{t:2.33,p:6,dur:.16,vel:.62},{t:2.66,p:6,dur:.5,vel:.7},
+      {t:3,p:5,dur:.16,vel:.6},{t:3.33,p:6,dur:.6,vel:.72}]},
+  'le-rappel':{label:'Le Rappel', meter:'2/4', steps:16, spb:4, bpm:116, gloss:'the recall', parts:{
+    claire:  'O..oO..oO..oO..o',
+    roulante:'..............rr',
+    grosse:  'O...o...O...o...',
+    cymbales:'O...............'}, clairon:[
+      {t:0,p:4,dur:.4,vel:.5},{t:.5,p:5,dur:.4,vel:.5},{t:1,p:4,dur:.8,vel:.54},
+      {t:2,p:5,dur:.4,vel:.5},{t:2.5,p:4,dur:.4,vel:.5},{t:3,p:3,dur:.9,vel:.56}]},
+  'la-retraite':{label:'La Retraite', meter:'2/4', steps:16, spb:4, bpm:96, gloss:'the evening tattoo', parts:{
+    claire:  'f...o.o.f...o.o.',
+    roulante:'rrrr............',
+    grosse:  'O...o...O...o...',
+    cymbales:'O.......O.......'}, clairon:[
+      {t:0,p:6,dur:.5,vel:.5},{t:.5,p:5,dur:.5,vel:.5},{t:1,p:4,dur:.9,vel:.54},
+      {t:2,p:5,dur:.5,vel:.5},{t:2.5,p:4,dur:.5,vel:.5},{t:3,p:3,dur:.9,vel:.56}]},
+  'aux-champs':{label:'Aux Champs', meter:'2/4', steps:16, spb:4, bpm:100, gloss:'the honours: ruffles & flourishes', parts:{
+    claire:  'rrrrO...rrrrO...',
+    roulante:'rrrr............',
+    grosse:  'O.......O.......',
+    cymbales:'O...............'}, clairon:[
+      {t:0,p:4,dur:.5,vel:.56},{t:.5,p:5,dur:.5,vel:.56},{t:1,p:6,dur:1,vel:.62},
+      {t:2,p:6,dur:.5,vel:.58},{t:2.5,p:5,dur:.5,vel:.56},{t:3,p:4,dur:.9,vel:.58}]},
+  'le-ban':{label:'Le Ban', meter:'2/4', steps:16, spb:4, bpm:108, gloss:'open & close the ban', parts:{
+    claire:  'rrrrrrrrO.O.O.O.',
+    roulante:'rrrrrrrr........',
+    grosse:  '........O.O.O.O.',
+    cymbales:'........O...O...'}, clairon:null},
+  'la-breloque':{label:'La Breloque', meter:'6/8', steps:12, spb:3, bpm:120, gloss:'dismiss to free time', parts:{
+    claire:  'Oo.oO..oO.o.',
+    roulante:'.....o.....o',
+    grosse:  'O.....O.....',
+    cymbales:'O.....o.....'}, clairon:null},
+};
+const CALL_ORDER=['la-marche','la-generale','la-charge','le-rappel','la-retraite','aux-champs','le-ban','la-breloque'];
+
+// the battery voices, in lane order (top → bottom) + colour + pan + gain
+const VOICES=[
+  {id:'clairon', label:'Clairon',  col:'#cf6a3a', pan: 0.28, gain:0.50},
+  {id:'claire',  label:'Caisse claire',  col:'#e7e4da', pan:-0.05, gain:0.92},
+  {id:'roulante',label:'Caisse roulante',col:'#9aa6b2', pan:-0.30, gain:0.70},
+  {id:'grosse',  label:'Grosse caisse',  col:'#b8442f', pan: 0.00, gain:0.95},
+  {id:'cymbales',label:'Cymbales', col:'#cbd3da', pan: 0.32, gain:0.42},
+  {id:'enclume', label:'Enclume',  col:'#7c94a8', pan:-0.34, gain:0.55},
+  {id:'bourdon', label:'Bourdon',  col:'#5a6570', pan: 0.00, gain:1.00},
+];
+const VOICE_BY=Object.fromEntries(VOICES.map(v=>[v.id,v]));
+
+const padTo=(s,n)=>{let o=s||'';while(o.length<n)o+='.';return o.slice(0,n);};
+
+// parse a token string into rudiment glyphs. 'r' runs collapse into one roll
+// glyph {step, type:'roll', end} spanning to the step after the run.
+function parseVoice(str,steps){
+  const s=padTo(str,steps), g=[]; let i=0;
+  while(i<steps){
+    const ch=s[i];
+    if(ch==='.'){i++;continue;}
+    if(ch==='r'){let j=i;while(j+1<steps&&s[j+1]==='r')j++;g.push({step:i,type:'roll',end:j});i=j+1;continue;}
+    const type=ch==='O'?'accent':ch==='f'?'flam':ch==='d'?'drag':'tap';
+    g.push({step:i,type});i++;
+  }
+  return g;
+}
+
+// accent weight by grid position: phrase-head strongest, then the walking
+// beats (the left foot a touch stronger than the right), offbeats light.
+function accentAt(step,spb){
+  if(step%spb!==0) return 0.72;
+  const bi=step/spb;
+  return bi===0?1.0:(bi%2===0?0.9:0.82);
+}
+
+// the snare's tone family for a glyph; bass/cymbal have their own tones.
+function drumTones(voice){
+  if(voice==='grosse')  return {accent:['hit',0.95],tap:['hit',0.6]};
+  if(voice==='cymbales')return {accent:['crash',0.9],tap:['half',0.6]};
+  return {accent:['accent',0.95],tap:['tap',0.55],grace:['grace',0.4],buzz:['buzz',0.6]};
+}
+
+// a buzz roll: soft overlapping strokes from t0→t1, velocity swelling.
+function emitBuzz(voice,t0,t1,v0,v1,pan,rng,push){
+  const dt=0.024; let k=0; const span=Math.max(0.001,t1-t0);
+  for(let t=t0;t<t1-0.001;t+=dt,k++){
+    const f=(t-t0)/span, jit=(rng()*2-1)*0.003;
+    push(t+jit,voice,'buzz',(v0+(v1-v0)*f)*(0.85+rng()*0.15),pan);
+  }
+}
+
+// the composed snare ornaments (Fantaisie 0..3): drags ahead of accents,
+// ghost taps in the gaps, and a roll fill at the phrase end — a proper
+// flourish every fourth phrase. Seeded, so it round-trips in the URL.
+function ornaments(rng,glyphs,c,heat,base,cycleDur,beatDur,stepDur,steps,spb,pan,push){
+  if(heat<=0) return;
+  const dens=[0,.25,.5,.8][heat], beats=steps/spb;
+  for(const g of glyphs){
+    if(g.type==='accent' && rng()<dens*0.4){
+      const t=base+g.step*stepDur;
+      push(t-0.05,'claire','grace',0.32,pan); push(t-0.025,'claire','grace',0.4,pan);
+    }
+  }
+  for(let s=0;s<steps;s++){
+    if(s%2===1 && rng()<dens*0.16 && !glyphs.some(g=>g.step===s||(g.type==='roll'&&s>=g.step&&s<=g.end)))
+      push(base+s*stepDur,'claire','tap',0.28+rng()*0.1,pan);
+  }
+  const t0=base+(beats-1)*spb*stepDur;
+  if(heat>=2 && c%4===3) emitBuzz('claire',t0,base+cycleDur,0.5,0.95,pan,rng,push);
+  else if(rng()<dens*0.3) emitBuzz('claire',t0,t0+beatDur,0.4,0.8,pan,rng,push);
+}
+
+// the anvil (enclume) doubles the hard accents once the foundry is lit.
+function anvilCells(steps,spb,level){
+  const out=[]; if(level<1) return out; const beats=steps/spb;
+  for(let bi=0;bi<beats;bi++){
+    const strong=bi%2===0;
+    const hit=level>=3?true:level>=2?strong:(bi===0);
+    if(hit) out.push({step:bi*spb,accent:strong});
+  }
+  return out;
+}
+
+// assemble the whole march (N phrases) into time-stamped stroke events,
+// plus the first-phrase glyphs the tablature draws.
+function assemble(st){
+  const B=CALLS[st.battery], steps=B.steps, spb=B.spb, meter=B.meter;
+  const beatDur=60/st.bpm, stepDur=beatDur/spb, cycleDur=steps*stepDur, beats=steps/spb;
+  const cycles=clamp(Math.round(28/cycleDur),8,16);
+  const rng=mulberry32((st.seed>>>0)^0x2f6a88c1);
+  const G={
+    claire:parseVoice(B.parts.claire,steps),
+    roulante:parseVoice(B.parts.roulante,steps),
+    grosse:parseVoice(B.parts.grosse,steps),
+    cymbales:parseVoice(B.parts.cymbales,steps),
+  };
+  const anv=anvilCells(steps,spb,st.industrial);
+  const ev=[], mut=st.mutes;
+  // grace notes before the very first downbeat can round below 0; clamp so
+  // every event time is valid (a flam on the phrase head simply tightens up).
+  const push=(t,voice,tone,vel,pan)=>ev.push({t:Math.max(0,t),voice,tone,vel:clamp(vel,0,1.3),pan});
+
+  const emitGlyphs=(voice,glyphs,base)=>{
+    const T=drumTones(voice), pan=VOICE_BY[voice].pan;
+    for(const g of glyphs){
+      const t=base+g.step*stepDur, ac=accentAt(g.step,spb), hum=(rng()*2-1)*0.003;
+      if(g.type==='roll'){
+        const t1=base+(g.end+1)*stepDur;
+        emitBuzz(voice,t,t1,0.4,0.85, pan, rng, push);
+      }else if(g.type==='flam'){
+        push(t-0.02+hum,voice,(T.grace||T.tap)[0],(T.grace||T.tap)[1],pan);
+        push(t+hum,voice,T.accent[0],T.accent[1]*ac,pan);
+      }else if(g.type==='drag'){
+        push(t-0.045+hum,voice,(T.grace||T.tap)[0],(T.grace||T.tap)[1]*0.9,pan);
+        push(t-0.022+hum,voice,(T.grace||T.tap)[0],(T.grace||T.tap)[1],pan);
+        push(t+hum,voice,T.accent[0],T.accent[1]*ac,pan);
+      }else{
+        const tn=g.type==='accent'?T.accent:T.tap;
+        push(t+hum,voice,tn[0],tn[1]*ac+rng()*0.04,pan);
+      }
+    }
+  };
+
+  for(let c=0;c<cycles;c++){
+    const base=c*cycleDur;
+    if(!mut.claire){ emitGlyphs('claire',G.claire,base);
+      ornaments(rng,G.claire,c,st.fantaisie,base,cycleDur,beatDur,stepDur,steps,spb,VOICE_BY.claire.pan,push); }
+    if(!mut.roulante) emitGlyphs('roulante',G.roulante,base);
+    if(!mut.grosse)   emitGlyphs('grosse',G.grosse,base);
+    if(!mut.cymbales) emitGlyphs('cymbales',G.cymbales,base);
+    if(!mut.enclume) for(const a of anv)
+      push(base+a.step*stepDur,'enclume','hit',a.accent?0.9:0.68,VOICE_BY.enclume.pan);
+    if(B.clairon && !mut.clairon) for(const nte of B.clairon)
+      ev.push({t:base+nte.t*beatDur,voice:'clairon',partial:nte.p,dur:nte.dur*beatDur,vel:nte.vel||0.5,pan:VOICE_BY.clairon.pan});
+  }
+
+  // first-phrase glyphs for the tablature (drawn regardless of mute → dimmed)
+  const frac=x=>x/steps;
+  const cells={
+    clairon: B.clairon? B.clairon.map(n=>({frac:n.t/beats,dur:n.dur/beats,partial:n.p})) : [],
+    claire:  G.claire.map(g=>({...g,frac:frac(g.step),endFrac:g.end!=null?frac(g.end+1):undefined})),
+    roulante:G.roulante.map(g=>({...g,frac:frac(g.step),endFrac:g.end!=null?frac(g.end+1):undefined})),
+    grosse:  G.grosse.map(g=>({...g,frac:frac(g.step)})),
+    cymbales:G.cymbales.map(g=>({...g,frac:frac(g.step)})),
+    enclume: anv.map(a=>({frac:frac(a.step),accent:a.accent})),
+    bourdon: st.industrial,
+  };
+  return {ev,cells,cycleDur,beatDur,stepDur,steps,spb,beats,meter,cycles,hasClairon:!!B.clairon,dur:cycles*cycleDur};
+}
+/* ============================ ENGINE-END ============================ */
+
+/* ------------------------------- state ---------------------------------- */
+const st={ battery:'la-marche', bpm:120, fantaisie:1, industrial:1, seed:1, playing:false,
+  mutes:{clairon:false,claire:false,roulante:false,grosse:false,cymbales:false,enclume:false,bourdon:false} };
+
+/* ------------------------------- audio ---------------------------------- */
+const SR=44100;
+
+// a struck membrane: sine with a fast downward pitch-drop + harmonic + a
+// stick transient. The body of every drum voice.
+function synMembrane(f0, decay, drop, harm, click, rng){
+  const dur=Math.max(0.05,decay*4.5), n=Math.floor(dur*SR), o=new Float32Array(n);
+  let ph=0;
+  for(let i=0;i<n;i++){
+    const t=i/SR, f=f0*(1+drop*Math.exp(-t/0.012));
+    ph+=2*Math.PI*f/SR;
+    const a=Math.exp(-t/decay);
+    o[i]=(Math.sin(ph)+harm*Math.sin(2*ph)*a)*a;
+  }
+  const cn=Math.floor(click*SR);
+  for(let i=0;i<cn;i++) o[i]+=(rng()*2-1)*0.6*Math.exp(-i/(0.0013*SR));
+  return o;
+}
+// the caisse claire: two membrane modes + a rattle of highpassed noise for
+// the snare wires + a stick crack. kind sets weight/length.
+function synSnare(kind,rng){
+  const P={accent:{mg:1.0,ng:0.95,dec:0.12,ndec:0.14,cl:0.5},
+           tap:   {mg:0.7,ng:0.6, dec:0.08,ndec:0.09,cl:0.32},
+           grace: {mg:0.42,ng:0.34,dec:0.05,ndec:0.05,cl:0.2},
+           buzz:  {mg:0.5,ng:0.62,dec:0.045,ndec:0.055,cl:0.16}}[kind]||{mg:0.7,ng:0.6,dec:0.08,ndec:0.09,cl:0.3};
+  const dur=Math.max(0.05,Math.max(P.dec,P.ndec)*5), n=Math.floor(dur*SR), o=new Float32Array(n);
+  let ph1=0,ph2=0,prev=0,hp=0;
+  for(let i=0;i<n;i++){
+    const t=i/SR;
+    const f1=196*(1+0.5*Math.exp(-t/0.01)), f2=291*(1+0.5*Math.exp(-t/0.01));
+    ph1+=2*Math.PI*f1/SR; ph2+=2*Math.PI*f2/SR;
+    const am=Math.exp(-t/P.dec);
+    const body=(Math.sin(ph1)*0.7+Math.sin(ph2)*0.5)*am*P.mg;
+    const nz=rng()*2-1; hp=nz-prev; prev=nz;          // one-pole highpass → wires
+    const wires=hp*Math.exp(-t/P.ndec)*P.ng;
+    o[i]=body*0.6+wires*0.7;
+  }
+  const cn=Math.floor(0.0018*SR);
+  for(let i=0;i<cn;i++) o[i]+=(rng()*2-1)*P.cl*Math.exp(-i/(0.0011*SR));
+  return o;
+}
+// the caisse roulante / field drum: a lower membrane, snares off (no rattle).
+function synField(kind,rng){
+  const P={accent:{dec:0.16,mg:1.0,cl:0.4},tap:{dec:0.1,mg:0.7,cl:0.26},
+           buzz:{dec:0.055,mg:0.55,cl:0.16}}[kind]||{dec:0.1,mg:0.7,cl:0.26};
+  const m=synMembrane(128,P.dec,0.55,0.28,0.004,rng);
+  for(let i=0;i<m.length;i++){ const t=i/SR; m[i]*=P.mg; m[i]+=(rng()*2-1)*0.12*Math.exp(-t/0.02)*P.mg; }
+  return m;
+}
+// the grosse caisse: a deep membrane with a beater click — the step.
+function synBass(rng){ return synMembrane(54,0.22,0.9,0.16,0.05,rng); }
+// the cymbales: decaying metallic noise + a shimmer of inharmonic partials.
+function synCymbal(kind,rng){
+  const dec=kind==='crash'?1.0:0.4, dur=dec*1.3, n=Math.floor(dur*SR), o=new Float32Array(n);
+  const P=[1,1.41,1.93,2.71,3.66,5.1], ph=new Float32Array(P.length);
+  let prev=0;
+  for(let i=0;i<n;i++){
+    const t=i/SR, e=Math.exp(-t/dec);
+    let sh=0; for(let k=0;k<P.length;k++){ph[k]+=2*Math.PI*(3200*P[k])/SR; sh+=Math.sin(ph[k]);}
+    const nz=rng()*2-1, hp=nz-prev; prev=nz;
+    o[i]=(hp*0.8 + sh/P.length*0.25)*e;
+  }
+  return o;
+}
+// the enclume: struck steel — a cluster of high inharmonic partials, hard.
+function synAnvil(rng){
+  const P=[1,2.76,5.4,8.93], base=1380, n=Math.floor(0.2*SR), o=new Float32Array(n);
+  for(const p of P){const f=base*p;for(let i=0;i<n;i++){const t=i/SR;o[i]+=Math.sin(2*Math.PI*f*t)*Math.exp(-t/0.075)/P.length;}}
+  const cn=Math.floor(0.003*SR);
+  for(let i=0;i<cn;i++) o[i]+=(rng()*2-1)*0.5*Math.exp(-i/(0.0012*SR));
+  return o;
+}
+// the clairon: an additive brass tone, sounded per note (durations vary),
+// locked to a partial of the bugle's fundamental.
+function synClaironNote(freq,dur,rng){
+  const rel=0.14, total=dur+rel, n=Math.floor(total*SR), o=new Float32Array(n), H=8;
+  const amp=[]; let norm=0;
+  for(let h=1;h<=H;h++){amp[h]=1/(h*h*0.55+h*0.45); norm+=amp[h];}
+  const det=1+(rng()*2-1)*0.001, a=0.03;
+  for(let i=0;i<n;i++){
+    const t=i/SR;
+    let env; if(t<a) env=t/a; else if(t<dur) env=1-0.14*((t-a)/Math.max(0.001,dur-a)); else env=1-(t-dur)/rel;
+    if(env<0)env=0;
+    const vib=1+(t>0.15?0.004*Math.sin(2*Math.PI*5.2*(t-0.15)):0);
+    let s=0; for(let h=1;h<=H;h++) s+=amp[h]*Math.sin(2*Math.PI*freq*det*vib*h*t);
+    o[i]=s/norm*env;
+  }
+  return o;
+}
+
+// one prerendered unit hit per voice+tone (drums repeat, so we synth once).
+// three variants each, chosen round-robin, so identical strokes don't machine-gun.
+function bakeKit(){
+  const rng=mulberry32(0x51ed270b), K=3, kit={};
+  const make=(key,fn)=>{const arr=[];for(let v=0;v<K;v++)arr.push(fn(rng));kit[key]=arr;};
+  for(const t of ['accent','tap','grace','buzz']) make('claire.'+t, r=>synSnare(t,r));
+  for(const t of ['accent','tap','buzz'])         make('roulante.'+t, r=>synField(t,r));
+  make('grosse.hit', r=>synBass(r));
+  make('cymbales.crash', r=>synCymbal('crash',r));
+  make('cymbales.half',  r=>synCymbal('half',r));
+  make('enclume.hit', r=>synAnvil(r));
+  return kit;
+}
+
+// equal-power pan mix of a unit hit into L/R at a sample offset
+function mixHit(L,R,off,mono,pan,gain){
+  const a=(pan+1)*Math.PI/4, gL=Math.cos(a)*gain, gR=Math.sin(a)*gain;
+  const end=Math.min(L.length,off+mono.length);
+  for(let i=off<0?0:off,j=off<0?-off:0;i<end;i++,j++){const s=mono[j];L[i]+=s*gL;R[i]+=s*gR;}
+}
+
+// render the whole march ONCE into stereo (deterministic in the seed).
+// loop=true folds the ring-off tail back over the top for a seamless loop;
+// loop=false keeps the natural decay for the one-shot WAV cut. The bourdon
+// (steel drone) is laid in AFTER the fold, its component frequencies snapped
+// to integer multiples of 1/looplength so it is perfectly seamless.
+function renderMaster(loop){
+  const A=assemble(st);
+  const tail=1.6, n=Math.ceil((A.dur+tail)*SR);
+  const L=new Float32Array(n), R=new Float32Array(n);
+  const kit=bakeKit(); const idx={}; const cRng=mulberry32((st.seed>>>0)^0x13c9e77f);
+  for(const e of A.ev){
+    if(e.voice==='clairon'){ const mono=synClaironNote(FUND*e.partial,e.dur,cRng);
+      mixHit(L,R,Math.floor(e.t*SR),mono,e.pan,e.vel*VOICE_BY.clairon.gain); continue; }
+    const key=e.voice+'.'+e.tone, bank=kit[key]||kit['claire.tap'];
+    idx[key]=((idx[key]||0)+1)%bank.length;
+    mixHit(L,R,Math.floor(e.t*SR),bank[idx[key]],e.pan,e.vel*(VOICE_BY[e.voice]||{gain:0.7}).gain);
+  }
+  let oL=L, oR=R, oN=n;
+  if(loop){
+    const durS=Math.round(A.dur*SR);
+    const fL=new Float32Array(durS), fR=new Float32Array(durS);
+    for(let i=0;i<n;i++){const j=i%durS; fL[j]+=L[i]; fR[j]+=R[i];}
+    oL=fL; oR=fR; oN=durS;
+  }
+  if(st.industrial>0 && !st.mutes.bourdon){
+    const lev=[0,0.10,0.16,0.22][st.industrial];
+    const m=f=>Math.max(1,Math.round(f*oN/SR));
+    const m0=m(20.6), m1=m(41.2), m2=m(61.8), mL=m(0.33);
+    for(let i=0;i<oN;i++){
+      const ph=i/oN*2*Math.PI, lfo=0.72+0.28*Math.sin(ph*mL);
+      const s=(0.5*Math.sin(ph*m1)+0.28*Math.sin(ph*m0)+0.22*Math.sin(ph*m2))*lfo*lev;
+      oL[i]+=s; oR[i]+=s;
+    }
+  }
+  let mx=0; for(let i=0;i<oN;i++){const a=Math.abs(oL[i]);if(a>mx)mx=a;const b=Math.abs(oR[i]);if(b>mx)mx=b;}
+  if(mx>0){const k=0.9/mx;for(let i=0;i<oN;i++){oL[i]*=k;oR[i]*=k;}}
+  return {L:oL,R:oR,dur:A.dur,cycleDur:A.cycleDur,cycles:A.cycles,meter:A.meter};
+}
+
+function toStereoBuffer(ctx,L,R){const b=ctx.createBuffer(2,L.length,SR);b.getChannelData(0).set(L);b.getChannelData(1).set(R);return b;}
+function makeRoomIR(ctx,sec,exp){
+  const len=Math.max(1,Math.floor(sec*ctx.sampleRate)),b=ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,exp);lp+=0.28*((Math.random()*2-1)-lp);d[i]=lp*e*1.5;}}
+  return b;
+}
+// the drive shaper — industrial saturation, harder as Industrie rises.
+function driveCurve(amt){
+  const n=1024,c=new Float32Array(n),k=1+amt*8,d=Math.tanh(k);
+  for(let i=0;i<n;i++){const x=i/(n-1)*2-1;c[i]=Math.tanh(k*x)/d;}
+  return c;
+}
+const DRIVE_CURVE=[driveCurve(0.0),driveCurve(0.2),driveCurve(0.5),driveCurve(0.9)];
+
+// the fixed signal path — identical realtime & offline so the WAV is faithful.
+function buildGraph(ctx, L, R, loop){
+  const G={ctx};
+  G.master=ctx.createGain(); G.master.gain.value=0.92;
+  G.lim=ctx.createDynamicsCompressor();
+  G.lim.threshold.value=-2;G.lim.knee.value=0;G.lim.ratio.value=20;G.lim.attack.value=0.003;G.lim.release.value=0.1;
+  G.master.connect(G.lim).connect(ctx.destination);
+  G.verb=ctx.createConvolver(); G.verb.buffer=makeRoomIR(ctx,0.5,2.6);
+  G.wet=ctx.createGain(); G.wet.gain.value=0.09; G.verb.connect(G.wet).connect(G.master);
+  G.dry=ctx.createGain(); G.dry.gain.value=1; G.dry.connect(G.master);
+  G.drive=ctx.createWaveShaper(); G.drive.curve=DRIVE_CURVE[st.industrial]||DRIVE_CURVE[0]; G.drive.oversample='2x';
+  G.drive.connect(G.dry); G.drive.connect(G.verb);
+  G.src=ctx.createBufferSource(); G.src.buffer=toStereoBuffer(ctx,L,R); G.src.loop=!!loop;
+  G.src.connect(G.drive);
+  return G;
+}
+
+/* -------------------------- realtime transport --------------------------- */
+let RT=null;
+function play(){
+  const M=renderMaster(true);
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ctx);
+  const G=buildGraph(ctx,M.L,M.R,true);
+  RT={ctx,G,t0:ctx.currentTime+0.08,dur:M.dur,cycleDur:M.cycleDur,cycles:M.cycles};
+  G.src.start(RT.t0);
+  st.playing=true; $('pick').textContent='Stop'; $('pick').classList.add('on');
+  invalidate();
+}
+function stop(){
+  if(!RT)return;
+  const g=RT.G.master.gain,ct=RT.ctx.currentTime;
+  try{g.cancelScheduledValues(ct);g.setValueAtTime(g.value,ct);g.linearRampToValueAtTime(0,ct+0.2);}catch(e){}
+  const c=RT.ctx;setTimeout(()=>{try{c.close();}catch(e){}},360);
+  RT=null; st.playing=false; $('pick').textContent='Play'; $('pick').classList.remove('on');
+  invalidate();
+}
+// through-composed: any change regenerates and (if playing) restarts
+function regen(){ if(RT){ stop(); play(); } else { invalidate(); } }
+
+/* ------------------------------ cut · WAV -------------------------------- */
+function encodeWav(L,R,sr){
+  const n=L.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');d.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  ws(36,'data');d.setUint32(40,n*4,true);
+  let o=44;for(let i=0;i<n;i++){d.setInt16(o,clamp(L[i],-1,1)*32767,true);o+=2;d.setInt16(o,clamp(R[i],-1,1)*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+async function cut(){
+  const btn=$('cut'),note=$('cutnote');btn.disabled=true;note.textContent='beating…';
+  try{
+    const M=renderMaster(false);
+    const total=M.L.length/SR;
+    const ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
+    const G=buildGraph(ctx,M.L,M.R,false);
+    G.src.start(0);
+    const rb=await ctx.startRendering();
+    const blob=encodeWav(rb.getChannelData(0),rb.getChannelData(1),SR);
+    saveWav(blob,`tambour_${st.battery}_${st.bpm}pas.wav`);
+    note.textContent=`cut · ${M.cycles} phrases · ${CALLS[st.battery].label}`;
+  }catch(e){note.textContent='render failed — '+e.message;}
+  btn.disabled=false;
+}
+
+/* ------------------------------- canvas ---------------------------------- */
+// The call as a drummer's tablature — one lane per voice, stroke marks along
+// the phrase, a vertical playhead sweeping. The static score is cached to an
+// offscreen bitmap; only the playhead and its glow redraw each frame.
+const cv=$('cv'),cx=cv.getContext('2d');
+const CW=cv.width,CH=cv.height;
+const oc=document.createElement('canvas'); oc.width=CW; oc.height=CH; const ox=oc.getContext('2d');
+let VIEW=null, scoreDirty=true, GLOW=[];
+const PX0=CW*0.20, PX1=CW*0.975, PY0=CH*0.09, PY1=CH*0.95;
+const PLW=PX1-PX0, ROWH=(PY1-PY0)/VOICES.length;
+const xAt=f=>PX0+f*PLW;
+
+let needsDraw=true;const invalidate=()=>{needsDraw=true;VIEW=null;scoreDirty=true;};
+
+function refreshView(){ VIEW=assemble(st); buildScore(); scoreDirty=false; }
+
+function laneY(i){ return PY0+i*ROWH+ROWH*0.66; }   // baseline of lane i
+
+function buildScore(){
+  GLOW=[];
+  ox.clearRect(0,0,CW,CH);
+  ox.fillStyle='#0c0e11'; ox.fillRect(0,0,CW,CH);
+  const V=VIEW, steps=V.steps, spb=V.spb;
+
+  // vertical grid: step lines faint, walking-beat lines stronger
+  for(let s=0;s<=steps;s++){
+    const x=xAt(s/steps), beat=(s%spb===0);
+    ox.strokeStyle=beat?'rgba(139,151,163,.24)':'rgba(139,151,163,.08)';
+    ox.lineWidth=beat?1.4:1;
+    ox.beginPath();ox.moveTo(x,PY0-2);ox.lineTo(x,PY1+2);ox.stroke();
+    if(beat && s<steps){                                  // foot marker under the axis
+      const bi=s/spb, left=bi%2===0;
+      ox.fillStyle=left?'rgba(184,68,47,.8)':'rgba(139,151,163,.5)';
+      ox.font='600 '+Math.round(CW*0.016)+'px "IBM Plex Mono",monospace';
+      ox.textAlign='center';ox.textBaseline='top';
+      ox.fillText(left?'L':'R', x+PLW/steps*spb/2, PY1+5);
+    }
+  }
+
+  VOICES.forEach((v,i)=>{
+    const y=laneY(i), muted=st.mutes[v.id]||(v.id==='clairon'&&!V.hasClairon);
+    const col=v.col, dim=muted?0.28:1;
+    // lane rule + label
+    ox.strokeStyle='rgba(139,151,163,.12)';ox.lineWidth=1;
+    ox.beginPath();ox.moveTo(PX0,y+1.5);ox.lineTo(PX1,y+1.5);ox.stroke();
+    ox.fillStyle=muted?'rgba(139,147,157,.4)':col; ox.globalAlpha=muted?0.55:0.92;
+    ox.font='500 '+Math.round(CW*0.0155)+'px "IBM Plex Mono",monospace';
+    ox.textAlign='right';ox.textBaseline='middle';
+    ox.fillText(v.label.toUpperCase(), PX0-10, y-ROWH*0.28);
+    ox.globalAlpha=1;
+    const h=ROWH*0.5, cells=V.cells[v.id]||[];
+
+    if(v.id==='bourdon'){                                 // a continuous steel band
+      const lev=cells||0;
+      if(lev>0 && !muted){ ox.fillStyle=col; ox.globalAlpha=0.10+lev*0.06;
+        ox.fillRect(PX0,y-h*0.7,PLW,h*0.7); ox.globalAlpha=1; }
+      return;
+    }
+    if(muted) return;
+
+    if(v.id==='clairon'){
+      for(const c of cells){
+        const x=xAt(c.frac), w=Math.max(4,c.dur*PLW), yy=y-h*(0.15+0.7*(c.partial-3)/3);
+        ox.fillStyle=col; ox.globalAlpha=0.9;
+        ox.fillRect(x,yy,w,3.4); ox.globalAlpha=1;
+        GLOW.push({x,y:yy+1.7,col});
+      }
+      return;
+    }
+    if(v.id==='grosse'){
+      for(const c of cells){
+        const x=xAt(c.frac), bh=h*(c.type==='accent'?0.85:0.5);
+        ox.fillStyle=col; ox.globalAlpha=c.type==='accent'?0.95:0.7;
+        ox.fillRect(x-3.5,y-bh,7,bh); ox.globalAlpha=1;
+        GLOW.push({x,y:y-bh*0.5,col});
+      }
+      return;
+    }
+    if(v.id==='cymbales'){
+      for(const c of cells){
+        const x=xAt(c.frac), rr=(c.type==='accent'?h*0.5:h*0.32);
+        ox.strokeStyle=col;ox.lineWidth=1.4;ox.globalAlpha=0.85;
+        for(let a=0;a<8;a++){const an=a/8*Math.PI*2;
+          ox.beginPath();ox.moveTo(x,y-h*0.4);ox.lineTo(x+Math.cos(an)*rr,y-h*0.4+Math.sin(an)*rr);ox.stroke();}
+        ox.globalAlpha=1; GLOW.push({x,y:y-h*0.4,col});
+      }
+      return;
+    }
+    if(v.id==='enclume'){
+      for(const c of cells){
+        const x=xAt(c.frac), s=c.accent?7:5, yy=y-h*0.45;
+        ox.fillStyle=col;ox.globalAlpha=0.9;
+        ox.beginPath();ox.moveTo(x,yy-s);ox.lineTo(x+s,yy);ox.lineTo(x,yy+s);ox.lineTo(x-s,yy);ox.closePath();ox.fill();
+        ox.globalAlpha=1; GLOW.push({x,y:yy,col});
+      }
+      return;
+    }
+    // caisse claire / roulante — rudiment glyphs
+    for(const c of cells){
+      const x=xAt(c.frac);
+      if(c.type==='roll'){
+        const x2=xAt(c.endFrac||(c.frac));
+        ox.strokeStyle=col;ox.globalAlpha=0.45;ox.lineWidth=1;
+        for(let xx=x; xx<x2-1; xx+=5){ ox.beginPath();ox.moveTo(xx,y-h*0.55);ox.lineTo(xx,y);ox.stroke(); }
+        ox.globalAlpha=0.7;ox.lineWidth=1.4;
+        ox.beginPath();ox.moveTo(x,y-h*0.62);ox.lineTo(x2-2,y-h*0.62);ox.stroke();
+        ox.globalAlpha=1; GLOW.push({x,y:y-h*0.3,col,roll:x2});
+        continue;
+      }
+      const acc=c.type==='accent', bh=h*(acc?0.9:0.45);
+      ox.strokeStyle=col;ox.globalAlpha=acc?0.95:0.72;ox.lineWidth=acc?3:2;
+      ox.beginPath();ox.moveTo(x,y);ox.lineTo(x,y-bh);ox.stroke();
+      if(acc){ ox.beginPath();ox.moveTo(x-3,y-bh);ox.lineTo(x+3,y-bh);ox.stroke(); } // accent cap
+      if(c.type==='flam'||c.type==='drag'){                // grace ticks to the left
+        ox.globalAlpha=0.6;ox.lineWidth=1.4;
+        ox.beginPath();ox.moveTo(x-5,y);ox.lineTo(x-5,y-h*0.5);ox.stroke();
+        if(c.type==='drag'){ox.beginPath();ox.moveTo(x-9,y);ox.lineTo(x-9,y-h*0.42);ox.stroke();}
+      }
+      ox.globalAlpha=1; GLOW.push({x,y:y-bh*0.5,col});
+    }
+  });
+
+  // title strip
+  ox.fillStyle='rgba(139,147,157,.5)';
+  ox.font='500 '+Math.round(CW*0.014)+'px "IBM Plex Mono",monospace';
+  ox.textAlign='left';ox.textBaseline='top';
+  ox.fillText('BATTERIE D’ORDONNANCE', PX0, 8);
+}
+
+function draw(){
+  if(scoreDirty||!VIEW) refreshView();
+  cx.clearRect(0,0,CW,CH);
+  cx.drawImage(oc,0,0);
+  const V=VIEW;
+  let phase=0, playing=false;
+  if(RT){ playing=true; const e=((RT.ctx.currentTime-RT.t0)%V.cycleDur+V.cycleDur)%V.cycleDur; phase=e/V.cycleDur; }
+
+  // glow on strokes the playhead is passing
+  if(playing){
+    const px=xAt(phase);
+    for(const g of GLOW){
+      const active = g.roll ? (px>=g.x-3 && px<=g.roll) : (Math.abs(px-g.x)<PLW/V.steps*0.6);
+      if(active){ cx.globalAlpha=0.5; cx.fillStyle=g.col;
+        cx.beginPath();cx.arc(g.x,g.y,5.5,0,2*Math.PI);cx.fill(); cx.globalAlpha=1; }
+    }
+  }
+  // playhead
+  const px=xAt(phase);
+  cx.strokeStyle='rgba(184,68,47,.92)';cx.lineWidth=2;
+  cx.beginPath();cx.moveTo(px,PY0-4);cx.lineTo(px,PY1+2);cx.stroke();
+  cx.fillStyle='rgba(184,68,47,.95)';
+  cx.beginPath();cx.moveTo(px-5,PY0-4);cx.lineTo(px+5,PY0-4);cx.lineTo(px,PY0+3);cx.closePath();cx.fill();
+
+  if(playing){const cyc=Math.floor(((RT.ctx.currentTime-RT.t0)/V.cycleDur))%V.cycles;
+    $('cycTag').textContent='phrase '+(cyc+1)+'/'+V.cycles;}
+  else $('cycTag').textContent=V.cycles+' phrases';
+}
+function loop(){
+  const playing=!!RT;
+  if(playing||needsDraw){draw();if(!playing)needsDraw=false;}
+  setTimeout(()=>requestAnimationFrame(loop),playing?(RM?90:40):200);
+}
+requestAnimationFrame(loop);
+
+/* ------------------------------ controls --------------------------------- */
+function chipSel(container,items,current,onPick){
+  container.innerHTML='';
+  items.forEach(([val,label,sub])=>{
+    const b=document.createElement('button');b.dataset.v=String(val);
+    b.innerHTML=sub?(label+'<small>'+sub+'</small>'):label;
+    if(String(val)===String(current))b.classList.add('on');
+    b.onclick=()=>{container.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');onPick(val);};
+    container.appendChild(b);
+  });
+}
+
+chipSel($('battery'), CALL_ORDER.map(k=>[k,CALLS[k].label,CALLS[k].meter]), st.battery, v=>{
+  st.battery=v; const B=CALLS[v];
+  st.bpm=B.bpm; $('tempo').value=B.bpm; $('tempored').textContent=B.bpm+' pas/min';
+  $('callrd').textContent=B.label+' · '+B.gloss; $('callTag').textContent=B.label; $('meterTag').textContent=B.meter;
+  buildTracks(); regen();
+});
+const FANS=[['0','Strict','à la lettre'],['1','Mesuré','tasteful'],['2','Libre','embellished'],['3','Frénésie','on fire']];
+chipSel($('fan'), FANS, String(st.fantaisie), v=>{ st.fantaisie=+v; $('fanrd').textContent=FANS[+v][1]; regen(); });
+const INDS=[['0','Parade','clean'],['1','Champ','field'],['2','Fonderie','foundry'],['3','Fournaise','furnace']];
+chipSel($('ind'), INDS, String(st.industrial), v=>{ st.industrial=+v; $('indrd').textContent=INDS[+v][1]; buildTracks(); regen(); });
+
+function syncReadouts(){const B=CALLS[st.battery];
+  $('callrd').textContent=B.label+' · '+B.gloss;$('callTag').textContent=B.label;$('meterTag').textContent=B.meter;
+  $('fanrd').textContent=FANS[st.fantaisie][1];$('indrd').textContent=INDS[st.industrial][1];}
+syncReadouts();
+
+$('tempo').value=st.bpm;
+$('tempo').addEventListener('input',e=>{st.bpm=+e.target.value;$('tempored').textContent=st.bpm+' pas/min';});
+$('tempo').addEventListener('change',()=>{invalidate();if(RT)regen();});
+$('tempored').textContent=st.bpm+' pas/min';
+
+// the battery mixer — one mute toggle per voice (clairon greys out on calls
+// that carry no bugle line, the anvil/bourdon on Parade where they're silent)
+function buildTracks(){
+  const c=$('tracks'); c.innerHTML='';
+  const hasClairon=!!CALLS[st.battery].clairon;
+  VOICES.forEach(v=>{
+    const b=document.createElement('button'); b.dataset.v=v.id;
+    b.innerHTML='<span class="dot" style="color:'+v.col+'"></span>'+v.label;
+    const na=(v.id==='clairon'&&!hasClairon)||((v.id==='enclume'||v.id==='bourdon')&&st.industrial<1);
+    if(na) b.classList.add('na');
+    if(!st.mutes[v.id]&&!na) b.classList.add('on');
+    b.onclick=()=>{if(na)return;st.mutes[v.id]=!st.mutes[v.id];b.classList.toggle('on',!st.mutes[v.id]);regen();};
+    c.appendChild(b);
+  });
+}
+buildTracks();
+
+$('pick').addEventListener('click',()=>st.playing?stop():play());
+$('cut').addEventListener('click',cut);
+
+/* ---------------------- opuscula shared: hash · keys --------------------- */
+let __applying=false;
+function muteMask(){return VOICES.reduce((m,v,i)=>m|((st.mutes[v.id]?1:0)<<i),0);}
+function applyMask(m){VOICES.forEach((v,i)=>st.mutes[v.id]=!!(m&(1<<i)));}
+function __state(){return {b:st.battery,bpm:st.bpm,f:st.fantaisie,i:st.industrial,m:muteMask(),sd:st.seed};}
+function __apply(o){
+  if(o.b){const b=$('battery').querySelector('[data-v="'+o.b+'"]');b&&b.click();}
+  if(o.f!==undefined){const b=$('fan').querySelector('[data-v="'+(+o.f)+'"]');b&&b.click();}
+  if(o.i!==undefined){const b=$('ind').querySelector('[data-v="'+(+o.i)+'"]');b&&b.click();}
+  if(o.bpm){st.bpm=clamp(+o.bpm|0,76,176);$('tempo').value=st.bpm;$('tempored').textContent=st.bpm+' pas/min';invalidate();}
+  if(o.m!==undefined){applyMask(+o.m|0);buildTracks();invalidate();}
+  if(o.sd!==undefined){const sd=+o.sd;if(Number.isFinite(sd)){st.seed=sd>>>0;invalidate();}}
+}
+function __hashRead(){const h=location.hash.slice(1);if(!h)return null;const o={};
+  for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}
+function __hashWrite(){if(__applying)return;
+  try{const o=__state();history.replaceState(null,'','#'+Object.entries(o).map(([k,v])=>k+'='+v).join('&'));}catch(e){}}
+document.addEventListener('click',()=>setTimeout(__hashWrite,120),true);
+document.addEventListener('change',()=>setTimeout(__hashWrite,120),true);
+
+function another(){                                // r = a different march
+  if(RT)stop();
+  st.seed=1+((Math.random()*1e6)|0);
+  $('battery').querySelector('[data-v="'+CALL_ORDER[(Math.random()*CALL_ORDER.length)|0]+'"]').click();
+  $('fan').querySelector('[data-v="'+(1+((Math.random()*3)|0))+'"]').click();
+  $('ind').querySelector('[data-v="'+(1+((Math.random()*3)|0))+'"]').click();
+  VOICES.forEach(v=>st.mutes[v.id]=false); buildTracks();
+  invalidate(); play();
+}
+addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
+  if(e.code==='Space'){e.preventDefault();$('pick').click();}
+  else if(e.key==='r'||e.key==='R'){e.preventDefault();another();}
+  else if(e.key==='c'||e.key==='C')$('cut').click();
+});
+
+(function init(){const o=__hashRead();
+  if(o){__applying=true;try{__apply(o);}catch(e){}__applying=false;}
+  syncReadouts();__hashWrite();invalidate();
+})();
+
+/* ---- robust WAV save (shared) ----------------------------------------------
+   Auto-downloads where the browser allows it (desktop Chrome/Firefox/Edge,
+   Android), and ALWAYS shows a tappable "Save WAV" pill — the reliable path
+   on Safari/iOS, where a programmatic download after an async render is
+   blocked but a real tap on the link is a fresh user gesture iOS honours.   */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(12,14,17,.94);color:#e7e4da;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#e7e4da;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
+</script>
+
+</body>
+</html>
