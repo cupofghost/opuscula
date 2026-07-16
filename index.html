@@ -46,10 +46,22 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
   font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.18em;color:var(--dim);
   text-transform:uppercase;line-height:2.1}
 .foot a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.dl{position:fixed;top:max(14px,env(safe-area-inset-top));right:16px;z-index:100;
+  display:inline-flex;align-items:center;gap:.5em;padding:7px 13px;
+  font-family:'IBM Plex Mono',monospace;font-size:.66rem;font-weight:500;letter-spacing:.18em;
+  text-transform:uppercase;text-decoration:none;color:var(--txt);
+  background:rgba(20,18,15,.7);border:1px solid var(--hair);border-radius:999px;
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.dl:hover,.dl:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(20,18,15,.92);outline:none}
+.dl:active{transform:translateY(1px)}
+.dl .a{font-size:.86em;line-height:1}
+@media(prefers-reduced-motion:reduce){.dl{transition:none}}
 @media (prefers-reduced-motion: reduce){.emblem{transition:none}}
 </style>
 </head>
 <body>
+<a class="dl" href="./HANDOFF.md" download="HANDOFF.md" aria-label="Download HANDOFF.md — developer working notes" title="HANDOFF.md — developer working notes"><span class="a" aria-hidden="true">↓</span>HANDOFF</a>
 <!-- =====================================================================
      READER'S GUIDE — the landing page (catalogue)
      ---------------------------------------------------------------------
