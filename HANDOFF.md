@@ -106,6 +106,35 @@ keep all three (page, README, this file) in sync when adding a machine.
 
 Newest first.
 
+### NENIA — made the visuals whimsical / child-like
+**Branch:** `claude/project-working-conventions-xjaafw` · **File:**
+`nenia/index.html` (canvas + one CSS touch) · **Status:** done, verified
+headless; no PR opened. Audio/compose untouched.
+
+Reworked the canvas from ruler-straight stick figures on bare asphalt into a
+chalk-drawn schoolyard.
+
+- **Hand-drawn figures:** new `wline`/`warc` draw wobbly chalk strokes seeded
+  per figure (deterministic — holds shape frame-to-frame, no shimmer). `kidFig`
+  now takes `(…,id,mood)` and gives each child a **face** (`drawFace`: eyes +
+  grin, a sing-mouth or open-O shout by mood) and **hair by seed** (`drawHair`:
+  pigtails / spiky / topknot / bow / short), plus a skirt-vs-legs variant. So
+  each kid is a distinct little person; the toppled pose gets dizzy x-eyes.
+- **Motion:** active/singing kids **bob** to the clock and raise their arms;
+  the ball-bounce players and arch line bob too; the hopscotch hopper hops.
+- **Backdrop:** `drawDoodles` scrawls a fixed, faint set of chalk doodles — a
+  smiling **sun**, hearts, stars, a flower, a spiral, a cloud (`doodle*`
+  helpers, positions seeded once).
+- **Giggle sparkles:** `drawSparkles` showers little stars for ~1.4s on the
+  giggle mark (needs new `st.gigT` folded in `stateAt`).
+- **Bouncy lettering:** `sayWord` replaces the flat `IT`/`aww`/`whoa`/`caught`/
+  `ohh` labels with per-letter jittered, glowing hand-lettered shouts.
+- **Chrome:** the title's pink dot now gently bobs (`@keyframes dotbob`);
+  disabled under `prefers-reduced-motion` like everything else.
+- Verified headless: screenshots of counting-out / hopscotch / arch render the
+  figures + doodles cleanly; 72-combo compose + offline WAV still clean (audio
+  path unchanged).
+
 ### NENIA — expanded the playground-lore machine
 **Branch:** `claude/project-working-conventions-xjaafw` · **File:**
 `nenia/index.html` (+ catalogue lines in `README.md`, `index.html`) ·
