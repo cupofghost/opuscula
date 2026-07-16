@@ -106,7 +106,53 @@ keep all three (page, README, this file) in sync when adding a machine.
 
 Newest first.
 
-### RILLE — emotional-minor harmony: longing default, rationed resolution
+### RILLE — harmonic NARRATIVE engine (supersedes the progression rework below)
+**Branch:** `claude/minimal-deep-tech-guide-ta175d` · **Files:** `rille/index.html`
+(+ engine copy in `README.md`, `index.html`) · **Status:** done, verified (Node
+structural sweep + headless Chromium); pushed.
+
+Maintainer verdict on the previous pass: "still not landing — beats/rhythm good,
+harmonic structures don't. Redo the composition structure; freedom." Diagnosis:
+a fixed 2-bars-per-chord loop can never ache — even with a V7 in it, resolution
+recurs mechanically, so nothing is *earned*. Replaced the chord loop with a
+**64-bar harmonic narrative** (`HARMBARS`, = one WAV cut):
+
+- **Two states.** HOVER: seeded weighted drift among the mood's minor chords
+  (each 2–4 bars, deep **minor-9 voicings** per `HOVER_SHAPE[vstyle]`), majors
+  (♭VI/♭VII/♭II/IV) capped **by engine law at 1 bar + one short stab** (`kind:
+  'maj'`) — passing colour, never a destination. CADENCE: every `cad` bars the
+  **last 8 bars of the span** run pre-dominant (`'pre'`, iv or ♭VI, 2 bars) →
+  **V7sus held** → **V7** (raised leading tone; the 4-3 suspension resolves
+  across the two swells) → **i blooming** (`'tonic'`, m(add9) swell) — unless
+  `half:true`, which hangs on the V7 (half-cadence, never lands). Melody
+  (`cantus`) falls silent on `dom` bars; bass follows chord roots through
+  pre→dom→tonic so **iv→V→i walks in the low end** even in pedal moods.
+- **Quality is chosen, not inherited**: `voiceAt(mode,root,deg,offs)` voices
+  explicit semitone shapes (register-anchored as before); diatonic stacking and
+  `buildChord` are gone, so no accidental clash is possible. Diminished pool
+  slots are filtered at build (`poolDegs` keeps the labels truthful).
+- **Recipes.** A progression is now `{pool:[[deg,weight]…], cad, half}` —
+  `PROGS`: suum / schweben (i·iv ∞) / sehnen (+♭VI ∞) / halb (…V7 offen) /
+  selten (one release per 64) / erzählen (per 32) / neapel (♭II colour) / oft
+  (per 16). Moods carry `harm:{…}` (replaces progDeg/progDom/progHold):
+  FINSTERNIS ♭II+half-cad (never lands), SCHATTEN cad 64, TRÄNEN cad 32
+  (flagship), EISEN cluster-drone ∞, DÄMMERUNG cad 32, LEERE i·iv ∞, SOG cad 32.
+  Ledger says **HARMONIK** with `harmLabel` (♭-aware romans + `…V7→i`/`(offen)`/
+  `∞`); chips regenerate per mood. `g.harm[bar%64]` is the scheduler's only
+  lookup; hash `p` = recipe index (0–7 as before).
+- **Verified:** Node — 3360 pressings (7 moods × 8 recipes × 60 seeds):
+  deterministic, majors 5.5% of bars and never >1 bar, every resolving recipe
+  lands tonic-after-dom, half recipes never emit `tonic`, `cad:0` emits no
+  cadence kinds, V7 always carries the leading tone, registers in range.
+  Chromium — cadence windows render for TRÄNEN/FINSTERNIS/SOG/LEERE with zero
+  pageerrors; recipe chips + ledger correct live; hash carries `p`.
+- **Pick-up:** cadence phrase length (8 bars) and shapes live in `buildHarm`;
+  swell dynamics in `scheduleBar`'s dom/tonic branch (`H.span*16*stepDur*.94`).
+  Arrangement (`newArrange`) and the harm grid are deliberately uncoupled so
+  live and offline stay identical — coupling cadences to BRUCH sections would
+  be the next expressive step. Old permalinks: harmony differs (by design).
+
+### RILLE — emotional-minor harmony: longing default, rationed resolution — SUPERSEDED by the narrative engine above; kept for the ♭9/register reasoning.
 **Branch:** `claude/minimal-deep-tech-guide-ta175d` · **File:** `rille/index.html`
 · **Status:** done, verified (Node harmony sweep + headless Chromium render); no PR.
 
