@@ -1,170 +1,185 @@
 # Handoff
 
-Working notes for in-flight changes. Newest first.
+Complete orientation for OPVSCVLA. Paste this plus the files in scope at the
+start of a session — it's meant to be enough to work without re-explaining.
 
-## RILLE — harmonic auto-mixing between generated tracks (DJ set)
+---
 
-**Branch:** `claude/rille-hiss-pause-4dojix`
-**File touched:** `rille/index.html`
-**Status:** Done, verified headless. No PR opened yet.
+## Architecture
 
-### The report
-"Expand RILLE to mix between songs. Follow harmonic principles (Camelot wheel).
-Use research on what makes minimal techno good and follow the guidelines."
-Chosen UX (asked): continuous auto-set + manual trigger; next key "mostly smooth,
-occasional lift".
+**OPVSCVLA is twelve independent single-file Web Audio machines** plus a static
+landing page. There is **no build step, no bundler, no dependencies, no npm, no
+samples, no server-side anything.** Each `op.` is one self-contained
+`index.html` — inline `<style>`, inline `<script>`, all synthesis in the
+Web Audio API. GitHub Pages serves the repo as-is.
 
-### What it does now
-A new **AUTO-SET** toggle turns RILLE from one track into an endless DJ set: every
-`SET_BARS` (48) it beatmatches and blends into a fresh generated track in a
+The machines share a design *grammar* (see Conventions) but **not code** — each
+is deliberately standalone so it can be opened, copied, or shared as a single
+file. Do not try to factor shared code across machines; that's a non-goal.
+
+Typical machine shape (varies, but the spine is consistent):
+- A **model** — the musical law (a mode/scale, a Camelot wheel, Fux's counterpoint
+  rules, a change-ringing method, a rhythm timeline). This is the "interface":
+  the user sets the law, the machine composes within it.
+- A **generator** (`genAll` / equivalent) that turns seed + params into a
+  deterministic score, run once and cached.
+- An **audio graph** (`buildGraph` / equivalent) — synthesis voices + a master
+  chain (shaper → compressor → sends → out), often with reverb/delay sends.
+- A **scheduler** (`schedTick` / `scheduleBar`) that walks the score against
+  `ac.currentTime` with lookahead.
+- A **canvas** visualization, layer-cached, render loop sleeps when idle.
+- **URL-hash serialization** — every param (seed included) round-trips through
+  `#…` so a link reproduces the exact pressing.
+- An **offline render** path that cuts a deterministic 16-bit WAV.
+
+## Key decisions
+
+- **One file per machine, zero dependencies.** Portability and longevity over
+  DRY. A machine must keep working if you save just its `index.html`.
+- **The law is the interface.** Controls expose the compositional constraint
+  (rules, modes, methods), not knobs on samples. The machine composes; the user
+  sets the law it obeys.
+- **Deterministic + shareable.** Seeded generation; the URL hash *is* the
+  pressing; offline WAV render is deterministic. A shared link or a cut WAV must
+  reproduce exactly.
+- **Change-while-playing.** Where a machine runs a groove, param changes re-vibe
+  at the next bar rather than restarting the transport (keyed off
+  `ac.currentTime`, which the scheduler already reads).
+- **Correctness where the domain has a right answer.** PEAL verifies every
+  method/touch is *true* (no row rung twice); GRADUS enforces Fux's rules;
+  tuning machines (SCALA, COCHLEA, BOLG, KHÖÖMEI) use exact just-intonation
+  ratios. Don't approximate where the tradition is exact.
+- **iOS audio handled deliberately** — `playback` session, resume across
+  interruptions/visibility. Watch this when touching transport (see the RILLE
+  pause gotcha below).
+
+## File structure
+
+```
+index.html          landing page / catalogue; has the ↓HANDOFF download button
+README.md            public catalogue + shared grammar
+HANDOFF.md           this file (also downloadable from the landing page)
+pas-sale/index.html  op. I    PAS SALÉ   — zydeco two-step
+scala/index.html     op. II   SCALA      — Shepard–Risset in just intonation
+gradus/index.html    op. III  GRADUS     — species counterpoint after Fux
+rille/index.html     op. IV   RILLE      — minimal techno dubplate (see threads)
+cochlea/index.html   op. V    COCHLEA    — just-intonation comma pump
+bolg/index.html      op. VI   BOLG       — generative uilleann piping
+peal/index.html      op. VII  PEAL       — English change-ringing
+holler/index.html    op. VIII HOLLER     — Appalachian old-time banjo
+foli/index.html      op. IX   FOLI       — West African djembe & dunun
+nenia/index.html     op. X    NENIA      — playground chant
+khoomei/index.html   op. XI   KHÖÖMEI    — Mongolian throat singing
+spannung/index.html  op. XII  SPANNUNG   — self-patching modular synth
+```
+
+The `op.` roman-numeral order is fixed and lives in `index.html` and `README.md`;
+keep all three (page, README, this file) in sync when adding a machine.
+
+## Conventions
+
+**Working process (agreed with the maintainer):**
+- Keep this HANDOFF.md current — update it at the **end of every session**
+  without being asked (architecture, decisions, structure, threads).
+- During iteration, output **patches/diffs, not full-file rewrites.** Emit a
+  whole file only when creating it or when changes exceed ~50%.
+- Don't restate the request or recap prior turns; answer directly.
+- **Keep scope to the module in play** and flag when we've drifted.
+- If a large file is pasted but only part is needed, work from that part — don't
+  reproduce the whole file back.
+
+**Repo/product conventions:**
+- Shared keys: **space** = play/stop · **r** = another (aliud/encore) ·
+  **c** = cut 16-bit WAV. Per-machine keys are documented in-page.
+- Every machine carries an expandable **"on this music"** panel — plain-language
+  history of the idea it renders.
+- `prefers-reduced-motion` respected throughout; render loops sleep when idle;
+  canvas layers cached.
+- Verify audio work **headless (Chromium)**: enumerate the model for
+  correctness, then smoke-test the transport/scheduler and offline render for
+  runtime errors. See the RILLE threads for the pattern.
+- Git: develop on the feature branch, commit with descriptive messages, push;
+  **don't open a PR unless asked.** The music-theory / design reasoning tends to
+  live in commit messages.
+
+## Open threads
+
+Newest first. These are the in-flight / recently-landed changes, all in
+`rille/index.html`.
+
+### RILLE — harmonic auto-mixing between generated tracks (DJ set)
+**Branch:** `claude/rille-hiss-pause-4dojix` · **Status:** done, verified
+headless; no PR opened.
+
+An **AUTO-SET** toggle turns RILLE from one track into an endless DJ set: every
+`SET_BARS` (48) it beatmatches and blends into a fresh track in a
 **Camelot-compatible key**, over a long phrase-aligned crossfade with a **bass
-swap**. **JETZT →** triggers the next blend by hand (keys: `m` mix, `x` auto).
-A readout under the controls shows the current Camelot key and the queued move.
+swap**. **JETZT →** triggers the next blend by hand (keys: `m` mix, `x` auto). A
+readout shows current Camelot key + queued move.
 
-### Harmonic model (Camelot)
-Every mood is a minor-family mode, so every track sits on the Camelot **A ring**;
-its key = tonic pitch-class. `CAMELOT_PC`/`PC_CAMELOT` map both ways; ±1 Camelot =
-a perfect fifth/fourth. Moves rendered (all minor→minor, all wheel-legal): same
-key, +1 (fifth ↑), −1 (fourth ↑), and the two energy boosts +7 (semitone ↑) and
-+2 (whole-tone ↑). `pickHarmonicMove` weights fifths/fourths highest, same-key
-sometimes, an energy lift now and then. **B-ring / relative-major moves are not
-rendered** — the engine has no major mode. Mood keys: FINSTERNIS 4A, SCHATTEN 1A,
-TRÄNEN 8A, EISEN 9A, DÄMMERUNG 7A, LEERE 5A. `genAll` gained a `rootOverride` so a
-track can be transposed to any target key; `st.root` carries the live key.
+- **Harmonic model (Camelot):** every mood is a minor mode → every track sits on
+  the Camelot **A ring**; key = tonic pitch-class. `CAMELOT_PC`/`PC_CAMELOT` map
+  both ways; ±1 Camelot = a fifth/fourth. Rendered moves (all minor→minor,
+  wheel-legal): same key, +1, −1, +7 (semitone lift), +2 (whole-tone lift).
+  `pickHarmonicMove` weights fifths/fourths highest. **B-ring / relative-major
+  moves are NOT rendered — the engine has no major mode.** Mood keys: FINSTERNIS
+  4A, SCHATTEN 1A, TRÄNEN 8A, EISEN 9A, DÄMMERUNG 7A, LEERE 5A. `genAll` gained a
+  `rootOverride`; `st.root` carries the live key.
+- **Minimal-techno principles:** long phrase-aligned blends (`BLEND_BARS`=16),
+  beatmatch (both decks share one bar clock at `st.bpm`), bass swap (incoming
+  low end held out by a highpass until the mid-blend swap so basslines never
+  stack), transition-by-subtraction (outgoing stabs/claps/melody stripped at the
+  swap, then it fades).
+- **Dual-deck architecture:** `buildGraph` is now a shared **mixer** (master
+  shaper→comp→out + shared reverb/delay sends). `makeDeck()` hangs a full
+  channel-strip per track (part gains, own sidechain duck bus, stab filter, kick
+  drive, sends, a **fader**/crossfader, a **bassKill** highpass, and a post-comp
+  **deckFloor** for the hiss). Voice functions unchanged — first arg still `G`,
+  now a deck with the same field names. `RT.decks[]` holds live decks (1
+  normally, 2 during a blend); `schedTick` schedules each at the same `t`.
+  `startMix`/`doSwap`/`finishMix` run the blend; outgoing deck retired, incoming
+  promoted to primary (`st.g` etc.). Hash gained `k` (key) and `x` (auto).
+  `cutPlate` builds one deck; offline WAV stays a single track.
+- **Pick-up:** only the A ring is reachable — a major-mode voicing would unlock
+  relative/diagonal (B-ring) moves and the full wheel. `SET_BARS`/`BLEND_BARS`
+  are consts near the Camelot helpers for pacing tweaks.
 
-### Minimal-techno principles (from the research)
-Long blends (`BLEND_BARS`=16, phrase-aligned), **beatmatch** (both decks share one
-bar clock at `st.bpm`), **bass swap** (incoming tops rise first with its low end
-held out by a highpass, kick+bass handed over at the mid-blend bar so two
-basslines never stack), and **transition by subtraction** (at the swap the
-outgoing track's stabs/claps/melody are stripped, then it fades). Incoming starts
-from its intro and builds.
+### RILLE — hiss was pumped by the kick; added a pause button
+**Branch:** `claude/rille-hiss-pause-4dojix` · **Status:** done, verified headless.
 
-### Architecture — dual deck
-`buildGraph` is now a shared **mixer** (master shaper→comp→out + shared reverb/
-delay sends). `makeDeck()` hangs a full channel-strip per track: part gains, its
-own sidechain duck bus, stab filter, kick drive, sends, a **fader** (crossfader),
-a **bassKill** highpass (the bass swap), and a post-comp **deckFloor** for the
-hiss (still never pumped, now crossfades per deck). Voice functions are unchanged
-— their first arg is still called `G` but now receives a deck exposing the same
-field names. `RT.decks[]` holds live decks (normally 1, two during a blend);
-`schedTick` advances/schedules each at the same `t`. `startMix`/`doSwap`/
-`finishMix` run the blend; the outgoing deck is retired and the incoming promoted
-to primary (`st.g` etc.), with chips/ledger/hash resynced. Hash gained `k` (key)
-and `x` (auto) so a shared link restores the exact key and set mode. `cutPlate`
-builds one deck; the offline WAV is still a single track.
+- **Hiss un-pumped + lowered:** the surface hiss (`h` noise loop in `startDust`,
+  part `pulvis`/STAUB) ran through the master compressor, so the "constant" hiss
+  ducked on every kick — nothing a real pressing does. Fix: added `G.floor`, a
+  gain tapped **straight to `ac.destination`** after the master comp; hiss routes
+  there instead of the part bus. Level `.006 → .004` (× mood `dust`). STAUB mute
+  still rides `G.floor.gain`. Crackle/pops stay on the part bus (request was
+  about the hiss).
+- **Pause button:** `#pause` beside SPIEL (+ `p`). `togglePause()`
+  suspends/resumes the AudioContext; everything is keyed off `ac.currentTime`
+  (frozen while suspended) so transport + visuals hold and resume exactly.
+  Button reads PAUSE↔WEITER. **Gotcha:** the iOS unlock `kick()` auto-resumes any
+  non-running context on statechange/visibility — it was instantly undoing the
+  pause. Guarded with `if(!st.paused)`.
 
-### Verification (headless Chromium)
-- Camelot: 400 random moves all legal; pc↔number round-trips; mood key table
-  correct.
-- Full blend sampled live: incoming fader 0→1 over the first half with lows
-  killed (bassKill 230), swap hands the low end over (outgoing bassKill 20→230,
-  incoming 230→20), outgoing fader →0. End-to-end via the scheduler: `4A→5A`,
-  ÜBERGANG section seen, promoted at bar 24 (=start+16), decks 2→1, no errors.
-- Auto-set fires a compatible mix; manual JETZT queues one at the next phrase.
-- Regressions: pause suspends, multi-deck STAUB mute → part+floor 0, offline WAV
-  renders (peak .97). No console/page errors in any run.
+### RILLE — chord progressions sounded broken/clunky
+**Branch:** `claude/rille-chord-dissonance-io1zr6` · **Status:** done, committed,
+pushed. No PR.
 
-### If picking this up
-- Only the A ring is reachable; a major-mode voicing would unlock relative/
-  diagonal (B-ring) moves and the full wheel.
-- `SET_BARS`/`BLEND_BARS` are consts near the Camelot helpers if the set pacing
-  wants tuning.
-
-## RILLE — hiss pumped with the kick; added a pause button
-
-**Branch:** `claude/rille-hiss-pause-4dojix`
-**File touched:** `rille/index.html`
-**Status:** Done, verified headless. No PR opened yet.
-
-### The report
-"Lower the hiss a bit and make sure it doesn't get sidechained — doesn't make
-sense if it was pressed on a record. Also add a pause button."
-
-### Hiss — lowered + un-pumped
-The surface hiss (the `h` noise loop in `startDust`, part `pulvis`/STAUB) ran
-through the per-part gain → `G.pre` → master shaper → **master compressor** →
-out. That glue compressor ducks the whole bus on every kick, so the "constant"
-hiss pumped in time with the beat — nothing a real pressing does; vinyl surface
-noise is a steady floor under the stylus.
-
-**Fix:** added `G.floor`, a gain tapped *straight to `ac.destination`*, after the
-master compressor. The hiss now routes into `G.floor` instead of the part bus, so
-it can't be sidechained by the master comp. Level dropped `.006 → .004` (× the
-mood's `dust`). STAUB mute still gates the hiss: the mute handler now also rides
-`G.floor.gain` when `pulvis` toggles (and `G.floor` inits from `st.mutes.pulvis`).
-The crackle/pops stay on the part bus — the request was about the hiss.
-
-### Pause button
-New `#pause` button beside SPIEL (+ `p` key). `togglePause()` suspends/resumes the
-AudioContext; because every scheduler + the disc `tick()` are keyed off
-`ac.currentTime` (frozen while suspended), the transport and visuals hold and
-resume exactly where they left off — no re-sync. Button reads PAUSE↔WEITER,
-disabled unless playing, reset by start/stop. `tick()` bails while paused so the
-rAF loop ends and resume restarts a single loop.
-
-**Gotcha:** the iOS audio-unlock `kick()` auto-resumes any non-running context on
-`statechange`/visibility while the page is visible — it was instantly undoing the
-pause. Guarded it with `if(!st.paused)`; `st.paused` is the deliberate-pause flag.
-
-### Verification
-Headless Chromium: pause freezes `ac.currentTime` (state→suspended) and resume
-advances it; `p` key toggles; STAUB mute drives both `part.pulvis` and `floor` to
-0/1; offline WAV render (shared `buildGraph`/`startDust`) renders with the floor
-node, no errors.
-
-## RILLE — chord progressions sounded broken/clunky
-
-**Branch:** `claude/rille-chord-dissonance-io1zr6`
-**File touched:** `rille/index.html` (chord engine only)
-**Status:** Done, committed, pushed. No PR opened yet.
-
-### The report
-Rille's chord progressions "often sound bad" — some dissonance is fine, but a lot
-of progressions sounded *broken*, not just spicy.
-
-### Root cause 1 — a diatonic ♭9 (the "broken" clang)
-`buildChord()` stacked its "ninth" by reaching eight diatonic scale-steps above
-the chord root (`rel(8)`) without checking the resulting interval. On any degree
-whose upper scale-neighbour is a semitone, that ninth comes out a **♭9 — a minor
-ninth (13 semitones) above the root**, the harshest interval in the voicing and a
-textbook avoid-note over non-dominant chords.
-
-Trap degrees per mode: **Phrygian i & v · Aeolian ii & v · Dorian ii & vi.**
-It was baked into the default mood (tenebrae, Phrygian tonic → `0,3,10,13`) and
-into most of the user-selectable progressions, so the very first thing you hear
-was a ♭9 grinding against the pedal bass.
-
-**Fix:** fold a ♭9 down to the octave (`nine()` → `13 ? 12`). Also guarded the
-`sus9` frame so an augmented 4th / diminished 5th can't grind a semitone cluster
-(`sus()`, `fif()`). Everything stays in the mode; four voices preserved.
-`ferrum`'s `cluster` voicing `[0,6,13]` is **intentionally harsh — left alone.**
-Commit `571907b`.
-
-### Root cause 2 — every stab in a different register (the "clunk")
-Chords were voiced root-position at `root+12+base`, so as a progression climbed
-the scale the whole voicing leapt up toward an octave — no consistent register.
-
-**Fix:** anchor each chord root to the octave nearest the key root, moving the
-voicing as a rigid block (internal intervals untouched → no new clashes).
-Result: register span ≤10 semitones, worst chord-to-chord step ≤9, nothing drifts
-below the key root into the bass. Voiced progression precomputed once in
-`genAll` as `g.chords`, read by `scheduleBar`. Commit `ea91fb2`.
-
-Considered true voice-leading (nearest to *previous* chord) and rejected it: it
-drifted the register down over the loop and lurched ~14 semitones at the loop
-point, sinking chords into the bass. Register-anchoring is loop-stable.
-
-### Verification
-- Enumerated every mode × diatonic voicing (shell9/stack9/sus9) × selectable
-  progression = 95 chords → **0 minor-ninth / semitone-cluster clashes** (was ~40).
-- Headless Chromium smoke test: `genAll` runs for all 48 mood×prog combos, the
-  transport plays and advances bars with **no runtime errors**. ferrum's cluster
-  still reads "harsh" by design (expected).
-
-### If picking this up
-- Optional next step: light inversion / true voice-leading with anti-drift
-  clamping, if the parallel-block motion still feels stiff. Current choice was
-  deliberately the stable, idiomatic one.
-- The music-theory diagnosis lives in the commit messages; the engine is
-  `buildChord` / `genAll` / `scheduleBar` in `rille/index.html`.
+- **Root cause 1 — a diatonic ♭9 (the "broken" clang):** `buildChord()` stacked
+  its ninth at `rel(8)` diatonic steps without checking the interval; on degrees
+  whose upper neighbour is a semitone that ninth is a **♭9 (13 semitones)** — an
+  avoid-note, baked into the default mood and most progressions. Fix: fold a ♭9
+  to the octave (`nine()` → `13 ? 12`); guarded the `sus9` frame against
+  aug-4th/dim-5th semitone clusters. `ferrum`'s `[0,6,13]` cluster is
+  **intentionally harsh — left alone.** Commit `571907b`.
+- **Root cause 2 — every stab in a different register (the "clunk"):** chords
+  were voiced root-position at `root+12+base`, leaping up as the progression
+  climbed. Fix: anchor each chord root to the octave nearest the key root, moving
+  the voicing as a rigid block (intervals untouched). Span ≤10 semitones,
+  worst step ≤9, nothing sinks into the bass. Precomputed in `genAll` as
+  `g.chords`, read by `scheduleBar`. Commit `ea91fb2`. True nearest-previous
+  voice-leading was considered and rejected — it drifted down and lurched ~14
+  semitones at the loop point; register-anchoring is loop-stable.
+- **Pick-up:** optional next step is light inversion / true voice-leading with
+  anti-drift clamping, if parallel-block motion feels stiff. Engine is
+  `buildChord` / `genAll` / `scheduleBar`.
