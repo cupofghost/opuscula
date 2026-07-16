@@ -106,6 +106,51 @@ keep all three (page, README, this file) in sync when adding a machine.
 
 Newest first.
 
+### RILLE — emotional-minor harmony: longing default, rationed resolution
+**Branch:** `claude/minimal-deep-tech-guide-ta175d` · **File:** `rille/index.html`
+· **Status:** done, verified (Node harmony sweep + headless Chromium render); no PR.
+
+Maintainer note: "the notes/harmonies aren't hitting right — vibe should be
+emotional, minor, longing; major chords minimal and short; only resolving in
+longer emotionally-charged sections." Researched emotional-minor writing and
+reworked the harmonic language (not the synthesis). Four moves:
+
+- **A real resolution — the harmonic-minor dominant.** Every mode here is minor,
+  so its diatonic *v* has no leading tone and cannot pull home; the loop just
+  floated. Added a `dom` chord style to `buildChord`: on the fifth degree it forces
+  a **major third (the raised leading tone) + ♭7 → V7**, the one chord that
+  genuinely resolves to i. It's reserved for cadences, marked per-progression.
+- **`hold` = the charged, sustained cadence.** Progressions now carry a `dom` set
+  and a `hold` set. `hold` chords are played as one slow 2-bar **swell** (pad-style)
+  instead of short stabs, and the **bass steps V→i** (during `dom`/`hold` the bass
+  follows the chord root even in pedal moods). So resolution only *lands* in the
+  longer sections; elsewhere the minor hovers, majors stay short/passing.
+- **Longing progressions.** New `PROGS` menu: harren (i), senken (i–♭VI), sehnen
+  (i–iv), fallen (i–♭VII–♭VI–i aeolian descent), **andalu** (Andalusian cadence
+  i–♭VII–♭VI–V), gebet (i–iv–♭VI–V), **aufloesung** (6-chord phrase, one V→i at the
+  end). Mood defaults rewritten to match: FINSTERNIS i–♭VI, SCHATTEN i–♭VII–♭VI–i,
+  **TRÄNEN i–♭VI–iv–♭VII–V→i** (flagship resolving), EISEN i (drone), DÄMMERUNG
+  i–IV–♭VII–V→i, LEERE i (drone), SOG i–IV–V→i.
+- **Modes toward longing.** SCHATTEN dorian→**aeolian**. Others kept (phrygian for
+  the dark FINSTERNIS/EISEN, aeolian for TRÄNEN/LEERE, dorian for the warmer
+  DÄMMERUNG/SOG). `progDom`/`progHold` are new optional mood fields; `g.dom`/`g.hold`
+  ride alongside `g.progDeg`. `romanOf`/`chordLetters` take a `dom` arg and print the
+  V/`x7`. New in-page "Longing and release" note explains it.
+- **Verified:** Node — all 7 mood defaults + 8 progs × seeds (2240 pressings)
+  compose with 0 non-cluster ♭9 and 0 structural fails; every `dom` chord confirmed
+  a true V7 (leading tone + major third + ♭7), every resolving mood has a V→i tonic
+  (e.g. TRÄNEN `…E7→Am`, DÄMMERUNG `…A7→Dm`, SOG `…D7→Gm`). Chromium — the four
+  resolving/hovering moods render a full 16-bar phrase (cadence swell + bass V→i)
+  with zero pageerrors; live UI ledger shows the prog correctly.
+- **Pick-up / caveats:** `dom` assumes the marked step is **degree 4** (the V root);
+  keep it there. On **dorian** moods, progs that use degree 5 (fallen/andalu/
+  aufloesung) render a passing **vi° (diminished)** rather than ♭VI — valid, adds
+  yearning, de-clashed, but if you want ♭VI there switch that mood to aeolian.
+  **Permalink note:** this changes the harmony of *every* pressing (mood defaults
+  and the `p` prog-index both moved), so links cut before this sound different — by
+  design, no hash version bump. The register anchor puts V ~a fifth below the tonic
+  stabs (same band, verified in range); lift it if a mood's V feels low.
+
 ### HOLLER — clean loop, mellower tone, a fiddle lead
 **Branch:** `claude/banjo-loop-sound-design-qjlfm4` · **File:**
 `holler/index.html` · **Status:** done, verified headless (Chromium); pushed to
