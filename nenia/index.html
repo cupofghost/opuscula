@@ -591,6 +591,64 @@ function compose(P){
   }
 }
 
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Open ../officina/ — the voicing bench — to edit these live inside the
+   running mix, save named presets, and export them. A preset saved there
+   applies even when this file is opened directly (localStorage); add
+   ?factory to the URL to hear the shipped voice. (NENIA renders each
+   chant as a one-shot performance: edits apply from the next play.) */
+const TIMBRE={
+  id:'nenia', title:'NENIA \u00b7 op. X',
+  doc:'Children\u2019s voices from sawtooth and two formants. Each singing kid is one sawtooth run through two parallel bandpasses tuned to the vowel of the current syllable (F1/F2 from a small formant table) \u2014 the same trick a throat plays. Every note scoops up onto its pitch like a playground shout, droops slightly at the end, and each kid carries their own detune, timing jitter, brightness and pan \u2014 the crowd is those imperfections (they are composition, seeded, not voicing). Shouts add a breath-noise edge at F2. Percussion is claps (bandpassed noise bursts), stomps and thuds (dropping sine + noise), whooshes, ball bounces \u2014 little foley from the same noise buffer. Everything meets a master gain \u2192 4:1 compressor, with a convolved yard (corridor / gymnasium per the WHERE control) on a send.',
+  groups:{
+    master:{label:'master & yard',doc:'Output gain into the compressor; the yard reverb send scales whichever WHERE is chosen.',params:{
+      gain:{v:.5,min:.2,max:1,step:.01,label:'master gain',doc:'level into the compressor'},
+      verbScale:{v:1,min:0,max:2.5,step:.05,label:'yard \u00d7',doc:'scales the chosen yard\u2019s reverb return (all three places)'},
+    }},
+    chant:{label:'the voices',doc:'The shared voice recipe every kid sings through; the kids\u2019 individual detune/jitter/pan stay part of the composition.',params:{
+      level:{v:.16,min:.04,max:.4,step:.005,label:'voice level',doc:'per-note gain (\u00d7 the note\u2019s velocity)'},
+      shout:{v:1.5,min:1,max:2.5,step:.05,label:'shout \u00d7',doc:'extra gain on shouted syllables'},
+      scoopFrom:{v:.94,min:.85,max:1,step:.005,label:'scoop from',doc:'where the note starts relative to its pitch (0.94 = 6% flat, swooping up)'},
+      scoopTime:{v:.045,min:.01,max:.15,step:.005,unit:'s',label:'scoop time',doc:'how long the swoop takes'},
+      droop:{v:.985,min:.95,max:1,step:.005,label:'end droop',doc:'where an unglissed note sags to by its end (1 = held straight)'},
+      f1Q:{v:5,min:1,max:14,step:.5,label:'formant 1 Q',doc:'narrowness of the first vowel band; higher = more nasal'},
+      f2Q:{v:7,min:1,max:16,step:.5,label:'formant 2 Q',doc:'narrowness of the second vowel band'},
+      brightMix:{v:.55,min:0,max:1.2,step:.01,label:'brightness mix',doc:'level of the F2 band (\u00d7 each kid\u2019s own brightness)'},
+      breath:{v:.4,min:0,max:1,step:.02,label:'shout breath',doc:'noise edge on shouts, at the second formant'},
+    }},
+    perc:{label:'the games (foley)',doc:'One knob over all of it \u2014 claps, stomps, bounces, whooshes, the rope, the bridge falling down.',params:{
+      level:{v:1,min:0,max:2,step:.05,label:'foley level',doc:'scales every percussion and game sound'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
 /* ---------- synthesis ---------- */
 const FORMANTS={ee:[300,2300],ay:[450,2000],ah:[720,1240],oh:[500,900],oo:[330,880],y:[600,1800],
   i:[400,1900],o:[520,1000],a:[760,1550],aw:[590,850]};
@@ -615,12 +673,12 @@ function makeVerb(ctx,yard){
 
 function buildGraph(ctx,plan,P,t0){
   const solF=KEYS[P.key];
-  const master=ctx.createGain(); master.gain.value=0.5;
+  const master=ctx.createGain(); master.gain.value=TP.master.gain;
   const comp=ctx.createDynamicsCompressor();
   comp.threshold.value=-16; comp.ratio.value=4; comp.attack.value=0.004; comp.release.value=0.22;
   master.connect(comp); comp.connect(ctx.destination);
   const verb=makeVerb(ctx,P.yard);
-  const verbG=ctx.createGain(); verbG.gain.value=[0.14,0.28,0.34][P.yard]||0.14;
+  const verbG=ctx.createGain(); verbG.gain.value=([0.14,0.28,0.34][P.yard]||0.14)*TP.master.verbScale;
   verb.connect(verbG); verbG.connect(comp);
   const send=node=>{node.connect(master);node.connect(verb)};
 
@@ -635,16 +693,16 @@ function buildGraph(ctx,plan,P,t0){
     const [F1,F2]=vowFmt(syl);
     const src=ctx.createOscillator(); src.type='sawtooth';
     // scoop onto the note; optional gliss off it
-    src.frequency.setValueAtTime(f*0.94,st);
-    src.frequency.linearRampToValueAtTime(f,st+0.045);
+    src.frequency.setValueAtTime(f*TP.chant.scoopFrom,st);
+    src.frequency.linearRampToValueAtTime(f,st+TP.chant.scoopTime);
     if(o.gliss)src.frequency.linearRampToValueAtTime(f*Math.pow(2,o.gliss/12),et);
-    else src.frequency.linearRampToValueAtTime(f*0.985,et); // tiny droop
-    const b1=ctx.createBiquadFilter();b1.type='bandpass';b1.frequency.value=F1;b1.Q.value=5;
-    const b2=ctx.createBiquadFilter();b2.type='bandpass';b2.frequency.value=F2;b2.Q.value=7;
+    else src.frequency.linearRampToValueAtTime(f*TP.chant.droop,et); // tiny droop
+    const b1=ctx.createBiquadFilter();b1.type='bandpass';b1.frequency.value=F1;b1.Q.value=TP.chant.f1Q;
+    const b2=ctx.createBiquadFilter();b2.type='bandpass';b2.frequency.value=F2;b2.Q.value=TP.chant.f2Q;
     const g1=ctx.createGain();g1.gain.value=1.0;
-    const g2=ctx.createGain();g2.gain.value=0.55*v.bright;
+    const g2=ctx.createGain();g2.gain.value=TP.chant.brightMix*v.bright;
     const env=ctx.createGain(); env.gain.value=0;
-    const vel=(o.vel||1)*(o.shout?1.5:1)*0.16;
+    const vel=(o.vel||1)*(o.shout?TP.chant.shout:1)*TP.chant.level;
     env.gain.setValueAtTime(0,st);
     env.gain.linearRampToValueAtTime(vel,st+0.018);
     env.gain.setValueAtTime(vel,Math.max(st+0.02,et-0.06));
@@ -657,7 +715,7 @@ function buildGraph(ctx,plan,P,t0){
       const ns=ctx.createBufferSource();ns.buffer=noiseB;ns.loop=true;
       const nf=ctx.createBiquadFilter();nf.type='bandpass';nf.frequency.value=F2;nf.Q.value=2;
       const ng=ctx.createGain();ng.gain.setValueAtTime(0,st);
-      ng.gain.linearRampToValueAtTime(vel*0.4,st+0.02);
+      ng.gain.linearRampToValueAtTime(vel*TP.chant.breath,st+0.02);
       ng.gain.linearRampToValueAtTime(0,st+Math.min(dur,0.18));
       ns.connect(nf);nf.connect(ng);send(ng);ns.start(st);ns.stop(st+0.25);
     }
@@ -674,7 +732,7 @@ function buildGraph(ctx,plan,P,t0){
   function burst(t,filter,freq,Q,dur,vel,pan){
     const s=ctx.createBufferSource();s.buffer=noiseB;s.loop=true;
     const f=ctx.createBiquadFilter();f.type=filter;f.frequency.value=freq;f.Q.value=Q;
-    const g=ctx.createGain();g.gain.setValueAtTime(vel,t);
+    const g=ctx.createGain();g.gain.setValueAtTime(vel*TP.perc.level,t);
     g.gain.linearRampToValueAtTime(0,t+dur);
     s.connect(f);f.connect(g);
     const p=ctx.createStereoPanner?ctx.createStereoPanner():null;
@@ -684,7 +742,7 @@ function buildGraph(ctx,plan,P,t0){
   function tone(t,freq,dur,vel){
     const o=ctx.createOscillator();o.type='sine';
     o.frequency.setValueAtTime(freq,t);o.frequency.linearRampToValueAtTime(freq*0.6,t+dur);
-    const g=ctx.createGain();g.gain.setValueAtTime(vel,t);g.gain.linearRampToValueAtTime(0,t+dur);
+    const g=ctx.createGain();g.gain.setValueAtTime(vel*TP.perc.level,t);g.gain.linearRampToValueAtTime(0,t+dur);
     o.connect(g);send(g);o.start(t);o.stop(t+dur+0.02);
   }
   const grng=mulberry32(P.seed^0x616);
@@ -701,7 +759,7 @@ function buildGraph(ctx,plan,P,t0){
         const f=ctx.createBiquadFilter();f.type='bandpass';f.Q.value=4;
         f.frequency.setValueAtTime(400,t);f.frequency.linearRampToValueAtTime(2400,t+0.16);
         const g=ctx.createGain();g.gain.setValueAtTime(0,t);
-        g.gain.linearRampToValueAtTime(0.10,t+0.08);g.gain.linearRampToValueAtTime(0,t+0.18);
+        g.gain.linearRampToValueAtTime(0.10*TP.perc.level,t+0.08);g.gain.linearRampToValueAtTime(0,t+0.18);
         s.connect(f);f.connect(g);send(g);s.start(t);s.stop(t+0.2);break}
       case 'step':   tone(t,95,0.14,0.4);burst(t,'lowpass',320,1,0.06,0.2,p.pan||0);break;
       case 'thud':   tone(t,62,0.32,0.7);burst(t,'lowpass',200,1,0.12,0.4,0);break;
@@ -713,7 +771,7 @@ function buildGraph(ctx,plan,P,t0){
       case 'roll':{  const s=ctx.createBufferSource();s.buffer=noiseB;s.loop=true;
         const f=ctx.createBiquadFilter();f.type='bandpass';f.Q.value=3;
         f.frequency.setValueAtTime(1400,t);f.frequency.exponentialRampToValueAtTime(220,t+0.5);
-        const g=ctx.createGain();g.gain.setValueAtTime(0.12,t);g.gain.linearRampToValueAtTime(0,t+0.55);
+        const g=ctx.createGain();g.gain.setValueAtTime(0.12*TP.perc.level,t);g.gain.linearRampToValueAtTime(0,t+0.55);
         const p2=ctx.createStereoPanner?ctx.createStereoPanner():null;
         s.connect(f);if(p2){p2.pan.value=0.4;f.connect(g);g.connect(p2);send(p2)}else{f.connect(g);send(g)}
         s.start(t);s.stop(t+0.6);break}
@@ -724,7 +782,7 @@ function buildGraph(ctx,plan,P,t0){
           o.frequency.setValueAtTime(f,tt);o.frequency.linearRampToValueAtTime(f*1.25,tt+0.05);
           o.frequency.linearRampToValueAtTime(f*0.9,tt+0.1);
           const g=ctx.createGain();g.gain.setValueAtTime(0,tt);
-          g.gain.linearRampToValueAtTime(0.07,tt+0.015);g.gain.linearRampToValueAtTime(0,tt+0.11);
+          g.gain.linearRampToValueAtTime(0.07*TP.perc.level,tt+0.015);g.gain.linearRampToValueAtTime(0,tt+0.11);
           const pn=ctx.createStereoPanner?ctx.createStereoPanner():null;
           o.connect(g);if(pn){pn.pan.value=grng()*1.4-0.7;g.connect(pn);send(pn)}else send(g);
           o.start(tt);o.stop(tt+0.13);}break}
