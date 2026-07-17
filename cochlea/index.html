@@ -590,8 +590,86 @@ var walk=null, ana=null;
 var cur={l:0,i:-1,lapsus:0};
 var rev=0;
 
-var NOMINAL={fund:1,harm:1,cymb:0.8,puls:0.5};
-var SENDS={fund:0.05,harm:0.18,cymb:0.45,puls:0.12};
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Open ../officina/ — the voicing bench — to edit these live inside the
+   running mix, save named presets, and export them. A preset saved there
+   applies even when this file is opened directly (localStorage); add
+   ?factory to the URL to hear the shipped voice. */
+const TIMBRE={
+  id:'cochlea', title:'COCHLEA \u00b7 op. V',
+  doc:'Four registers around the comma pump, each its own bus with its own send into a 2.8 s room. HARMONIUM \u2014 the beatless reed bank: one sawtooth per chord tone (exact just ratios \u2014 the tuning is the law, never a knob) through a shared lowpass, with a slow amplitude shimmer whose rate varies per chord; pitch is never modulated, so the purity of the intervals is untouched. FUNDAMENTUM \u2014 a lowpassed triangle on the bass root. CYMBALUM \u2014 little sine blips arpeggiating the chord\u2019s partials. PULSUS \u2014 a bandpassed tick keeping the walk\u2019s step. The registration toggles pull whole buses in and out (their levels here are what the toggles restore).',
+  groups:{
+    master:{label:'master & room',doc:'Output gain into a 4:1 compressor; one convolved room shared by all four registers.',params:{
+      gain:{v:.85,min:.3,max:1.2,step:.01,label:'master gain',doc:'level into the compressor'},
+      wet:{v:.3,min:0,max:1,step:.02,label:'room return',doc:'the chamber around the pump'},
+      roomSize:{v:2.8,min:.5,max:5,step:.1,unit:'s',label:'room size',doc:'impulse length'},
+    }},
+    mixer:{label:'registration levels',doc:'Bus gain per register \u2014 what each stop sounds at when drawn.',params:{
+      fund:{v:1,min:0,max:1.6,step:.02,label:'fundamentum',doc:'the bass'},
+      harm:{v:1,min:0,max:1.6,step:.02,label:'harmonium',doc:'the reed bank'},
+      cymb:{v:.8,min:0,max:1.6,step:.02,label:'cymbalum',doc:'the blips'},
+      puls:{v:.5,min:0,max:1.6,step:.02,label:'pulsus',doc:'the tick'},
+    }},
+    sends:{label:'room sends',doc:'How much of each register reaches the room \u2014 the bass stays close, the cymbalum floats.',params:{
+      fund:{v:.05,min:0,max:1,step:.01,label:'fundamentum',doc:'bass into the room'},
+      harm:{v:.18,min:0,max:1,step:.01,label:'harmonium',doc:'reeds into the room'},
+      cymb:{v:.45,min:0,max:1,step:.01,label:'cymbalum',doc:'blips into the room'},
+      puls:{v:.12,min:0,max:1,step:.01,label:'pulsus',doc:'tick into the room'},
+    }},
+    harmonium:{label:'harmonium',doc:'The reed bank itself.',params:{
+      level:{v:.11,min:.02,max:.3,step:.005,label:'reed level',doc:'per-tone sawtooth gain'},
+      tone:{v:1500,min:500,max:5000,step:50,unit:'Hz',label:'tone',doc:'shared lowpass over the reeds'},
+      shimmer:{v:.07,min:0,max:.3,step:.005,label:'shimmer',doc:'slow amplitude wobble \u2014 the bellows breathing (never pitch)'},
+      swell:{v:.42,min:.05,max:1.5,step:.01,unit:'s',label:'swell',doc:'how long each chord takes to bloom in'},
+    }},
+    fundamentum:{label:'fundamentum',doc:'The bass register.',params:{
+      level:{v:.3,min:0,max:.8,step:.01,label:'level',doc:'bass note gain'},
+      tone:{v:300,min:100,max:1000,step:10,unit:'Hz',label:'tone',doc:'lowpass over the triangle'},
+    }},
+    cymbalum:{label:'cymbalum',doc:'The arpeggiating blips.',params:{
+      level:{v:.16,min:0,max:.5,step:.005,label:'level',doc:'blip peak (\u00d7 the arp\u2019s own velocity)'},
+      decay:{v:.09,min:.02,max:.4,step:.005,unit:'s',label:'decay',doc:'blip ring'},
+    }},
+    pulsus:{label:'pulsus',doc:'The step tick \u2014 a filtered noise burst.',params:{
+      level:{v:.28,min:0,max:.8,step:.01,label:'level',doc:'plain tick'},
+      accLvl:{v:.5,min:0,max:1,step:.01,label:'accent level',doc:'the accented tick'},
+      tone:{v:2300,min:800,max:5000,step:25,unit:'Hz',label:'tick tone',doc:'bandpass of the plain tick'},
+      accTone:{v:1500,min:500,max:4000,step:25,unit:'Hz',label:'accent tone',doc:'bandpass of the accent (lower = woodier)'},
+      q:{v:9,min:1,max:25,step:.5,label:'tick Q',doc:'narrowness \u2014 high turns the tick into a pitched pop'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+// bus levels + sends live in TIMBRE; these aliases keep the code readable.
+var NOMINAL=TP.mixer;
+var SENDS=TP.sends;
 
 var RM=false;
 try{RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
@@ -602,7 +680,7 @@ var live={playing:false,iter:null,next:null,timer:null,active:[],uiQ:[],
           state:{l:0,i:0,tonic:1}};
 
 function makeIR(ac){
-  var sr=ac.sampleRate, len=Math.floor(sr*2.8);
+  var sr=ac.sampleRate, len=Math.floor(sr*TP.master.roomSize);
   var buf=ac.createBuffer(2,len,sr);
   for(var c=0;c<2;c++){
     var rnd=mulberry32(0xA0C0+c);
@@ -623,22 +701,22 @@ function makeTick(ac){
   return buf;
 }
 function makeGraph(ac){
-  var master=ac.createGain(); master.gain.value=0.85;
+  var master=ac.createGain(); master.gain.value=TP.master.gain;
   var comp=ac.createDynamicsCompressor();
   comp.threshold.value=-14; comp.ratio.value=4;
   comp.attack.value=0.01; comp.release.value=0.25;
   master.connect(comp); comp.connect(ac.destination);
   var conv=ac.createConvolver(); conv.buffer=makeIR(ac);
-  var wet=ac.createGain(); wet.gain.value=0.3;
+  var wet=ac.createGain(); wet.gain.value=TP.master.wet;
   conv.connect(wet); wet.connect(master);
-  var bus={};
+  var bus={}, sendG={};
   ['fund','harm','cymb','puls'].forEach(function(k){
     var g=ac.createGain(); g.gain.value=NOMINAL[k];
     var send=ac.createGain(); send.gain.value=SENDS[k];
     g.connect(master); g.connect(send); send.connect(conv);
-    bus[k]=g;
+    bus[k]=g; sendG[k]=send;
   });
-  return {master:master,bus:bus,tick:makeTick(ac)};
+  return {master:master,wet:wet,bus:bus,sendG:sendG,tick:makeTick(ac)};
 }
 function ensureCtx(){
   if(!ctx){
@@ -665,37 +743,50 @@ function applyRegsTo(g){
   });
 }
 
+/* OFFICINA live hook: buses/sends/master ride in immediately; per-chord
+   voices read TP at schedule time, so timbre edits land on the next chord. */
+TIMBRE.touch=function(){
+  if(!ctx||!graph)return;
+  var now=ctx.currentTime;
+  try{graph.master.gain.setTargetAtTime(TP.master.gain,now,0.06)}catch(e){}
+  try{graph.wet.gain.setTargetAtTime(TP.master.wet,now,0.1)}catch(e){}
+  ['fund','harm','cymb','puls'].forEach(function(k){
+    try{graph.sendG[k].gain.setTargetAtTime(SENDS[k],now,0.1)}catch(e){}
+  });
+  applyRegs();
+};
+
 function scheduleChordEvent(ac,g,ev,active){
   var nodes=[];
   var T=ev.t, D=ev.dur;
   /* HARMONIUM — beatless reed bank; amplitude shimmer only, pitch untouched */
   var hg=ac.createGain();
   hg.gain.setValueAtTime(0,T);
-  hg.gain.linearRampToValueAtTime(1,T+0.42);
-  hg.gain.setValueAtTime(1,Math.max(T+0.42,T+D-0.06));
+  hg.gain.linearRampToValueAtTime(1,T+TP.harmonium.swell);
+  hg.gain.setValueAtTime(1,Math.max(T+TP.harmonium.swell,T+D-0.06));
   hg.gain.linearRampToValueAtTime(0,T+D+0.5);
   var lp=ac.createBiquadFilter(); lp.type='lowpass';
-  lp.frequency.value=1500; lp.Q.value=0.4;
+  lp.frequency.value=TP.harmonium.tone; lp.Q.value=0.4;
   lp.connect(hg); hg.connect(g.bus.harm);
   var lfo=ac.createOscillator();
   lfo.frequency.value=0.11+((ev.i*7+ev.l)%5)*0.017;
-  var lg=ac.createGain(); lg.gain.value=0.07;
+  var lg=ac.createGain(); lg.gain.value=TP.harmonium.shimmer;
   lfo.connect(lg); lg.connect(hg.gain);
   lfo.start(T); lfo.stop(T+D+0.6); nodes.push(lfo);
   for(var t=0;t<ev.tones.length;t++){
     var tn=ev.tones[t];
     var o=ac.createOscillator(); o.type='sawtooth'; o.frequency.value=tn.f;
-    var og=ac.createGain(); og.gain.value=0.11*tn.g;
+    var og=ac.createGain(); og.gain.value=TP.harmonium.level*tn.g;
     o.connect(og); og.connect(lp);
     o.start(T); o.stop(T+D+0.6); nodes.push(o);
   }
   /* FUNDAMENTUM */
   var bo=ac.createOscillator(); bo.type='triangle'; bo.frequency.value=ev.bass;
-  var bf=ac.createBiquadFilter(); bf.type='lowpass'; bf.frequency.value=300;
-  var bg=ac.createGain();
+  var bf=ac.createBiquadFilter(); bf.type='lowpass'; bf.frequency.value=TP.fundamentum.tone;
+  var bg=ac.createGain(), bl=TP.fundamentum.level;
   bg.gain.setValueAtTime(0,T);
-  bg.gain.linearRampToValueAtTime(0.3,T+0.15);
-  bg.gain.setValueAtTime(0.3,Math.max(T+0.15,T+D-0.1));
+  bg.gain.linearRampToValueAtTime(bl,T+0.15);
+  bg.gain.setValueAtTime(bl,Math.max(T+0.15,T+D-0.1));
   bg.gain.linearRampToValueAtTime(0,T+D+0.25);
   bo.connect(bf); bf.connect(bg); bg.connect(g.bus.fund);
   bo.start(T); bo.stop(T+D+0.35); nodes.push(bo);
@@ -705,8 +796,8 @@ function scheduleChordEvent(ac,g,ev,active){
     var ao=ac.createOscillator(); ao.type='sine'; ao.frequency.value=h.f;
     var ag=ac.createGain();
     ag.gain.setValueAtTime(0,ta);
-    ag.gain.linearRampToValueAtTime(0.16*h.v,ta+0.006);
-    ag.gain.setTargetAtTime(0,ta+0.01,0.09);
+    ag.gain.linearRampToValueAtTime(TP.cymbalum.level*h.v,ta+0.006);
+    ag.gain.setTargetAtTime(0,ta+0.01,TP.cymbalum.decay);
     ao.connect(ag); ag.connect(g.bus.cymb);
     ao.start(ta); ao.stop(ta+0.5); nodes.push(ao);
   }
@@ -715,8 +806,8 @@ function scheduleChordEvent(ac,g,ev,active){
     var pu=ev.pulse[p], tp=T+pu.o;
     var s=ac.createBufferSource(); s.buffer=g.tick;
     var bp=ac.createBiquadFilter(); bp.type='bandpass';
-    bp.frequency.value=pu.acc?1500:2300; bp.Q.value=9;
-    var pg=ac.createGain(); pg.gain.value=pu.acc?0.5:0.28;
+    bp.frequency.value=pu.acc?TP.pulsus.accTone:TP.pulsus.tone; bp.Q.value=TP.pulsus.q;
+    var pg=ac.createGain(); pg.gain.value=pu.acc?TP.pulsus.accLvl:TP.pulsus.level;
     s.connect(bp); bp.connect(pg); pg.connect(g.bus.puls);
     s.start(tp); nodes.push(s);
   }
