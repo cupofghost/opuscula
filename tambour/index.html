@@ -402,15 +402,16 @@ for(const k in CALLS){ const B=CALLS[k];
   B.steps = stripBars(B.parts.claire).length;
 }
 
-// the battery voices, in lane order (top → bottom) + colour + pan + gain
+// the battery voices, in lane order (top → bottom) + colour + pan
+// (gains live in TIMBRE.mixer — the voicing bench edits them)
 const VOICES=[
-  {id:'clairon', label:'Clairon',  col:'#cf6a3a', pan: 0.30, gain:0.30},
-  {id:'claire',  label:'Caisse claire',  col:'#e7e4da', pan:-0.05, gain:1.02},
-  {id:'roulante',label:'Caisse roulante',col:'#9aa6b2', pan:-0.30, gain:0.66},
-  {id:'grosse',  label:'Grosse caisse',  col:'#b8442f', pan: 0.00, gain:0.95},
-  {id:'cymbales',label:'Cymbales', col:'#cbd3da', pan: 0.32, gain:0.42},
-  {id:'enclume', label:'Enclume',  col:'#7c94a8', pan:-0.34, gain:0.55},
-  {id:'bourdon', label:'Bourdon',  col:'#5a6570', pan: 0.00, gain:1.00},
+  {id:'clairon', label:'Clairon',  col:'#cf6a3a', pan: 0.30},
+  {id:'claire',  label:'Caisse claire',  col:'#e7e4da', pan:-0.05},
+  {id:'roulante',label:'Caisse roulante',col:'#9aa6b2', pan:-0.30},
+  {id:'grosse',  label:'Grosse caisse',  col:'#b8442f', pan: 0.00},
+  {id:'cymbales',label:'Cymbales', col:'#cbd3da', pan: 0.32},
+  {id:'enclume', label:'Enclume',  col:'#7c94a8', pan:-0.34},
+  {id:'bourdon', label:'Bourdon',  col:'#5a6570', pan: 0.00},
 ];
 const VOICE_BY=Object.fromEntries(VOICES.map(v=>[v.id,v]));
 
@@ -572,6 +573,102 @@ function assemble(st){
 const st={ battery:'la-marche', bpm:120, fantaisie:1, industrial:1, seed:1, enemy:'prussia', playing:false,
   mutes:{clairon:false,claire:false,roulante:false,grosse:false,cymbales:false,enclume:false,bourdon:false} };
 
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Open ../officina/ — the voicing bench — to edit these live inside the
+   running mix, save named presets, and export them. A preset saved there
+   applies even when this file is opened directly (localStorage); add
+   ?factory to the URL to hear the shipped voice. */
+const TIMBRE={
+  id:'tambour', title:'TAMBOUR \u00b7 op. XIII',
+  doc:'A field-drum battery prerendered into one looping master buffer (the FOLI skeleton). CAISSE CLAIRE \u2014 two membrane modes (196 + 291 Hz) under a rattle of one-pole-highpassed noise (the wires) and a stick crack; the snare line is TREBLED with seeded \u00b12.5 ms spread \u2014 a rank of drummers, not one player. CAISSE ROULANTE \u2014 a lower membrane, snares off. GROSSE CAISSE \u2014 a deep membrane with a beater click, on the foot. CYMBALES \u2014 highpassed noise + six inharmonic partials around a base tone. ENCLUME \u2014 four hard steel partials. CLAIRON \u2014 additive brass locked to partials of B\u266d (116.54 Hz): the upper partials BLOOM IN over the attack (the brass opening up), a breath chiff sits on the onset, a ~1 kHz formant tilts the spectrum \u2014 that motion is what separates a bugle from a Casio. The Industrie slide drives a tanh waveshaper and lays a seamless steel BOURDON under it all. Edits re-render the march (a brief rebake).',
+  groups:{
+    master:{label:'master & room',doc:'The master buffer through a drive shaper (Industrie), a half-second stone room, and a limiter. The render itself normalises to 0.9.',params:{
+      gain:{v:.92,min:.3,max:1.2,step:.01,label:'master gain',doc:'level into the limiter'},
+      wet:{v:.09,min:0,max:.4,step:.01,label:'room return',doc:'the parade-ground stone'},
+      roomSize:{v:.5,min:.1,max:1.5,step:.02,unit:'s',label:'room size',doc:'impulse length'},
+      driveScale:{v:1,min:0,max:1.5,step:.05,label:'industrie drive \u00d7',doc:'scales the saturation curve at every Industrie level (0 keeps even the foundry clean)'},
+    }},
+    mixer:{label:'battery balance',doc:'Relative gain per voice in the render (bourdon scales its per-level depth).',params:{
+      clairon:{v:.30,min:0,max:1.2,step:.01,label:'clairon',doc:'the bugle'},
+      claire:{v:1.02,min:0,max:1.4,step:.01,label:'caisse claire',doc:'the snare line \u2014 the star'},
+      roulante:{v:.66,min:0,max:1.2,step:.01,label:'caisse roulante',doc:'the field drum'},
+      grosse:{v:.95,min:0,max:1.2,step:.01,label:'grosse caisse',doc:'the step'},
+      cymbales:{v:.42,min:0,max:1.2,step:.01,label:'cymbales',doc:'the crash metal'},
+      enclume:{v:.55,min:0,max:1.2,step:.01,label:'enclume',doc:'the anvil on hard accents'},
+      bourdon:{v:1,min:0,max:2,step:.05,label:'bourdon',doc:'scales the steel drone\u2019s per-Industrie depth'},
+    }},
+    claire:{label:'caisse claire',doc:'Two detuned membrane modes + the wire rattle + crack; the accent/tap/grace/buzz weights stay the rudiment language.',params:{
+      mode1:{v:196,min:120,max:320,step:1,unit:'Hz',label:'mode 1',doc:'first membrane mode'},
+      mode2:{v:291,min:180,max:460,step:1,unit:'Hz',label:'mode 2',doc:'second membrane mode \u2014 the paper-y interval against mode 1'},
+      body:{v:.6,min:0,max:1.2,step:.02,label:'body mix',doc:'membrane level under the wires'},
+      wires:{v:.7,min:0,max:1.4,step:.02,label:'wires mix',doc:'the snare rattle level'},
+      decayScale:{v:1,min:.5,max:2,step:.05,label:'decay \u00d7',doc:'stretches every stroke kind\u2019s ring (accent/tap/grace/buzz alike)'},
+    }},
+    roulante:{label:'caisse roulante',doc:'The deeper field drum, snares off, a breath of loose noise on the skin.',params:{
+      pitch:{v:128,min:80,max:220,step:1,unit:'Hz',label:'skin pitch',doc:'membrane fundamental'},
+      drop:{v:.55,min:0,max:1.5,step:.02,label:'pitch drop',doc:'strike bend'},
+      harm:{v:.28,min:0,max:.8,step:.01,label:'overtone',doc:'second-harmonic content'},
+      rattle:{v:.12,min:0,max:.4,step:.01,label:'skin noise',doc:'the loose-skin breath on each stroke'},
+      decayScale:{v:1,min:.5,max:2,step:.05,label:'decay \u00d7',doc:'stretches accent/tap/buzz ring together'},
+    }},
+    grosse:{label:'grosse caisse',doc:'The deep membrane on the walking foot.',params:{
+      pitch:{v:54,min:35,max:90,step:1,unit:'Hz',label:'skin pitch',doc:'membrane fundamental'},
+      decay:{v:.22,min:.08,max:.6,step:.005,unit:'s',label:'decay',doc:'ring of the hit'},
+      drop:{v:.9,min:0,max:2,step:.05,label:'pitch drop',doc:'the deep bend of the beater'},
+      harm:{v:.16,min:0,max:.6,step:.01,label:'overtone',doc:'second-harmonic content'},
+      click:{v:.05,min:0,max:.15,step:.005,unit:'s',label:'beater click',doc:'length of the beater transient'},
+    }},
+    cymbales:{label:'cymbales',doc:'Highpassed noise plus six inharmonic partials around a base tone; crash rings, half chokes.',params:{
+      tone:{v:3200,min:1500,max:6000,step:50,unit:'Hz',label:'partial base',doc:'where the shimmer cluster sits'},
+      crashDec:{v:1,min:.3,max:2.5,step:.05,unit:'s',label:'crash decay',doc:'ring of the full crash'},
+      halfDec:{v:.4,min:.1,max:1,step:.02,unit:'s',label:'half decay',doc:'ring of the choked stroke'},
+      noiseMix:{v:.8,min:0,max:1.4,step:.02,label:'noise mix',doc:'the wash'},
+      shimmer:{v:.25,min:0,max:.8,step:.01,label:'shimmer mix',doc:'the inharmonic partials in the wash'},
+    }},
+    enclume:{label:'enclume',doc:'Struck steel: four hard inharmonic partials and a chip.',params:{
+      pitch:{v:1380,min:600,max:2800,step:10,unit:'Hz',label:'base pitch',doc:'lowest steel partial'},
+      ring:{v:.075,min:.03,max:.25,step:.005,unit:'s',label:'ring',doc:'decay of the steel'},
+      chip:{v:.5,min:0,max:1,step:.02,label:'strike chip',doc:'the hammer transient'},
+    }},
+    clairon:{label:'clairon',doc:'The additive bugle. Brightness is an envelope, not a constant \u2014 upper partials arrive as the note is blown.',params:{
+      brightFloor:{v:.32,min:.1,max:.8,step:.01,label:'dark start',doc:'how dark the note begins (1 = already fully bright)'},
+      bloom:{v:.055,min:.015,max:.25,step:.005,unit:'s',label:'bloom time',doc:'how fast the upper partials open up'},
+      formant:{v:1050,min:500,max:2500,step:10,unit:'Hz',label:'bell formant',doc:'the spectral hill of the instrument\u2019s bell'},
+      vibRate:{v:5.4,min:3,max:8,step:.1,unit:'Hz',label:'vibrato rate',doc:'lip vibrato after the onset'},
+      vibDepth:{v:.005,min:0,max:.02,step:.0005,label:'vibrato depth',doc:'pitch wobble as a fraction (0.005 \u2248 9\u00a2)'},
+      chiff:{v:.3,min:0,max:.8,step:.02,label:'breath chiff',doc:'the air burst on the attack'},
+      release:{v:.16,min:.05,max:.5,step:.01,unit:'s',label:'release',doc:'how the note lets go'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
 /* ------------------------------- audio ---------------------------------- */
 const SR=44100;
 
@@ -597,17 +694,18 @@ function synSnare(kind,rng){
            tap:   {mg:0.7,ng:0.6, dec:0.08,ndec:0.09,cl:0.32},
            grace: {mg:0.42,ng:0.34,dec:0.05,ndec:0.05,cl:0.2},
            buzz:  {mg:0.5,ng:0.62,dec:0.045,ndec:0.055,cl:0.16}}[kind]||{mg:0.7,ng:0.6,dec:0.08,ndec:0.09,cl:0.3};
-  const dur=Math.max(0.05,Math.max(P.dec,P.ndec)*5), n=Math.floor(dur*SR), o=new Float32Array(n);
+  const C=TP.claire, dec=P.dec*C.decayScale, ndec=P.ndec*C.decayScale;
+  const dur=Math.max(0.05,Math.max(dec,ndec)*5), n=Math.floor(dur*SR), o=new Float32Array(n);
   let ph1=0,ph2=0,prev=0,hp=0;
   for(let i=0;i<n;i++){
     const t=i/SR;
-    const f1=196*(1+0.5*Math.exp(-t/0.01)), f2=291*(1+0.5*Math.exp(-t/0.01));
+    const f1=C.mode1*(1+0.5*Math.exp(-t/0.01)), f2=C.mode2*(1+0.5*Math.exp(-t/0.01));
     ph1+=2*Math.PI*f1/SR; ph2+=2*Math.PI*f2/SR;
-    const am=Math.exp(-t/P.dec);
+    const am=Math.exp(-t/dec);
     const body=(Math.sin(ph1)*0.7+Math.sin(ph2)*0.5)*am*P.mg;
     const nz=rng()*2-1; hp=nz-prev; prev=nz;          // one-pole highpass → wires
-    const wires=hp*Math.exp(-t/P.ndec)*P.ng;
-    o[i]=body*0.6+wires*0.7;
+    const wires=hp*Math.exp(-t/ndec)*P.ng;
+    o[i]=body*C.body+wires*C.wires;
   }
   const cn=Math.floor(0.0018*SR);
   for(let i=0;i<cn;i++) o[i]+=(rng()*2-1)*P.cl*Math.exp(-i/(0.0011*SR));
@@ -617,31 +715,34 @@ function synSnare(kind,rng){
 function synField(kind,rng){
   const P={accent:{dec:0.16,mg:1.0,cl:0.4},tap:{dec:0.1,mg:0.7,cl:0.26},
            buzz:{dec:0.055,mg:0.55,cl:0.16}}[kind]||{dec:0.1,mg:0.7,cl:0.26};
-  const m=synMembrane(128,P.dec,0.55,0.28,0.004,rng);
-  for(let i=0;i<m.length;i++){ const t=i/SR; m[i]*=P.mg; m[i]+=(rng()*2-1)*0.12*Math.exp(-t/0.02)*P.mg; }
+  const RL=TP.roulante;
+  const m=synMembrane(RL.pitch,P.dec*RL.decayScale,RL.drop,RL.harm,0.004,rng);
+  for(let i=0;i<m.length;i++){ const t=i/SR; m[i]*=P.mg; m[i]+=(rng()*2-1)*RL.rattle*Math.exp(-t/0.02)*P.mg; }
   return m;
 }
 // the grosse caisse: a deep membrane with a beater click — the step.
-function synBass(rng){ return synMembrane(54,0.22,0.9,0.16,0.05,rng); }
+function synBass(rng){ const B=TP.grosse; return synMembrane(B.pitch,B.decay,B.drop,B.harm,B.click,rng); }
 // the cymbales: decaying metallic noise + a shimmer of inharmonic partials.
 function synCymbal(kind,rng){
-  const dec=kind==='crash'?1.0:0.4, dur=dec*1.3, n=Math.floor(dur*SR), o=new Float32Array(n);
+  const CY=TP.cymbales;
+  const dec=kind==='crash'?CY.crashDec:CY.halfDec, dur=dec*1.3, n=Math.floor(dur*SR), o=new Float32Array(n);
   const P=[1,1.41,1.93,2.71,3.66,5.1], ph=new Float32Array(P.length);
   let prev=0;
   for(let i=0;i<n;i++){
     const t=i/SR, e=Math.exp(-t/dec);
-    let sh=0; for(let k=0;k<P.length;k++){ph[k]+=2*Math.PI*(3200*P[k])/SR; sh+=Math.sin(ph[k]);}
+    let sh=0; for(let k=0;k<P.length;k++){ph[k]+=2*Math.PI*(CY.tone*P[k])/SR; sh+=Math.sin(ph[k]);}
     const nz=rng()*2-1, hp=nz-prev; prev=nz;
-    o[i]=(hp*0.8 + sh/P.length*0.25)*e;
+    o[i]=(hp*CY.noiseMix + sh/P.length*CY.shimmer)*e;
   }
   return o;
 }
 // the enclume: struck steel — a cluster of high inharmonic partials, hard.
 function synAnvil(rng){
-  const P=[1,2.76,5.4,8.93], base=1380, n=Math.floor(0.2*SR), o=new Float32Array(n);
-  for(const p of P){const f=base*p;for(let i=0;i<n;i++){const t=i/SR;o[i]+=Math.sin(2*Math.PI*f*t)*Math.exp(-t/0.075)/P.length;}}
+  const A=TP.enclume;
+  const P=[1,2.76,5.4,8.93], base=A.pitch, n=Math.floor(Math.max(0.2,A.ring*2.66)*SR), o=new Float32Array(n);
+  for(const p of P){const f=base*p;for(let i=0;i<n;i++){const t=i/SR;o[i]+=Math.sin(2*Math.PI*f*t)*Math.exp(-t/A.ring)/P.length;}}
   const cn=Math.floor(0.003*SR);
-  for(let i=0;i<cn;i++) o[i]+=(rng()*2-1)*0.5*Math.exp(-i/(0.0012*SR));
+  for(let i=0;i<cn;i++) o[i]+=(rng()*2-1)*A.chip*Math.exp(-i/(0.0012*SR));
   return o;
 }
 // the clairon: a brass tone, sounded per note (durations vary), locked to a
@@ -651,17 +752,18 @@ function synAnvil(rng){
 // short breath chiff sits on the attack, and a gentle formant tilts the
 // spectrum. That motion is what separates a bugle from a Casio.
 function synClaironNote(freq,dur,rng){
-  const rel=0.16, total=dur+rel, n=Math.floor(total*SR), o=new Float32Array(n);
+  const CL=TP.clairon;
+  const rel=CL.release, total=dur+rel, n=Math.floor(total*SR), o=new Float32Array(n);
   const H=Math.max(3,Math.min(18,Math.floor(8500/freq)));   // partials up to ~8.5 kHz
   const ph=new Float32Array(H+1);
-  const form=h=>{const fc=h*freq; return 0.6+0.4/(1+Math.pow((fc-1050)/900,2));}; // ~1 kHz formant
+  const form=h=>{const fc=h*freq; return 0.6+0.4/(1+Math.pow((fc-CL.formant)/900,2));}; // the bell's spectral hill
   let norm0=0; for(let h=1;h<=H;h++) norm0+=(1/h)*form(h);   // steady-state level (bright=1)
   const det=1+(rng()*2-1)*0.0012, a=0.05; let prevn=0;
   for(let i=0;i<n;i++){
     const t=i/SR;
     let env; if(t<a) env=t/a; else if(t<dur) env=1-0.12*((t-a)/Math.max(0.001,dur-a)); else env=Math.max(0,1-(t-dur)/rel);
-    const bright=0.32+0.68*(1-Math.exp(-t/0.055));          // spectrum opens over the attack
-    const vib=1+(t>0.2?0.005*Math.sin(2*Math.PI*5.4*(t-0.2)):0);
+    const bright=CL.brightFloor+(1-CL.brightFloor)*(1-Math.exp(-t/CL.bloom)); // spectrum opens over the attack
+    const vib=1+(t>0.2?CL.vibDepth*Math.sin(2*Math.PI*CL.vibRate*(t-0.2)):0);
     let s=0;
     for(let h=1;h<=H;h++){
       const amp=(1/h)*Math.pow(bright,h-1)*form(h);         // upper partials grow with brightness
@@ -669,7 +771,7 @@ function synClaironNote(freq,dur,rng){
       s+=amp*Math.sin(ph[h]);
     }
     s/=norm0;
-    if(t<0.035){ const nz=rng()*2-1, hp=nz-prevn; prevn=nz; s+=hp*0.3*(1-t/0.035); } // breath chiff
+    if(t<0.035){ const nz=rng()*2-1, hp=nz-prevn; prevn=nz; s+=hp*CL.chiff*(1-t/0.035); } // breath chiff
     o[i]=s*env;
   }
   return o;
@@ -712,15 +814,15 @@ const SECT={
 // to integer multiples of 1/looplength so it is perfectly seamless.
 function renderMaster(loop){
   const A=assemble(st);
-  const tail=1.6, n=Math.ceil((A.dur+tail)*SR);
+  const tail=Math.max(1.6,TP.cymbales.crashDec*1.3+0.3,TP.grosse.decay*4.5+0.3), n=Math.ceil((A.dur+tail)*SR);
   const L=new Float32Array(n), R=new Float32Array(n);
   const kit=bakeKit(); const idx={};
   const cRng=mulberry32((st.seed>>>0)^0x13c9e77f);   // clairon detune
   const sRng=mulberry32((st.seed>>>0)^0x6d5a3f11);   // section timing spread (seeded → hash-faithful)
   for(const e of A.ev){
     if(e.voice==='clairon'){ const mono=synClaironNote(FUND*e.partial,e.dur,cRng);
-      mixHit(L,R,Math.floor(e.t*SR),mono,e.pan,e.vel*VOICE_BY.clairon.gain); continue; }
-    const key=e.voice+'.'+e.tone, bank=kit[key]||kit['claire.tap'], vg=(VOICE_BY[e.voice]||{gain:0.7}).gain;
+      mixHit(L,R,Math.floor(e.t*SR),mono,e.pan,e.vel*TP.mixer.clairon); continue; }
+    const key=e.voice+'.'+e.tone, bank=kit[key]||kit['claire.tap'], vg=(TP.mixer[e.voice]!==undefined)?TP.mixer[e.voice]:0.7;
     const sect=SECT[e.voice];
     if(sect){
       for(const S of sect){
@@ -741,7 +843,7 @@ function renderMaster(loop){
     oL=fL; oR=fR; oN=durS;
   }
   if(st.industrial>0 && !st.mutes.bourdon){
-    const lev=[0,0.10,0.16,0.22][st.industrial];
+    const lev=[0,0.10,0.16,0.22][st.industrial]*TP.mixer.bourdon;
     const m=f=>Math.max(1,Math.round(f*oN/SR));
     const m0=m(20.6), m1=m(41.2), m2=m(61.8), mL=m(0.33);
     for(let i=0;i<oN;i++){
@@ -768,17 +870,18 @@ function driveCurve(amt){
   for(let i=0;i<n;i++){const x=i/(n-1)*2-1;c[i]=Math.tanh(k*x)/d;}
   return c;
 }
-const DRIVE_CURVE=[driveCurve(0.0),driveCurve(0.2),driveCurve(0.5),driveCurve(0.9)];
+const mkDrives=()=>[driveCurve(0.0*TP.master.driveScale),driveCurve(0.2*TP.master.driveScale),driveCurve(0.5*TP.master.driveScale),driveCurve(0.9*TP.master.driveScale)];
+let DRIVE_CURVE=mkDrives();
 
 // the fixed signal path — identical realtime & offline so the WAV is faithful.
 function buildGraph(ctx, L, R, loop){
   const G={ctx};
-  G.master=ctx.createGain(); G.master.gain.value=0.92;
+  G.master=ctx.createGain(); G.master.gain.value=TP.master.gain;
   G.lim=ctx.createDynamicsCompressor();
   G.lim.threshold.value=-2;G.lim.knee.value=0;G.lim.ratio.value=20;G.lim.attack.value=0.003;G.lim.release.value=0.1;
   G.master.connect(G.lim).connect(ctx.destination);
-  G.verb=ctx.createConvolver(); G.verb.buffer=makeRoomIR(ctx,0.5,2.6);
-  G.wet=ctx.createGain(); G.wet.gain.value=0.09; G.verb.connect(G.wet).connect(G.master);
+  G.verb=ctx.createConvolver(); G.verb.buffer=makeRoomIR(ctx,TP.master.roomSize,2.6);
+  G.wet=ctx.createGain(); G.wet.gain.value=TP.master.wet; G.verb.connect(G.wet).connect(G.master);
   G.dry=ctx.createGain(); G.dry.gain.value=1; G.dry.connect(G.master);
   G.drive=ctx.createWaveShaper(); G.drive.curve=DRIVE_CURVE[st.industrial]||DRIVE_CURVE[0]; G.drive.oversample='2x';
   G.drive.connect(G.dry); G.drive.connect(G.verb);
@@ -809,6 +912,18 @@ function stop(){
 }
 // through-composed: any change regenerates and (if playing) restarts
 function regen(){ if(RT){ stop(); play(); } else { invalidate(); } }
+
+/* OFFICINA live hook: master/room/drive ride in immediately; everything
+   baked into the master buffer re-renders debounced. */
+let __tbT=0;
+TIMBRE.touch=()=>{
+  DRIVE_CURVE=mkDrives();
+  if(RT){const ct=RT.ctx.currentTime;
+    RT.G.master.gain.setTargetAtTime(TP.master.gain,ct,.06);
+    RT.G.wet.gain.setTargetAtTime(TP.master.wet,ct,.08);
+    RT.G.drive.curve=DRIVE_CURVE[st.industrial]||DRIVE_CURVE[0];}
+  clearTimeout(__tbT); __tbT=setTimeout(()=>{if(RT)regen();},300);
+};
 
 /* ------------------------------ cut · WAV -------------------------------- */
 function encodeWav(L,R,sr){
