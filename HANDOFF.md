@@ -105,6 +105,77 @@ keep all three (page, README, this file) in sync when adding a machine.
   **don't open a PR unless asked.** The music-theory / design reasoning tends to
   live in commit messages.
 
+## Working in parallel — many sessions, one main
+
+Several chats now work this repo at once, each on its own `claude/*` branch,
+all landing on `main`. Every rule below exists because the failure it prevents
+has already happened here: two branches claiming the same opus number, stale
+branches sixty commits behind, merged branches resumed, work stranded on
+pre-rewrite history. (See the "state of the branch farm" thread for the
+current inventory.)
+
+**Branch discipline**
+- **One session = one branch = one scope** — usually one machine. Before
+  starting, `git fetch origin` and scan `git branch -r` plus recent
+  `origin/main` history: if a live branch is already working the same
+  machine, coordinate through the maintainer rather than racing it. Two
+  branches must never edit the same machine's `index.html` concurrently.
+- **First act of a session: `git fetch origin main` and start from (or
+  rebase onto) `origin/main`.** The container's local `main` is a snapshot
+  from clone time and is usually already stale.
+- **Last act of a session: fetch again, rebase onto `origin/main`, re-verify,
+  push.** Land small and land often — the abandoned branches in the farm are
+  the ones that sat unlanded until rebasing became archaeology.
+- **A merged branch is finished.** Never stack follow-up commits on it;
+  restart the branch from `origin/main` (`git checkout -B <branch>
+  origin/main`) and treat the follow-up as fresh work.
+- Branches with **no merge base** against `origin/main` predate a history
+  rewrite and cannot be merged. Anything still wanted from one gets
+  re-implemented fresh on `origin/main`.
+
+**Claiming an opus number / directory**
+- **Numbers are claimed by landing on `main`, not by designing.** While a
+  machine is in flight its number is provisional. At every rebase, re-read
+  the registry (file table above / `index.html` / `README.md`) on
+  `origin/main`; if another machine landed first, take the next numeral —
+  the directory name keeps, the op. number moves.
+- Before scaffolding a new machine, also check the other live branches for
+  an in-flight directory of the same name. Two in-flight machines may share
+  a provisional number (the rebase rule resolves it) but never a directory.
+
+**HANDOFF.md — the one file every branch edits**
+- Touch only (a) your own Open-threads entries and (b) the exact lines your
+  change requires in the fixed sections (your row in the file table, one
+  convention bullet). **Never reflow, reorder, or cosmetically rewrite
+  sections you didn't work in** — that is what turns parallel edits into
+  real conflicts.
+- New Open-threads entries go at the **top** of Open threads, self-contained
+  under their own `###` heading. Top-insertion means concurrent branches
+  conflict at the same spot and the resolution is mechanical: **keep both
+  sides' threads** (either order), then re-merge any fixed-section lines by
+  hand.
+- Only a session that deliberately reorganizes this file (like this one) may
+  restructure it — and that session should touch nothing else.
+
+**Registry files** — the landing `index.html`, `README.md`, the file table
+here, and `officina`'s `MACHINES` chips:
+- Add your row/chip as a **minimal diff** — no reordering, no reformat, no
+  drive-by copy edits. All four must agree at every landing; the
+  rebase-before-push is where you re-sync them against what landed under you.
+
+**Cross-machine sweeps** — bridge changes, a convention applied everywhere:
+- The OFFICINA bridge is duplicated verbatim in all fourteen machines, so
+  editing it touches every file and conflicts with every live branch. A
+  sweep gets its **own dedicated branch**, mixes in no per-machine feature
+  work, lands fast, and announces itself in Open threads so per-machine
+  sessions know to rebase before continuing.
+
+**Design briefs** (`rille/HARMONIA.md`, `diamond/GENESIS.md`):
+- A brief in a machine's directory claims the **concept and the directory
+  name, not the opus number** — the number is assigned when the machine
+  ships. Delete the brief when it ships and fold the outcome into the
+  HANDOFF thread (the briefs themselves say so).
+
 ## TIMBRE / OFFICINA — the voicing layer (all machines)
 
 Since 2026-07: **every machine's synthesis constants live in a `TIMBRE` block**
@@ -164,6 +235,38 @@ Conventions when touching this layer:
 ## Open threads
 
 Newest first.
+
+### State of the branch farm — parallel-work snapshot (2026-07-17)
+**Branch:** `claude/handoff-concurrent-changes-9uuwm8` (also added the
+"Working in parallel" section above). Inventory of every `claude/*` branch on
+origin at writing time; a session that lands, rescues, or deletes one of
+these should update this entry.
+
+- **op. XV is double-claimed.** `claude/dubstep-machine-scaffolding-jcz8a9`
+  (SUBLOW — dubstep / sound system; `sublow/index.html` scaffolded +
+  `sublow/NOTES.md`) and `claude/new-machine-concept-uap0bi` (DIAMOND —
+  Partch tonality diamond; `diamond/GENESIS.md` brief only) both call
+  themselves op. XV, and both edit this file. Per the claiming rule:
+  whichever lands second renumbers to op. XVI at rebase. Directories don't
+  collide, so both can proceed.
+- **Stale but carrying unlanded work:** `claude/orientation-3k25et` has a
+  KHÖÖMEI change never landed ("breathe — dynamic drone + real breath
+  pauses", +50/−15 in `khoomei/index.html`), now ~57 commits behind — rescue
+  by rebasing (expect conflicts with the TIMBRE hoist) or re-implement, or
+  drop. `claude/project-handoff-guide-7l2awu` adds per-machine
+  `docs/works/*.md` handoffs — an approach superseded by this file;
+  recommend deleting.
+- **Dead — no merge base (pre-rewrite history), cannot be merged:**
+  `claude/404-page-load-error-3da6u0`, `claude/cleanup-and-docs-sizjmt`.
+  Their surviving ideas (exit-to-landing link, PEAL acoustic switcher)
+  already landed on main independently; recommend deleting both.
+- **Merged into main, safe to delete:** `banjo-loop-sound-design-qjlfm4`,
+  `minimal-deep-tech-guide-ta175d`, `new-machine-design-y66pvl`,
+  `opuscula-general-leuzu2`, `project-working-conventions-hlurpe`,
+  `project-working-conventions-xjaafw`, `rille-chord-dissonance-io1zr6`,
+  `rille-hiss-pause-4dojix`, `rille-tonal-composition-n8zfie`,
+  `voice-synthesis-settings-ifeuah` (all `claude/…`). Branch deletion is the
+  maintainer's call — sessions shouldn't delete branches they don't own.
 
 ### RILLE — tonal recomposition DESIGNED, awaiting implementation → `rille/HARMONIA.md`
 **Branch:** `claude/rille-tonal-composition-n8zfie` · **Files:** `rille/HARMONIA.md`

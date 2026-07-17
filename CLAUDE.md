@@ -7,6 +7,19 @@ re-told.
 
 ## Working process
 
+- **Sessions run in parallel** — other chats are landing other branches on
+  `main` right now. Follow the **"Working in parallel"** section of
+  HANDOFF.md: fetch + rebase onto `origin/main` at session start *and* again
+  before pushing (local `main` is a stale clone-time snapshot); one session =
+  one branch = one scope; a merged branch is never resumed; opus numbers and
+  directories are claimed by *landing*, not by designing — re-check the
+  registry at every rebase and renumber if someone landed first.
+- In HANDOFF.md, touch only your own Open-threads entries (added at the
+  **top**) plus the minimal lines your change needs in fixed sections. Never
+  reflow sections you didn't work in. Registry files (`index.html`,
+  `README.md`, HANDOFF file table, officina `MACHINES`) get minimal-diff
+  rows only. Cross-machine sweeps (e.g. the duplicated OFFICINA bridge) go
+  on a dedicated branch that does nothing else.
 - **Keep `HANDOFF.md` current.** Update it at the **end of every session**
   without being asked — architecture, key decisions, file structure,
   conventions, and open threads. It is the single source of orientation; a new
@@ -46,4 +59,6 @@ See the RILLE threads in HANDOFF.md for the pattern.
 
 Develop on the feature branch, commit with descriptive messages, push. The
 music-theory / design reasoning tends to live in the commit message. **Don't
-open a PR unless asked.**
+open a PR unless asked.** Rebase onto `origin/main` before every push; on a
+HANDOFF.md conflict, keep both sides' Open-threads entries and re-merge fixed
+sections by hand.
