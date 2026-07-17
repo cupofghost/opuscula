@@ -165,6 +165,42 @@ Conventions when touching this layer:
 
 Newest first.
 
+### RILLE — tonal recomposition DESIGNED, awaiting implementation → `rille/HARMONIA.md`
+**Branch:** `claude/rille-tonal-composition-n8zfie` · **Files:** `rille/HARMONIA.md`
+(the brief), later `rille/index.html` · **Status:** design done, pushed;
+**implementation NOT started** — the next session implements from the brief.
+
+Maintainer: still unhappy with RILLE's tonal composition. Mandate: **no major
+moods or vibes** (major only ever to resolve minor progress, occasionally),
+no goofy-sounding songs, simplify the input layout, and — repo-wide intent
+stated in the same session — **just intonation as far as possible, temper only
+where absolutely needed.** No code was written; the deliverable is
+`rille/HARMONIA.md`, a self-contained implementation brief. Headlines:
+
+- **Majors abolished from hover:** kind `'maj'`, `MAJ_SHAPE` and the ascending
+  glint die. Major-quality degrees (♭VI/♭VII/♭II) survive as bass roots voiced
+  **thirdless** (`quint` = 1/1·3/2·9/4). The **only 5/4 in the machine** is the
+  raised leading tone inside V on one bar of a cadence — checkable law.
+- **Cadence = lament tetrachord:** i→♭VII→♭VI→V⁷sus→V⁷→i bass descent (last 8
+  bars of a `cad` span), 4–3 suspension across the two dom bars. `half` dies —
+  non-landing moods get `cad:0` (no dominant at all) instead.
+- **Dorian abolished:** DÄMMERUNG and SOG go äolisch; SOG's warmth rebuilt
+  from thirdless sus9, not the natural 6th. Roots/BPM untouched → Camelot
+  table intact.
+- **Tuning:** two-level fixed lattice, `f = tonicHz × DEG[deg] × SHAPE[k] ×
+  2^n`; the only ET left is `tonicHz = mtof(root)` and the AUTO-SET seam.
+  `vBass` goes MIDI→Hz (41 Hz floor preserved in Hz). `JI[]`/`jf()` replaced.
+- **Cantus (TRÄNEN):** seeded descending "sigh" cell + fading echo,
+  chord-tone-locked at cell edges, no octave pops; one sanctioned ti(15/8)→do
+  figure on the cadence.
+- **Input simplified:** the 8-chip PROGS row and the bassmode row die; one
+  3-chip **LÖSUNG** row (NIE/SELTEN/OFT = cad 0/64/32) replaces them. Hash `l`
+  replaces `p`; legacy `p` mapped tolerantly, permalinks re-voice (precedented).
+- The brief carries a full mood table, exact ratio tables, rejected
+  alternatives (Picardy, half-cad, chained JI…) and a 14-point verify gauntlet
+  (Node sweep + Chromium). **Implementer: delete HARMONIA.md when done** and
+  fold the result into this thread.
+
 ### GONGAN — new machine, op. XIV (Central Javanese court gamelan)
 **Branch:** `claude/new-machine-design-y66pvl` · **File:** `gongan/index.html` ·
 **Status:** done, verified headless (Chromium). New op. Registered in
