@@ -784,6 +784,110 @@ function makeCrackle(ac){const b=ac.createBuffer(1,ac.sampleRate*4,ac.sampleRate
   for(let i=0;i<900;i++){const p=(Math.random()*d.length)|0,a=(Math.random()**2)*.9;
     d[p]=a*(Math.random()<.5?-1:1);if(p+1<d.length)d[p+1]=-a*.4;}
   return b;}
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Per-MOOD numbers (kick pitch/decay/drive, stab filter, duck depth,
+   dust amount, verb/delay mixes) stay in MOODS — they are the moods\u2019
+   law; TIMBRE is the voice underneath all of them. Open ../officina/ —
+   the voicing bench — to edit these live inside the running mix, save
+   named presets, and export them. A preset saved there applies even
+   when this file is opened directly (localStorage); ?factory bypasses. */
+const TIMBRE={
+  id:'rille', title:'RILLE \u00b7 op. IV',
+  doc:'A dual-deck techno mixer. Both decks feed one master: pre-gain \u2192 tanh shaper (the vinyl warmth) \u2192 5:1 compressor \u2192 output trim (real headroom \u2014 the WAV must never clip), with one shared reverb + filtered feedback delay as send FX. Voices per deck: KICK \u2014 sine dropping to a floor with a triangle click, driving a per-mood waveshaper, and sidechain-ducking the musical parts; HATS \u2014 highpassed noise, closed chokes open; CLAP \u2014 3\u20134 bandpassed noise bursts (and a sine rim); BASS \u2014 triangle + optional sub-octave sine through a 340 Hz lowpass (fundamentals floored at 41 Hz \u2014 the rumble law, not a knob); CHORDS/ARPS \u2014 detuned saw pairs through a warmth lowpass into the mood\u2019s stab filter, riding the duck bus; CANTUS \u2014 sine + faint octave triangle; DUST \u2014 the record surface, crackle on the part bus, hiss post-comp so it never pumps.',
+  groups:{
+    master:{label:'master chain',doc:'Shared by both decks, applied before the mood\u2019s own FX mixes.',params:{
+      pre:{v:.9,min:.3,max:1.3,step:.01,label:'pre gain',doc:'level into the shaper \u2014 more = warmer/dirtier'},
+      drive:{v:1.6,min:.5,max:5,step:.1,label:'shaper drive',doc:'tanh curve hardness \u2014 the vinyl saturation'},
+      out:{v:.76,min:.4,max:1,step:.01,label:'output trim',doc:'post-comp headroom; .76 targets \u2248\u22121 dBFS on the densest mixes \u2014 raise with care'},
+    }},
+    kick:{label:'kick',doc:'The mood sets its pitch, decay and drive; these are the physics underneath.',params:{
+      floor:{v:46,min:30,max:70,step:1,unit:'Hz',label:'pitch floor',doc:'where the drop lands'},
+      drop:{v:.09,min:.03,max:.25,step:.005,unit:'s',label:'drop time',doc:'speed of the fall'},
+      punch:{v:1.1,min:.3,max:1.6,step:.02,label:'level',doc:'body peak into the kick drive'},
+      clickLvl:{v:.25,min:0,max:.7,step:.01,label:'click level',doc:'the 3.4 kHz tick on the beater'},
+      clickPitch:{v:3400,min:1500,max:6000,step:50,unit:'Hz',label:'click pitch',doc:'tick frequency'},
+      duckRel:{v:.24,min:.08,max:.6,step:.01,unit:'s',label:'duck release',doc:'how fast the sidechain lets the music back in (the pump length)'},
+    }},
+    hats:{label:'hats',doc:'Closed and open, closed chokes open.',params:{
+      closedHp:{v:7800,min:3000,max:12000,step:100,unit:'Hz',label:'closed highpass',doc:'brightness of the closed tick'},
+      closedLvl:{v:.5,min:0,max:1,step:.02,label:'closed level',doc:'tick level (\u00d7 velocity)'},
+      closedDec:{v:.035,min:.01,max:.12,step:.005,unit:'s',label:'closed decay',doc:'tick length'},
+      openHp:{v:6800,min:3000,max:12000,step:100,unit:'Hz',label:'open highpass',doc:'brightness of the open hat'},
+      openLvl:{v:.45,min:0,max:1,step:.02,label:'open level',doc:'open level (\u00d7 velocity)'},
+      openLen:{v:.32,min:.1,max:.8,step:.02,unit:'s',label:'open length',doc:'ring until choked'},
+    }},
+    clap:{label:'clap & rim',doc:'Noise-burst clap; the rim is one clean sine tick.',params:{
+      tone:{v:1400,min:600,max:3500,step:25,unit:'Hz',label:'clap tone',doc:'bandpass centre of the bursts'},
+      lvl:{v:.4,min:0,max:.9,step:.01,label:'clap level',doc:'burst level (\u00d7 velocity)'},
+      rimTone:{v:1750,min:800,max:3500,step:25,unit:'Hz',label:'rim tone',doc:'the rim\u2019s sine pitch'},
+      rimLvl:{v:.5,min:0,max:1,step:.02,label:'rim level',doc:'rim tick level'},
+    }},
+    bass:{label:'bass',doc:'The low end. Fundamentals are floored at E1 and the sub only joins when it stays audible \u2014 that law is fixed.',params:{
+      lvl:{v:.92,min:.3,max:1.2,step:.01,label:'level (solo)',doc:'note level when the fundamental plays alone (low notes)'},
+      duoLvl:{v:.8,min:.3,max:1.2,step:.01,label:'level (with sub)',doc:'note level when the sub-octave sine joins'},
+      subMix:{v:.6,min:0,max:1,step:.02,label:'sub mix',doc:'the octave-below sine under the triangle'},
+      tone:{v:340,min:120,max:900,step:10,unit:'Hz',label:'tone',doc:'lowpass over the bass voice'},
+    }},
+    chords:{label:'chords & swells',doc:'Detuned saw pairs \u2192 warmth lowpass \u2192 the mood\u2019s stab filter \u2192 the duck bus.',params:{
+      stabLvl:{v:.28,min:.05,max:.6,step:.01,label:'stab level',doc:'short-chord peak'},
+      padLvl:{v:.16,min:.05,max:.5,step:.01,label:'swell level',doc:'sustained cadence-swell peak'},
+      stabWarm:{v:2900,min:1200,max:6000,step:50,unit:'Hz',label:'stab warmth',doc:'lowpass on stabs \u2014 lower rounds the bite'},
+      padWarm:{v:2200,min:1200,max:6000,step:50,unit:'Hz',label:'swell warmth',doc:'lowpass on swells'},
+      detune:{v:5,min:0,max:15,step:.5,unit:'\u00a2',label:'detune',doc:'\u00b1cents between the saw pair \u2014 width/wobble'},
+      attack:{v:.022,min:.004,max:.08,step:.002,unit:'s',label:'stab attack',doc:'stab swell-in; shorter clicks, longer breathes'},
+    }},
+    arp:{label:'arpeggio',doc:'The broken-chord pluck on the same filters, pumping with the kick.',params:{
+      lvl:{v:.24,min:.05,max:.5,step:.01,label:'level',doc:'pluck peak (\u00d7 velocity)'},
+      warm:{v:2700,min:1200,max:6000,step:50,unit:'Hz',label:'warmth',doc:'lowpass on the pluck'},
+      detune:{v:4,min:0,max:15,step:.5,unit:'\u00a2',label:'detune',doc:'\u00b1cents of the pluck pair'},
+    }},
+    cantus:{label:'cantus',doc:'The melody voice.',params:{
+      lvl:{v:.34,min:.05,max:.7,step:.01,label:'level',doc:'note peak (\u00d7 velocity)'},
+      sparkle:{v:.25,min:0,max:.8,step:.01,label:'octave sparkle',doc:'the faint triangle an octave up'},
+    }},
+    dust:{label:'record surface',doc:'Scaled by each mood\u2019s own dust amount.',params:{
+      crackle:{v:.11,min:0,max:.4,step:.005,label:'crackle',doc:'pops and grit on the part bus (ducks with the mix)'},
+      hiss:{v:.004,min:0,max:.02,step:.0005,label:'hiss',doc:'constant surface hiss, post-comp so it never pumps'},
+      riser:{v:.14,min:0,max:.5,step:.01,label:'break riser',doc:'the noise sweep into a drop'},
+    }},
+    sends:{label:'FX sends',doc:'Per-part sends into the shared reverb and delay (the mood sets the returns).',params:{
+      chordV:{v:.5,min:0,max:1.2,step:.02,label:'chords \u2192 verb',doc:'chords into the room'},
+      chordD:{v:.6,min:0,max:1.2,step:.02,label:'chords \u2192 delay',doc:'chords into the dub delay'},
+      clapV:{v:.35,min:0,max:1.2,step:.02,label:'clap \u2192 verb',doc:'clap into the room'},
+      hatD:{v:.1,min:0,max:1.2,step:.02,label:'hats \u2192 delay',doc:'hats into the delay'},
+      cantusV:{v:.5,min:0,max:1.2,step:.02,label:'cantus \u2192 verb',doc:'melody into the room'},
+      cantusD:{v:.7,min:0,max:1.2,step:.02,label:'cantus \u2192 delay',doc:'melody into the delay'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
 function makeIR(ac,sec){const len=Math.max(1,Math.floor(sec*ac.sampleRate)),b=ac.createBuffer(2,len,ac.sampleRate);
   for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
     for(let i=0;i<len;i++){const e=Math.pow(1-i/len,2.1);lp+=0.22*((Math.random()*2-1)-lp);d[i]=lp*e*3;}}return b;}
@@ -798,14 +902,14 @@ function buildGraph(ac,g){
   const M=g.M,G={ac};
   G.noise=makeNoise(ac);G.crackle=makeCrackle(ac);
   // master: pre -> shaper -> comp -> out
-  G.pre=ac.createGain();G.pre.gain.value=.9;
-  G.shape=ac.createWaveShaper();G.shape.curve=shaperCurve(1.6);G.shape.oversample='2x';
+  G.pre=ac.createGain();G.pre.gain.value=TP.master.pre;
+  G.shape=ac.createWaveShaper();G.shape.curve=shaperCurve(TP.master.drive);G.shape.oversample='2x';
   G.comp=ac.createDynamicsCompressor();
   G.comp.threshold.value=-12;G.comp.ratio.value=5;G.comp.attack.value=.004;G.comp.release.value=.18;
   // output trim: the comp can still peak past full scale (measured ~1.15 on a
   // dense mix), which hard-clips the WAV and the DAC. Leave real headroom —
   // target ≤ ~0.9 (≈ −1 dBFS) on the densest material.
-  G.out=ac.createGain();G.out.gain.value=.76;
+  G.out=ac.createGain();G.out.gain.value=TP.master.out;
   G.pre.connect(G.shape).connect(G.comp).connect(G.out).connect(ac.destination);
   // shared send FX
   G.verb=ac.createConvolver();G.verb.buffer=makeIR(ac,M.verb.sec);
@@ -851,9 +955,12 @@ function makeDeck(G,g){
   D.stabBP=ac.createBiquadFilter();D.stabBP.type=M.stab.pad?'lowpass':'bandpass';
   D.stabBP.frequency.value=M.stab.bp;D.stabBP.Q.value=M.stab.q;
   D.stabBP.connect(D.part.chordae);
-  D.sendV(D.part.chordae,.5);D.sendD(D.part.chordae,.6);
-  D.sendV(D.part.manus,.35);D.sendD(D.part.crepitus,.1);
-  D.sendV(D.part.cantus,.5);D.sendD(D.part.cantus,.7);
+  D.psend={};
+  const psv=(n,a,k)=>{const sg=ac.createGain();sg.gain.value=a;n.connect(sg).connect(G.verb);D.psend[k]=sg;};
+  const psd=(n,a,k)=>{const sg=ac.createGain();sg.gain.value=a;n.connect(sg).connect(G.dly);D.psend[k]=sg;};
+  psv(D.part.chordae,TP.sends.chordV,'chordV');psd(D.part.chordae,TP.sends.chordD,'chordD');
+  psv(D.part.manus,TP.sends.clapV,'clapV');psd(D.part.crepitus,TP.sends.hatD,'hatD');
+  psv(D.part.cantus,TP.sends.cantusV,'cantusV');psd(D.part.cantus,TP.sends.cantusD,'cantusD');
   // record-surface floor: hiss straight to output, post-comp (never pumped),
   // scaled by this deck's floor gain so it crossfades with the deck.
   D.deckFloor=ac.createGain();D.deckFloor.gain.value=st.mutes.pulvis?0:1;D.deckFloor.connect(G.out);
@@ -866,27 +973,27 @@ function vKick(G,t,vel){
   const o=ac.createOscillator(),gn=ac.createGain();
   o.type='sine';
   o.frequency.setValueAtTime(M.kick.pitch,t);
-  o.frequency.exponentialRampToValueAtTime(46,t+.09);
+  o.frequency.exponentialRampToValueAtTime(TP.kick.floor,t+TP.kick.drop);
   gn.gain.setValueAtTime(0,t);
-  gn.gain.linearRampToValueAtTime(1.1*vel,t+.004);
+  gn.gain.linearRampToValueAtTime(TP.kick.punch*vel,t+.004);
   gn.gain.exponentialRampToValueAtTime(.001,t+M.kick.dec);
   o.connect(gn).connect(G.kickDrive);
   o.start(t);o.stop(t+M.kick.dec+.1);
   const c=ac.createOscillator(),cg=ac.createGain();          // click
-  c.type='triangle';c.frequency.value=3400;
-  cg.gain.setValueAtTime(.25*vel,t);cg.gain.exponentialRampToValueAtTime(.001,t+.012);
+  c.type='triangle';c.frequency.value=TP.kick.clickPitch;
+  cg.gain.setValueAtTime(TP.kick.clickLvl*vel,t);cg.gain.exponentialRampToValueAtTime(.001,t+.012);
   c.connect(cg).connect(G.kickDrive);c.start(t);c.stop(t+.03);
   // sidechain duck
   const d=G.duck.gain,M2=G.g.M;
   d.setValueAtTime(1,t);
   d.linearRampToValueAtTime(M2.duck,t+.008);
-  d.exponentialRampToValueAtTime(1,t+.24);
+  d.exponentialRampToValueAtTime(1,t+TP.kick.duckRel);
 }
 function vHatC(G,t,vel){
   const ac=G.ac,s=ac.createBufferSource();s.buffer=G.noise;
-  const hp=ac.createBiquadFilter();hp.type='highpass';hp.frequency.value=7800;
+  const hp=ac.createBiquadFilter();hp.type='highpass';hp.frequency.value=TP.hats.closedHp;
   const gn=ac.createGain();
-  gn.gain.setValueAtTime(.5*vel,t);gn.gain.exponentialRampToValueAtTime(.001,t+.035);
+  gn.gain.setValueAtTime(TP.hats.closedLvl*vel,t);gn.gain.exponentialRampToValueAtTime(.001,t+TP.hats.closedDec);
   s.connect(hp).connect(gn).connect(G.part.crepitus);
   s.start(t,Math.random()*1.5);s.stop(t+.06);
   // choke any ringing open hat
@@ -895,9 +1002,9 @@ function vHatC(G,t,vel){
 }
 function vHatO(G,t,vel){
   const ac=G.ac,s=ac.createBufferSource();s.buffer=G.noise;
-  const hp=ac.createBiquadFilter();hp.type='highpass';hp.frequency.value=6800;
-  const gn=ac.createGain(),end=t+.32;
-  gn.gain.setValueAtTime(.45*vel,t);gn.gain.exponentialRampToValueAtTime(.001,end);
+  const hp=ac.createBiquadFilter();hp.type='highpass';hp.frequency.value=TP.hats.openHp;
+  const gn=ac.createGain(),end=t+TP.hats.openLen;
+  gn.gain.setValueAtTime(TP.hats.openLvl*vel,t);gn.gain.exponentialRampToValueAtTime(.001,end);
   s.connect(hp).connect(gn).connect(G.part.crepitus);
   s.start(t,Math.random()*1.5);s.stop(end+.05);
   G.openHats.push({gn,end});
@@ -906,17 +1013,17 @@ function vClap(G,t,vel,kind){
   const ac=G.ac;
   if(kind==='rim'){
     const o=ac.createOscillator(),gn=ac.createGain();
-    o.type='sine';o.frequency.value=1750;
-    gn.gain.setValueAtTime(.5*vel,t);gn.gain.exponentialRampToValueAtTime(.001,t+.05);
+    o.type='sine';o.frequency.value=TP.clap.rimTone;
+    gn.gain.setValueAtTime(TP.clap.rimLvl*vel,t);gn.gain.exponentialRampToValueAtTime(.001,t+.05);
     o.connect(gn).connect(G.part.manus);o.start(t);o.stop(t+.08);
     return;
   }
   const bursts=kind==='clapnoise'?[0,.01,.02,.032]:[0,.011,.023];
   for(const d of bursts){
     const s=ac.createBufferSource();s.buffer=G.noise;
-    const bp=ac.createBiquadFilter();bp.type='bandpass';bp.frequency.value=1400;bp.Q.value=1.1;
+    const bp=ac.createBiquadFilter();bp.type='bandpass';bp.frequency.value=TP.clap.tone;bp.Q.value=1.1;
     const gn=ac.createGain();
-    gn.gain.setValueAtTime(.4*vel,t+d);gn.gain.exponentialRampToValueAtTime(.001,t+d+(d===bursts[bursts.length-1]?.16:.02));
+    gn.gain.setValueAtTime(TP.clap.lvl*vel,t+d);gn.gain.exponentialRampToValueAtTime(.001,t+d+(d===bursts[bursts.length-1]?.16:.02));
     s.connect(bp).connect(gn).connect(G.part.manus);
     s.start(t+d,Math.random()*1.5);s.stop(t+d+.22);
   }
@@ -932,16 +1039,17 @@ function vBass(G,t,note,len,vel){
   const f=mtof(note), sub=f>=82;
   const o=ac.createOscillator(),gn=ac.createGain();
   o.type='triangle';o.frequency.value=f;
-  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=340;
+  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=TP.bass.tone;
   const hp=ac.createBiquadFilter();hp.type='highpass';hp.frequency.value=25;hp.Q.value=.7;
+  const bl=(sub?TP.bass.duoLvl:TP.bass.lvl)*vel;
   gn.gain.setValueAtTime(0,t);
-  gn.gain.linearRampToValueAtTime((sub?.8:.92)*vel,t+.01);
-  gn.gain.setValueAtTime((sub?.8:.92)*vel,t+Math.max(.02,len-.05));
+  gn.gain.linearRampToValueAtTime(bl,t+.01);
+  gn.gain.setValueAtTime(bl,t+Math.max(.02,len-.05));
   gn.gain.exponentialRampToValueAtTime(.001,t+len+.06);
   o.connect(lp);
   if(sub){
     const o2=ac.createOscillator(),g2=ac.createGain();
-    o2.type='sine';o2.frequency.value=f/2;g2.gain.value=.6;
+    o2.type='sine';o2.frequency.value=f/2;g2.gain.value=TP.bass.subMix;
     o2.connect(g2).connect(lp);o2.start(t);o2.stop(t+len+.2);
   }
   lp.connect(hp).connect(gn).connect(G.part.bassus);
@@ -957,14 +1065,15 @@ function vChord(G,t,freqs,len,pad){                      // freqs in Hz (JI-tune
   // bandpass stabs), and soften the stab attack to ~22 ms so it swells in instead
   // of snapping. Voicing is untouched — this is timbre only.
   const warm=ac.createBiquadFilter();warm.type='lowpass';
-  warm.frequency.value=pad?2200:2900;warm.Q.value=.4;
-  const a=pad?len*.35:.022,rel=pad?len*.4:len*.55;
+  warm.frequency.value=pad?TP.chords.padWarm:TP.chords.stabWarm;warm.Q.value=.4;
+  const a=pad?len*.35:TP.chords.attack,rel=pad?len*.4:len*.55;
+  const cl=pad?TP.chords.padLvl:TP.chords.stabLvl;
   gn.gain.setValueAtTime(0,t);
-  gn.gain.linearRampToValueAtTime(pad?.16:.28,t+a);
-  gn.gain.setValueAtTime(pad?.16:.28,t+Math.max(a,len-rel));
+  gn.gain.linearRampToValueAtTime(cl,t+a);
+  gn.gain.setValueAtTime(cl,t+Math.max(a,len-rel));
   gn.gain.linearRampToValueAtTime(0,t+len+.06);
   gn.connect(warm).connect(G.stabBP);
-  for(const f of freqs)for(const det of [-5,5]){
+  for(const f of freqs)for(const det of [-TP.chords.detune,TP.chords.detune]){
     const o=ac.createOscillator();o.type='sawtooth';
     o.frequency.value=f;o.detune.value=det;
     o.connect(gn);o.start(t);o.stop(t+len+.15);
@@ -976,12 +1085,12 @@ function vChord(G,t,freqs,len,pad){                      // freqs in Hz (JI-tune
 // line pumps with the kick.
 function vArpN(G,t,freq,vel,len){                        // freq in Hz (JI-tuned upstream)
   const ac=G.ac,gn=ac.createGain();
-  const warm=ac.createBiquadFilter();warm.type='lowpass';warm.frequency.value=2700;warm.Q.value=.4;
+  const warm=ac.createBiquadFilter();warm.type='lowpass';warm.frequency.value=TP.arp.warm;warm.Q.value=.4;
   gn.gain.setValueAtTime(0,t);
-  gn.gain.linearRampToValueAtTime(.24*vel,t+.006);
+  gn.gain.linearRampToValueAtTime(TP.arp.lvl*vel,t+.006);
   gn.gain.exponentialRampToValueAtTime(.001,t+len);
   gn.connect(warm).connect(G.stabBP);
-  for(const det of [-4,4]){
+  for(const det of [-TP.arp.detune,TP.arp.detune]){
     const o=ac.createOscillator();o.type='sawtooth';
     o.frequency.value=freq;o.detune.value=det;
     o.connect(gn);o.start(t);o.stop(t+len+.05);
@@ -992,9 +1101,9 @@ function vCantus(G,t,f,len,vel){                         // f in Hz (JI-tuned up
   const o=ac.createOscillator(),o2=ac.createOscillator(),gn=ac.createGain();
   o.type='sine';o.frequency.value=f;
   o2.type='triangle';o2.frequency.value=f*2;
-  const g2=ac.createGain();g2.gain.value=.25;
+  const g2=ac.createGain();g2.gain.value=TP.cantus.sparkle;
   gn.gain.setValueAtTime(0,t);
-  gn.gain.linearRampToValueAtTime(.34*vel,t+.03);
+  gn.gain.linearRampToValueAtTime(TP.cantus.lvl*vel,t+.03);
   gn.gain.exponentialRampToValueAtTime(.001,t+len);
   o.connect(gn);o2.connect(g2).connect(gn);gn.connect(G.part.cantus);
   o.start(t);o2.start(t);o.stop(t+len+.1);o2.stop(t+len+.1);
@@ -1003,11 +1112,11 @@ function startDust(G,when){
   const ac=G.ac,M=G.g.M;
   const c=ac.createBufferSource();c.buffer=G.crackle;c.loop=true;
   const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=5200;
-  const cg=ac.createGain();cg.gain.value=.11*M.dust;
+  const cg=ac.createGain();cg.gain.value=TP.dust.crackle*M.dust;
   c.connect(lp).connect(cg).connect(G.part.pulvis);c.start(when);
   const h=ac.createBufferSource();h.buffer=G.noise;h.loop=true;
   const hlp=ac.createBiquadFilter();hlp.type='lowpass';hlp.frequency.value=6000;
-  const hg=ac.createGain();hg.gain.value=.004*M.dust;
+  const hg=ac.createGain();hg.gain.value=TP.dust.hiss*M.dust;
   h.connect(hlp).connect(hg).connect(G.deckFloor);h.start(when);
   G.sendV(cg,.3);
   return [c,h];
@@ -1020,12 +1129,24 @@ function vSweep(G,t,bars,stepDur){                       // break riser
   bp.frequency.exponentialRampToValueAtTime(6500,t+len);
   const gn=ac.createGain();
   gn.gain.setValueAtTime(.0001,t);
-  gn.gain.exponentialRampToValueAtTime(.14,t+len*.9);
+  gn.gain.exponentialRampToValueAtTime(Math.max(.0002,TP.dust.riser),t+len*.9);
   gn.gain.linearRampToValueAtTime(0,t+len);
   s.connect(bp).connect(gn).connect(G.fader);
   G.sendV(gn,.5);
   s.start(t);s.stop(t+len+.1);
 }
+
+/* OFFICINA live hook: per-hit voices read TP at schedule time (next step);
+   push the standing master chain and every live deck's part sends. */
+TIMBRE.touch=()=>{
+  if(!RT)return;
+  const ct=RT.ac.currentTime,G=RT.G;
+  G.pre.gain.setTargetAtTime(TP.master.pre,ct,.06);
+  G.out.gain.setTargetAtTime(TP.master.out,ct,.06);
+  G.shape.curve=shaperCurve(TP.master.drive);
+  for(const ds of RT.decks){const D=ds.D;if(!D||!D.psend)continue;
+    for(const k in D.psend)D.psend[k].gain.setTargetAtTime(TP.sends[k],ct,.1);}
+};
 
 /* ---------------- shared bar scheduler ---------------- */
 function scheduleBar(G,arr,g,bar,t0,stepDur,rng){
