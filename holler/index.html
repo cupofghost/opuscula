@@ -624,6 +624,81 @@ const st={ style:'clawhammer', tuning:'openG', mode:'ionian', bpm:168, lilt:true
 /* ------------------------------- audio ---------------------------------- */
 const SR=44100;
 
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Open ../officina/ — the voicing bench — to edit these live inside the
+   running mix, save named presets, and export them. A preset saved there
+   applies even when this file is opened directly (localStorage); add
+   ?factory to the URL to hear the shipped voice. */
+const TIMBRE={
+  id:'holler', title:'HOLLER \u00b7 op. VIII',
+  doc:'A string band prerendered into one seamless mono loop. BANJO (and guitar and upright bass) are KARPLUS\u2013STRONG strings: a burst of warmed noise circulates a delay line the length of one period, averaged a little darker each pass \u2014 the damping factor is how long the string sings; a tiny noise chip is the nail. The banjo then gets its POT: a ~330 Hz drum-head resonance, a mellowing lowpass, and a whisper of top shelf. GUITAR+BASS render to their own bus, lowpassed and body-lifted so they read acoustic, not harpsichord. The FIDDLE is bowed, so NOT Karplus\u2013Strong: an additive bright sawtooth (gentle 4th-order rolloff ~7 kHz), bow scratch on the attack, ~5.5 Hz vibrato \u2014 then violin body formants on its bus, of which the 3 kHz BRIDGE HILL is what reads as violin-not-flute. It plays 5-limit JUST intervals against the key tonic; the fretted voices stay equal-tempered (that is the law, not a knob). FOOT is a floorboard thud: a 95\u219255 Hz swoop plus a woody knock. Edits re-render the tune (a brief rebake); the WAV and loop use the identical recipe. The render normalises to 0.9.',
+  groups:{
+    master:{label:'master & porch',doc:'The loop through a small dry porch room and a limiter.',params:{
+      gain:{v:.92,min:.3,max:1.2,step:.01,label:'master gain',doc:'level into the limiter'},
+      wet:{v:.10,min:0,max:.4,step:.01,label:'porch return',doc:'the small room around the band'},
+      roomSize:{v:.34,min:.08,max:1.2,step:.02,unit:'s',label:'porch size',doc:'impulse length; keep short \u2014 it\u2019s a porch, not a church'},
+    }},
+    strings:{label:'plucked strings (KS core)',doc:'Shared physics of every plucked string here: how long the loop survives, and the nail chip on the attack.',params:{
+      damp:{v:.9945,min:.985,max:.9995,step:.0005,label:'string damping',doc:'per-pass survival in the string loop: lower = deader/plunkier, higher = long ring'},
+      nail:{v:.085,min:0,max:.3,step:.005,label:'nail click',doc:'the fingernail/skin chip at the start of every pluck'},
+    }},
+    banjo:{label:'banjo pot & ring',doc:'The instrument\u2019s body, applied to the whole banjo render, plus a stretch on each stroke kind\u2019s ring length.',params:{
+      ringScale:{v:1,min:.5,max:2,step:.05,label:'ring \u00d7',doc:'stretches strike/thumb/brush/roll/melodic ring lengths together'},
+      potFreq:{v:330,min:180,max:600,step:5,unit:'Hz',label:'pot resonance',doc:'the drum-head body peak'},
+      potGain:{v:3.5,min:0,max:9,step:.25,unit:'dB',label:'pot lift',doc:'how much head resonance'},
+      mellow:{v:5200,min:2000,max:10000,step:100,unit:'Hz',label:'mellow lowpass',doc:'rolls the hard twang off the top; lower = warmer porch'},
+      sparkle:{v:1.2,min:0,max:4,step:.1,unit:'dB',label:'sparkle shelf',doc:'the 3.2 kHz top shelf \u2014 a whisper of string zing'},
+    }},
+    guitar:{label:'guitar & bass bus',doc:'The boom-chuck rhythm section, warmed on its own bus.',params:{
+      tone:{v:2500,min:800,max:6000,step:50,unit:'Hz',label:'tone',doc:'lowpass that tames the metallic pluck'},
+      body:{v:3,min:0,max:8,step:.25,unit:'dB',label:'body lift',doc:'the 110 Hz box warmth'},
+      strumRing:{v:.14,min:.05,max:.5,step:.01,unit:'s',label:'strum ring',doc:'how long the chuck chord rings'},
+      bassRing:{v:.62,min:.2,max:1.2,step:.02,unit:'s',label:'guitar-bass ring',doc:'the boom notes of the boom-chuck'},
+      uprightRing:{v:.3,min:.1,max:.8,step:.02,unit:'s',label:'upright ring',doc:'the upright bass note length'},
+    }},
+    fiddle:{label:'fiddle',doc:'The bowed lead: raw brightness, bow noise, vibrato, and the body formants on its bus.',params:{
+      level:{v:.9,min:0,max:1.5,step:.02,label:'level',doc:'fiddle bus into the band'},
+      rolloff:{v:7000,min:2500,max:10000,step:100,unit:'Hz',label:'brightness',doc:'where the sawtooth\u2019s harmonics roll off; 3 kHz was a flute, 7 kHz is a fiddle'},
+      vibRate:{v:5.5,min:3,max:8,step:.1,unit:'Hz',label:'vibrato rate',doc:'left-hand vibrato speed'},
+      vibDepth:{v:.0065,min:0,max:.02,step:.0005,label:'vibrato depth',doc:'as a fraction of pitch (0.0065 \u2248 \u00b111\u00a2)'},
+      scratch:{v:.05,min:0,max:.2,step:.005,label:'bow scratch',doc:'rosin noise, loudest on the attack'},
+      airGain:{v:4.5,min:0,max:9,step:.25,unit:'dB',label:'air (300 Hz)',doc:'main body/air resonance'},
+      bridgeFreq:{v:3000,min:1800,max:4500,step:50,unit:'Hz',label:'bridge hill',doc:'the violin\u2019s brilliance band'},
+      bridgeGain:{v:5.5,min:0,max:10,step:.25,unit:'dB',label:'bridge lift',doc:'how much brilliance \u2014 this is the violin-ness'},
+    }},
+    foot:{label:'foot',doc:'The boot on the porch board.',params:{
+      body:{v:1.05,min:0,max:2,step:.05,label:'thud body',doc:'the 95\u219255 Hz floorboard swoop'},
+      knock:{v:.5,min:0,max:1.2,step:.02,label:'woody knock',doc:'the ~1 kHz lowpassed knock that carries on small speakers'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
 // Karplus–Strong plucked string: a burst of noise cycled through a one-sample
 // averaging lowpass and a feedback gain — a decaying, bright plucked tone. An
 // amplitude envelope sets the note length; a tiny noise chip is the nail/skin
@@ -632,7 +707,7 @@ function ksPluck(out, start, freq, secs, vel, tau, bright, rng){
   const N=Math.max(2, Math.round(SR/freq));
   const buf=new Float32Array(N);
   let e=0; for(let i=0;i<N;i++){ e+=((rng()*2-1)-e)*0.85; buf[i]=e; }  // warmed noise
-  const blend=clamp(0.5-bright*0.14,0.32,0.5), g=0.9945;
+  const blend=clamp(0.5-bright*0.14,0.32,0.5), g=TP.strings.damp;
   const total=Math.min(out.length-start, Math.floor(secs*SR));
   if(total<=0) return;
   const atk=Math.max(1,Math.floor(0.002*SR)), td=tau*SR;
@@ -645,7 +720,7 @@ function ksPluck(out, start, freq, secs, vel, tau, bright, rng){
     idx=(idx+1)%N;
   }
   const cn=Math.min(out.length-start, Math.floor(0.004*SR)), cd=0.0015*SR;
-  for(let i=0;i<cn;i++) out[start+i]+=(rng()*2-1)*vel*0.085*Math.exp(-i/cd);  // softer nail-click (was .13) — mellows the attack
+  for(let i=0;i<cn;i++) out[start+i]+=(rng()*2-1)*vel*TP.strings.nail*Math.exp(-i/cd);  // the nail-click chip
 }
 // a boot on a porch board — a DULL THUD. A body that swoops 95→55 Hz (the give of
 // a floorboard) for weight, plus a low-passed woody "knock" transient so it reads
@@ -660,7 +735,7 @@ function footHit(out,start,vel,rng){
     const body=Math.sin(ph)*Math.exp(-t/0.075);
     lp+=((rng()*2-1)-lp)*0.16;                          // one-pole ≈1 kHz: dull, woody
     const knock=lp*Math.exp(-t/0.016);
-    out[start+i]+=(body*1.05 + knock*0.5)*vel;
+    out[start+i]+=(body*TP.foot.body + knock*TP.foot.knock)*vel;
   }
 }
 // the fiddle — a BOWED string, so not Karplus–Strong. A bowed string is close to
@@ -677,11 +752,11 @@ function fiddleNote(out,start,freq,secs,vel,rng,vibPhase){
   // sawtooth 1/k, rolled off gently (4th-order) at ~7 kHz — stays reedy and bright
   const H=[],F=[]; let hsum=0;
   for(let k=1;k<=40;k++){const hf=freq*k; if(hf>nyq*0.85)break;
-    const w=(1/k)/(1+Math.pow(hf/7000,4)); H.push(w); F.push(k); hsum+=w;}
+    const w=(1/k)/(1+Math.pow(hf/TP.fiddle.rolloff,4)); H.push(w); F.push(k); hsum+=w;}
   if(hsum<=0)return;
   const norm=1/hsum;
   const atk=Math.max(1,Math.floor(0.05*SR)), rel=Math.max(1,Math.floor(0.07*SR));
-  const twoPI=2*Math.PI, vibHz=5.5, vibDepth=0.0065;   // ±~11 cents
+  const twoPI=2*Math.PI, vibHz=TP.fiddle.vibRate, vibDepth=TP.fiddle.vibDepth;
   let ph=0;
   for(let i=0;i<n;i++){
     const t=i/SR;
@@ -690,7 +765,7 @@ function fiddleNote(out,start,freq,secs,vel,rng,vibPhase){
     let s=0; for(let k=0;k<H.length;k++) s+=H[k]*Math.sin(F[k]*ph);
     let a; if(i<atk)a=i/atk; else if(i>n-rel)a=(n-i)/rel; else a=1;
     a*=0.9+0.1*Math.sin(twoPI*0.7*t);                   // slow bow swell
-    const scratch=(rng()*2-1)*0.05*(0.6+0.8*(i<atk?1:0));  // bow noise, louder on attack
+    const scratch=(rng()*2-1)*TP.fiddle.scratch*(0.6+0.8*(i<atk?1:0));  // bow noise, louder on attack
     out[start+i]+=(s*norm + scratch)*vel*a;
   }
 }
@@ -733,7 +808,8 @@ function renderMaster(){
     const start=Math.floor(e.t*SR);
     // brighter as the note climbs above the lowest string
     const bright=clamp((e.midi-open[3])/24,0,1);
-    ksPluck(buf, start, midiToFreq(e.midi), (TAU[e.kind]||0.45)+(e.vel*0.2), e.vel, TAU[e.kind]||0.45, bright, rng);
+    const tau=(TAU[e.kind]||0.45)*TP.banjo.ringScale;
+    ksPluck(buf, start, midiToFreq(e.midi), tau+(e.vel*0.2), e.vel, tau, bright, rng);
   }
   // optional backing (guitar / upright bass / foot). Guitar+bass go to their OWN
   // bus so it can be warmed: bare Karplus–Strong plucks ring bright and metallic —
@@ -742,17 +818,18 @@ function renderMaster(){
   // straight to the main buffer (it's a thud, not a string).
   if(st.backing.guitar||st.backing.bass||st.backing.foot){
     const bev=backingEvents(tune, st.bpm, st.seed, st.backing);
-    const BTAU={gbass:0.62,gstrum:0.14,ubass:0.3};
+    const BTAU={gbass:TP.guitar.bassRing,gstrum:TP.guitar.strumRing,ubass:TP.guitar.uprightRing};
     const bbuf=(st.backing.guitar||st.backing.bass)?new Float32Array(n):null;
     for(const e of bev){
       const start=Math.floor(e.t*SR); if(start<0||start>=n) continue;
       if(e.kind==='foot'){ footHit(buf,start,e.vel,rng); continue; }
       const bright=e.kind==='gbass'?0.03:e.kind==='gstrum'?0.06:0;   // darker than before
-      ksPluck(bbuf, start, midiToFreq(e.midi), (BTAU[e.kind]||0.4)+e.vel*0.15, e.vel, BTAU[e.kind]||0.4, bright, rng);
+      const btau=BTAU[e.kind]||0.4;
+      ksPluck(bbuf, start, midiToFreq(e.midi), btau+e.vel*0.15, e.vel, btau, bright, rng);
     }
     if(bbuf){
-      biquad(bbuf,'lowpass',2500,0.7,0);    // tame the metallic pluck → acoustic guitar
-      biquad(bbuf,'peaking',110,1.0,3);     // a little box/body warmth
+      biquad(bbuf,'lowpass',TP.guitar.tone,0.7,0);  // tame the metallic pluck → acoustic guitar
+      biquad(bbuf,'peaking',110,1.0,TP.guitar.body); // a little box/body warmth
       for(let i=0;i<n;i++) buf[i]+=bbuf[i];
     }
   }
@@ -769,18 +846,18 @@ function renderMaster(){
       fiddleNote(fbuf, start, jiFreq(e.midi, tonic), e.secs, e.vel, rng, e.vibPhase);
     }
     biquad(fbuf,'highpass',180,0.7,0);
-    biquad(fbuf,'peaking',300,1.1,4.5);     // main air/body resonance
+    biquad(fbuf,'peaking',300,1.1,TP.fiddle.airGain);  // main air/body resonance
     biquad(fbuf,'peaking',560,1.4,3);       // lower body
-    biquad(fbuf,'peaking',3000,1.1,5.5);    // bridge hill — the violin's brilliance
-    for(let i=0;i<n;i++) buf[i]+=fbuf[i]*0.9;
+    biquad(fbuf,'peaking',TP.fiddle.bridgeFreq,1.1,TP.fiddle.bridgeGain); // bridge hill — the violin's brilliance
+    for(let i=0;i<n;i++) buf[i]+=fbuf[i]*TP.fiddle.level;
   }
   // body: trim rumble, lift the ~330 Hz pot resonance, then MELLOW the twang —
   // a gentle lowpass rolls off the hard upper harmonics, and the top-shelf lift
   // is eased back so the banjo reads warm-on-a-porch, not brittle/tinny.
   biquad(buf,'highpass',85,0.7,0);
-  biquad(buf,'peaking',330,0.9,3.5);
-  biquad(buf,'lowpass',5200,0.6,0);
-  biquad(buf,'highshelf',3200,0.7,1.2);
+  biquad(buf,'peaking',TP.banjo.potFreq,0.9,TP.banjo.potGain);
+  biquad(buf,'lowpass',TP.banjo.mellow,0.6,0);
+  biquad(buf,'highshelf',3200,0.7,TP.banjo.sparkle);
   // peak-normalise to 0.9 — guarantees no clipping in the WAV by construction
   let mx=0; for(let i=0;i<n;i++){const a=Math.abs(buf[i]); if(a>mx)mx=a;}
   if(mx>0){const k=0.9/mx; for(let i=0;i<n;i++)buf[i]*=k;}
@@ -815,12 +892,12 @@ function makeRoomIR(ctx,sec,exp){
 // the fixed signal path — identical realtime & offline so the WAV is faithful.
 function buildGraph(ctx, monoData, loop){
   const G={ctx};
-  G.master=ctx.createGain(); G.master.gain.value=0.92;
+  G.master=ctx.createGain(); G.master.gain.value=TP.master.gain;
   G.lim=ctx.createDynamicsCompressor();
   G.lim.threshold.value=-2;G.lim.knee.value=0;G.lim.ratio.value=20;G.lim.attack.value=0.003;G.lim.release.value=0.08;
   G.master.connect(G.lim).connect(ctx.destination);
-  G.verb=ctx.createConvolver(); G.verb.buffer=makeRoomIR(ctx,0.34,3.0);
-  G.wet=ctx.createGain(); G.wet.gain.value=0.10; G.verb.connect(G.wet).connect(G.master);
+  G.verb=ctx.createConvolver(); G.verb.buffer=makeRoomIR(ctx,TP.master.roomSize,3.0);
+  G.wet=ctx.createGain(); G.wet.gain.value=TP.master.wet; G.verb.connect(G.wet).connect(G.master);
   G.dry=ctx.createGain(); G.dry.gain.value=1; G.dry.connect(G.master);
   G.src=ctx.createBufferSource(); G.src.buffer=toAudioBuffer(ctx,monoData); G.src.loop=!!loop;
   G.src.connect(G.dry); G.src.connect(G.verb);
@@ -849,6 +926,16 @@ function stop(){
 }
 // through-composed: any control change regenerates and (if playing) restarts
 function regen(){ if(RT){ stop(); play(); } else { invalidate(); } }
+
+/* OFFICINA live hook: the band is baked into the loop buffer, so a bench
+   edit re-renders the tune (debounced); master/porch ride in immediately. */
+let __tbT=0;
+TIMBRE.touch=()=>{
+  if(RT){const ct=RT.ctx.currentTime;
+    RT.G.master.gain.setTargetAtTime(TP.master.gain,ct,.06);
+    RT.G.wet.gain.setTargetAtTime(TP.master.wet,ct,.08);}
+  clearTimeout(__tbT); __tbT=setTimeout(()=>{if(RT)regen();},300);
+};
 
 /* ------------------------------ cut · WAV -------------------------------- */
 function encodeWav(L,R,sr){
