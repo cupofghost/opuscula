@@ -506,6 +506,64 @@ function bellFreq(b){
 /* ------------------------------- audio ---------------------------------- */
 const SR=44100;
 
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Open ../officina/ — the voicing bench — to edit these live inside the
+   running mix, save named presets, and export them. A preset saved there
+   applies even when this file is opened directly (localStorage); add
+   ?factory to the URL to hear the shipped voice. */
+const TIMBRE={
+  id:'peal', title:'PEAL \u00b7 op. VII',
+  doc:'One synthesized tower bell, prerendered per bell of the ring and re-struck by the changes. The bell is additive: eight partials at the classic tower-bell ratios \u2014 the HUM an octave below, the PRIME at the strike pitch, the TIERCE a minor third above (that 1.19 ratio is why church bells sound melancholy \u2014 raise it toward 1.25 and you voice a rare major-third bell), the quint, the nominal an octave up, and three higher partials \u2014 each with its own decay, the hum ringing longest. A tiny inharmonic cluster in the first 60 ms is the clapper CHIP. Bells pan treble\u2192left, tenor\u2192right across the tower. Half-muffled backstrokes take a darker lowpassed bus (the tolling manner). The acoustic presets (Dry/Chapel/Church/Nave) set the stone; the room scale here rides on top of whichever room is chosen.',
+  groups:{
+    master:{label:'master',doc:'Output gain into a 4:1 glue compressor and a brickwall limiter \u2014 overlapping ring-downs can never clip.',params:{
+      gain:{v:.68,min:.2,max:1.1,step:.01,label:'master gain',doc:'level into the compressors'},
+    }},
+    bell:{label:'the bell',doc:'The additive recipe, shared by every bell in the ring (each is rendered at its own pitch). Levels are pre-normalisation: what matters is their balance.',params:{
+      hum:{v:.26,min:0,max:.6,step:.01,label:'hum',doc:'the partial an octave below the strike \u2014 the long afterglow'},
+      prime:{v:.30,min:0,max:.6,step:.01,label:'prime',doc:'the partial at the named pitch of the bell'},
+      tierce:{v:1.19,min:1.1,max:1.3,step:.005,label:'tierce ratio',doc:'the third above the prime: 1.19 \u2248 minor (the traditional melancholy), 1.25 = the rare major-third bell'},
+      tierceLvl:{v:.22,min:0,max:.6,step:.01,label:'tierce level',doc:'how much of that third colours the bell'},
+      upper:{v:1,min:0,max:2,step:.05,label:'upper partials',doc:'scales the quint, nominal and the three highest partials \u2014 the brilliance'},
+      ring:{v:1,min:.4,max:2,step:.05,label:'ring \u00d7',doc:'stretches every partial\u2019s decay; shorter keeps fast changes distinct, longer piles them into haze'},
+      chip:{v:.045,min:0,max:.15,step:.005,label:'clapper chip',doc:'the inharmonic strike cluster in the first instant'},
+    }},
+    tower:{label:'the tower',doc:'Placement and the muffle bus, plus a scale on whichever acoustic preset is chosen.',params:{
+      spread:{v:.55,min:0,max:1,step:.05,label:'stereo spread',doc:'how far treble and tenor sit apart across the tower'},
+      mufLvl:{v:.5,min:0,max:1,step:.02,label:'muffle level',doc:'strike gain of half-muffled backstrokes'},
+      mufTone:{v:760,min:250,max:2500,step:10,unit:'Hz',label:'muffle tone',doc:'lowpass of the muffled bus \u2014 the leather on the clapper'},
+      mufBus:{v:.5,min:0,max:1,step:.02,label:'muffle bus',doc:'gain of the muffled path into the master'},
+      wetScale:{v:1,min:0,max:2,step:.05,label:'room \u00d7',doc:'scales the chosen acoustic\u2019s wet and send levels (all four presets)'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
 // The acoustic — how much stone surrounds the ring. Bells already sustain for
 // seconds, so even the largest room here stays fairly short and quiet, or the
 // tail piles change on change and muddies the strike. Each preset sets the
@@ -529,19 +587,20 @@ function makeIR(ctx,sec,exp){
 // real tower-bell partials. Higher partials decay faster; the hum rings on
 // longest. A tiny inharmonic cluster at the very start is the "strike" chip.
 function makeBell(ctx,f0){
-  const dur=2.8,n=Math.floor(SR*dur),buf=ctx.createBuffer(1,n,SR),d=buf.getChannelData(0);
+  const B=TP.bell, ring=B.ring;
+  const dur=2.8*Math.max(1,ring),n=Math.floor(SR*dur),buf=ctx.createBuffer(1,n,SR),d=buf.getChannelData(0);
   // [ratio, gain, decay-seconds] — tightened ~35%: real bells ring for seconds,
   // but at ringing density the long tails pile change-on-change into a haze that
   // reads as reverb even in the Dry room (Dry sends nothing to the convolver —
   // the tails WERE the "reverb"). Shorter partials keep each strike distinct.
-  const P=[[0.5,0.26,2.15],[1.0,0.30,1.5],[1.19,0.22,1.25],[1.506,0.13,0.9],
-           [2.0,0.30,1.1],[2.51,0.09,0.62],[3.0,0.10,0.55],[4.0,0.06,0.34]];
+  const P=[[0.5,B.hum,2.15],[1.0,B.prime,1.5],[B.tierce,B.tierceLvl,1.25],[1.506,0.13*B.upper,0.9],
+           [2.0,0.30*B.upper,1.1],[2.51,0.09*B.upper,0.62],[3.0,0.10*B.upper,0.55],[4.0,0.06*B.upper,0.34]];
   for(const [r,g,dec] of P){
     const w=2*Math.PI*f0*r,ph=Math.random()*6.283;
-    for(let i=0;i<n;i++){const t=i/SR;d[i]+=g*Math.exp(-t/dec)*Math.sin(w*t+ph);}
+    for(let i=0;i<n;i++){const t=i/SR;d[i]+=g*Math.exp(-t/(dec*ring))*Math.sin(w*t+ph);}
   }
   const tk=[3.1,5.3,7.9,11.2],tn=Math.floor(SR*0.06);
-  for(const r of tk){const w=2*Math.PI*f0*r;for(let i=0;i<tn;i++){const t=i/SR;d[i]+=0.045*Math.exp(-t/0.02)*Math.sin(w*t);}}
+  for(const r of tk){const w=2*Math.PI*f0*r;for(let i=0;i<tn;i++){const t=i/SR;d[i]+=B.chip*Math.exp(-t/0.02)*Math.sin(w*t);}}
   const fa=Math.floor(SR*0.003);for(let i=0;i<fa;i++)d[i]*=i/fa;   // de-click attack
   const fo=Math.floor(SR*0.15);for(let i=0;i<fo;i++)d[n-1-i]*=i/fo; // de-click tail-out (buffer end)
   let mx=0;for(let i=0;i<n;i++)mx=Math.max(mx,Math.abs(d[i]));
@@ -554,7 +613,7 @@ function makeBell(ctx,f0){
 // backstrokes when HALF-MUFFLED is on (the mournful, tolling manner).
 function buildGraph(ctx){
   const G={ctx};
-  G.master=ctx.createGain();G.master.gain.value=0.68;
+  G.master=ctx.createGain();G.master.gain.value=TP.master.gain;
   G.comp=ctx.createDynamicsCompressor();
   G.comp.threshold.value=-16;G.comp.ratio.value=4;G.comp.attack.value=0.005;G.comp.release.value=0.25;
   // brickwall limiter so the overlapping ring-down can never clip the output
@@ -563,11 +622,11 @@ function buildGraph(ctx){
   G.master.connect(G.comp).connect(G.lim).connect(ctx.destination);
   const R=REVERBS[st.rev]||REVERBS[REVERBS.length-1];
   G.verb=ctx.createConvolver();G.verb.buffer=makeIR(ctx,R.sec,R.exp);
-  G.vgain=ctx.createGain();G.vgain.gain.value=R.wet;G.verb.connect(G.vgain).connect(G.master);
+  G.vgain=ctx.createGain();G.vgain.gain.value=R.wet*TP.tower.wetScale;G.verb.connect(G.vgain).connect(G.master);
   const send=(node,a)=>{const g=ctx.createGain();g.gain.value=a;node.connect(g).connect(G.verb);return g;};
-  G.dry=ctx.createGain();G.dry.gain.value=1;G.dry.connect(G.master);G.sDry=send(G.dry,R.dry);
-  G.muf=ctx.createBiquadFilter();G.muf.type='lowpass';G.muf.frequency.value=760;G.muf.Q.value=0.6;
-  G.mufg=ctx.createGain();G.mufg.gain.value=0.5;G.muf.connect(G.mufg).connect(G.master);G.sMuf=send(G.mufg,R.muf);
+  G.dry=ctx.createGain();G.dry.gain.value=1;G.dry.connect(G.master);G.sDry=send(G.dry,R.dry*TP.tower.wetScale);
+  G.muf=ctx.createBiquadFilter();G.muf.type='lowpass';G.muf.frequency.value=TP.tower.mufTone;G.muf.Q.value=0.6;
+  G.mufg=ctx.createGain();G.mufg.gain.value=TP.tower.mufBus;G.muf.connect(G.mufg).connect(G.master);G.sMuf=send(G.mufg,R.muf*TP.tower.wetScale);
   // one pre-rendered buffer per bell number 1..N
   G.buf={};for(let b=1;b<=st.N;b++)G.buf[b]=makeBell(ctx,bellFreq(b));
   return G;
@@ -578,23 +637,23 @@ function buildGraph(ctx){
 function applyReverb(G){
   const R=REVERBS[st.rev]||REVERBS[REVERBS.length-1], t=G.ctx.currentTime;
   const ramp=(p,v)=>{try{p.cancelScheduledValues(t);p.setValueAtTime(p.value,t);p.linearRampToValueAtTime(v,t+.2);}catch(e){}};
-  ramp(G.sDry.gain,R.dry); ramp(G.sMuf.gain,R.muf);
+  ramp(G.sDry.gain,R.dry*TP.tower.wetScale); ramp(G.sMuf.gain,R.muf*TP.tower.wetScale);
   const g=G.vgain.gain;
   try{g.cancelScheduledValues(t);g.setValueAtTime(g.value,t);g.linearRampToValueAtTime(0,t+.05);}catch(e){}
   setTimeout(()=>{try{G.verb.buffer=makeIR(G.ctx,R.sec,R.exp);const t2=G.ctx.currentTime;
-    g.setValueAtTime(0,t2);g.linearRampToValueAtTime(R.wet,t2+.18);}catch(e){}},60);
+    g.setValueAtTime(0,t2);g.linearRampToValueAtTime(R.wet*TP.tower.wetScale,t2+.18);}catch(e){}},60);
 }
 
 // Strike bell `b` at time `t`. Pan by pitch (treble left … tenor right) so
 // the ring spreads around the tower; muffled strikes take the dark bus.
 function strike(G,b,t,muffled){
   const src=G.ctx.createBufferSource();src.buffer=G.buf[b];
-  const g=G.ctx.createGain();g.gain.value=muffled?0.5:1;
+  const g=G.ctx.createGain();g.gain.value=muffled?TP.tower.mufLvl:1;
   const pos=(b-1)/(st.N-1||1);                    // 0=treble … 1=tenor
   let out=g;
-  if(G.ctx.createStereoPanner){const p=G.ctx.createStereoPanner();p.pan.value=-0.55+pos*1.1;g.connect(p);out=p;}
+  if(G.ctx.createStereoPanner){const p=G.ctx.createStereoPanner();p.pan.value=(-TP.tower.spread)+pos*2*TP.tower.spread;g.connect(p);out=p;}
   src.connect(g);out.connect(muffled?G.muf:G.dry);
-  src.start(t);src.stop(t+3.7);
+  src.start(t);src.stop(t+2.8*Math.max(1,TP.bell.ring)+0.9); // =3.7 at factory
 }
 
 /* -------------------------- realtime transport --------------------------- */
@@ -638,6 +697,20 @@ function stop(){
   const c=RT.ctx;setTimeout(()=>{try{c.close();}catch(e){}},4200);
   RT=null;st.playing=false;$('ring').textContent='Ring';$('ring').classList.remove('on');
 }
+
+/* OFFICINA live hook: buses ramp immediately; the bells themselves are
+   prerendered buffers, so those rebake (debounced) at the ring's pitches. */
+let __tbT=0;
+TIMBRE.touch=()=>{
+  if(!RT)return;
+  const G=RT.G,ct=RT.ctx.currentTime;
+  G.master.gain.setTargetAtTime(TP.master.gain,ct,.08);
+  G.muf.frequency.setTargetAtTime(TP.tower.mufTone,ct,.08);
+  G.mufg.gain.setTargetAtTime(TP.tower.mufBus,ct,.08);
+  applyReverb(G);
+  clearTimeout(__tbT);
+  __tbT=setTimeout(()=>{if(RT)for(let b=1;b<=st.N;b++)RT.G.buf[b]=makeBell(RT.ctx,bellFreq(b));},250);
+};
 
 /* ------------------------------ cut · WAV -------------------------------- */
 function encodeWav(L,R,sr){
