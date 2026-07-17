@@ -336,11 +336,23 @@ the subharmonic mirror no existing machine touches.
   root ratio, bridging pivot between rows), home ringed, current station
   boxed. Static layer cached offscreen, rebuilt on station change;
   `prefers-reduced-motion` disables the sweep/pulse animation.
-- **TIMBRE:** 41 params in 8 groups (master/room/eroica/kithara/canon/
+- **TIMBRE:** 42 params in 8 groups (master/room/eroica/kithara/canon/
   marimba/boo/bowls — no separate mixer group, each voice's own `level`
-  serves that role). Master gain/room wet ride live; instrument edits
-  debounce a rebake (► HEAR convention, no mid-circuit restart). Bridge
-  verbatim incl. `TIMBRE.demo` (representative-ratio auditions per voice).
+  serves that role). Master out-trim/room-wet/limiter-ceiling ride live;
+  instrument edits debounce a rebake (► HEAR convention, no mid-circuit
+  restart). Bridge verbatim incl. `TIMBRE.demo` (per-voice auditions).
+- **Master chain — de-fuzzed (maintainer: "too distorted").** The first
+  cut leaned on a hard `tanh` shaper (`drive` .28) for loudness, which
+  fuzzed the whole mix and squashed the dynamics flat. Reworked to
+  **shaper (drive .06, warmth only) → glue comp (2.4:1) → brick-wall
+  limiter (`limThresh` −1.5 dB, knee 0, ratio 20 — the GONGAN limiter
+  precedent) → out trim**; reverb sums pre-limiter so nothing bypasses the
+  ceiling. Measured on a fixed pressing: shaper deviation-from-linear
+  **70.8 % → 15.1 %**, crest factor **1.99 → 3.66** (the struck bronze
+  rings proud again instead of buzzing), output peak 0.76 (limiter holds,
+  no clip). The metallic character is pure synthesis (inharmonic bars/
+  bowls) and was never the shaper — only the fuzz was removed. `drive` is
+  still exposed in officina for anyone who wants the grit back.
 - **Verified headless** (playwright + bundled Chromium, run from session
   scratchpad, not committed — matches the GONGAN/TAMBOUR precedent of
   scratchpad tooling): diamond tables/unique-tone-counts/roots exact

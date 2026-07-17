@@ -501,11 +501,12 @@ const TIMBRE={
   id:'diamond', title:'DIAMOND · op. XV',
   doc:'Six of Partch’s instruments, synthesized. MARIMBA EROICA and DIAMOND MARIMBA are struck-bar models: a fundamental plus the inharmonic overtones of a real free bar, plus a mallet transient. KITHARA and HARMONIC CANON are Karplus–Strong plucked strings (a filtered noise burst decaying around a feedback loop) — the Canon short and bright in a detuned double course, the Kithara warmed and spread into a strum. BOO is bandpassed noise with a pitched chiff. CLOUD-CHAMBER BOWLS pair two close-tuned partials that beat slowly against each other. Edits to instrument groups re-render the circuit (a brief rebake); MASTER gain and room WET ride live.',
   groups:{
-    master:{label:'master chain',doc:'Shaper (drive) into a compressor, then an output trim, plus a small dry-leaning room send — corporeal, not cathedral.',params:{
-      drive:{v:.28,min:0,max:1,step:.01,label:'drive',doc:'waveshaper amount into the compressor'},
-      compThresh:{v:-16,min:-36,max:-4,step:.5,unit:'dB',label:'comp threshold'},
-      compRatio:{v:3,min:1,max:8,step:.1,label:'comp ratio'},
-      outTrim:{v:.85,min:.4,max:1.1,step:.01,label:'out trim',doc:'post-compressor headroom'},
+    master:{label:'master chain',doc:'A gentle shaper (drive) into a glue compressor, then a brick-wall limiter, then an output trim, plus a small dry-leaning room send — corporeal, not cathedral. The limiter, not the shaper, holds the ceiling, so the struck bronze rings clean instead of fuzzing.',params:{
+      drive:{v:.06,min:0,max:1,step:.01,label:'drive',doc:'waveshaper warmth only — kept low; the limiter does the loudness, not the shaper. Raise for grit.'},
+      compThresh:{v:-16,min:-36,max:-4,step:.5,unit:'dB',label:'comp threshold',doc:'the glue compressor'},
+      compRatio:{v:2.4,min:1,max:8,step:.1,label:'comp ratio'},
+      limThresh:{v:-1.5,min:-8,max:0,step:.1,unit:'dB',label:'limiter ceiling',doc:'the brick wall — nothing passes above this (knee 0, ratio 20)'},
+      outTrim:{v:.85,min:.4,max:1.1,step:.01,label:'out trim',doc:'post-limiter headroom'},
       wet:{v:.08,min:0,max:.3,step:.01,label:'room return',doc:'kept dry by design — Partch loathed cathedral wash'},
     }},
     room:{label:'room',doc:'The impulse response for the room send.',params:{
@@ -776,15 +777,23 @@ function makeShaperCurve(amount){
 // the fixed signal path — identical realtime & offline so the WAV is faithful.
 function buildGraph(ctx,L,R,loop){
   const G={ctx};
+  // dry chain: a gentle shaper (warmth, not fuzz) -> glue compressor
   G.shaper=ctx.createWaveShaper();G.shaper.curve=makeShaperCurve(TP.master.drive);G.shaper.oversample='2x';
   G.comp=ctx.createDynamicsCompressor();
   G.comp.threshold.value=TP.master.compThresh;G.comp.ratio.value=TP.master.compRatio;
   G.comp.knee.value=6;G.comp.attack.value=0.006;G.comp.release.value=0.15;
+  // master sum (dry post-comp + wet) -> brick-wall limiter -> output trim.
+  // The limiter is what holds the ceiling; the shaper is only for colour.
+  G.master=ctx.createGain();G.master.gain.value=1;
+  G.lim=ctx.createDynamicsCompressor();
+  G.lim.threshold.value=TP.master.limThresh;G.lim.knee.value=0;G.lim.ratio.value=20;
+  G.lim.attack.value=0.002;G.lim.release.value=0.12;
   G.out=ctx.createGain();G.out.gain.value=TP.master.outTrim;
-  G.shaper.connect(G.comp).connect(G.out).connect(ctx.destination);
+  G.shaper.connect(G.comp).connect(G.master);
+  G.master.connect(G.lim).connect(G.out).connect(ctx.destination);
   G.verb=ctx.createConvolver();G.verb.buffer=makeRoomIR(ctx,TP.room.size,TP.room.decay);
   G.wet=ctx.createGain();G.wet.gain.value=TP.master.wet;
-  G.verb.connect(G.wet).connect(G.out);
+  G.verb.connect(G.wet).connect(G.master);          // reverb is limited too
   G.dry=ctx.createGain();G.dry.gain.value=1;G.dry.connect(G.shaper);
   G.src=ctx.createBufferSource();G.src.buffer=toStereoBuffer(ctx,L,R);G.src.loop=!!loop;
   G.src.connect(G.dry);G.src.connect(G.verb);
@@ -820,7 +829,8 @@ let __dmT=0;
 TIMBRE.touch=()=>{
   if(RT){const ct=RT.ctx.currentTime;
     RT.G.out.gain.setTargetAtTime(TP.master.outTrim,ct,.06);
-    RT.G.wet.gain.setTargetAtTime(TP.master.wet,ct,.08);}
+    RT.G.wet.gain.setTargetAtTime(TP.master.wet,ct,.08);
+    RT.G.lim.threshold.setTargetAtTime(TP.master.limThresh,ct,.06);}
   clearTimeout(__dmT);__dmT=setTimeout(()=>{if(!RT)regen();},300);
 };
 
