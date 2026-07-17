@@ -482,10 +482,10 @@ function noiseData(sr){
   return cache[k]=d;
 }
 function pluckData(f,sr){               // Karplus–Strong
-  const k='p'+sr+'_'+Math.round(f); if(cache[k]) return cache[k];
+  const k='p'+sr+'_'+Math.round(f)+'_'+TP.guitar.damp; if(cache[k]) return cache[k];
   const L=(0.8*sr)|0, N=Math.max(2,Math.round(sr/f)), b=new Float32Array(L);
   for(let i=0;i<N;i++) b[i]=Math.random()*2-1;
-  for(let i=N;i<L;i++) b[i]=0.996*0.5*(b[i-N]+b[i-N+1]);
+  for(let i=N;i<L;i++) b[i]=TP.guitar.damp*0.5*(b[i-N]+b[i-N+1]);
   for(let i=L-200;i<L;i++) b[i]*=(L-i)/200;
   return cache[k]=b;
 }
@@ -500,43 +500,151 @@ function makeIR(ctx){                   // small dancehall room
   return ir;
 }
 
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Open ../officina/ — the voicing bench — to edit these live inside the
+   running mix, save named presets, and export them. A preset saved there
+   applies even when this file is opened directly (localStorage); add
+   ?factory to the URL to hear the shipped voice. */
+const TIMBRE={
+  id:'pas-sale', title:'PAS SAL\u00c9 \u00b7 op. I',
+  doc:'A five-piece zydeco band, every instrument from scratch. ACCORDION \u2014 per note, three sawtooth "reeds": the pitch, a wet-tuned partner a few cents sharp (their beating is the accordion shimmer), and a sub-octave rank; every reed scoops in 24\u00a2 flat like a reed speaking, and the whole rank runs through a formant chain (highpass \u2192 two vowel peaks at 550/1750 Hz \u2192 lowpass) that makes cheap saws breathe. FROTTOIR \u2014 bandpassed noise ticks (down-stroke dark, up-stroke bright) with two metal ping partials. DRUMS \u2014 kick (sine drop + click), snare (bandpass body + highpass rattle + a 186 Hz shell ring), hat, crash. BASS \u2014 triangle+saw into a tanh shaper and a lowpass: an amp, not a DI. GUITAR \u2014 Karplus\u2013Strong plucks through a lowpass. All buses meet a gentle 3:1 compressor with a small dancehall room on sends.',
+  groups:{
+    master:{label:'master & room',doc:'Bus out into a soft 3:1 compressor; a 1.3 s dancehall-room convolver on the send network.',params:{
+      out:{v:.9,min:.3,max:1.3,step:.01,label:'master gain',doc:'level into the compressor'},
+      verb:{v:.6,min:0,max:1.2,step:.02,label:'room return',doc:'the dancehall room level'},
+    }},
+    mixer:{label:'band balance',doc:'Bus level per instrument (the lineup toggles mute these; the levels here are the sound-check).',params:{
+      acc:{v:.85,min:0,max:1.3,step:.01,label:'accordion',doc:'the lead'},
+      frot:{v:.55,min:0,max:1.3,step:.01,label:'frottoir',doc:'the rubboard'},
+      dr:{v:1,min:0,max:1.3,step:.01,label:'drums',doc:'kick, snare, hat, crash'},
+      bs:{v:.8,min:0,max:1.3,step:.01,label:'bass',doc:'the electric bass'},
+      gt:{v:.55,min:0,max:1.3,step:.01,label:'guitar',doc:'the backbeat chank'},
+    }},
+    accordion:{label:'accordion',doc:'Three saw reeds per note through the formant chain. The WET TUNING is the whole character: how sharp the partner reed sits decides how fast the shimmer beats.',params:{
+      level:{v:.32,min:.05,max:.8,step:.01,label:'reed level',doc:'per-note gain before the formants'},
+      wet:{v:9,min:0,max:30,step:.5,unit:'\u00a2',label:'wet tuning',doc:'partner-reed sharpness in cents; 0 = dry/dead, 9 \u2248 2.5 Hz beat at A4, 20+ = seasick'},
+      subRank:{v:.3,min:0,max:.8,step:.01,label:'sub rank',doc:'the octave-below reed \u2014 the left-hand growl'},
+      scoop:{v:24,min:0,max:60,step:1,unit:'\u00a2',label:'reed scoop',doc:'how far sharp each note speaks before settling (over 30 ms)'},
+      f1:{v:550,min:250,max:1200,step:10,unit:'Hz',label:'formant 1',doc:'first vowel peak of the box'},
+      f1Gain:{v:5,min:0,max:12,step:.5,unit:'dB',label:'formant 1 gain',doc:'lift of the first peak'},
+      f2:{v:1750,min:800,max:3500,step:10,unit:'Hz',label:'formant 2',doc:'second vowel peak \u2014 the honk'},
+      f2Gain:{v:7,min:0,max:14,step:.5,unit:'dB',label:'formant 2 gain',doc:'lift of the honk'},
+      brightness:{v:6500,min:2000,max:12000,step:100,unit:'Hz',label:'brightness',doc:'lowpass over the whole box'},
+      shakeRate:{v:6,min:3,max:10,step:.1,unit:'Hz',label:'bellows shake',doc:'tremolo speed on held chords marked with the shake'},
+      shakeDepth:{v:.055,min:0,max:.2,step:.005,label:'shake depth',doc:'tremolo depth of the bellows shake'},
+      send:{v:.12,min:0,max:.5,step:.01,label:'room send',doc:'accordion into the room'},
+    }},
+    kick:{label:'kick',doc:'A sine dropping 165\u219252 Hz plus a highpassed click.',params:{
+      pitchHi:{v:165,min:80,max:300,step:1,unit:'Hz',label:'pitch start',doc:'where the drop begins'},
+      pitchLo:{v:52,min:30,max:90,step:1,unit:'Hz',label:'pitch floor',doc:'the body note'},
+      drop:{v:.09,min:.03,max:.25,step:.005,unit:'s',label:'drop time',doc:'speed of the fall'},
+      lvl:{v:.9,min:.2,max:1.2,step:.01,label:'level',doc:'body peak (\u00d7 velocity)'},
+      decay:{v:.09,min:.03,max:.3,step:.005,unit:'s',label:'decay',doc:'body release'},
+      clickLvl:{v:.3,min:0,max:.8,step:.01,label:'click',doc:'the beater transient'},
+    }},
+    snare:{label:'snare',doc:'Three layers: a bandpassed noise body, a brighter highpassed rattle, and a 186 Hz triangle \u2014 the shell.',params:{
+      body:{v:1750,min:800,max:3500,step:25,unit:'Hz',label:'body freq',doc:'bandpass centre of the main crack'},
+      bodyLvl:{v:.55,min:0,max:1,step:.01,label:'body level',doc:'main crack level (\u00d7 velocity)'},
+      bodyDecay:{v:.045,min:.015,max:.15,step:.005,unit:'s',label:'body decay',doc:'crack length'},
+      snapLvl:{v:.3,min:0,max:.8,step:.01,label:'rattle',doc:'the 5.2 kHz wires layer'},
+      ringPitch:{v:186,min:100,max:400,step:2,unit:'Hz',label:'shell pitch',doc:'the triangle under the crack'},
+      ringLvl:{v:.3,min:0,max:.8,step:.01,label:'shell level',doc:'how much drum under the wires'},
+      send:{v:.18,min:0,max:.6,step:.01,label:'room send',doc:'snare into the room'},
+    }},
+    hat:{label:'hat',doc:'Highpassed noise, decay set by the pattern (accents ring longer).',params:{
+      hp:{v:7800,min:3000,max:12000,step:100,unit:'Hz',label:'highpass',doc:'brightness floor'},
+      lvl:{v:.22,min:0,max:.6,step:.01,label:'level',doc:'tick level (\u00d7 velocity)'},
+    }},
+    crash:{label:'crash',doc:'A long bandpassed noise swell on the turnarounds.',params:{
+      lvl:{v:.35,min:0,max:.8,step:.01,label:'level',doc:'crash peak'},
+      decay:{v:.5,min:.15,max:1.5,step:.02,unit:'s',label:'decay',doc:'ring length'},
+      send:{v:.5,min:0,max:1,step:.02,label:'room send',doc:'crash into the room'},
+    }},
+    frottoir:{label:'frottoir',doc:'Spoon on corrugated steel: a noise tick through a bandpass (down-stroke dark, up-stroke bright) plus two short metal ping partials.',params:{
+      downFreq:{v:3800,min:1500,max:8000,step:50,unit:'Hz',label:'down-stroke freq',doc:'bandpass of the darker down tick'},
+      upFreq:{v:6300,min:2500,max:11000,step:50,unit:'Hz',label:'up-stroke freq',doc:'bandpass of the brighter up tick'},
+      downLvl:{v:.42,min:0,max:.9,step:.01,label:'down level',doc:'down-stroke level (\u00d7 velocity)'},
+      upLvl:{v:.3,min:0,max:.9,step:.01,label:'up level',doc:'up-stroke level (\u00d7 velocity)'},
+    }},
+    bass:{label:'bass',doc:'Triangle + a little saw into a tanh amp and a lowpass cab.',params:{
+      lvl:{v:.55,min:.1,max:1,step:.01,label:'level',doc:'note peak (\u00d7 velocity)'},
+      sawMix:{v:.18,min:0,max:.6,step:.01,label:'saw blend',doc:'edge added to the triangle \u2014 the string bite'},
+      drive:{v:2.6,min:.5,max:6,step:.1,label:'amp drive',doc:'tanh drive; higher = more grind'},
+      tone:{v:950,min:300,max:3000,step:25,unit:'Hz',label:'cab tone',doc:'lowpass after the amp'},
+    }},
+    guitar:{label:'guitar',doc:'Karplus\u2013Strong plucks (a burst of noise circulating a delay line, averaged darker each pass) through a lowpass.',params:{
+      lvl:{v:.5,min:.1,max:1,step:.01,label:'level',doc:'chank level (\u00d7 velocity)'},
+      tone:{v:2800,min:800,max:8000,step:50,unit:'Hz',label:'tone',doc:'lowpass over the plucks'},
+      damp:{v:.996,min:.95,max:.9995,step:.0005,label:'string damping',doc:'per-pass survival in the string loop; lower = deader, banjo-ish; higher = long ring'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
 const MUTES = {acc:0, frot:0, dr:0, bs:0, gt:0};
-const LEVEL = {acc:.85, frot:.55, dr:1, bs:.8, gt:.55};
+// bus levels live in TIMBRE.mixer
 
 function makeBuses(ctx){
   const B={ctx};
   B.comp=ctx.createDynamicsCompressor();
   B.comp.threshold.value=-14; B.comp.knee.value=18; B.comp.ratio.value=3;
   B.comp.attack.value=.004; B.comp.release.value=.22;
-  B.out=ctx.createGain(); B.out.gain.value=.9;
+  B.out=ctx.createGain(); B.out.gain.value=TP.master.out;
   B.out.connect(B.comp); B.comp.connect(ctx.destination);
   B.rev=ctx.createConvolver(); B.rev.buffer=makeIR(ctx);
-  const rg=ctx.createGain(); rg.gain.value=.6;
+  const rg=ctx.createGain(); rg.gain.value=TP.master.verb; B.revG=rg;
   B.rev.connect(rg); rg.connect(B.out);
   B.lv={};
   function bus(name){ const g=ctx.createGain();
-    g.gain.value=MUTES[name]?0:LEVEL[name]; g.connect(B.out);
+    g.gain.value=MUTES[name]?0:TP.mixer[name]; g.connect(B.out);
     B.lv[name]=g; return g; }
   // accordion formant chain
   B.accIn=ctx.createGain(); B.accIn.gain.value=1;
   const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=120;
-  const p1=ctx.createBiquadFilter(); p1.type='peaking'; p1.frequency.value=550;  p1.Q.value=1;   p1.gain.value=5;
-  const p2=ctx.createBiquadFilter(); p2.type='peaking'; p2.frequency.value=1750; p2.Q.value=1.1; p2.gain.value=7;
-  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=6500;
+  const p1=ctx.createBiquadFilter(); p1.type='peaking'; p1.frequency.value=TP.accordion.f1;  p1.Q.value=1;   p1.gain.value=TP.accordion.f1Gain;
+  const p2=ctx.createBiquadFilter(); p2.type='peaking'; p2.frequency.value=TP.accordion.f2; p2.Q.value=1.1; p2.gain.value=TP.accordion.f2Gain;
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=TP.accordion.brightness;
+  B.accP1=p1; B.accP2=p2; B.accLp=lp;
   B.accIn.connect(hp); hp.connect(p1); p1.connect(p2); p2.connect(lp);
   const accL=bus('acc'); lp.connect(accL);
   B.send=(node,amt)=>{ const g=ctx.createGain(); g.gain.value=amt;
     node.connect(g); g.connect(B.rev); };
-  B.send(lp,.12);
+  B.send(lp,TP.accordion.send);
   B.fr=bus('frot'); B.dr=bus('dr'); B.gtF=ctx.createBiquadFilter();
-  B.gtF.type='lowpass'; B.gtF.frequency.value=2800;
+  B.gtF.type='lowpass'; B.gtF.frequency.value=TP.guitar.tone;
   const gtL=bus('gt'); B.gtF.connect(gtL);
   // bass: tanh shaper on bus
   B.bsIn=ctx.createGain(); B.bsIn.gain.value=1;
   const sh=ctx.createWaveShaper(); const cv=new Float32Array(1024);
-  for(let i=0;i<1024;i++){ const x=i/511.5-1; cv[i]=Math.tanh(2.6*x); }
-  sh.curve=cv;
-  const blp=ctx.createBiquadFilter(); blp.type='lowpass'; blp.frequency.value=950;
+  for(let i=0;i<1024;i++){ const x=i/511.5-1; cv[i]=Math.tanh(TP.bass.drive*x); }
+  sh.curve=cv; B.bsSh=sh;
+  const blp=ctx.createBiquadFilter(); blp.type='lowpass'; blp.frequency.value=TP.bass.tone; B.bsLp=blp;
   B.bsIn.connect(sh); sh.connect(blp); blp.connect(bus('bs'));
   B.noise=toBuffer(ctx, noiseData(ctx.sampleRate));
   return B;
@@ -549,22 +657,22 @@ function accNote(B,t,d,m,v,sh,grace){
   const ctx=B.ctx, f0=fq(m);
   const g=ctx.createGain(); g.gain.value=0; g.connect(B.accIn);
   g.gain.setValueAtTime(0,t);
-  g.gain.linearRampToValueAtTime(v*.32, t+.012);
+  g.gain.linearRampToValueAtTime(v*TP.accordion.level, t+.012);
   g.gain.setTargetAtTime(0, t+d, .025);
   const oscs=[];
   function o(type,f,det,lev){
     const x=ctx.createOscillator(); x.type=type; x.frequency.value=f;
-    x.detune.setValueAtTime(det+24, t);            // reed-speak scoop
+    x.detune.setValueAtTime(det+TP.accordion.scoop, t);   // reed-speak scoop
     x.detune.linearRampToValueAtTime(det, t+.03);
     const og=ctx.createGain(); og.gain.value=lev;
     x.connect(og); og.connect(g); x.start(t); x.stop(t+d+.3); oscs.push(x);
   }
   o('sawtooth', f0,   0, .5);
-  o('sawtooth', f0,   9, .5);      // wet-tuned partner reed (~2.5 Hz beat at A4)
-  o('sawtooth', f0/2, 0, .3);      // sub-octave rank
+  o('sawtooth', f0, TP.accordion.wet, .5);   // wet-tuned partner reed (9¢ ≈ 2.5 Hz beat at A4)
+  o('sawtooth', f0/2, 0, TP.accordion.subRank);  // sub-octave rank
   if(sh){                          // bellows shake
-    const l=ctx.createOscillator(); l.frequency.value=6;
-    const lg=ctx.createGain(); lg.gain.value=v*.055;
+    const l=ctx.createOscillator(); l.frequency.value=TP.accordion.shakeRate;
+    const lg=ctx.createGain(); lg.gain.value=v*TP.accordion.shakeDepth;
     l.connect(lg); lg.connect(g.gain); l.start(t+.14); l.stop(t+d+.3);
   }
   if(grace!=null) accNote(B, t-.045, .05, m+grace, v*.5);
@@ -577,35 +685,35 @@ function fall(B,t){                // ending spill, G5 down to G4
 /* ---- percussion / bass / guitar voices ---- */
 function kick(B,t,v){ const ctx=B.ctx;
   const o=ctx.createOscillator(); o.type='sine';
-  o.frequency.setValueAtTime(165,t);
-  o.frequency.exponentialRampToValueAtTime(52,t+.09);
+  o.frequency.setValueAtTime(TP.kick.pitchHi,t);
+  o.frequency.exponentialRampToValueAtTime(TP.kick.pitchLo,t+TP.kick.drop);
   const g=ctx.createGain(); g.gain.setValueAtTime(0,t);
-  g.gain.linearRampToValueAtTime(v*.9,t+.004);
-  g.gain.setTargetAtTime(0,t+.03,.09);
+  g.gain.linearRampToValueAtTime(v*TP.kick.lvl,t+.004);
+  g.gain.setTargetAtTime(0,t+.03,TP.kick.decay);
   o.connect(g); g.connect(B.dr); o.start(t); o.stop(t+.45);
   const n=nz(B,t), f=ctx.createBiquadFilter(); f.type='highpass'; f.frequency.value=3000;
-  const ng=ctx.createGain(); ng.gain.setValueAtTime(v*.3,t);
+  const ng=ctx.createGain(); ng.gain.setValueAtTime(v*TP.kick.clickLvl,t);
   ng.gain.setTargetAtTime(0,t,.006);
   n.connect(f); f.connect(ng); ng.connect(B.dr); n.stop(t+.05);
 }
 function snare(B,t,v){ const ctx=B.ctx;
   const n=nz(B,t), f=ctx.createBiquadFilter(); f.type='bandpass';
-  f.frequency.value=1750; f.Q.value=.9;
-  const g=ctx.createGain(); g.gain.setValueAtTime(v*.55,t);
-  g.gain.setTargetAtTime(0,t,.045);
-  n.connect(f); f.connect(g); g.connect(B.dr); B.send(g,.18); n.stop(t+.3);
+  f.frequency.value=TP.snare.body; f.Q.value=.9;
+  const g=ctx.createGain(); g.gain.setValueAtTime(v*TP.snare.bodyLvl,t);
+  g.gain.setTargetAtTime(0,t,TP.snare.bodyDecay);
+  n.connect(f); f.connect(g); g.connect(B.dr); B.send(g,TP.snare.send); n.stop(t+.3);
   const n2=nz(B,t), f2=ctx.createBiquadFilter(); f2.type='highpass'; f2.frequency.value=5200;
-  const g2=ctx.createGain(); g2.gain.setValueAtTime(v*.3,t);
+  const g2=ctx.createGain(); g2.gain.setValueAtTime(v*TP.snare.snapLvl,t);
   g2.gain.setTargetAtTime(0,t,.035);
   n2.connect(f2); f2.connect(g2); g2.connect(B.dr); n2.stop(t+.25);
-  const o=ctx.createOscillator(); o.type='triangle'; o.frequency.value=186;
-  const g3=ctx.createGain(); g3.gain.setValueAtTime(v*.3,t);
+  const o=ctx.createOscillator(); o.type='triangle'; o.frequency.value=TP.snare.ringPitch;
+  const g3=ctx.createGain(); g3.gain.setValueAtTime(v*TP.snare.ringLvl,t);
   g3.gain.setTargetAtTime(0,t,.03);
   o.connect(g3); g3.connect(B.dr); o.start(t); o.stop(t+.15);
 }
 function hat(B,t,v){ const ctx=B.ctx;
-  const n=nz(B,t), f=ctx.createBiquadFilter(); f.type='highpass'; f.frequency.value=7800;
-  const g=ctx.createGain(); g.gain.setValueAtTime(v*.22,t);
+  const n=nz(B,t), f=ctx.createBiquadFilter(); f.type='highpass'; f.frequency.value=TP.hat.hp;
+  const g=ctx.createGain(); g.gain.setValueAtTime(v*TP.hat.lvl,t);
   g.gain.setTargetAtTime(0,t, v>.6?.028:.02);
   n.connect(f); f.connect(g); g.connect(B.dr); n.stop(t+.15);
 }
@@ -613,15 +721,15 @@ function crash(B,t,v){ const ctx=B.ctx;
   const n=nz(B,t), f=ctx.createBiquadFilter(); f.type='bandpass';
   f.frequency.value=5200; f.Q.value=.5;
   const g=ctx.createGain(); g.gain.setValueAtTime(0,t);
-  g.gain.linearRampToValueAtTime(v*.35,t+.005);
-  g.gain.setTargetAtTime(0,t+.01,.5);
-  n.connect(f); f.connect(g); g.connect(B.dr); B.send(g,.5); n.stop(t+2.6);
+  g.gain.linearRampToValueAtTime(v*TP.crash.lvl,t+.005);
+  g.gain.setTargetAtTime(0,t+.01,TP.crash.decay);
+  n.connect(f); f.connect(g); g.connect(B.dr); B.send(g,TP.crash.send); n.stop(t+.1+TP.crash.decay*5); // =2.6 at factory
 }
 function frot(B,t,v,up){ const ctx=B.ctx;
   const n=nz(B,t), f=ctx.createBiquadFilter(); f.type='bandpass';
-  f.frequency.value=up?6300:3800; f.Q.value=up?1.5:1.1;
+  f.frequency.value=up?TP.frottoir.upFreq:TP.frottoir.downFreq; f.Q.value=up?1.5:1.1;
   const g=ctx.createGain(); g.gain.setValueAtTime(0,t);
-  g.gain.linearRampToValueAtTime(v*(up?.3:.42), t+.001);
+  g.gain.linearRampToValueAtTime(v*(up?TP.frottoir.upLvl:TP.frottoir.downLvl), t+.001);
   g.gain.setTargetAtTime(0, t+.002, up?.016:.026);
   n.connect(f); f.connect(g); g.connect(B.fr); B.send(g,.06); n.stop(t+.18);
   (up?[6420,9150]:[3170,5230]).forEach(pf=>{
@@ -633,18 +741,18 @@ function frot(B,t,v,up){ const ctx=B.ctx;
 }
 function bass(B,t,d,m,v){ const ctx=B.ctx, f0=fq(m);
   const g=ctx.createGain(); g.gain.setValueAtTime(0,t);
-  g.gain.linearRampToValueAtTime(v*.55,t+.008);
+  g.gain.linearRampToValueAtTime(v*TP.bass.lvl,t+.008);
   g.gain.setTargetAtTime(0,t+d,.04);
   g.connect(B.bsIn);
   const o1=ctx.createOscillator(); o1.type='triangle'; o1.frequency.value=f0;
   const o2=ctx.createOscillator(); o2.type='sawtooth'; o2.frequency.value=f0;
-  const g2=ctx.createGain(); g2.gain.value=.18;
+  const g2=ctx.createGain(); g2.gain.value=TP.bass.sawMix;
   o1.connect(g); o2.connect(g2); g2.connect(g);
   o1.start(t); o2.start(t); o1.stop(t+d+.35); o2.stop(t+d+.35);
 }
 function gtr(B,t,m,v,d){ const ctx=B.ctx, sr=ctx.sampleRate;
   const src=ctx.createBufferSource(); src.buffer=toBuffer(ctx, pluckData(fq(m),sr));
-  const g=ctx.createGain(); g.gain.setValueAtTime(v*.5,t);
+  const g=ctx.createGain(); g.gain.setValueAtTime(v*TP.guitar.lvl,t);
   g.gain.setTargetAtTime(0, t+d, .05);
   src.connect(g); g.connect(B.gtF); src.start(t); src.stop(t+d+.4);
 }
@@ -662,6 +770,24 @@ function playEvent(B,t,e){
     case 'gtr':  gtr(B,t,e.m,e.v,e.d); break;
   }
 }
+
+/* OFFICINA live hook: per-note voices read TP at schedule time; push the
+   standing buses (mixer, formants, amp) into the running band. */
+TIMBRE.touch=()=>{
+  if(!LIVE)return;
+  const B=LIVE, ct=B.ctx.currentTime, A=TP.accordion;
+  B.out.gain.setTargetAtTime(TP.master.out,ct,.06);
+  B.revG.gain.setTargetAtTime(TP.master.verb,ct,.1);
+  for(const k in B.lv) B.lv[k].gain.setTargetAtTime(MUTES[k]?0:TP.mixer[k],ct,.08);
+  B.accP1.frequency.setTargetAtTime(A.f1,ct,.06); B.accP1.gain.setTargetAtTime(A.f1Gain,ct,.06);
+  B.accP2.frequency.setTargetAtTime(A.f2,ct,.06); B.accP2.gain.setTargetAtTime(A.f2Gain,ct,.06);
+  B.accLp.frequency.setTargetAtTime(A.brightness,ct,.06);
+  B.gtF.frequency.setTargetAtTime(TP.guitar.tone,ct,.06);
+  B.bsLp.frequency.setTargetAtTime(TP.bass.tone,ct,.06);
+  const cv2=new Float32Array(1024);
+  for(let i=0;i<1024;i++){const x=i/511.5-1;cv2[i]=Math.tanh(TP.bass.drive*x);}
+  B.bsSh.curve=cv2;
+};
 
 /* =====================================================================
    TRANSPORT — realtime (lookahead scheduler) + offline WAV render
@@ -761,7 +887,7 @@ LINEUP.forEach(([k,nm,rl])=>{
   d.innerHTML='<span class="nm">'+nm+'</span><span class="rl">'+rl+'</span>';
   d.addEventListener('click',()=>{
     MUTES[k]^=1; d.classList.toggle('out', !!MUTES[k]);
-    if(LIVE) LIVE.lv[k].gain.setTargetAtTime(MUTES[k]?0:LEVEL[k],
+    if(LIVE) LIVE.lv[k].gain.setTargetAtTime(MUTES[k]?0:TP.mixer[k],
                                              ctx.currentTime, .01);
   });
   lineupEl.appendChild(d);
