@@ -884,6 +884,7 @@ const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.g
   addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
     if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
     else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
     else if(m.op==='hello')hello()});
   hello();
 })();
@@ -1657,6 +1658,10 @@ function saveWav(blob,filename){
   }catch(e){}
   setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
 }
+
+/* OFFICINA audition: the plate is continuous — drop the needle; edits then
+   land on the next step live. */
+TIMBRE.demo=()=>{ if(!RT){const b=document.getElementById('play'); if(b)b.click();} };
 </script>
 
 </body>

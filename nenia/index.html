@@ -645,6 +645,7 @@ const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.g
   addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
     if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
     else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
     else if(m.op==='hello')hello()});
   hello();
 })();
@@ -1071,6 +1072,9 @@ window.addEventListener('hashchange',()=>{if(readHash()){pToUI();stopPlayback();
 /* ---------- init ---------- */
 if(!readHash())writeHash();
 pToUI(); regen(false);
+
+/* OFFICINA audition: the chant is short — just perform it. */
+TIMBRE.demo=()=>{ if(!playing)play(); };
 </script>
 </body>
 </html>

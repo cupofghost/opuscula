@@ -603,6 +603,7 @@ const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.g
   addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
     if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
     else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
     else if(m.op==='hello')hello()});
   hello();
 })();
@@ -990,6 +991,29 @@ function saveWav(blob,filename){
   }catch(e){}
   setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
 }
+
+/* OFFICINA audition: a couple of hits of one instrument with the current
+   timbre. (While the band plays, edits already land live.) */
+let __demoCtx=null;
+TIMBRE.demo=(group)=>{
+  if(playing)return;
+  try{if(__demoCtx)__demoCtx.close()}catch(e){}
+  const AC=window.AudioContext||window.webkitAudioContext, ac=new AC(); __demoCtx=ac;
+  try{ac.resume()}catch(e){}
+  const B=makeBuses(ac), t=ac.currentTime+.06;
+  switch(group){
+    case 'accordion': [69,73,76].forEach(m=>accNote(B,t,1.1,m,.9,true)); break;
+    case 'kick': kick(B,t,1); kick(B,t+.5,1); break;
+    case 'snare': snare(B,t,1); snare(B,t+.45,.85); break;
+    case 'hat': hat(B,t,.85); hat(B,t+.25,.5); hat(B,t+.5,.85); break;
+    case 'crash': crash(B,t,1); break;
+    case 'frottoir': frot(B,t,1,false); frot(B,t+.22,.9,true); frot(B,t+.44,1,false); frot(B,t+.66,.9,true); break;
+    case 'bass': bass(B,t,.5,45,1); bass(B,t+.55,.5,52,.9); bass(B,t+1.1,.6,45,1); break;
+    case 'guitar': gtr(B,t,57,.9,.4); gtr(B,t+.35,62,.9,.4); gtr(B,t+.7,66,.9,.55); break;
+    default: kick(B,t,1); snare(B,t+.5,1); bass(B,t+.9,.5,45,1); accNote(B,t+.9,.9,69,.85,false);
+  }
+  setTimeout(()=>{try{if(__demoCtx===ac){__demoCtx=null;ac.close()}}catch(e){}},3400);
+};
 </script>
 
 </body>

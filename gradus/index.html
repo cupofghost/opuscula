@@ -1088,6 +1088,7 @@ const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.g
   addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
     if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
     else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
     else if(m.op==='hello')hello()});
   hello();
 })();
@@ -1312,6 +1313,20 @@ function saveWav(blob,filename){
   }catch(e){}
   setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
 }
+
+/* OFFICINA audition: a couple of notes of one voice with the current timbre. */
+let __demoCtx=null;
+TIMBRE.demo=(group)=>{
+  if(RT)return;
+  try{if(__demoCtx)__demoCtx.close()}catch(e){}
+  const AC=window.AudioContext||window.webkitAudioContext, ac=new AC(); __demoCtx=ac;
+  try{ac.resume()}catch(e){}
+  const G=buildAudio(ac), t=ac.currentTime+.06;
+  if(group==='contra'){ voiceNote(G,t,1.1,69,'cp'); voiceNote(G,t+1.2,1.1,72,'cp'); }
+  else if(group==='cantus'){ voiceNote(G,t,1.1,57,'cf'); voiceNote(G,t+1.2,1.1,60,'cf'); }
+  else { voiceNote(G,t,1.7,57,'cf'); voiceNote(G,t,1.7,64,'cp'); }
+  setTimeout(()=>{try{if(__demoCtx===ac){__demoCtx=null;ac.close()}}catch(e){}},3600);
+};
 </script>
 
 </body>

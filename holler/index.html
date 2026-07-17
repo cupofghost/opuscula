@@ -695,6 +695,7 @@ const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.g
   addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
     if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
     else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
     else if(m.op==='hello')hello()});
   hello();
 })();
@@ -934,7 +935,9 @@ TIMBRE.touch=()=>{
   if(RT){const ct=RT.ctx.currentTime;
     RT.G.master.gain.setTargetAtTime(TP.master.gain,ct,.06);
     RT.G.wet.gain.setTargetAtTime(TP.master.wet,ct,.08);}
-  clearTimeout(__tbT); __tbT=setTimeout(()=>{if(RT)regen();},300);
+  // no mid-tune restart (it read as a crash): baked edits apply on the
+  // next play; the bench's audition button bakes the tweaked voice on demand.
+  clearTimeout(__tbT); __tbT=setTimeout(()=>{if(!RT)regen();},300);
 };
 
 /* ------------------------------ cut · WAV -------------------------------- */
@@ -1183,6 +1186,41 @@ function saveWav(blob,filename){
   }catch(e){}
   setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
 }
+
+/* OFFICINA audition: one voice, a few notes, with the current timbre,
+   through the real graph. Stops the tune first. */
+let __demoCtx=null;
+TIMBRE.demo=(group)=>{
+  if(RT)stop();
+  const rng=mulberry32(0x0dd1);
+  const n=Math.ceil(3.2*SR), buf=new Float32Array(n);
+  const tau=.5*TP.banjo.ringScale;
+  if(group==='guitar'){
+    for(const[t,m,kind]of[[0,38,'gbass'],[.5,57,'gstrum'],[.5,62,'gstrum'],[.5,66,'gstrum'],[1,45,'gbass'],[1.5,57,'gstrum'],[1.5,62,'gstrum'],[1.5,66,'gstrum']]){
+      const bt=kind==='gbass'?TP.guitar.bassRing:TP.guitar.strumRing;
+      ksPluck(buf,Math.floor((t+.05)*SR),midiToFreq(m),bt+.15,.85,bt,kind==='gbass'?0.03:0.06,rng);}
+    biquad(buf,'lowpass',TP.guitar.tone,0.7,0); biquad(buf,'peaking',110,1.0,TP.guitar.body);
+  }else if(group==='fiddle'){
+    for(const[t,f]of[[0,293.66],[.9,392],[1.8,440]]) fiddleNote(buf,Math.floor((t+.05)*SR),f,.95,.8,rng,0);
+    biquad(buf,'highpass',180,0.7,0); biquad(buf,'peaking',300,1.1,TP.fiddle.airGain);
+    biquad(buf,'peaking',560,1.4,3); biquad(buf,'peaking',TP.fiddle.bridgeFreq,1.1,TP.fiddle.bridgeGain);
+    for(let i=0;i<n;i++)buf[i]*=TP.fiddle.level;
+  }else if(group==='foot'){
+    footHit(buf,Math.floor(.05*SR),1,rng); footHit(buf,Math.floor(.65*SR),1,rng); footHit(buf,Math.floor(1.25*SR),1,rng);
+  }else{ // strings / banjo / master
+    for(const[t,m]of[[0,62],[.4,69],[.8,74],[1.2,69],[1.6,62]])
+      ksPluck(buf,Math.floor((t+.05)*SR),midiToFreq(m),tau+.18,.9,tau,.5,rng);
+    biquad(buf,'highpass',85,0.7,0); biquad(buf,'peaking',TP.banjo.potFreq,0.9,TP.banjo.potGain);
+    biquad(buf,'lowpass',TP.banjo.mellow,0.6,0); biquad(buf,'highshelf',3200,0.7,TP.banjo.sparkle);
+  }
+  let mx=0;for(let i=0;i<n;i++){const a=Math.abs(buf[i]);if(a>mx)mx=a;}
+  if(mx>0){const k=.9/mx;for(let i=0;i<n;i++)buf[i]*=k;}
+  try{if(__demoCtx)__demoCtx.close()}catch(e){}
+  const ac=new (window.AudioContext||window.webkitAudioContext)(); __demoCtx=ac;
+  try{ac.resume()}catch(e){}
+  const G=buildGraph(ac,buf,false); G.src.start(ac.currentTime+.03);
+  setTimeout(()=>{try{if(__demoCtx===ac){__demoCtx=null;ac.close()}}catch(e){}},3800);
+};
 </script>
 
 </body>

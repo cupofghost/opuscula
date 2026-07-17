@@ -142,6 +142,17 @@ Conventions when touching this layer:
   `M.*`, KHÖÖMEI's harmonic sets, NENIA's kid personalities) stay out of
   TIMBRE. When adding a machine, add a TIMBRE + bridge + touch and it appears
   on the bench automatically (add its chip to `MACHINES` in officina).
+- **Audition (► HEAR):** the bridge also takes `{op:'demo', group}` →
+  `TIMBRE.demo(group)`, and the bench puts a ► HEAR button on every group.
+  Buffer-baked machines (FOLI, TAMBOUR, HOLLER, PAS SALÉ, GRADUS, PEAL) play
+  a few strokes of just that voice, freshly synthesized with the current TP,
+  through their real graph in a short-lived private AudioContext; continuous
+  machines (KHÖÖMEI, SPANNUNG, SCALA, COCHLEA, BOLG, RILLE, NENIA) start
+  their transport if stopped — their touch hooks already apply edits live.
+  **The rebake machines (FOLI/TAMBOUR/HOLLER) deliberately do NOT restart
+  mid-play on an edit any more** — the stop-and-rebake read as a crash to the
+  maintainer; baked edits now apply on the next play, ► HEAR is the instant
+  audition path.
 - Verify with `scratchpad/verify-officina.mjs <dir> expected-<dir>.json`
   (playwright-core + bundled Chromium): factory load/play/cut smoke, schema
   well-formedness, expected-literal table, live set / bulk / localStorage

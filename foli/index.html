@@ -466,6 +466,7 @@ const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.g
   addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
     if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
     else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
     else if(m.op==='hello')hello()});
   hello();
 })();
@@ -724,10 +725,12 @@ function stop(){
 // through-composed: any change regenerates and (if playing) restarts
 function regen(){ if(RT){ stop(); play(); } else { invalidate(); } }
 
-/* OFFICINA live hook: the whole kit is baked into the master buffer, so a
-   bench edit re-renders the groove (debounced against slider drags). */
+/* OFFICINA live hook: the whole kit is baked into the master buffer. While
+   the groove plays we deliberately do NOT restart it (that read as a crash);
+   edits apply on the next play, and the bench's audition button bakes the
+   tweaked voice on demand. Stopped: refresh the canvas. */
 let __tbT=0;
-TIMBRE.touch=()=>{ clearTimeout(__tbT); __tbT=setTimeout(regen,300); };
+TIMBRE.touch=()=>{ clearTimeout(__tbT); __tbT=setTimeout(()=>{if(!RT)regen();},300); };
 
 /* ------------------------------ cut · WAV -------------------------------- */
 function encodeWav(L,R,sr){
@@ -953,6 +956,32 @@ function saveWav(blob,filename){
   }catch(e){}
   setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
 }
+
+/* OFFICINA audition: a few strokes of one voice, freshly baked with the
+   current timbre, through the real graph. Stops the groove first. */
+let __demoCtx=null;
+TIMBRE.demo=(group)=>{
+  if(RT)stop();
+  const kit=bakeKit();
+  const hits={kenkeni:[['kenkeni.open',0],['kenkeni.mute',.4],['kenkeni.dbell',.8]],
+    sangban:[['sangban.open',0],['sangban.mute',.5],['sangban.dbell',.9]],
+    dundunba:[['dundunba.open',0],['dundunba.mute',.6],['dundunba.dbell',1]],
+    djembe:[['dj1.bass',0],['dj1.tone',.45],['dj1.slap',.9]],
+    bell:[['bell.bell',0],['bell.bell',.35],['bell.bell',.7]],
+    shaker:[['shaker.sh',0],['shaker.sh',.22],['shaker.sh',.44],['shaker.sh',.66]]}[group]
+    ||[['dundunba.open',0],['sangban.open',.3],['kenkeni.open',.6],['dj1.slap',.9],['bell.bell',1.2]];
+  const n=Math.ceil(3.2*SR), L=new Float32Array(n), R=new Float32Array(n);
+  for(const[key,t]of hits){const bank=kit[key];if(!bank)continue;
+    const voice=key.split('.')[0], vg=(TP.mixer[voice]!==undefined)?TP.mixer[voice]:0.7;
+    mixHit(L,R,Math.floor((t+.05)*SR),bank[0],(VOICE_BY[voice]||{pan:0}).pan,.9*vg);}
+  let mx=0;for(let i=0;i<n;i++){const a=Math.abs(L[i]),b=Math.abs(R[i]);if(a>mx)mx=a;if(b>mx)mx=b;}
+  if(mx>0){const k=.9/mx;for(let i=0;i<n;i++){L[i]*=k;R[i]*=k;}}
+  try{if(__demoCtx)__demoCtx.close()}catch(e){}
+  const ac=new (window.AudioContext||window.webkitAudioContext)(); __demoCtx=ac;
+  try{ac.resume()}catch(e){}
+  const G=buildGraph(ac,L,R,false); G.src.start(ac.currentTime+.03);
+  setTimeout(()=>{try{if(__demoCtx===ac){__demoCtx=null;ac.close()}}catch(e){}},3800);
+};
 </script>
 
 </body>
