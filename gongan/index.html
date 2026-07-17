@@ -622,6 +622,7 @@ const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.g
   addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
     if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
     else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
     else if(m.op==='hello')hello()});
   hello();
 })();
@@ -868,14 +869,16 @@ function stop(){
 // through-composed: any change regenerates and (if playing) restarts
 function regen(){ if(RT){stop();play();} else {invalidate();} }
 
-/* OFFICINA live hook: master/room ride in immediately; everything baked
-   into the master buffer re-renders debounced. */
+/* OFFICINA live hook: master/room ride in immediately. Everything baked
+   into the master buffer applies on the NEXT play — no mid-cycle restart
+   (it read as a crash); the bench's ► HEAR button bakes the tweaked voice
+   on demand. Stopped: refresh the canvas. */
 let __gnT=0;
 TIMBRE.touch=()=>{
   if(RT){const ct=RT.ctx.currentTime;
     RT.G.master.gain.setTargetAtTime(TP.master.gain,ct,.06);
     RT.G.wet.gain.setTargetAtTime(TP.master.wet,ct,.08);}
-  clearTimeout(__gnT);__gnT=setTimeout(()=>{if(RT)regen();},300);
+  clearTimeout(__gnT);__gnT=setTimeout(()=>{if(!RT)regen();},300);
 };
 
 /* ------------------------------ cut · WAV -------------------------------- */
@@ -1216,6 +1219,37 @@ function saveWav(blob,filename){
   }catch(e){}
   setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
 }
+
+/* OFFICINA audition: a few strokes of one voice, freshly baked with the
+   current timbre, through the real graph. Stops the cycle first. The gong
+   demo sizes its buffer to the ring so the ombak has room to breathe. */
+let __demoCtx=null;
+TIMBRE.demo=(group)=>{
+  if(RT)stop();
+  const kit=bakeKit(st), S=PATHET[st.laras][st.pathet].tones;
+  const long=(group==='gong'||!TIMBRE.groups[group]||group==='master'||group==='mixer');
+  const secs=long?Math.min(11,TP.gong.decay*1.4+2):3.6;
+  const n=Math.ceil(secs*SR), L=new Float32Array(n), R=new Float32Array(n);
+  const put=(key,t,vel)=>{const bank=kit[key];if(!bank)return;
+    const voice=key.split('.')[0], vg=(TP.mixer[voice]!==undefined)?TP.mixer[voice]:0.7;
+    mixHit(L,R,Math.floor((t+.05)*SR),bank[0],(VOICE_BY[voice]||{pan:0}).pan,(vel||.9)*vg);};
+  const c=i=>S[Math.min(i,S.length-1)];
+  if(group==='bars'){put('demung.'+c(0),0);put('saron.'+c(1),.45);put('saron.'+c(2),.8);put('peking.'+c(3),1.15);put('peking.'+c(4),1.4);}
+  else if(group==='bonang'){put('bonang.'+c(1),0);put('bonang.'+c(2),.35);put('panerus.'+c(3),.7);put('panerus.'+c(1),.9);put('bonangO.'+c(2),1.3);}
+  else if(group==='kenong'){put('kenong.'+c(1),0);put('kenong.'+c(3),1.4);}
+  else if(group==='kempul'){put('kempul.'+c(2),0);put('kempul.'+c(0),1.2);}
+  else if(group==='kethuk'){put('kethuk',0);put('kethuk',.4);put('kethuk',.8);}
+  else if(group==='gong'){put('gong.suwukan',0);put('gong.ageng',2.2);}
+  else if(group==='kendhang'){put('kendhang.dah',0);put('kendhang.tung',.4);put('kendhang.tak',.8);put('kendhang.ket',1.1);put('kendhang.dah',1.4);}
+  else {put('kethuk',0);put('saron.'+c(1),.3);put('kenong.'+c(2),.7);put('gong.ageng',1.3);}
+  let mx=0;for(let i=0;i<n;i++){const a=Math.abs(L[i]),b=Math.abs(R[i]);if(a>mx)mx=a;if(b>mx)mx=b;}
+  if(mx>0){const k=.9/mx;for(let i=0;i<n;i++){L[i]*=k;R[i]*=k;}}
+  try{if(__demoCtx)__demoCtx.close()}catch(e){}
+  const ac=new (window.AudioContext||window.webkitAudioContext)(); __demoCtx=ac;
+  try{ac.resume()}catch(e){}
+  const G=buildGraph(ac,L,R,false); G.src.start(ac.currentTime+.03);
+  setTimeout(()=>{try{if(__demoCtx===ac){__demoCtx=null;ac.close()}}catch(e){}},Math.ceil(secs*1000)+700);
+};
 </script>
 
 </body>

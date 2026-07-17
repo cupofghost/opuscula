@@ -145,8 +145,9 @@ Conventions when touching this layer:
   on the bench automatically (add its chip to `MACHINES` in officina).
 - **Audition (► HEAR):** the bridge also takes `{op:'demo', group}` →
   `TIMBRE.demo(group)`, and the bench puts a ► HEAR button on every group.
-  Buffer-baked machines (FOLI, TAMBOUR, HOLLER, PAS SALÉ, GRADUS, PEAL) play
-  a few strokes of just that voice, freshly synthesized with the current TP,
+  Buffer-baked machines (FOLI, TAMBOUR, HOLLER, PAS SALÉ, GRADUS, PEAL,
+  GONGAN) play a few strokes of just that voice, freshly synthesized with the
+  current TP,
   through their real graph in a short-lived private AudioContext; continuous
   machines (KHÖÖMEI, SPANNUNG, SCALA, COCHLEA, BOLG, RILLE, NENIA) start
   their transport if stopped — their touch hooks already apply edits live.
@@ -219,8 +220,11 @@ buffer → realtime loop + offline WAV, identical graph). Design:
   **kepatihan** cipher with structural letters above and the gong tone
   circled, sounding beat underlined. Static layer cached offscreen, rebuilt
   only when the sounding gongan flips (`SHOWN_G`).
-- **TIMBRE:** 43 params in 9 groups; touch = master/wet live + 300 ms
-  debounced re-render (prerendered machine). Bridge verbatim.
+- **TIMBRE:** 43 params in 9 groups; touch = master/wet live, baked edits
+  apply on the next play (no mid-cycle restart, per the ► HEAR convention),
+  and `TIMBRE.demo(group)` auditions each voice freshly baked — the gong
+  demo sizes its buffer to the ring (`decay*1.4+2 s`) so the ombak
+  breathes. Bridge verbatim incl. the demo op.
 - **Verified headless** (`scratchpad/verify-gongan.mjs`, playwright-core +
   bundled Chromium, 32 checks + a per-voice solo probe): colotomy tables
   canonical; 720 pressings (3 forms × 2 laras × 3 pathet × 40 seeds) —
