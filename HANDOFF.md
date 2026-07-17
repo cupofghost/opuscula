@@ -59,6 +59,7 @@ Typical machine shape (varies, but the spine is consistent):
 index.html          landing page / catalogue; has the ↓HANDOFF download button
 README.md            public catalogue + shared grammar
 HANDOFF.md           this file (also downloadable from the landing page)
+officina/index.html  OFFICINA — the voicing bench (backstage, NOT an op.)
 pas-sale/index.html  op. I    PAS SALÉ   — zydeco two-step
 scala/index.html     op. II   SCALA      — Shepard–Risset in just intonation
 gradus/index.html    op. III  GRADUS     — species counterpoint after Fux
@@ -103,9 +104,82 @@ keep all three (page, README, this file) in sync when adding a machine.
   **don't open a PR unless asked.** The music-theory / design reasoning tends to
   live in commit messages.
 
+## TIMBRE / OFFICINA — the voicing layer (all machines)
+
+Since 2026-07: **every machine's synthesis constants live in a `TIMBRE` block**
+near the top of its script — schema `{id, title, doc, groups:{g:{label,doc,
+params:{p:{v,min,max,step,unit?,label,doc}}}}}` — and the code reads
+`TP.<group>.<param>` instead of scattered literals. `TP` is built by the
+**OFFICINA bridge**, a ~25-line IIFE **identical in every machine** (the one
+deliberate exception to "no shared code" — it's duplicated, not factored):
+
+- Standalone: overlays `localStorage['opvscvla.timbre.<id>']` (`{preset,v}`,
+  modified-only values) onto the defaults at boot; `?factory` bypasses.
+- In the bench (`?bench`, i.e. iframed by `officina/`): announces
+  `{op:'schema', schema, values}` via postMessage (`{officina:1, id}` envelope)
+  and accepts `set {path,value}` / `bulk {values}` (bulk = reset-then-apply) /
+  `hello`. `TIMBRE.touch(path)`, assigned later per machine, pushes edits into
+  a running graph — realtime machines ramp nodes; prerendered machines
+  (FOLI/TAMBOUR/HOLLER/PEAL's bells) re-render debounced ~300 ms.
+
+**`officina/index.html`** is the bench (backstage, not an op.; linked from the
+landing-page colophon): machine chips → the real machine runs in an iframe
+(`?bench`) while its schema renders as a documented panel — per-param slider +
+number box + factory reset, modified markers, per-machine "how this instrument
+is built" doc. Presets: save/load/delete by name per machine
+(`opvscvla.presets.<id>`), export/import JSON, FACTORY, **A/B** (flips the
+running machine to factory while lit), **COPY TWEAKS** (modified-only JSON to
+clipboard — the format to paste into a chat when asking for values to be baked
+in as new factory defaults). Every edit write-through-debounces to the applied
+key, so machines opened directly speak with the dialed-in voice.
+
+Conventions when touching this layer:
+- `TIMBRE.id` === the directory name (that's how the bench addresses it).
+- Factory defaults in TIMBRE must equal the literals they replaced —
+  derived buffer lengths/stop-guards may scale with edited params but must
+  equal the old constants exactly at factory values.
+- The law is NOT voicing: scales/ratios/patterns/moods (e.g. RILLE's per-mood
+  `M.*`, KHÖÖMEI's harmonic sets, NENIA's kid personalities) stay out of
+  TIMBRE. When adding a machine, add a TIMBRE + bridge + touch and it appears
+  on the bench automatically (add its chip to `MACHINES` in officina).
+- Verify with `scratchpad/verify-officina.mjs <dir> expected-<dir>.json`
+  (playwright-core + bundled Chromium): factory load/play/cut smoke, schema
+  well-formedness, expected-literal table, live set / bulk / localStorage
+  overlay round-trips; `verify-bench.mjs` and `sweep-bench.mjs` drive the
+  bench UI itself. All 13 pass (387 params).
+
 ## Open threads
 
 Newest first.
+
+### OFFICINA + TIMBRE rollout — done, verified, this branch
+**Branch:** `claude/voice-synthesis-settings-ifeuah` · **Files:** all 13
+machines, `officina/index.html`, landing colophon link, README section.
+**Status:** done; every machine verified headless (defaults match the old
+literals exactly, zero pageerrors, bridge round-trips, bench sweep passes).
+
+Param counts: PAS SALÉ 48 · SCALA 15 · GRADUS 13 · RILLE 43 · COCHLEA 24 ·
+BOLG 25 · PEAL 13 · HOLLER 25 · FOLI 43 · NENIA 12 · KHÖÖMEI 45 · SPANNUNG 40
+· TAMBOUR 41. Mixer-style tables (FOLI/TAMBOUR `VOICES` gains, PAS SALÉ
+`LEVEL`, COCHLEA/BOLG `NOMINAL`/`SENDS`) moved into TIMBRE (aliased where the
+code reads them by the old names). GRADUS and NENIA are one-shot performers —
+no touch hook, edits apply on the next play (stated in their TIMBRE docs).
+
+Fixed along the way: **KHÖÖMEI and SPANNUNG called `saveWav()` without
+defining it — their WAV cut was broken in production.** Added the shared
+saveWav pill verbatim to both.
+
+Noticed, pre-existing, NOT touched: **PAS SALÉ's full-song WAV cut renders
+super-linearly in node count** (8 s of song ≈ 1 s render, half the song ≈
+95 s; the full 116 s song takes many minutes headless). All ~3.5k events'
+nodes are created up front in one OfflineAudioContext. If it matters, chunk
+the schedule or render in segments. (RILLE's 120 s plate cuts in ~60 s —
+fine.) Also: the offline render measured peaks ≈1.06 pre-encode there
+(encodeWav clamps) — the -14 dB/3:1 comp lets transients through.
+
+Pick-ups: an OFFICINA "export everything" (all machines, one JSON); a
+hashchange listener in the bench (deep links work on load; switching machines
+mid-session is chips-only); per-param A/B rather than whole-voice.
 
 ### TAMBOUR — playback fixes + battlefield graphic
 **Branch:** `claude/project-working-conventions-hlurpe` · **File:**

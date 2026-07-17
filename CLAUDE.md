@@ -24,7 +24,13 @@ re-told.
 - Thirteen independent single-file Web Audio machines (`op.` dirs) + `index.html`
   landing page. **No build, no bundler, no deps, no npm, no samples, no server.**
 - Machines share a design *grammar*, **not code** — each `index.html` is
-  deliberately standalone. Don't factor shared code across machines.
+  deliberately standalone. Don't factor shared code across machines. (One
+  deliberate exception: the ~25-line OFFICINA timbre bridge is *duplicated
+  verbatim* in every machine — see the TIMBRE/OFFICINA section in HANDOFF.md.)
+- Every machine's synthesis constants live in its `TIMBRE` block; the code
+  reads `TP.<group>.<param>`. `officina/` (backstage, not an op.) edits them
+  live. Don't reintroduce magic numbers into voice code; factory defaults in
+  TIMBRE must equal the values they replace.
 - Deterministic + shareable: seeded generation, the URL hash *is* the pressing,
   offline WAV render is deterministic.
 - The `op.` roman-numeral order lives in `index.html`, `README.md`, and

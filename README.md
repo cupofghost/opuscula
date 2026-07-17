@@ -36,6 +36,18 @@ composes; you set the law it obeys.
 - iOS: audio requests the `playback` session (ignores the silent switch on
   Safari 17+); resumes across interruptions.
 
+## Backstage: OFFICINA, the voicing bench
+
+Not an op. — the workshop. Every machine keeps its synthesized voices in one
+documented `TIMBRE` block near the top of its script (every constant named,
+bounded, and explained), and [`officina/`](./officina/) edits those values
+**live inside the running machine**: pick a work, press its play control, and
+shape the voices by ear in the mix they actually sit in. Save what you dial in
+as named presets (per browser; export/import as JSON); the machines pick up the
+applied voicing even when opened directly. `?factory` on any machine's URL
+plays the shipped voice. Voicing changes timbre only — seeds, hash pressings,
+and the composition are untouched.
+
 ## Running locally
 
 Open any `index.html` directly, or serve the folder with any static server.
