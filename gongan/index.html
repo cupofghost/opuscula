@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#191009">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>GONGAN — Javanese court gamelan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   GONGAN — a cycle of bronze: Central Javanese court gamelan.
+   Dark teak #191009 · gold leaf #d4a24e · old bronze #8a6a35 ·
+   carved lacquer red #a03325 · patina green #6fa08a · bone #eae2cc.
+   The look is a pendhapa at night: carved wood, gold on shadow, the
+   instruments as points of light. Named in Javanese — a gongan is the
+   span from one stroke of the great gong to the next, the unit of
+   Javanese musical time.
+   ===================================================================== */
+:root{
+  color-scheme:dark;
+  --ground:#191009; --panel:#110b06; --bone:#eae2cc; --gold:#d4a24e;
+  --bronze:#8a6a35; --lacquer:#a03325; --patina:#6fa08a;
+  --txt:#eae2cc; --dim:#9d9078; --hair:rgba(212,162,78,.20); --hair2:rgba(212,162,78,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;background:var(--ground)}
+body{
+  background:var(--ground);
+  background-image:radial-gradient(120% 80% at 50% -8%, rgba(212,162,78,.05), transparent 55%),
+                   radial-gradient(90% 60% at 50% 110%, rgba(160,51,37,.07), transparent 60%);
+  color:var(--txt);font-family:'EB Garamond',Georgia,serif;
+  min-height:100vh;display:flex;justify-content:center;
+  padding:max(14px,env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom));
+}
+.pit{
+  width:100%;max-width:600px;background:var(--panel);
+  border:1.5px solid var(--bronze);
+  box-shadow:0 0 0 5px var(--ground),0 0 0 6.5px var(--hair),inset 0 0 70px rgba(0,0,0,.55);
+  display:flex;flex-direction:column;padding:0 0 18px;
+}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+/* exit to opuscula (shared) */
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:14px 0 0 14px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,11,13,.5);border:1px solid rgba(233,226,210,.24);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.7);background:rgba(10,11,13,.82);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+
+header{padding:14px 20px 12px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.3em;color:var(--lacquer);text-transform:uppercase}
+h1{font-family:'Cormorant SC',serif;font-weight:700;font-size:clamp(2.8rem,14vw,4.4rem);
+  letter-spacing:.14em;line-height:1;color:var(--txt);margin:6px 0 8px;text-indent:.14em;
+  text-shadow:0 1px 0 rgba(212,162,78,.22)}
+.sub{font-style:italic;font-size:1rem;color:var(--txt);line-height:1.45}
+.sub b{font-style:normal;color:var(--gold)}
+.credit{font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--dim);letter-spacing:.06em;margin-top:9px;text-transform:uppercase}
+
+/* plate (canvas) */
+.plate{position:relative;margin:2px 14px 0;border:1px solid var(--hair);background:var(--ground)}
+.plate canvas{display:block;width:100%;height:auto}
+.plate .tag{position:absolute;top:7px;left:10px;font-family:'IBM Plex Mono',monospace;font-size:.56rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.plate .tagr{left:auto;right:10px;text-align:right}
+.plate .tag b{color:var(--gold)}
+
+/* controls */
+.controls{padding:14px 20px 0;display:flex;flex-direction:column;gap:14px}
+.lab{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.26em;color:var(--lacquer);text-transform:uppercase;margin-bottom:7px;display:flex;justify-content:space-between}
+.lab .rd{color:var(--txt);letter-spacing:.05em}
+
+button{font-family:'EB Garamond',serif;color:var(--txt);background:transparent;
+  border:1px solid var(--hair);cursor:pointer;touch-action:manipulation;letter-spacing:.05em}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button:active{transform:translateY(1px)}
+button,canvas{-webkit-user-select:none;user-select:none}
+
+.pick{width:100%;padding:16px;font-family:'Cormorant SC',serif;font-weight:600;
+  font-size:1.25rem;letter-spacing:.3em;text-transform:uppercase;border-width:1.5px;
+  border-color:var(--bronze);transition:background .15s,color .15s,border-color .15s}
+.pick.on{background:var(--lacquer);border-color:var(--lacquer);color:#fff}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chips button{padding:8px 11px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--dim);letter-spacing:.04em}
+.chips button.on{background:var(--gold);color:#191009;border-color:var(--gold)}
+.chips button small{display:block;font-size:.82em;opacity:.7;letter-spacing:0;text-transform:none}
+.chips button.on small{opacity:.85}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--hair)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;margin-top:-9px;border-radius:50%;background:var(--panel);border:2px solid var(--gold);box-shadow:0 0 7px rgba(212,162,78,.4)}
+input[type=range]::-moz-range-track{height:2px;background:var(--hair)}
+input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--panel);border:2px solid var(--gold)}
+
+/* the gamelan mixer */
+.tracks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tracks button{padding:9px 6px;font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.05em;color:var(--dim);
+  display:flex;align-items:center;gap:.5em;justify-content:center;text-transform:uppercase}
+.tracks button .dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.35;flex:none}
+.tracks button.on{color:var(--txt);border-color:var(--hair)}
+.tracks button.on .dot{opacity:1}
+
+.cut{width:100%;padding:13px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;border-style:dashed;border-color:var(--hair)}
+.cut:disabled{opacity:.45;cursor:default}
+.cutnote{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim);text-align:center;margin-top:7px;min-height:1em;letter-spacing:.05em}
+
+.foot{margin:16px 20px 0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;
+  letter-spacing:.2em;color:var(--dim);text-transform:uppercase;line-height:1.9;border-top:1px solid var(--hair2);padding-top:12px}
+.foot a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+/* ── on this music: expandable reader notes (shared across the opuscula) ── */
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
+</style>
+</head>
+<body>
+<div class="pit">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+
+  <header>
+    <div class="eyebrow">op. XIV · Javanese court gamelan</div>
+    <h1>Gongan</h1>
+    <div class="sub"><b>The gong closes the circle.</b> A Central Javanese gamelan sounds one cycle of bronze: the hanging and standing gongs mark the time, a composed skeleton melody walks the middle of it, and the small bright instruments embroider above. You set the form, the tuning, the mode and the density; the machine composes within them.</div>
+    <div class="credit">gong ageng · gong suwukan · kempul · kenong · kethuk · demung · saron · peking · bonang barung · bonang panerus · kendhang — all synthesized, no samples</div>
+  </header>
+
+  <div class="plate">
+    <canvas id="cv" width="920" height="560" aria-label="Colotomic wheel: one gong cycle drawn as a circle with gong, kenong, kempul and kethuk markers, the balungan as cipher numerals, and a sweeping arm; beside it, the balungan in kepatihan notation"></canvas>
+    <div class="tag">BENTUK · <b id="formTag">Ketawang</b><br><span id="pthTag">sléndro sanga</span></div>
+    <div class="tag tagr"><span id="cycTag">2 gongan</span></div>
+  </div>
+
+  <div class="controls">
+
+    <button class="pick" id="pick">Play</button>
+
+    <div class="fld">
+      <div class="lab">Bentuk <span class="rd" id="formrd">Ketawang · songlike, 16 beats</span></div>
+      <div class="chips" id="form"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Laras <span class="rd" id="larasrd">Sléndro</span></div>
+      <div class="chips" id="laras"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Pathet <span class="rd" id="pthrd">Sanga · midnight, inward</span></div>
+      <div class="chips" id="pathet"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Irama <span class="rd" id="iramard">Dadi · settled</span></div>
+      <div class="chips" id="irama"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Laya <span class="rd" id="layard">48 MM balungan</span></div>
+      <input type="range" id="laya" min="60" max="132" value="96" aria-label="Tempo of the balungan beat">
+    </div>
+
+    <div class="fld">
+      <div class="lab">The gamelan <span class="rd">tap to mute a voice</span></div>
+      <div class="tracks" id="tracks"></div>
+    </div>
+
+    <div class="fld">
+      <button class="cut" id="cut">Cut the gendhing · 16-bit WAV</button>
+      <div class="cutnote" id="cutnote">renders both gongan, then lets the great gong ring off</div>
+    </div>
+  </div>
+
+  <details class="reader">
+    <summary>On this music · the Javanese gamelan</summary>
+    <div class="rbody">
+      <h4>What you're hearing</h4>
+      <p>A gamelan is an orchestra of tuned bronze — hanging gongs, kettle gongs on racks, thick keyed metallophones — built and tuned as one instrument, played by a community as one body. This is the Central Javanese court tradition, the <em>karawitan</em> of Surakarta and Yogyakarta: music that does not march from a beginning to an end but turns in circles, each circle closed by the deepest sound in the ensemble, the great gong. What you hear is one small <em>gendhing</em> — two cycles, composed by the machine within the rules below, elaborated the way a gamelan elaborates.</p>
+      <h4>The cycle is the law</h4>
+      <p>Javanese time is <em>colotomic</em>: instruments of different sizes divide the cycle at different depths, and where they fall is fixed by the <em>bentuk</em>, the form — it is the form. The little <em>kethuk</em> ticks the smallest marks; the <em>kenong</em>, brightest and longest-ringing of the kettles, quarters the cycle; the hanging <em>kempul</em> answers between the kenong strokes (its first slot is left empty — the <em>wela</em>, a held breath); and the <em>gong ageng</em>, the great gong, sounds once, at the end, which is also the beginning. The rarer the stroke, the deeper the instrument. <em>Lancaran</em> packs its punctuation close, sixteen brisk beats; <em>ketawang</em> opens the same sixteen into something songlike; <em>ladrang</em> stretches to thirty-two, stately. Pick the form and you have picked the skeleton of time itself; nothing else is allowed to move those strokes.</p>
+      <h4>Laras — no two gamelans agree</h4>
+      <p>Gamelan music uses two tunings, and neither is the Western scale. <em>Sléndro</em> divides the octave into five roughly even steps — wide seconds, no semitones, a scale that floats. <em>Pélog</em> is seven unequal tones from which five are drawn at a time — narrow steps crowding against wide ones, dark and perfumed. And crucially: <strong>there is no standard pitch and no standard temperament.</strong> Every gamelan is tuned to itself — its own <em>embat</em>, the tuner's personal curve — and instruments are meaningless outside their own set. The tuning here is this machine's own embat, one fixed voice inside the documented ranges of real gamelans; a neighbouring gamelan would disagree with it, and that disagreement is the tradition working as intended.</p>
+      <h4>Pathet — the mode</h4>
+      <p>Within a laras, a <em>pathet</em> constrains the melody the way a mode does: some tones are homes to cadence on (<em>sèlèh</em>), some are passing colour, one or two are all but avoided. Sléndro carries three — <em>nem</em>, grave and even, for the evening's first watch of the shadow play; <em>sanga</em>, inward, for the deep middle of the night; <em>manyura</em>, bright and lifting, for the hours before dawn. Pélog answers with <em>lima</em>, <em>nem</em> and <em>barang</em> — the last swapping tone 1 out for the high glint of tone 7. The machine composes its skeleton by walking toward sèlèh tones the pathet approves, and every cycle ends on the pathet's own gong tone.</p>
+      <h4>Irama — the elastic clock</h4>
+      <p>Gamelan tempo is not one number but a ratio. As the beat of the skeleton slows, the elaborating instruments <em>double</em> their notes to fill the widening space — so the music gets slower and busier at once, like a wheel turning down through gears. These levels are the <em>irama</em>. Here <em>tanggung</em> puts two elaborating notes to each beat, <em>dadi</em> four, <em>wilet</em> eight; the laya slider sets the walking pace the levels divide. At wilet a sixteen-beat cycle can take most of a minute, the peking raining sixteenth-notes the whole way.</p>
+      <h4>Balungan and garap</h4>
+      <p>Gamelan musicians do not read parts. There is one skeleton melody — the <em>balungan</em>, "the bones," one tone to a beat, shown here in the cipher notation (<em>kepatihan</em>) Javanese musicians actually use — and every instrument <em>derives</em> its part from those bones by the rules of its role. That derivation is called <em>garap</em>, the working. The demung and saron strike the bones plainly. The little peking doubles each pair of tones in its clockwork way. The bonang barung walks ahead of the saron, sounding each coming pair before it arrives — the pattern called <em>pipilan</em> — and dropping to ringing octaves (<em>gembyang</em>) to announce a cadence; the bonang panerus does the same at twice the speed. The kendhang, the only drum, holds the ensemble's reins. Change the balungan and every part changes with it: that is the whole architecture.</p>
+      <h4>The bronze</h4>
+      <p>Bronze does not ring in neat harmonics; its partials land between the cracks of the harmonic series, which is why a gamelan shimmers. The great gong is tuned — deliberately — so that two of its vibrating modes sit a few cycles apart: the slow throb you hear in its ring is the <em>ombak</em>, the wave, beating at the difference. The saron player's left hand damps each key just as the right strikes the next, so the line stays clean; listen for the dry edge of each bone as the next one lands. Both are rendered here — the beat rate of the gong and the damping hand alike.</p>
+      <h4>A note on faithfulness</h4>
+      <p>The forms, the colotomy, the pathet cadence habits, the nacah and pipilan figuration and the irama ratios are the documented grammar of Central Javanese practice. The balungan themselves are composed by the machine — idiomatic, not quotations — and the drumming is a simplified <em>kendhang kalih</em> outline. A real karawitan carries far more than this: the rebab and the voices, gendér and gambang floating free of the grid, the whole garment of which this is the loom. What is here is the loom, honestly threaded.</p>
+      <h4>How the sound is made</h4>
+      <p>No samples. Every instrument is additive synthesis from first principles: the keyed bars are a fundamental with the high inharmonic partials of a free metal bar, struck in slightly detuned pairs; the kettle gongs add the hum and bend of a domed boss; the great gong is two close-tuned modes beating at the ombak rate under a slow bloom; the kendhang is a struck membrane. The whole gendhing — two gongan — is rendered once into a stereo buffer, given a breath of pavilion air, and looped, the gong's long ring folded across the seam so the circle truly closes. The WAV you cut is exactly what you hear.</p>
+      <h4>The name</h4>
+      <p>op. XIV is named in Javanese, the mother tongue of this music: a <em>gongan</em> is the span from one stroke of the great gong to the next — the breath-length of Javanese time, the circle everything here lives inside.</p>
+    </div>
+  </details>
+
+  <div class="foot">
+    op. XIV · <a href="../">opvscvla</a> · keys: space=play · r=another · c=cut
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* =====================================================================
+   READER'S GUIDE — GONGAN (op. XIV)
+   ---------------------------------------------------------------------
+   Central Javanese court gamelan as a cycle engine. The premise mirrors
+   the music: a BENTUK (form) fixes the colotomy — where kethuk, kenong,
+   kempul and the great gong fall in the cycle; a LARAS (sléndro/pélog,
+   this machine's own embat) fixes the tuning; a PATHET fixes which tones
+   the melody may cadence on; an IRAMA fixes the density ratio between
+   the balungan beat and the elaborating instruments. Inside those laws
+   the machine COMPOSES a balungan (skeleton melody) per gongan, and
+   every other part is DERIVED from it by role (garap): saron/demung
+   strike it, peking doubles it (nacah), bonang walks ahead of it
+   (pipilan, gembyang octaves at cadences), panerus at double speed,
+   kendhang holds the reins.
+
+   THE SHARED SKELETON (every opuscula work is built the same way):
+     · an ENGINE band (below) that is PURE and DOM-free: laws → seeded
+       balungan → a list of stroke events {t, voice, …}. No DOM, no audio.
+     · synthesis from first principles — never a sample. Bars are
+       fundamental + inharmonic free-bar partials in detuned pairs;
+       kettles add hum and bend; the great gong is two close modes
+       beating at the ombak rate; kendhang is a struck membrane.
+       Rendered once to a stereo buffer and peak-normalised. Saron-family
+       strokes are DAMPED at the next stroke (the left hand).
+     · TWO renderers of that buffer, IDENTICAL signal path so the WAV is
+       what you hear: realtime loops it (gong ring folded across the
+       seam); the "cut" button renders one pass offline → 16-bit WAV.
+     · a <canvas>: the gongan as a WHEEL (colotomic markers at their
+       beats, cipher numerals inside, a sweeping arm, the gong flash)
+       beside the balungan in KEPATIHAN cipher notation. Static layer
+       cached offscreen; only the arm/glows redraw. Sleeps when idle.
+     · a hash-permalink: every control serialises into location.hash, so
+       THE URL IS THE PRESSING — copy it to reload the exact gendhing.
+
+   THROUGH-COMPOSED: like Foli/Tambour, a change of any control
+   REGENERATES the buffer and restarts playback.
+
+   KEYS (wired near the bottom, same in every work):
+       space = play/stop   ·   r = another gendhing   ·   c = cut a WAV
+
+   THIS FILE: ENGINE (laws → rng → balungan → garap → events) → state →
+   TIMBRE/bridge → audio (bar/kettle/gong/kendhang synth, mix, graph) →
+   realtime transport → WAV cut → canvas (wheel + kepatihan) → controls
+   → hash/keys → init.
+   ===================================================================== */
+
+/* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
+function __hint(msg){
+  try{
+    const p=document.getElementById('pick')||document.querySelector('button');
+    if(!p||!p.insertAdjacentElement)return;
+    let h=document.getElementById('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin:8px 20px 0;font-style:italic;letter-spacing:.04em';
+      p.parentNode.appendChild(h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{
+    if(document.visibilityState==='visible')kick();
+    else if(ac.state==='running')ac.suspend().catch(()=>{});
+  }catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else if(document.visibilityState==='visible')setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('AUDIO SUSPENDED — tap Play again · if still silent, check the ring/silent switch');}catch(e){}},450);
+}
+
+/* ============================ ENGINE-BEGIN ============================
+   Pure, DOM-free. The laws:
+   · FORMS — the colotomy, 0-indexed beats. Canonical Solonese placement:
+       lancaran  16 beats · kethuk on the odd marks (1,3,5…, 1-indexed),
+                 kempul 6/10/14 (beat 2 is wela), kenong 4/8/12/16, gong 16
+       ketawang  16 beats · kethuk 2/6/10/14, kempul 12 (wela 4),
+                 kenong 8/16, gong 16
+       ladrang   32 beats · kethuk 2/6/…/30, kempul 12/20/28 (wela 4),
+                 kenong 8/16/24/32, gong 32
+     lancaran carries balungan NIBANI (a tone every second beat);
+     ketawang/ladrang carry balungan MLAKU (a tone every beat).
+   · LARAS — this machine's own embat (see reader notes): sléndro five
+     near-even steps, pélog seven unequal; cents are fixed, not ET.
+   · PATHET — per laras: the five sounding tones, sèlèh (cadence) weights,
+     the gong tone and the secondary (suwukan) tone.
+   The generator walks a seeded balungan toward the sèlèh of each kenong
+   segment; the final sèlèh of gongan A is the pathet's secondary tone
+   (gong suwukan), of gongan B the gong tone itself (gong ageng).      */
+
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+const FORMS={
+  lancaran:{label:'Lancaran',beats:16,gloss:'brisk, close-knit',
+    kethuk:[0,2,4,6,8,10,12,14],kempul:[5,9,13],kenong:[3,7,11,15],gong:15,style:'nibani'},
+  ketawang:{label:'Ketawang',beats:16,gloss:'songlike, 16 beats',
+    kethuk:[1,5,9,13],kempul:[11],kenong:[7,15],gong:15,style:'mlaku'},
+  ladrang:{label:'Ladrang',beats:32,gloss:'stately, 32 beats',
+    kethuk:[1,5,9,13,17,21,25,29],kempul:[11,19,27],kenong:[7,15,23,31],gong:31,style:'mlaku'},
+};
+const FORM_ORDER=['lancaran','ketawang','ladrang'];
+
+// the embat: cents above tone 1 of each laras, cipher-keyed. Fixed — this
+// gamelan's own voice, inside the documented ranges of real sets. Base Hz
+// puts the demung octave low; saron ×2, peking ×4. Tumbuk nem: sléndro 6
+// and pélog 6 land near the same pitch, as paired court sets often do.
+const LARAS={
+  slendro:{label:'Sléndro',cents:{1:0,2:228,3:473,5:711,6:943},base:140},
+  pelog:  {label:'Pélog',  cents:{1:0,2:120,3:270,4:555,5:670,6:785,7:950},base:153},
+};
+const PATHET={
+  slendro:[
+    {id:'nem',    label:'Nem',    gloss:'evening — grave, even',   tones:[1,2,3,5,6], gong:2, alt:6, w:{1:1.5,2:3,3:1.2,5:2,  6:3}},
+    {id:'sanga',  label:'Sanga',  gloss:'midnight — inward',       tones:[1,2,3,5,6], gong:5, alt:1, w:{1:3,  2:2,3:0.4,5:3,  6:1.2}},
+    {id:'manyura',label:'Manyura',gloss:'toward dawn — bright',    tones:[1,2,3,5,6], gong:6, alt:2, w:{1:1.2,2:3,3:2,  5:0.4,6:3}},
+  ],
+  pelog:[
+    {id:'lima',   label:'Lima',   gloss:'deep, archaic',           tones:[1,2,3,5,6], gong:5, alt:1, w:{1:3,  2:1.5,3:1,  5:3,6:1}},
+    {id:'nem',    label:'Nem',    gloss:'the broad middle',        tones:[1,2,3,5,6], gong:6, alt:2, w:{1:1.2,2:3,  3:1.2,5:2,6:3}},
+    {id:'barang', label:'Barang', gloss:'tone barang lit',         tones:[2,3,5,6,7], gong:6, alt:3, w:{2:2,  3:2.5,5:1,  6:3,7:1.5}},
+  ],
+};
+
+// the gamelan voices, in mixer order + colour + pan (a seating plan:
+// bonang rack left, saron row centre, kenong right, gongs behind).
+// Gains live in TIMBRE.mixer — the voicing bench edits them.
+const VOICES=[
+  {id:'gong',    label:'Gong',        col:'#d4a24e', pan: 0.00},
+  {id:'kempul',  label:'Kempul',      col:'#b98b3e', pan:-0.25},
+  {id:'kenong',  label:'Kenong',      col:'#e3c27a', pan: 0.30},
+  {id:'kethuk',  label:'Kethuk',      col:'#7d7463', pan: 0.15},
+  {id:'demung',  label:'Demung',      col:'#c8874a', pan:-0.10},
+  {id:'saron',   label:'Saron',       col:'#e0a45c', pan: 0.05},
+  {id:'peking',  label:'Peking',      col:'#eecf96', pan: 0.22},
+  {id:'bonang',  label:'Bonang',      col:'#6fa08a', pan:-0.30},
+  {id:'panerus', label:'B. panerus',  col:'#9cc4ae', pan:-0.38},
+  {id:'kendhang',label:'Kendhang',    col:'#a03325', pan: 0.10},
+];
+const VOICE_BY=Object.fromEntries(VOICES.map(v=>[v.id,v]));
+
+// a simplified kendhang kalih outline per form — 2 slots per balungan beat.
+// b=dhah (deep) · u=tung (mid, ringing) · t=tak (dry slap) · k=ket (tick).
+// '|' is a visual bar separator, stripped at parse. Idiomatic, not a
+// transcription (stated in the reader notes).
+const KENDHANG={
+  lancaran:'..t.u...t.u.b...|..t.u.t.u.b.b...',
+  ketawang:'....u.......b...|..u...t...b.b...',
+  ladrang: '....u.......t...|....u...t...b...|....u.......t...|..u.t..ub..bb...',
+};
+const stripBars=s=>(s||'').replace(/[|\s]/g,'');
+const KD_KIND={b:'dah',u:'tung',t:'tak',k:'ket'};
+
+// frequency of a cipher tone in the demung octave of the current laras
+function toneHz(laras,cipher){const L=LARAS[laras];return L.base*Math.pow(2,(L.cents[cipher]||0)/1200);}
+
+// ---- the composer: a seeded balungan per gongan --------------------------
+// Sèlèh tones are drawn from the pathet's weights per kenong segment; the
+// line walks stepwise toward each sèlèh (occasional hang — gantungan — or
+// a small leap), and lands exactly on it. Gongan A closes on the pathet's
+// secondary tone (rung on gong suwukan), gongan B on the gong tone itself
+// (the gong ageng): the piece only fully lands the second time round.
+function genAll(st){
+  const F=FORMS[st.form], P=PATHET[st.laras][st.pathet];
+  const rng=mulberry32((st.seed>>>0)^0x3a1c5b97);
+  const S=P.tones, N=S.length;
+  const wts=S.map(c=>P.w[c]||0.4);
+  const pickW=()=>{let tot=0;for(const w of wts)tot+=w;let x=rng()*tot;
+    for(let i=0;i<N;i++){x-=wts[i];if(x<=0)return i;}return N-1;};
+  const gi=S.indexOf(P.gong), ai=S.indexOf(P.alt);
+  const noteBeats=[];
+  for(let b=0;b<F.beats;b++) if(F.style==='mlaku'||b%2===1) noteBeats.push(b);
+  const gongans=[]; let cur=gi;
+  for(let g=0;g<2;g++){
+    const segs=F.kenong.length, seleh=[];
+    for(let k=0;k<segs;k++){
+      if(k===segs-1){seleh.push(g===0?ai:gi);continue;}
+      let s=pickW();
+      if(k>0&&s===seleh[k-1]&&rng()<0.6)s=pickW();
+      seleh.push(s);
+    }
+    const bal=new Array(F.beats).fill(null);
+    let prevK=-1;
+    for(let k=0;k<segs;k++){
+      const kb=F.kenong[k], target=seleh[k];
+      const pos=noteBeats.filter(b=>b>prevK&&b<=kb);
+      for(let p=0;p<pos.length;p++){
+        if(p===pos.length-1){cur=target;bal[pos[p]]=target;continue;}
+        const left=pos.length-1-p, dist=target-cur;
+        let nxt;
+        if(rng()<0.14&&p>0) nxt=cur;                                // gantungan
+        else{
+          const toward=Math.sign(dist)||((rng()<0.5)?1:-1);
+          const bias=Math.min(0.92,0.45+0.5*(Math.abs(dist)/Math.max(1,left)));
+          const dir=rng()<bias?toward:-toward;
+          const mag=(rng()<0.13&&Math.abs(dist)>1)?2:1;
+          nxt=clamp(cur+dir*mag,0,N-1);
+        }
+        bal[pos[p]]=nxt;cur=nxt;
+      }
+      prevK=kb;
+    }
+    gongans.push({bal,seleh});
+  }
+  return {gongans,noteBeats,S,P,F};
+}
+
+// ---- garap: derive every part from the balungan ---------------------------
+// Densities per irama (elaborating strokes per balungan beat):
+//   I tanggung → 2 · II dadi → 4 · III wilet → 8 (panerus always ×2 that).
+// Peking = nacah (doubled pairs: aabb, at higher irama abab·aabb).
+// Bonang barung = pipilan (a b a b across the coming pair), dropping to
+// gembyang octaves on the pair that carries a kenong sèlèh.
+function assemble(st){
+  const A=genAll(st), F=A.F, S=A.S;
+  const dens=[0,2,4,8][st.irama];
+  const beatDur=(60/st.bpm)*Math.pow(2,st.irama-1);
+  const gonganDur=F.beats*beatDur, dur=2*gonganDur;
+  const jRng=mulberry32((st.seed>>>0)^0x77aa11cc);
+  const mut=st.mutes, ev=[];
+  const push=(t,voice,o)=>{ev.push(Object.assign({t:Math.max(0,t),voice,
+    pan:VOICE_BY[voice].pan,vel:.8},o));};
+  const kdPat=stripBars(KENDHANG[st.form]);
+
+  for(let g=0;g<2;g++){
+    const base=g*gonganDur, bal=A.gongans[g].bal;
+    // colotomy — the law itself, never composed
+    if(!mut.kethuk) for(const b of F.kethuk) push(base+b*beatDur,'kethuk',{vel:.55});
+    if(!mut.kenong) for(const b of F.kenong) push(base+b*beatDur,'kenong',{tone:bal[b],vel:.95});
+    if(!mut.kempul) for(const b of F.kempul) push(base+b*beatDur,'kempul',{tone:bal[b],vel:.85});
+    if(!mut.gong)   push(base+F.gong*beatDur,'gong',{kind:g===0?'suwukan':'ageng',vel:1});
+    // the bones — demung + saron in octaves, accented at the kenong marks
+    const notes=bal.map((v,b)=>v==null?null:{v,b}).filter(Boolean);
+    for(const n of notes){
+      const acc=F.kenong.includes(n.b)?1:.85, t=base+n.b*beatDur;
+      if(!mut.demung) push(t,'demung',{tone:n.v,vel:.9*acc});
+      if(!mut.saron)  push(t,'saron', {tone:n.v,vel:.95*acc+jRng()*.04});
+    }
+    // the embroidery — per pair of bones
+    for(let j=0;j<notes.length;j+=2){
+      const a=notes[j], b=notes[j+1]||a;
+      const start=j===0?0:a.b;
+      const end=(j+2<notes.length)?notes[j+2].b:F.beats;
+      const span=end-start; if(span<=0)continue;
+      if(!mut.peking){
+        const n=dens*span, unit=dens===2?[0,0,1,1]:[0,1,0,1,0,0,1,1];
+        for(let i=0;i<n;i++) push(base+(start+i*span/n)*beatDur+(jRng()*2-1)*.004,
+          'peking',{tone:unit[i%unit.length]?b.v:a.v,vel:.55+jRng()*.12});
+      }
+      const gem=F.kenong.includes(b.b);
+      if(!mut.bonang){
+        const n=dens*span;
+        for(let i=0;i<n;i++){
+          const t=base+(start+i*span/n)*beatDur+(jRng()*2-1)*.004;
+          if(gem){ if(i%2===0) push(t,'bonang',{tone:b.v,oct:true,vel:.8}); }
+          else push(t,'bonang',{tone:i%2?b.v:a.v,vel:.6+jRng()*.1});
+        }
+      }
+      if(!mut.panerus){
+        const n=dens*2*span;
+        for(let i=0;i<n;i++) push(base+(start+i*span/n)*beatDur+(jRng()*2-1)*.005,
+          'panerus',{tone:i%2?b.v:a.v,vel:.42+jRng()*.1});
+      }
+    }
+    // the reins
+    if(!mut.kendhang) for(let s=0;s<F.beats*2;s++){
+      const tok=kdPat[s%kdPat.length]; if(tok==='.'||!KD_KIND[tok])continue;
+      push(base+s*beatDur/2,'kendhang',{kind:KD_KIND[tok],vel:tok==='b'?.9:.7});
+    }
+  }
+
+  // the damping hand: saron-family and bonang strokes are cut when the same
+  // instrument's next stroke lands (plus a 50 ms release).
+  const DAMP={demung:1,saron:1,peking:1,bonang:1,panerus:1};
+  const byV={};
+  for(const e of ev) if(DAMP[e.voice]) (byV[e.voice]=byV[e.voice]||[]).push(e);
+  for(const v in byV){
+    const a=byV[v].sort((x,y)=>x.t-y.t);
+    for(let i=0;i<a.length;i++){
+      let j=i+1; while(j<a.length&&a[j].t-a[i].t<0.002)j++;
+      if(j<a.length) a[i].cut=a[j].t-a[i].t+0.05;
+    }
+  }
+  return {ev,gongans:A.gongans,noteBeats:A.noteBeats,S,P:A.P,F,
+    beatDur,gonganDur,dur,beats:F.beats};
+}
+/* ============================ ENGINE-END ============================ */
+
+/* ------------------------------- state ---------------------------------- */
+const st={ form:'ketawang', laras:'slendro', pathet:1, irama:2, bpm:96, seed:1, playing:false,
+  mutes:{gong:false,kempul:false,kenong:false,kethuk:false,demung:false,
+         saron:false,peking:false,bonang:false,panerus:false,kendhang:false} };
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Open ../officina/ — the voicing bench — to edit these live inside the
+   running mix, save named presets, and export them. A preset saved there
+   applies even when this file is opened directly (localStorage); add
+   ?factory to the URL to hear the shipped voice. */
+const TIMBRE={
+  id:'gongan', title:'GONGAN · op. XIV',
+  doc:'A Javanese gamelan prerendered into one looping master buffer (the FOLI skeleton). The keyed BARS (demung/saron/peking, one model at three registers) are a fundamental plus the inharmonic partials of a free metal bar (×2.76, ×5.40), struck in slightly detuned pairs — the shimmer of bronze — and DAMPED when the next stroke lands (the left hand). The KETTLES (bonang, panerus, kenong, kempul) add a domed-boss hum, a strike bend, and — for kenong — a slow beat between paired modes. The GREAT GONG is two close-tuned modes beating at the OMBAK rate under a slow attack bloom: raise ombak depth and the wave throbs harder. KETHUK is deliberately dull — a damped pot, more ‘thuk’ than tone. KENDHANG is a struck membrane in four strokes (dhah/tung/tak/ket). Tuning (laras/embat) is the law, not the voice — it lives in the engine, not here. Edits re-render the gendhing (a brief rebake).',
+  groups:{
+    master:{label:'master & pendhapa',doc:'The master buffer through a breath of pavilion air (convolver) and a limiter. The render itself normalises to 0.9.',params:{
+      gain:{v:.9,min:.3,max:1.2,step:.01,label:'master gain',doc:'level into the limiter'},
+      wet:{v:.14,min:0,max:.4,step:.01,label:'pendhapa return',doc:'the open pavilion — short, warm'},
+      roomSize:{v:1.1,min:.2,max:2.5,step:.05,unit:'s',label:'pendhapa size',doc:'impulse length'},
+    }},
+    mixer:{label:'gamelan balance',doc:'Relative gain per voice in the render.',params:{
+      gong:{v:1.0,min:0,max:1.6,step:.01,label:'gong',doc:'ageng + suwukan'},
+      kempul:{v:.75,min:0,max:1.4,step:.01,label:'kempul',doc:'the hanging answers'},
+      kenong:{v:.8,min:0,max:1.4,step:.01,label:'kenong',doc:'the bright quarter-marks'},
+      kethuk:{v:.5,min:0,max:1.2,step:.01,label:'kethuk',doc:'the small tick'},
+      demung:{v:.9,min:0,max:1.4,step:.01,label:'demung',doc:'the bones, low'},
+      saron:{v:1.0,min:0,max:1.4,step:.01,label:'saron',doc:'the bones'},
+      peking:{v:.55,min:0,max:1.2,step:.01,label:'peking',doc:'the doubling voice'},
+      bonang:{v:.72,min:0,max:1.4,step:.01,label:'bonang barung',doc:'pipilan, walking ahead'},
+      panerus:{v:.48,min:0,max:1.2,step:.01,label:'bonang panerus',doc:'twice the speed, half the weight'},
+      kendhang:{v:.75,min:0,max:1.4,step:.01,label:'kendhang',doc:'the drum'},
+    }},
+    bars:{label:'the keyed bars',doc:'Demung, saron and peking share one bar model at three registers (×1, ×2, ×4); the register decay scale is engine law. Partial ratios are the free-bar signature.',params:{
+      decay:{v:.9,min:.3,max:2.5,step:.05,unit:'s',label:'ring',doc:'saron-register decay; demung rings 1.5× this, peking 0.65×'},
+      p2r:{v:2.76,min:2,max:3.6,step:.01,label:'partial 2 ratio',doc:'the free-bar overtone (ideal bar 2.76)'},
+      p2a:{v:.30,min:0,max:.8,step:.01,label:'partial 2 level',doc:'brightness of the clang'},
+      p3a:{v:.09,min:0,max:.4,step:.01,label:'partial 3 level',doc:'the ×5.40 glitter'},
+      strike:{v:.5,min:0,max:1.2,step:.02,label:'strike',doc:'the tabuh (mallet) transient'},
+      pairDet:{v:3,min:0,max:12,step:.5,unit:'¢',label:'pair detune',doc:'the two bars of the pair — the shimmer of bronze'},
+    }},
+    bonang:{label:'the bonang kettles',doc:'Small horizontal kettle gongs; panerus derives from this an octave up with 0.7× the ring.',params:{
+      decay:{v:.95,min:.3,max:2.5,step:.05,unit:'s',label:'ring',doc:'barung decay'},
+      p2r:{v:1.53,min:1.2,max:2.2,step:.01,label:'partial 2 ratio',doc:'the domed-boss overtone'},
+      p2a:{v:.45,min:0,max:1,step:.01,label:'partial 2 level',doc:'the kettle’s nasal edge'},
+      hum:{v:.25,min:0,max:.8,step:.01,label:'hum',doc:'the half-frequency boom of the dome'},
+      strike:{v:.6,min:0,max:1.2,step:.02,label:'strike',doc:'the mallet thock'},
+    }},
+    kenong:{label:'kenong',doc:'The largest kettle — bright, long, set beating slowly between its paired modes.',params:{
+      decay:{v:3.0,min:.8,max:6,step:.1,unit:'s',label:'ring',doc:'the long ‘ning’'},
+      p2a:{v:.5,min:0,max:1,step:.01,label:'partial 2 level',doc:'×2.28 overtone'},
+      waver:{v:1.1,min:0,max:4,step:.1,unit:'Hz',label:'waver',doc:'beat rate between the paired modes'},
+      strike:{v:.35,min:0,max:1,step:.02,label:'strike',doc:'the mallet transient'},
+    }},
+    kempul:{label:'kempul',doc:'The hanging gongs between kenong strokes; the strike bends the boss before it settles.',params:{
+      decay:{v:2.2,min:.6,max:5,step:.1,unit:'s',label:'ring',doc:'decay of the hang'},
+      bend:{v:.018,min:0,max:.05,step:.001,label:'strike bend',doc:'pitch settle after the mallet (fraction of f0)'},
+      p2a:{v:.35,min:0,max:.8,step:.01,label:'partial 2 level',doc:'×1.52 sheen'},
+    }},
+    kethuk:{label:'kethuk',doc:'Deliberately dull — a damped pot laid on crossed cords. More ‘thuk’ than tone.',params:{
+      pitch:{v:165,min:90,max:320,step:1,unit:'Hz',label:'pot pitch',doc:'the damped fundamental'},
+      decay:{v:.1,min:.03,max:.3,step:.005,unit:'s',label:'ring',doc:'short, by design'},
+      thok:{v:.6,min:0,max:1.2,step:.02,label:'thok',doc:'the woody strike noise'},
+    }},
+    gong:{label:'the great gong',doc:'Gong ageng (closes gongan B, two octaves under the demung) and gong suwukan (closes gongan A, one octave under). Two close modes beat at the ombak rate.',params:{
+      decay:{v:6,min:2,max:12,step:.1,unit:'s',label:'ring',doc:'ageng decay; suwukan rings 0.6× this'},
+      ombak:{v:2.6,min:.5,max:8,step:.1,unit:'Hz',label:'ombak rate',doc:'the wave — beat rate of the paired modes'},
+      ombakDepth:{v:.5,min:0,max:1,step:.02,label:'ombak depth',doc:'how deep the throb'},
+      bloom:{v:.045,min:.005,max:.2,step:.005,unit:'s',label:'bloom',doc:'the slow swell of the attack'},
+      nasal:{v:.18,min:0,max:.6,step:.01,label:'nasal partial',doc:'the ×2.38 upper mode'},
+    }},
+    kendhang:{label:'kendhang',doc:'The drum: dhah (deep), tung (mid, ringing), tak (dry slap), ket (tick).',params:{
+      dah:{v:62,min:40,max:100,step:1,unit:'Hz',label:'dhah pitch',doc:'the big head'},
+      tung:{v:168,min:100,max:260,step:1,unit:'Hz',label:'tung pitch',doc:'the small head, ringing'},
+      slap:{v:.6,min:0,max:1.2,step:.02,label:'tak slap',doc:'the dry noise crack'},
+      decayScale:{v:1,min:.5,max:2,step:.05,label:'decay ×',doc:'stretches every stroke’s ring together'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+/* ------------------------------- audio ---------------------------------- */
+const SR=44100;
+
+// a keyed bronze bar: fundamental + free-bar partials (×p2r, ×5.40), the
+// pair slightly detuned against itself — the shimmer — plus a mallet chip.
+// decMul scales the ring per register (demung 1.5 · saron 1 · peking .65).
+function synBar(f0,decMul,rng){
+  const B=TP.bars, dec=B.decay*decMul;
+  const dur=Math.max(.1,dec*2.6), n=Math.floor(dur*SR), o=new Float32Array(n);
+  const det=Math.pow(2,B.pairDet/2400);                    // ± half the pair detune
+  const parts=[[1,1],[B.p2r,B.p2a],[5.40,B.p3a]];
+  for(const[fa,ga]of[[f0*det,.55],[f0/det,.45]]){
+    for(const[pr,pa]of parts){
+      const f=fa*pr; if(f>SR*.45)continue;
+      const pd=dec*Math.pow(pr,-.65);
+      const w=2*Math.PI*f/SR; let ph=rng()*6.28;
+      for(let i=0;i<n;i++){ph+=w;o[i]+=Math.sin(ph)*pa*ga*Math.exp(-(i/SR)/pd);}
+    }
+  }
+  const cn=Math.floor(.0022*SR);
+  for(let i=0;i<cn;i++)o[i]+=(rng()*2-1)*B.strike*Math.exp(-i/(.0011*SR));
+  return o;
+}
+// a kettle gong (bonang family): fundamental + domed-boss partials + the
+// half-frequency hum + a thock. Used at two registers (barung, panerus).
+function synKettle(f0,dec,rng){
+  const K=TP.bonang;
+  const dur=Math.max(.1,dec*2.6), n=Math.floor(dur*SR), o=new Float32Array(n);
+  const parts=[[1,1,1],[K.p2r,K.p2a,.55],[3.37,.12,.35],[.5,K.hum,1.6]];
+  for(const[pr,pa,ds]of parts){
+    const f=f0*pr; if(f>SR*.45||f<25)continue;
+    const pd=dec*ds, w=2*Math.PI*f/SR; let ph=rng()*6.28;
+    for(let i=0;i<n;i++){ph+=w;o[i]+=Math.sin(ph)*pa*Math.exp(-(i/SR)/pd);}
+  }
+  const cn=Math.floor(.002*SR);
+  for(let i=0;i<cn;i++)o[i]+=(rng()*2-1)*K.strike*Math.exp(-i/(.001*SR));
+  return o;
+}
+// the kenong: the largest kettle — bright, long, its paired modes beating
+// slowly (waver) so the 'ning' breathes as it rings.
+function synKenong(f0,rng){
+  const K=TP.kenong, dec=K.decay;
+  const dur=Math.max(.2,dec*2.4), n=Math.floor(dur*SR), o=new Float32Array(n);
+  const comp=[[f0-K.waver/2,.5,1],[f0+K.waver/2,.5,1],[f0*2.28,K.p2a,.5],[f0*3.16,.14,.3]];
+  for(const[f,pa,ds]of comp){
+    if(f>SR*.45||f<25)continue;
+    const pd=dec*ds, w=2*Math.PI*f/SR; let ph=rng()*6.28;
+    for(let i=0;i<n;i++){ph+=w;o[i]+=Math.sin(ph)*pa*Math.exp(-(i/SR)/pd);}
+  }
+  const cn=Math.floor(.002*SR);
+  for(let i=0;i<cn;i++)o[i]+=(rng()*2-1)*K.strike*Math.exp(-i/(.001*SR));
+  return o;
+}
+// a kempul: hanging gong — the strike bends the boss sharp, then it settles.
+function synKempul(f0,rng){
+  const K=TP.kempul, dec=K.decay;
+  const dur=Math.max(.2,dec*2.4), n=Math.floor(dur*SR), o=new Float32Array(n);
+  let ph1=rng()*6.28,ph2=rng()*6.28,ph3=rng()*6.28;
+  for(let i=0;i<n;i++){
+    const t=i/SR, f=f0*(1+K.bend*Math.exp(-t/.18));
+    ph1+=2*Math.PI*f/SR; ph2+=2*Math.PI*f*1.52/SR; ph3+=2*Math.PI*f*2.9/SR;
+    o[i]=(Math.sin(ph1)+K.p2a*Math.sin(ph2)*Math.exp(-t/(dec*.5))+.1*Math.sin(ph3)*Math.exp(-t/(dec*.3)))*Math.exp(-t/dec);
+  }
+  const cn=Math.floor(.0025*SR);
+  for(let i=0;i<cn;i++)o[i]+=(rng()*2-1)*.4*Math.exp(-i/(.0012*SR));
+  return o;
+}
+// the kethuk: a damped pot — short, dull, mostly strike. 'thuk.'
+function synKethuk(rng){
+  const K=TP.kethuk, dec=K.decay;
+  const dur=Math.max(.08,dec*3), n=Math.floor(dur*SR), o=new Float32Array(n);
+  let ph=0,lp=0;
+  for(let i=0;i<n;i++){
+    const t=i/SR;
+    ph+=2*Math.PI*K.pitch*(1+.4*Math.exp(-t/.008))/SR;
+    o[i]=Math.sin(ph)*Math.exp(-t/dec);
+    if(t<.02){const nz=(rng()*2-1);lp+=.25*(nz-lp);o[i]+=lp*K.thok*(1-t/.02);}
+  }
+  return o;
+}
+// the great gong: two close-tuned modes beating at the ombak rate, a nasal
+// upper mode, and a slow bloom on the attack. kind scales pitch and ring:
+// ageng = 2 octaves under the demung gong tone; suwukan = 1 octave, .6× ring.
+function synGong(f0,kind,rng){
+  const G=TP.gong, dec=G.decay*(kind==='suwukan'?.6:1);
+  const dur=Math.max(1,dec*2.4), n=Math.floor(dur*SR), o=new Float32Array(n);
+  const d=G.ombakDepth;
+  let p1=rng()*6.28,p2=rng()*6.28,p3=rng()*6.28;
+  const w1=2*Math.PI*f0/SR, w2=2*Math.PI*(f0+G.ombak)/SR, w3=2*Math.PI*f0*2.38/SR;
+  for(let i=0;i<n;i++){
+    const t=i/SR, env=(1-Math.exp(-t/G.bloom))*Math.exp(-t/dec);
+    p1+=w1;p2+=w2;p3+=w3;
+    o[i]=((1-d/2)*Math.sin(p1)+(d/2)*Math.sin(p2)+G.nasal*Math.sin(p3)*Math.exp(-t/(dec*.35)))*env;
+  }
+  return o;
+}
+// the kendhang: a struck membrane in four strokes.
+function synKendhang(kind,rng){
+  const K=TP.kendhang, sc=K.decayScale;
+  if(kind==='tak'){
+    const n=Math.floor(.09*SR), o=new Float32Array(n); let prev=0;
+    for(let i=0;i<n;i++){const t=i/SR,nz=rng()*2-1,hp=nz-prev;prev=nz;
+      o[i]=hp*K.slap*Math.exp(-t/(.03*sc))+.3*Math.sin(2*Math.PI*640*t)*Math.exp(-t/(.02*sc));}
+    return o;
+  }
+  if(kind==='ket'){
+    const n=Math.floor(.03*SR), o=new Float32Array(n);
+    for(let i=0;i<n;i++){const t=i/SR;o[i]=(rng()*2-1)*.35*Math.exp(-t/(.008*sc));}
+    return o;
+  }
+  const f0=kind==='dah'?K.dah:K.tung, dec=(kind==='dah'?.3:.33)*sc, drop=kind==='dah'?.8:.3;
+  const dur=Math.max(.1,dec*4), n=Math.floor(dur*SR), o=new Float32Array(n); let ph=0;
+  for(let i=0;i<n;i++){
+    const t=i/SR, f=f0*(1+drop*Math.exp(-t/.014));
+    ph+=2*Math.PI*f/SR;
+    const a=Math.exp(-t/dec);
+    o[i]=(Math.sin(ph)+.18*Math.sin(2*ph)*a)*a;
+  }
+  const cn=Math.floor(.0016*SR);
+  for(let i=0;i<cn;i++)o[i]+=(rng()*2-1)*.4*Math.exp(-i/(.001*SR));
+  return o;
+}
+
+// bake one buffer per instrument+tone (strokes repeat, so we synth once).
+// Two variants for the struck bars/kettles so unisons don't machine-gun.
+function bakeKit(stt){
+  const rng=mulberry32(0x6a09e667), kit={}, K=2;
+  const P=PATHET[stt.laras][stt.pathet], tones=P.tones, laras=stt.laras;
+  const mk=(key,fn)=>{const a=[];for(let v=0;v<K;v++)a.push(fn(rng));kit[key]=a;};
+  for(const c of tones){
+    const fD=toneHz(laras,c);
+    mk('demung.'+c, r=>synBar(fD,1.5,r));
+    mk('saron.'+c,  r=>synBar(fD*2,1,r));
+    mk('peking.'+c, r=>synBar(fD*4,.65,r));
+    mk('bonang.'+c, r=>synKettle(fD*2,TP.bonang.decay,r));
+    mk('bonangO.'+c,r=>{const a=synKettle(fD*2,TP.bonang.decay,r),b=synKettle(fD*4,TP.bonang.decay*.8,r);
+      const o=new Float32Array(Math.max(a.length,b.length));
+      for(let i=0;i<a.length;i++)o[i]+=a[i]*.7; for(let i=0;i<b.length;i++)o[i]+=b[i]*.55; return o;});
+    mk('panerus.'+c,r=>synKettle(fD*4,TP.bonang.decay*.7,r));
+    kit['kenong.'+c]=[synKenong(fD*2,rng)];
+    kit['kempul.'+c]=[synKempul(fD*.5,rng)];
+  }
+  kit['kethuk']=[synKethuk(rng)];
+  const gAgeng=toneHz(laras,P.gong)/4, gSuw=toneHz(laras,P.alt)/2;
+  kit['gong.ageng']=[synGong(gAgeng,'ageng',rng)];
+  kit['gong.suwukan']=[synGong(gSuw,'suwukan',rng)];
+  for(const k of ['dah','tung','tak','ket'])kit['kendhang.'+k]=[synKendhang(k,rng)];
+  return kit;
+}
+
+// equal-power pan mix of a unit stroke into L/R; cutS (seconds) is the
+// damping hand — the stroke fades out over 40 ms ending at the cut.
+function mixHit(L,R,off,mono,pan,gain,cutS){
+  const a=(pan+1)*Math.PI/4, gL=Math.cos(a)*gain, gR=Math.sin(a)*gain;
+  const len=mono.length, fadeN=Math.floor(.04*SR);
+  const cutN=cutS?Math.min(len,Math.floor(cutS*SR)):len;
+  const end=Math.min(L.length,off+cutN);
+  for(let i=off<0?0:off,j=off<0?-off:0;i<end;i++,j++){
+    let s=mono[j];
+    if(cutN<len&&j>cutN-fadeN)s*=Math.max(0,(cutN-j)/fadeN);
+    L[i]+=s*gL;R[i]+=s*gR;
+  }
+}
+
+// render the whole gendhing ONCE into stereo (deterministic in the seed).
+// loop=true folds the ring-off (the great gong's long tail) back over the
+// top so the circle truly closes; loop=false keeps the natural decay for
+// the one-shot WAV cut.
+function renderMaster(loop){
+  const A=assemble(st);
+  const tail=Math.max(2,TP.gong.decay*2.4+.4), n=Math.ceil((A.dur+tail)*SR);
+  const L=new Float32Array(n), R=new Float32Array(n);
+  const kit=bakeKit(st), idx={}, S=A.S;
+  for(const e of A.ev){
+    let key;
+    if(e.voice==='gong')key='gong.'+e.kind;
+    else if(e.voice==='kendhang')key='kendhang.'+e.kind;
+    else if(e.voice==='kethuk')key='kethuk';
+    else if(e.voice==='bonang'&&e.oct)key='bonangO.'+S[e.tone];
+    else key=e.voice+'.'+S[e.tone];
+    const bank=kit[key]; if(!bank)continue;
+    idx[key]=((idx[key]||0)+1)%bank.length;
+    const vg=(TP.mixer[e.voice]!==undefined)?TP.mixer[e.voice]:.7;
+    mixHit(L,R,Math.floor(e.t*SR),bank[idx[key]],e.pan,e.vel*vg,e.cut);
+  }
+  let oL=L,oR=R,oN=n;
+  if(loop){
+    const durS=Math.round(A.dur*SR);
+    const fL=new Float32Array(durS), fR=new Float32Array(durS);
+    for(let i=0;i<n;i++){const j=i%durS;fL[j]+=L[i];fR[j]+=R[i];}
+    oL=fL;oR=fR;oN=durS;
+  }
+  let mx=0;for(let i=0;i<oN;i++){const a=Math.abs(oL[i]);if(a>mx)mx=a;const b=Math.abs(oR[i]);if(b>mx)mx=b;}
+  if(mx>0){const k=.9/mx;for(let i=0;i<oN;i++){oL[i]*=k;oR[i]*=k;}}
+  return {L:oL,R:oR,dur:A.dur,gonganDur:A.gonganDur,beats:A.beats,beatDur:A.beatDur};
+}
+
+function toStereoBuffer(ctx,L,R){const b=ctx.createBuffer(2,L.length,SR);b.getChannelData(0).set(L);b.getChannelData(1).set(R);return b;}
+function makeRoomIR(ctx,sec,exp){
+  const len=Math.max(1,Math.floor(sec*ctx.sampleRate)),b=ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,exp);lp+=0.28*((Math.random()*2-1)-lp);d[i]=lp*e*1.5;}}
+  return b;
+}
+// the fixed signal path — identical realtime & offline so the WAV is faithful.
+function buildGraph(ctx,L,R,loop){
+  const G={ctx};
+  G.master=ctx.createGain();G.master.gain.value=TP.master.gain;
+  G.lim=ctx.createDynamicsCompressor();
+  G.lim.threshold.value=-2;G.lim.knee.value=0;G.lim.ratio.value=20;G.lim.attack.value=0.003;G.lim.release.value=0.12;
+  G.master.connect(G.lim).connect(ctx.destination);
+  G.verb=ctx.createConvolver();G.verb.buffer=makeRoomIR(ctx,TP.master.roomSize,2.9);
+  G.wet=ctx.createGain();G.wet.gain.value=TP.master.wet;G.verb.connect(G.wet).connect(G.master);
+  G.dry=ctx.createGain();G.dry.gain.value=1;G.dry.connect(G.master);
+  G.src=ctx.createBufferSource();G.src.buffer=toStereoBuffer(ctx,L,R);G.src.loop=!!loop;
+  G.src.connect(G.dry);G.src.connect(G.verb);
+  return G;
+}
+
+/* -------------------------- realtime transport --------------------------- */
+let RT=null;
+function play(){
+  const M=renderMaster(true);
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ctx);
+  const G=buildGraph(ctx,M.L,M.R,true);
+  RT={ctx,G,t0:ctx.currentTime+0.08,dur:M.dur,gonganDur:M.gonganDur,beatDur:M.beatDur};
+  G.src.start(RT.t0);
+  st.playing=true;$('pick').textContent='Stop';$('pick').classList.add('on');
+  invalidate();
+}
+function stop(){
+  if(!RT)return;
+  const g=RT.G.master.gain,ct=RT.ctx.currentTime;
+  try{g.cancelScheduledValues(ct);g.setValueAtTime(g.value,ct);g.linearRampToValueAtTime(0,ct+0.25);}catch(e){}
+  const c=RT.ctx;setTimeout(()=>{try{c.close();}catch(e){}},420);
+  RT=null;st.playing=false;$('pick').textContent='Play';$('pick').classList.remove('on');
+  invalidate();
+}
+// through-composed: any change regenerates and (if playing) restarts
+function regen(){ if(RT){stop();play();} else {invalidate();} }
+
+/* OFFICINA live hook: master/room ride in immediately; everything baked
+   into the master buffer re-renders debounced. */
+let __gnT=0;
+TIMBRE.touch=()=>{
+  if(RT){const ct=RT.ctx.currentTime;
+    RT.G.master.gain.setTargetAtTime(TP.master.gain,ct,.06);
+    RT.G.wet.gain.setTargetAtTime(TP.master.wet,ct,.08);}
+  clearTimeout(__gnT);__gnT=setTimeout(()=>{if(RT)regen();},300);
+};
+
+/* ------------------------------ cut · WAV -------------------------------- */
+function encodeWav(L,R,sr){
+  const n=L.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');d.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  ws(36,'data');d.setUint32(40,n*4,true);
+  let o=44;for(let i=0;i<n;i++){d.setInt16(o,clamp(L[i],-1,1)*32767,true);o+=2;d.setInt16(o,clamp(R[i],-1,1)*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+async function cut(){
+  const btn=$('cut'),note=$('cutnote');btn.disabled=true;note.textContent='casting bronze…';
+  try{
+    const M=renderMaster(false);
+    const total=M.L.length/SR;
+    const ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
+    const G=buildGraph(ctx,M.L,M.R,false);
+    G.src.start(0);
+    const rb=await ctx.startRendering();
+    const blob=encodeWav(rb.getChannelData(0),rb.getChannelData(1),SR);
+    const P=PATHET[st.laras][st.pathet];
+    saveWav(blob,`gongan_${st.form}_${st.laras}-${P.id}.wav`);
+    note.textContent=`cut · 2 gongan · ${FORMS[st.form].label} ${LARAS[st.laras].label.toLowerCase()} ${P.label.toLowerCase()}`;
+  }catch(e){note.textContent='render failed — '+e.message;}
+  btn.disabled=false;
+}
+
+/* ------------------------------- canvas ---------------------------------- */
+// Left: the gongan as a WHEEL — colotomic markers at their beats on the rim
+// (G double-ring, N filled, P open, t tick), the balungan as cipher numerals
+// inside, a sweeping arm, a gold flash when the gong lands. Right: the
+// balungan of both gongan in KEPATIHAN cipher notation, structural letters
+// above, the sounding beat underlined. The static score is cached to an
+// offscreen bitmap (rebuilt when the sounding gongan flips); only the arm
+// and glows redraw each frame. Sleeps when idle.
+const cv=$('cv'),cx=cv.getContext('2d');
+const CW=cv.width,CH=cv.height;
+const oc=document.createElement('canvas');oc.width=CW;oc.height=CH;const ox=oc.getContext('2d');
+let VIEW=null,scoreDirty=true;
+const WCX=245,WCY=292,WR=198;
+const KEP=[[],[]];            // [gongan][beat] -> {x,y} for the kepatihan text
+const WGLOW=[];               // wheel glow anchors {b,x,y,kind}
+let SHOWN_G=0;
+
+let needsDraw=true;const invalidate=()=>{needsDraw=true;VIEW=null;scoreDirty=true;};
+function refreshView(){VIEW=assemble(st);SHOWN_G=0;buildScore();scoreDirty=false;}
+
+const angOf=(b,beats)=>-Math.PI/2+(b/beats)*2*Math.PI;
+
+function buildScore(){
+  const V=VIEW,F=V.F,S=V.S,beats=V.beats;
+  const bal=V.gongans[SHOWN_G].bal;
+  WGLOW.length=0;KEP[0].length=0;KEP[1].length=0;
+  ox.clearRect(0,0,CW,CH);
+  ox.fillStyle='#110b06';ox.fillRect(0,0,CW,CH);
+
+  // — the wheel —
+  ox.strokeStyle='rgba(212,162,78,.16)';ox.lineWidth=1;
+  ox.beginPath();ox.arc(WCX,WCY,WR,0,2*Math.PI);ox.stroke();
+  ox.beginPath();ox.arc(WCX,WCY,WR-58,0,2*Math.PI);ox.stroke();
+  const kSet=new Set(F.kethuk),nSet=new Set(F.kenong),pSet=new Set(F.kempul);
+  for(let b=0;b<beats;b++){
+    const a=angOf(b,beats),ca=Math.cos(a),sa=Math.sin(a);
+    // beat tick on the rim
+    ox.strokeStyle='rgba(157,144,120,.28)';ox.lineWidth=1;
+    ox.beginPath();ox.moveTo(WCX+ca*(WR-6),WCY+sa*(WR-6));ox.lineTo(WCX+ca*WR,WCY+sa*WR);ox.stroke();
+    // colotomic glyphs sit just outside the rim
+    const gx=WCX+ca*(WR+16),gy=WCY+sa*(WR+16);
+    if(b===F.gong){
+      ox.strokeStyle='#d4a24e';ox.lineWidth=2.2;
+      ox.beginPath();ox.arc(gx,gy,12,0,2*Math.PI);ox.stroke();
+      ox.beginPath();ox.arc(gx,gy,7,0,2*Math.PI);ox.stroke();
+      WGLOW.push({b,x:gx,y:gy,kind:'gong'});
+    }else if(nSet.has(b)){
+      ox.fillStyle='#e3c27a';
+      ox.beginPath();ox.arc(gx,gy,6.5,0,2*Math.PI);ox.fill();
+      WGLOW.push({b,x:gx,y:gy,kind:'kenong'});
+    }else if(pSet.has(b)){
+      ox.strokeStyle='#b98b3e';ox.lineWidth=1.8;
+      ox.beginPath();ox.arc(gx,gy,5.5,0,2*Math.PI);ox.stroke();
+      WGLOW.push({b,x:gx,y:gy,kind:'kempul'});
+    }else if(kSet.has(b)){
+      ox.fillStyle='rgba(125,116,99,.8)';
+      ox.beginPath();ox.arc(gx,gy,2.4,0,2*Math.PI);ox.fill();
+    }
+    // the balungan numerals inside
+    const nx=WCX+ca*(WR-32),ny=WCY+sa*(WR-32);
+    ox.font='500 '+Math.round(CW*.024)+'px "IBM Plex Mono",monospace';
+    ox.textAlign='center';ox.textBaseline='middle';
+    if(bal[b]!=null){ox.fillStyle='#eae2cc';ox.globalAlpha=.9;ox.fillText(String(S[bal[b]]),nx,ny);}
+    else{ox.fillStyle='#9d9078';ox.globalAlpha=.4;ox.fillText('·',nx,ny);}
+    ox.globalAlpha=1;
+    WGLOW.push({b,x:nx,y:ny,kind:'bal'});
+  }
+  // hub
+  ox.fillStyle='rgba(212,162,78,.85)';
+  ox.font='600 '+Math.round(CW*.022)+'px "Cormorant SC",serif';
+  ox.textAlign='center';ox.textBaseline='middle';
+  ox.fillText(F.label.toUpperCase(),WCX,WCY-16);
+  ox.fillStyle='rgba(157,144,120,.85)';
+  ox.font='500 '+Math.round(CW*.014)+'px "IBM Plex Mono",monospace';
+  ox.fillText(LARAS[st.laras].label.toLowerCase()+' '+V.P.label.toLowerCase(),WCX,WCY+8);
+  ox.fillText('gongan '+(SHOWN_G===0?'A':'B'),WCX,WCY+30);
+
+  // — kepatihan panel —
+  const x0=488,colW=(CW-30-x0)/16;
+  ox.fillStyle='rgba(157,144,120,.6)';
+  ox.font='500 '+Math.round(CW*.013)+'px "IBM Plex Mono",monospace';
+  ox.textAlign='left';ox.textBaseline='top';
+  ox.fillText('BALUNGAN · KEPATIHAN',x0,26);
+  const rowsPer=beats/16, rowH=54, blockGap=30;
+  let y=78;
+  for(let g=0;g<2;g++){
+    const gb=V.gongans[g].bal, active=g===SHOWN_G;
+    ox.fillStyle=active?'#d4a24e':'rgba(157,144,120,.5)';
+    ox.font='600 '+Math.round(CW*.018)+'px "Cormorant SC",serif';
+    ox.textAlign='left';ox.textBaseline='middle';
+    ox.fillText(g===0?'A':'B',x0-24,y+rowH*.55);
+    for(let r=0;r<rowsPer;r++){
+      for(let c2=0;c2<16;c2++){
+        const b=r*16+c2, xx=x0+c2*colW+colW/2, yy=y+r*rowH+rowH*.55;
+        KEP[g][b]={x:xx,y:yy};
+        // structural letters above the numeral
+        ox.font='500 '+Math.round(CW*.011)+'px "IBM Plex Mono",monospace';
+        ox.textAlign='center';ox.textBaseline='middle';
+        if(b===F.gong){}
+        else if(nSet.has(b)){ox.fillStyle='rgba(227,194,122,.85)';ox.fillText('N',xx,yy-19);}
+        else if(pSet.has(b)){ox.fillStyle='rgba(185,139,62,.8)';ox.fillText('P',xx,yy-19);}
+        else if(kSet.has(b)){ox.fillStyle='rgba(125,116,99,.6)';ox.fillText('t',xx,yy-19);}
+        // the numeral
+        ox.font='500 '+Math.round(CW*.021)+'px "IBM Plex Mono",monospace';
+        const al=active?1:.45;
+        if(gb[b]!=null){ox.fillStyle='#eae2cc';ox.globalAlpha=.92*al;ox.fillText(String(S[gb[b]]),xx,yy);}
+        else{ox.fillStyle='#9d9078';ox.globalAlpha=.4*al;ox.fillText('·',xx,yy);}
+        ox.globalAlpha=1;
+        if(b===F.gong){ // the gong tone is circled — as kepatihan circles it
+          ox.strokeStyle=active?'#d4a24e':'rgba(212,162,78,.5)';ox.lineWidth=1.6;
+          ox.beginPath();ox.arc(xx,yy,11,0,2*Math.PI);ox.stroke();
+        }
+      }
+    }
+    y+=rowsPer*rowH+blockGap;
+  }
+  // legend
+  ox.fillStyle='rgba(157,144,120,.55)';
+  ox.font='500 '+Math.round(CW*.0115)+'px "IBM Plex Mono",monospace';
+  ox.textAlign='left';ox.textBaseline='top';
+  ox.fillText('t kethuk · P kempul · N kenong · ◎ gong',x0,y-6);
+}
+
+function draw(){
+  if(scoreDirty||!VIEW)refreshView();
+  const V=VIEW,F=V.F,beats=V.beats;
+  let el=0,playing=false;
+  if(RT){playing=true;el=Math.max(0,RT.ctx.currentTime-RT.t0);}
+  const g=playing?Math.floor(el/V.gonganDur)%2:0;
+  const phase=playing?el%V.gonganDur:0;
+  if(g!==SHOWN_G){SHOWN_G=g;buildScore();}
+  cx.clearRect(0,0,CW,CH);
+  cx.drawImage(oc,0,0);
+
+  // gong flash — the circle closing
+  if(playing){
+    const tG=phase-F.gong*V.beatDur;
+    const since=tG>=0?tG:(phase+V.gonganDur-F.gong*V.beatDur); // ring past the seam
+    if(since>=0&&since<2.4){
+      const al=.30*(1-since/2.4);
+      const rg=cx.createRadialGradient(WCX,WCY,10,WCX,WCY,WR+22);
+      rg.addColorStop(0,'rgba(212,162,78,'+al+')');rg.addColorStop(1,'rgba(212,162,78,0)');
+      cx.fillStyle=rg;cx.beginPath();cx.arc(WCX,WCY,WR+22,0,2*Math.PI);cx.fill();
+    }
+  }
+  // the arm
+  const aa=playing?angOf(phase/V.beatDur,beats):angOf(0,beats);
+  cx.strokeStyle='rgba(212,162,78,.9)';cx.lineWidth=2;
+  cx.beginPath();cx.moveTo(WCX,WCY);cx.lineTo(WCX+Math.cos(aa)*(WR+4),WCY+Math.sin(aa)*(WR+4));cx.stroke();
+  cx.fillStyle='#d4a24e';
+  cx.beginPath();cx.arc(WCX+Math.cos(aa)*(WR+4),WCY+Math.sin(aa)*(WR+4),4,0,2*Math.PI);cx.fill();
+
+  if(playing){
+    const bi=clamp(Math.floor(phase/V.beatDur),0,beats-1);
+    const frac=phase/V.beatDur-bi;
+    // glow whatever the arm is passing
+    for(const w of WGLOW){
+      if(w.b!==bi||frac>.6)continue;
+      cx.globalAlpha=.55*(1-frac/.6);
+      cx.fillStyle=w.kind==='bal'?'#eecf96':w.kind==='kenong'?'#e3c27a':w.kind==='kempul'?'#b98b3e':'#d4a24e';
+      cx.beginPath();cx.arc(w.x,w.y,w.kind==='gong'?15:9,0,2*Math.PI);cx.fill();
+      cx.globalAlpha=1;
+    }
+    // kepatihan underline
+    const kp=KEP[g][bi];
+    if(kp){cx.strokeStyle='#d4a24e';cx.lineWidth=2;
+      cx.beginPath();cx.moveTo(kp.x-9,kp.y+14);cx.lineTo(kp.x+9,kp.y+14);cx.stroke();}
+    $('cycTag').textContent='gongan '+(g===0?'A':'B')+' · beat '+(bi+1)+'/'+beats;
+  }else $('cycTag').textContent='2 gongan';
+}
+function loop(){
+  const playing=!!RT;
+  if(playing||needsDraw){draw();if(!playing)needsDraw=false;}
+  setTimeout(()=>requestAnimationFrame(loop),playing?(RM?90:40):200);
+}
+requestAnimationFrame(loop);
+
+/* ------------------------------ controls --------------------------------- */
+function chipSel(container,items,current,onPick){
+  container.innerHTML='';
+  items.forEach(([val,label,sub])=>{
+    const b=document.createElement('button');b.dataset.v=String(val);
+    b.innerHTML=sub?(label+'<small>'+sub+'</small>'):label;
+    if(String(val)===String(current))b.classList.add('on');
+    b.onclick=()=>{container.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');onPick(val);};
+    container.appendChild(b);
+  });
+}
+
+const IRAMAS=[['1','Tanggung','I · walking'],['2','Dadi','II · settled'],['3','Wilet','III · expansive']];
+function effMM(){return Math.round(st.bpm/Math.pow(2,st.irama-1));}
+function syncReadouts(){
+  const F=FORMS[st.form],P=PATHET[st.laras][st.pathet];
+  $('formrd').textContent=F.label+' · '+F.gloss;
+  $('formTag').textContent=F.label;
+  $('larasrd').textContent=LARAS[st.laras].label;
+  $('pthrd').textContent=P.label+' · '+P.gloss;
+  $('pthTag').textContent=LARAS[st.laras].label.toLowerCase()+' '+P.label.toLowerCase();
+  $('iramard').textContent=IRAMAS[st.irama-1][1]+' · '+IRAMAS[st.irama-1][2].split(' · ')[1];
+  $('layard').textContent=effMM()+' MM balungan';
+}
+
+chipSel($('form'),FORM_ORDER.map(k=>[k,FORMS[k].label,FORMS[k].beats+' beats']),st.form,v=>{
+  st.form=v;syncReadouts();regen();
+});
+chipSel($('laras'),[['slendro','Sléndro','five, floating'],['pelog','Pélog','seven, unequal']],st.laras,v=>{
+  st.laras=v;st.pathet=clamp(st.pathet,0,PATHET[v].length-1);
+  buildPathet();syncReadouts();regen();
+});
+function buildPathet(){
+  chipSel($('pathet'),PATHET[st.laras].map((p,i)=>[String(i),p.label,p.gloss]),String(st.pathet),v=>{
+    st.pathet=+v;syncReadouts();regen();
+  });
+}
+buildPathet();
+chipSel($('irama'),IRAMAS,String(st.irama),v=>{
+  st.irama=+v;syncReadouts();regen();
+});
+
+$('laya').value=st.bpm;
+$('laya').addEventListener('input',e=>{st.bpm=+e.target.value;$('layard').textContent=effMM()+' MM balungan';});
+$('laya').addEventListener('change',()=>{invalidate();if(RT)regen();});
+
+// the gamelan mixer — one mute toggle per voice
+function buildTracks(){
+  const c=$('tracks');c.innerHTML='';
+  VOICES.forEach(v=>{
+    const b=document.createElement('button');b.dataset.v=v.id;
+    b.innerHTML='<span class="dot" style="color:'+v.col+'"></span>'+v.label;
+    if(!st.mutes[v.id])b.classList.add('on');
+    b.onclick=()=>{st.mutes[v.id]=!st.mutes[v.id];b.classList.toggle('on',!st.mutes[v.id]);regen();};
+    c.appendChild(b);
+  });
+}
+buildTracks();
+syncReadouts();
+
+$('pick').addEventListener('click',()=>st.playing?stop():play());
+$('cut').addEventListener('click',cut);
+
+/* ---------------------- opuscula shared: hash · keys --------------------- */
+let __applying=false;
+function muteMask(){return VOICES.reduce((m,v,i)=>m|((st.mutes[v.id]?1:0)<<i),0);}
+function applyMask(m){VOICES.forEach((v,i)=>st.mutes[v.id]=!!(m&(1<<i)));}
+function __state(){return {f:st.form,l:st.laras,p:st.pathet,i:st.irama,bpm:st.bpm,m:muteMask(),sd:st.seed};}
+function __apply(o){
+  if(o.f&&FORMS[o.f]){const b=$('form').querySelector('[data-v="'+o.f+'"]');b&&b.click();}
+  if(o.l&&LARAS[o.l]){const b=$('laras').querySelector('[data-v="'+o.l+'"]');b&&b.click();}
+  if(o.p!==undefined){const b=$('pathet').querySelector('[data-v="'+(+o.p)+'"]');b&&b.click();}
+  if(o.i!==undefined){const b=$('irama').querySelector('[data-v="'+(+o.i)+'"]');b&&b.click();}
+  if(o.bpm){st.bpm=clamp(+o.bpm|0,60,132);$('laya').value=st.bpm;$('layard').textContent=effMM()+' MM balungan';invalidate();}
+  if(o.m!==undefined){applyMask(+o.m|0);buildTracks();invalidate();}
+  if(o.sd!==undefined){const sd=+o.sd;if(Number.isFinite(sd)){st.seed=sd>>>0;invalidate();}}
+}
+function __hashRead(){const h=location.hash.slice(1);if(!h)return null;const o={};
+  for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}
+function __hashWrite(){if(__applying)return;
+  try{const o=__state();history.replaceState(null,'','#'+Object.entries(o).map(([k,v])=>k+'='+v).join('&'));}catch(e){}}
+document.addEventListener('click',()=>setTimeout(__hashWrite,120),true);
+document.addEventListener('change',()=>setTimeout(__hashWrite,120),true);
+
+function another(){                                // r = another gendhing
+  if(RT)stop();
+  st.seed=1+((Math.random()*1e6)|0);
+  const lar=Math.random()<0.5?'slendro':'pelog';
+  $('laras').querySelector('[data-v="'+lar+'"]').click();
+  $('form').querySelector('[data-v="'+FORM_ORDER[(Math.random()*FORM_ORDER.length)|0]+'"]').click();
+  $('pathet').querySelector('[data-v="'+((Math.random()*PATHET[lar].length)|0)+'"]').click();
+  $('irama').querySelector('[data-v="'+(1+((Math.random()*3)|0))+'"]').click();
+  VOICES.forEach(v=>st.mutes[v.id]=false);buildTracks();
+  invalidate();play();
+}
+addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
+  if(e.code==='Space'){e.preventDefault();$('pick').click();}
+  else if(e.key==='r'||e.key==='R'){e.preventDefault();another();}
+  else if(e.key==='c'||e.key==='C')$('cut').click();
+});
+
+(function init(){const o=__hashRead();
+  if(o){__applying=true;try{__apply(o);}catch(e){}__applying=false;}
+  syncReadouts();__hashWrite();invalidate();
+})();
+
+/* ---- robust WAV save (shared) ----------------------------------------------
+   Auto-downloads where the browser allows it (desktop Chrome/Firefox/Edge,
+   Android), and ALWAYS shows a tappable "Save WAV" pill — the reliable path
+   on Safari/iOS, where a programmatic download after an async render is
+   blocked but a real tap on the link is a fresh user gesture iOS honours.   */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(17,11,6,.94);color:#eae2cc;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#eae2cc;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
+</script>
+
+</body>
+</html>
