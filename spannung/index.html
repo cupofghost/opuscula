@@ -231,6 +231,100 @@ function quant(semi){ // fold a semitone offset to the nearest scale degree
   return oct*12+best;
 }
 
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Open ../officina/ — the voicing bench — to edit these live inside the
+   running mix, save named presets, and export them. A preset saved there
+   applies even when this file is opened directly (localStorage); add
+   ?factory to the URL to hear the shipped voice. */
+const TIMBRE={
+  id:'spannung', title:'SPANNUNG · op. XII',
+  doc:'A self-patching Eurorack system, all subtractive. Five voices fire per step: KICK — a sine dropping 135→46 Hz plus a highpassed noise click; CLAP — three noise bursts 11 ms apart through a bandpass, then a looser tail; HATS — highpassed noise, short (closed) or long (open); BASS — the full voltage-controlled chain, sawtooth VCO + square sub-octave into a resonant lowpass VCF whose envelope rides the panel CUTOFF and a 2-bar LFO, then a VCA pluck; BLEEP — the sample-and-hold line, a square wave plucked through a resonant lowpass and thrown into the dub delay. Everything lands on a mix bus → tempo-synced feedback delay (dotted-16th) → convolved reverb → limiter. The panel knobs (CUTOFF, RESONANZ, RAUM, DICHTE, DRIFT) are performance macros that ride ON TOP of these voicing numbers.',
+  groups:{
+    master:{label:'master',doc:'One gain into a hard limiter (−3 dB, 20:1). The offline WAV normalises to 0.9 peak on top of this.',params:{
+      gain:{v:.8,min:.3,max:1.2,step:.01,label:'master gain',doc:'overall level before the limiter'},
+    }},
+    groove:{label:'groove',doc:'The clock\'s human error.',params:{
+      swing:{v:.14,min:0,max:.35,step:.01,label:'swing',doc:'how late the odd sixteenths land, as a fraction of a step; 0 = machine-straight, .3 = heavy shuffle'},
+    }},
+    kick:{label:'kick',doc:'A sine oscillator whose pitch drops fast (the thump is the drop), plus a burst of highpassed noise for the beater click.',params:{
+      pitchHi:{v:135,min:60,max:300,step:1,unit:'Hz',label:'pitch start',doc:'where the drop begins; higher = more attack knock'},
+      pitchLo:{v:46,min:30,max:80,step:1,unit:'Hz',label:'pitch floor',doc:'where the drop lands — the body note of the kick'},
+      drop:{v:.09,min:.03,max:.3,step:.005,unit:'s',label:'drop time',doc:'how fast the pitch falls; short = tight techno, long = 808 boom'},
+      punch:{v:.95,min:.2,max:1.2,step:.01,label:'level',doc:'peak level of the sine body'},
+      decay:{v:.09,min:.03,max:.4,step:.005,unit:'s',label:'decay',doc:'amplitude release time constant of the body'},
+      clickLvl:{v:.25,min:0,max:.8,step:.01,label:'click level',doc:'the highpassed-noise beater transient'},
+      clickHp:{v:1600,min:400,max:6000,step:50,unit:'Hz',label:'click highpass',doc:'brightness of the click'},
+    }},
+    clap:{label:'clap',doc:'Three bandpassed noise bursts a few milliseconds apart — hands not quite together — then a longer, looser tail burst.',params:{
+      bp:{v:1500,min:600,max:4000,step:25,unit:'Hz',label:'body freq',doc:'bandpass centre of the burst cluster'},
+      q:{v:1.1,min:.4,max:6,step:.1,label:'body Q',doc:'narrowness of the clap colour'},
+      burstLvl:{v:.5,min:0,max:1,step:.01,label:'burst level',doc:'level of each of the three early bursts'},
+      burstGap:{v:.011,min:.004,max:.03,step:.001,unit:'s',label:'burst spacing',doc:'time between the three hands; wider reads sloppier'},
+      tailLvl:{v:.4,min:0,max:1,step:.01,label:'tail level',doc:'the fourth, looser burst that rings the room'},
+      tailDecay:{v:.05,min:.01,max:.2,step:.005,unit:'s',label:'tail decay',doc:'release of the tail burst'},
+    }},
+    hat:{label:'hats',doc:'Noise through a steep highpass; the only difference between closed and open is the envelope.',params:{
+      hp:{v:7600,min:3000,max:12000,step:100,unit:'Hz',label:'highpass',doc:'brightness floor of both hats'},
+      closedLvl:{v:.34,min:0,max:.8,step:.01,label:'closed level',doc:'level of the offbeat closed hat'},
+      closedDecay:{v:.035,min:.01,max:.12,step:.005,unit:'s',label:'closed decay',doc:'tick length of the closed hat'},
+      openLvl:{v:.3,min:0,max:.8,step:.01,label:'open level',doc:'level of the open hat before the turnaround'},
+      openDecay:{v:.18,min:.05,max:.5,step:.01,unit:'s',label:'open decay',doc:'sizzle length of the open hat'},
+    }},
+    bass:{label:'bass (VCO→VCF→VCA)',doc:'The classic chain: sawtooth plus a square sub-octave into the resonant lowpass. The filter opens by an envelope each note (more on accents) around the panel CUTOFF, wobbled by a two-bar LFO; DRIFT detunes the VCO like unwarmed analogue.',params:{
+      subLvl:{v:.6,min:0,max:1,step:.01,label:'sub level',doc:'square sub-octave under the saw'},
+      envPlain:{v:2.2,min:1,max:6,step:.1,label:'filter env',doc:'how far (×cutoff) the filter opens on ordinary notes'},
+      envAcc:{v:3.2,min:1,max:8,step:.1,label:'accent env',doc:'filter opening on accented (downbeat) notes'},
+      accCut:{v:1.5,min:1,max:3,step:.05,label:'accent cutoff ×',doc:'extra cutoff multiplier on accents — the SPITZE'},
+      peak:{v:.34,min:0,max:1,step:.01,label:'level',doc:'VCA peak on ordinary notes'},
+      peakAcc:{v:.5,min:0,max:1.2,step:.01,label:'accent level',doc:'VCA peak on accents'},
+      attack:{v:.006,min:.001,max:.05,step:.001,unit:'s',label:'attack',doc:'VCA rise; keep short for pluck'},
+      decay:{v:.11,min:.03,max:.5,step:.005,unit:'s',label:'decay',doc:'VCA release time constant'},
+    }},
+    bleep:{label:'S&H bleep',doc:'The sample-and-hold melody: a square wave plucked through its own resonant lowpass (corner tracking the note, ×4), then thrown at the delay and reverb.',params:{
+      lvl:{v:.22,min:0,max:.7,step:.01,label:'level',doc:'pluck peak'},
+      corner:{v:4,min:1,max:10,step:.25,label:'filter tracking ×',doc:'lowpass corner as a multiple of the note frequency; lower = duller, rounder bleep'},
+      q:{v:6,min:.5,max:20,step:.5,label:'filter Q',doc:'resonance of the bleep filter — the "wet" in the blip'},
+      decay:{v:.09,min:.02,max:.4,step:.005,unit:'s',label:'decay',doc:'pluck release time constant'},
+    }},
+    sends:{label:'delay & reverb',doc:'A tempo-synced feedback delay (dotted sixteenth by default) with a lowpass in its loop, and a 2.2 s convolved room. The panel RAUM macro slides all three send levels between the base and base+span values here.',params:{
+      delaySteps:{v:3,min:1,max:6,step:1,unit:'×16th',label:'delay length',doc:'delay time in sixteenth-steps; 3 = the dotted-eighth dub classic'},
+      delayTone:{v:2200,min:600,max:8000,step:50,unit:'Hz',label:'delay tone',doc:'lowpass inside the feedback loop — each repeat gets darker'},
+      fbBase:{v:.2,min:0,max:.6,step:.01,label:'feedback base',doc:'delay regeneration at RAUM 0'},
+      fbSpan:{v:.34,min:0,max:.6,step:.01,label:'feedback span',doc:'extra regeneration added by RAUM 100'},
+      outBase:{v:.25,min:0,max:1,step:.01,label:'delay level base',doc:'delay return level at RAUM 0'},
+      outSpan:{v:.4,min:0,max:1,step:.01,label:'delay level span',doc:'extra delay return added by RAUM 100'},
+      verbBase:{v:.08,min:0,max:.6,step:.01,label:'reverb base',doc:'reverb return at RAUM 0'},
+      verbSpan:{v:.42,min:0,max:.8,step:.01,label:'reverb span',doc:'extra reverb added by RAUM 100'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
 /* ------------------------------- state ---------------------------------- */
 const st={ tempo:126, cutoff:55, res:45, space:40, dens:55, drift:30, seed:1, playing:false };
 const macro=()=>({
@@ -280,7 +374,7 @@ function makeIR(ctx,sec,exp){
 // the fixed signal path — mixer → delay → reverb → limiter, identical live & offline.
 function buildGraph(ctx){
   const G={ctx};
-  G.master=ctx.createGain(); G.master.gain.value=0.8;
+  G.master=ctx.createGain(); G.master.gain.value=TP.master.gain;
   G.lim=ctx.createDynamicsCompressor();
   G.lim.threshold.value=-3;G.lim.knee.value=0;G.lim.ratio.value=20;G.lim.attack.value=0.003;G.lim.release.value=0.12;
   G.master.connect(G.lim).connect(ctx.destination);
@@ -292,7 +386,7 @@ function buildGraph(ctx){
   G.verbSend.connect(G.verb); G.verb.connect(G.verbWet); G.verbWet.connect(G.master);
   // tempo-synced feedback delay (dub)
   G.delay=ctx.createDelay(1.5); G.delayFb=ctx.createGain(); G.delayFb.gain.value=0.34;
-  G.delayLp=ctx.createBiquadFilter(); G.delayLp.type='lowpass'; G.delayLp.frequency.value=2200;
+  G.delayLp=ctx.createBiquadFilter(); G.delayLp.type='lowpass'; G.delayLp.frequency.value=TP.sends.delayTone;
   G.delaySend=ctx.createGain(); G.delaySend.gain.value=1; G.delayOut=ctx.createGain(); G.delayOut.gain.value=0.5;
   G.delaySend.connect(G.delay); G.delay.connect(G.delayLp); G.delayLp.connect(G.delayFb); G.delayFb.connect(G.delay);
   G.delay.connect(G.delayOut); G.delayOut.connect(G.master); G.delayOut.connect(G.verbSend);
@@ -302,62 +396,63 @@ function buildGraph(ctx){
 function nz(G,t){const s=G.ctx.createBufferSource();s.buffer=G.noise;s.playbackRate.value=0.85+Math.random()*0.3;s.start(t,Math.random()*2);return s;}
 
 function kick(G,t){
-  const ctx=G.ctx, o=ctx.createOscillator(); o.type='sine';
-  o.frequency.setValueAtTime(135,t); o.frequency.exponentialRampToValueAtTime(46,t+0.09);
-  const g=ctx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.95,t+0.004);
-  g.gain.setTargetAtTime(0,t+0.03,0.09);
-  o.connect(g); g.connect(G.mix); o.start(t); o.stop(t+0.4);
-  const c=nz(G,t), hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=1600;
-  const cg=ctx.createGain(); cg.gain.setValueAtTime(0.25,t); cg.gain.setTargetAtTime(0,t,0.004);
+  const P=TP.kick, ctx=G.ctx, o=ctx.createOscillator(); o.type='sine';
+  o.frequency.setValueAtTime(P.pitchHi,t); o.frequency.exponentialRampToValueAtTime(P.pitchLo,t+P.drop);
+  const g=ctx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(P.punch,t+0.004);
+  g.gain.setTargetAtTime(0,t+0.03,P.decay);
+  o.connect(g); g.connect(G.mix); o.start(t); o.stop(t+0.04+P.decay*4);
+  const c=nz(G,t), hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=P.clickHp;
+  const cg=ctx.createGain(); cg.gain.setValueAtTime(P.clickLvl,t); cg.gain.setTargetAtTime(0,t,0.004);
   c.connect(hp); hp.connect(cg); cg.connect(G.mix); c.stop(t+0.03);
 }
 function clap(G,t){
-  const ctx=G.ctx;
-  for(let i=0;i<3;i++){const tt=t+i*0.011; const n=nz(G,tt), bp=ctx.createBiquadFilter(); bp.type='bandpass';
-    bp.frequency.value=1500; bp.Q.value=1.1;
-    const g=ctx.createGain(); g.gain.setValueAtTime(0.5,tt); g.gain.setTargetAtTime(0,tt,0.012);
+  const P=TP.clap, ctx=G.ctx;
+  for(let i=0;i<3;i++){const tt=t+i*P.burstGap; const n=nz(G,tt), bp=ctx.createBiquadFilter(); bp.type='bandpass';
+    bp.frequency.value=P.bp; bp.Q.value=P.q;
+    const g=ctx.createGain(); g.gain.setValueAtTime(P.burstLvl,tt); g.gain.setTargetAtTime(0,tt,0.012);
     n.connect(bp); bp.connect(g); g.connect(G.mix); g.connect(G.verbSend); n.stop(tt+0.06);}
-  const n=nz(G,t+0.02), bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1300; bp.Q.value=0.7;
-  const g=ctx.createGain(); g.gain.setValueAtTime(0.4,t+0.02); g.gain.setTargetAtTime(0,t+0.02,0.05);
-  n.connect(bp); bp.connect(g); g.connect(G.mix); g.connect(G.verbSend); n.stop(t+0.2);
+  const n=nz(G,t+0.02), bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=P.bp-200; bp.Q.value=0.7;
+  const g=ctx.createGain(); g.gain.setValueAtTime(P.tailLvl,t+0.02); g.gain.setTargetAtTime(0,t+0.02,P.tailDecay);
+  n.connect(bp); bp.connect(g); g.connect(G.mix); g.connect(G.verbSend); n.stop(t+0.1+P.tailDecay*2); // =0.2 at factory
 }
 function hat(G,t,open){
-  const ctx=G.ctx, n=nz(G,t), hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=7600;
-  const g=ctx.createGain(); const dec=open?0.18:0.035; g.gain.setValueAtTime(open?0.3:0.34,t); g.gain.setTargetAtTime(0,t,dec);
-  n.connect(hp); hp.connect(g); g.connect(G.mix); if(open)g.connect(G.verbSend); n.stop(t+(open?0.32:0.08));
+  const P=TP.hat, ctx=G.ctx, n=nz(G,t), hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=P.hp;
+  const g=ctx.createGain(); const dec=open?P.openDecay:P.closedDecay; g.gain.setValueAtTime(open?P.openLvl:P.closedLvl,t); g.gain.setTargetAtTime(0,t,dec);
+  n.connect(hp); hp.connect(g); g.connect(G.mix); if(open)g.connect(G.verbSend); n.stop(t+(open?0.05+dec*1.5:0.01+dec*2)); // =0.32/0.08 at factory
 }
 // the voltage-controlled chain: VCO(saw)+sub → VCF(res lowpass, env+lfo) → VCA(env)
 function bass(G,t,midi,acc,m,lfo){
-  const ctx=G.ctx, f=mtof(midi), det=(Math.random()*2-1)*m.drift*10;
+  const P=TP.bass, ctx=G.ctx, f=mtof(midi), det=(Math.random()*2-1)*m.drift*10;
   const o=ctx.createOscillator(); o.type='sawtooth'; o.frequency.value=f; o.detune.value=det;
   const sub=ctx.createOscillator(); sub.type='square'; sub.frequency.value=f/2; sub.detune.value=det*0.5;
-  const sg=ctx.createGain(); sg.gain.value=0.6; sub.connect(sg);
+  const sg=ctx.createGain(); sg.gain.value=P.subLvl; sub.connect(sg);
   const vcf=ctx.createBiquadFilter(); vcf.type='lowpass'; vcf.Q.value=m.Q;
-  const base=clamp(m.baseCut*(1+0.5*lfo)*(acc?1.5:1),80,14000), env=base*(acc?3.2:2.2);
+  const base=clamp(m.baseCut*(1+0.5*lfo)*(acc?P.accCut:1),80,14000), env=base*(acc?P.envAcc:P.envPlain);
   vcf.frequency.setValueAtTime(clamp(base+env,80,17000),t);
   vcf.frequency.exponentialRampToValueAtTime(clamp(base,80,17000),t+(acc?0.22:0.14));
-  const vca=ctx.createGain(); const pk=acc?0.5:0.34;
-  vca.gain.setValueAtTime(0,t); vca.gain.linearRampToValueAtTime(pk,t+0.006); vca.gain.setTargetAtTime(0,t+0.05,0.11);
+  const vca=ctx.createGain(); const pk=acc?P.peakAcc:P.peak;
+  vca.gain.setValueAtTime(0,t); vca.gain.linearRampToValueAtTime(pk,t+P.attack); vca.gain.setTargetAtTime(0,t+0.05,P.decay);
   o.connect(vcf); sg.connect(vcf); vcf.connect(vca); vca.connect(G.mix);
-  o.start(t); sub.start(t); o.stop(t+0.5); sub.stop(t+0.5);
+  const off=t+0.06+P.decay*4; // =0.5 at factory
+  o.start(t); sub.start(t); o.stop(off); sub.stop(off);
 }
 // the sample-and-hold bleep: pulse VCO → bandpass → short pluck, sent to delay
 function bleep(G,t,midi,m){
-  const ctx=G.ctx, f=mtof(midi);
+  const P=TP.bleep, ctx=G.ctx, f=mtof(midi);
   const o=ctx.createOscillator(); o.type='square'; o.frequency.value=f; o.detune.value=(Math.random()*2-1)*m.drift*8;
-  const bp=ctx.createBiquadFilter(); bp.type='lowpass'; bp.frequency.value=clamp(f*4,600,7000); bp.Q.value=6;
-  const g=ctx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.22,t+0.005); g.gain.setTargetAtTime(0,t+0.02,0.09);
+  const bp=ctx.createBiquadFilter(); bp.type='lowpass'; bp.frequency.value=clamp(f*P.corner,600,7000); bp.Q.value=P.q;
+  const g=ctx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(P.lvl,t+0.005); g.gain.setTargetAtTime(0,t+0.02,P.decay);
   o.connect(bp); bp.connect(g); g.connect(G.mix); g.connect(G.delaySend); g.connect(G.verbSend);
-  o.start(t); o.stop(t+0.4);
+  o.start(t); o.stop(t+0.04+P.decay*4); // =0.4 at factory
 }
 
 function applySends(G,m){
-  const ct=G.ctx.currentTime;
-  G.verbWet.gain.setTargetAtTime(0.08+m.space*0.42,ct,0.1);
-  G.delayFb.gain.setTargetAtTime(0.2+m.space*0.34,ct,0.1);
-  G.delayOut.gain.setTargetAtTime(0.25+m.space*0.4,ct,0.1);
+  const P=TP.sends, ct=G.ctx.currentTime;
+  G.verbWet.gain.setTargetAtTime(P.verbBase+m.space*P.verbSpan,ct,0.1);
+  G.delayFb.gain.setTargetAtTime(P.fbBase+m.space*P.fbSpan,ct,0.1);
+  G.delayOut.gain.setTargetAtTime(P.outBase+m.space*P.outSpan,ct,0.1);
 }
-function setDelayTime(G,bpm){ const st16=(60/bpm)/4; try{G.delay.delayTime.setTargetAtTime(st16*3,G.ctx.currentTime,0.05);}catch(e){} }
+function setDelayTime(G,bpm){ const st16=(60/bpm)/4; try{G.delay.delayTime.setTargetAtTime(st16*TP.sends.delaySteps,G.ctx.currentTime,0.05);}catch(e){} }
 
 /* -------------------------- realtime transport --------------------------- */
 let RT=null;
@@ -378,7 +473,7 @@ function sched(){
   while(RT.nextT<ahead){
     const s=RT.step%LOOP, st16=s%STEPS, t=RT.nextT, p=RT.patch;
     // swing: nudge the odd sixteenths a hair late
-    const sw=(st16%2)?stepDur()*0.14:0;
+    const sw=(st16%2)?stepDur()*TP.groove.swing:0;
     const tt=t+sw;
     const lfo=Math.sin((RT.step/ (STEPS*2)) *2*Math.PI); // one cycle every two bars
     const fire={};
@@ -406,6 +501,16 @@ function reVibe(fromSeed){
   if(fromSeed) RT.patch=makePatch(st.seed);
   setDelayTime(RT.G,st.tempo); applySends(RT.G,macro());
 }
+
+/* OFFICINA live hook: per-hit voices read TP at schedule time, so most
+   edits land on the very next step; only the standing graph needs pushes. */
+TIMBRE.touch=()=>{
+  if(!RT)return;
+  const G=RT.G, ct=RT.ctx.currentTime;
+  G.master.gain.setTargetAtTime(TP.master.gain,ct,.06);
+  G.delayLp.frequency.setTargetAtTime(TP.sends.delayTone,ct,.08);
+  setDelayTime(G,st.tempo); applySends(G,macro());
+};
 
 /* ------------------------------ cut · WAV -------------------------------- */
 function saveWav(blob,filename){
@@ -448,7 +553,7 @@ async function cut(){
     let t=0.1;
     for(let step=0;step<LOOP*reps;step++){
       const s=step%LOOP, st16=s%STEPS;
-      const sw=(st16%2)?sd*0.14:0, tt=t+sw;
+      const sw=(st16%2)?sd*TP.groove.swing:0, tt=t+sw;
       const lfo=Math.sin((step/(STEPS*2))*2*Math.PI);
       if(p.kick[st16])kick(G,tt);
       if(m.dens>0.30 && p.clap[st16])clap(G,tt);
@@ -457,7 +562,7 @@ async function cut(){
       if(m.dens>0.5){const sn=p.sh[s]; if(sn!=null)bleep(G,tt,sn,m);}
       t+=sd;
     }
-    G.master.gain.setValueAtTime(0.8,t-0.1); G.master.gain.linearRampToValueAtTime(0.0001,total-0.1);
+    G.master.gain.setValueAtTime(TP.master.gain,t-0.1); G.master.gain.linearRampToValueAtTime(0.0001,total-0.1);
     const rb=await ctx.startRendering();
     let L=rb.getChannelData(0),R=rb.getChannelData(1),mx=0;
     for(let i=0;i<L.length;i++){const a=Math.abs(L[i]);if(a>mx)mx=a;const b=Math.abs(R[i]);if(b>mx)mx=b;}
