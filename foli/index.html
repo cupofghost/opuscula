@@ -360,17 +360,115 @@ const RHYTHM_ORDER=['kuku','kassa','djansa','sunu','dundunba','tiriba','mendiani
 const SHAKER={'4/4':'x.xxx.x.x.xxx.x.', '12/8':'xx.xx.xx.xx.'};
 
 // the ensemble voices, in ring order (outer → inner) + colour + pan + gain
-const VOICES=[
-  {id:'bell',    label:'Bell',     col:'#d9a441', pan: 0.30, gain:0.5 },
-  {id:'kenkeni', label:'Kenkeni',  col:'#c9a24e', pan: 0.22, gain:0.5 },
-  {id:'sangban', label:'Sangban',  col:'#c26a3a', pan:-0.12, gain:0.72},
-  {id:'dundunba',label:'Dundunba', col:'#9c4a2a', pan: 0.02, gain:0.85},
-  {id:'dj1',     label:'Djembe 1', col:'#e0c07a', pan:-0.34, gain:0.72},
-  {id:'dj2',     label:'Djembe 2', col:'#8fae86', pan: 0.34, gain:0.66},
-  {id:'solo',    label:'Soloist',  col:'#ece0c8', pan:-0.06, gain:0.82},
-  {id:'shaker',  label:'Sékéré',   col:'#b7c4a0', pan: 0.14, gain:0.34},
+const VOICES=[   // gains live in TIMBRE.mixer; this table is identity + placement
+  {id:'bell',    label:'Bell',     col:'#d9a441', pan: 0.30},
+  {id:'kenkeni', label:'Kenkeni',  col:'#c9a24e', pan: 0.22},
+  {id:'sangban', label:'Sangban',  col:'#c26a3a', pan:-0.12},
+  {id:'dundunba',label:'Dundunba', col:'#9c4a2a', pan: 0.02},
+  {id:'dj1',     label:'Djembe 1', col:'#e0c07a', pan:-0.34},
+  {id:'dj2',     label:'Djembe 2', col:'#8fae86', pan: 0.34},
+  {id:'solo',    label:'Soloist',  col:'#ece0c8', pan:-0.06},
+  {id:'shaker',  label:'Sékéré',   col:'#b7c4a0', pan: 0.14},
 ];
 const VOICE_BY=Object.fromEntries(VOICES.map(v=>[v.id,v]));
+
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Open ../officina/ — the voicing bench — to edit these live inside the
+   running mix, save named presets, and export them. A preset saved there
+   applies even when this file is opened directly (localStorage); add
+   ?factory to the URL to hear the shipped voice. */
+const TIMBRE={
+  id:'foli', title:'FOLI \u00b7 op. IX',
+  doc:'A prerendered drum ensemble. Every stroke is synthesized once into a tiny sample bank (three seeded variants per stroke so repeats don\u2019t machine-gun), then the whole groove is mixed into ONE stereo master buffer that loops seamlessly \u2014 the realtime graph just plays that buffer through a short room and a limiter. The drum voice is a STRUCK MEMBRANE: a sine whose pitch drops fast at the strike (the skin tightening), a touch of second harmonic, and a hand transient; djembe SLAP is highpassed noise + a short 720 Hz ping; the BELLS are five inharmonic partials; the S\u00c9K\u00c9R\u00c9 is a breath of highpassed noise. Because the mix is prerendered, every edit here re-renders the groove (a moment of silence while it rebakes) \u2014 the WAV cut and the loop use the identical recipe. The master render peak-normalises to 0.9, so mixer gains are relative balance, not absolute loudness.',
+  groups:{
+    master:{label:'master & room',doc:'The played-back master buffer runs through a small dry room and a hard limiter.',params:{
+      gain:{v:.95,min:.3,max:1.2,step:.01,label:'master gain',doc:'level into the limiter'},
+      wet:{v:.08,min:0,max:.4,step:.01,label:'room return',doc:'the short convolved room \u2014 lifts the kit off the speaker a little'},
+      roomSize:{v:.28,min:.05,max:1.2,step:.01,unit:'s',label:'room size',doc:'length of the room impulse; keep short and dry \u2014 this music is played outdoors'},
+    }},
+    mixer:{label:'ensemble balance',doc:'Relative gain of each voice in the master render (the render then normalises, so these are balance, not volume).',params:{
+      bell:{v:.5,min:0,max:1.2,step:.01,label:'bell',doc:'the timeline bell'},
+      kenkeni:{v:.5,min:0,max:1.2,step:.01,label:'kenkeni',doc:'the small high dunun'},
+      sangban:{v:.72,min:0,max:1.2,step:.01,label:'sangban',doc:'the middle dunun \u2014 the melody of the trio'},
+      dundunba:{v:.85,min:0,max:1.2,step:.01,label:'dundunba',doc:'the big low dunun'},
+      dj1:{v:.72,min:0,max:1.2,step:.01,label:'djembe 1',doc:'first accompaniment djembe'},
+      dj2:{v:.66,min:0,max:1.2,step:.01,label:'djembe 2',doc:'second accompaniment djembe'},
+      solo:{v:.82,min:0,max:1.2,step:.01,label:'soloist',doc:'the solo djembe on top'},
+      shaker:{v:.34,min:0,max:1.2,step:.01,label:'s\u00e9k\u00e9r\u00e9',doc:'the seed-net rattle'},
+    }},
+    kenkeni:{label:'kenkeni',doc:'The small dunun: highest skin, shortest ring. Open and muted strokes share the drum \u2014 only the decay differs \u2014 plus its mounted bell.',params:{
+      pitch:{v:186,min:120,max:280,step:1,unit:'Hz',label:'skin pitch',doc:'fundamental of the membrane'},
+      open:{v:.16,min:.05,max:.6,step:.005,unit:'s',label:'open decay',doc:'ring of the open stroke'},
+      mute:{v:.06,min:.02,max:.2,step:.005,unit:'s',label:'muted decay',doc:'the choked stroke'},
+      drop:{v:.5,min:0,max:1.5,step:.02,label:'pitch drop',doc:'how far the strike bends the skin sharp before it settles (fraction of the pitch)'},
+      harm:{v:.2,min:0,max:.8,step:.01,label:'overtone',doc:'second-harmonic content \u2014 the woody edge'},
+      bellPitch:{v:560,min:300,max:900,step:5,unit:'Hz',label:'bell pitch',doc:'the kenkeni\u2019s mounted bell'},
+    }},
+    sangban:{label:'sangban',doc:'The middle dunun \u2014 the one that speaks the melody of the rhythm.',params:{
+      pitch:{v:116,min:80,max:200,step:1,unit:'Hz',label:'skin pitch',doc:'fundamental of the membrane'},
+      open:{v:.27,min:.08,max:.8,step:.005,unit:'s',label:'open decay',doc:'ring of the open stroke'},
+      mute:{v:.09,min:.02,max:.3,step:.005,unit:'s',label:'muted decay',doc:'the choked stroke'},
+      drop:{v:.55,min:0,max:1.5,step:.02,label:'pitch drop',doc:'strike bend'},
+      harm:{v:.22,min:0,max:.8,step:.01,label:'overtone',doc:'second-harmonic content'},
+      bellPitch:{v:540,min:300,max:900,step:5,unit:'Hz',label:'bell pitch',doc:'the sangban\u2019s mounted bell'},
+    }},
+    dundunba:{label:'dundunba',doc:'The big low dunun \u2014 the earth of the ensemble.',params:{
+      pitch:{v:72,min:45,max:120,step:1,unit:'Hz',label:'skin pitch',doc:'fundamental of the membrane'},
+      open:{v:.42,min:.1,max:.9,step:.005,unit:'s',label:'open decay',doc:'ring of the open stroke (sets the render tail too)'},
+      mute:{v:.13,min:.03,max:.4,step:.005,unit:'s',label:'muted decay',doc:'the choked stroke'},
+      drop:{v:.6,min:0,max:1.5,step:.02,label:'pitch drop',doc:'strike bend'},
+      harm:{v:.25,min:0,max:.8,step:.01,label:'overtone',doc:'second-harmonic content'},
+      bellPitch:{v:500,min:300,max:900,step:5,unit:'Hz',label:'bell pitch',doc:'the dundunba\u2019s mounted bell'},
+    }},
+    djembe:{label:'djembe strokes',doc:'All three djembes (two accompaniments + soloist) share the three-stroke vocabulary: BASS \u2014 a deep membrane hit mid-skin; TONE \u2014 the ringing edge note; SLAP \u2014 a crack of highpassed noise with a short bright ping.',params:{
+      bassPitch:{v:94,min:60,max:160,step:1,unit:'Hz',label:'bass pitch',doc:'fundamental of the bass stroke'},
+      bassDecay:{v:.2,min:.06,max:.6,step:.005,unit:'s',label:'bass decay',doc:'ring of the bass stroke'},
+      bassDrop:{v:.95,min:0,max:2,step:.05,label:'bass drop',doc:'the deep gu of the strike \u2014 big bend, fast settle'},
+      tonePitch:{v:320,min:180,max:520,step:2,unit:'Hz',label:'tone pitch',doc:'fundamental of the edge tone'},
+      toneDecay:{v:.12,min:.04,max:.4,step:.005,unit:'s',label:'tone decay',doc:'ring of the tone'},
+      toneHarm:{v:.5,min:0,max:1,step:.02,label:'tone overtone',doc:'second harmonic in the tone \u2014 its go/do vowel'},
+      slapDecay:{v:.026,min:.01,max:.08,step:.001,unit:'s',label:'slap decay',doc:'length of the noise crack'},
+      slapPing:{v:720,min:300,max:2000,step:10,unit:'Hz',label:'slap ping',doc:'the short sine ping inside the slap \u2014 the sting'},
+      slapPingLvl:{v:.28,min:0,max:.8,step:.01,label:'ping level',doc:'how much sting rides the crack'},
+    }},
+    bell:{label:'timeline bell',doc:'Five inharmonic partials (1 \u00b7 1.5 \u00b7 2.42 \u00b7 3.66 \u00b7 5.1) with a chiff of noise \u2014 the kenken that carries the timeline. The ring time is shared by the dunun bells.',params:{
+      pitch:{v:820,min:400,max:1400,step:5,unit:'Hz',label:'pitch',doc:'base partial of the timeline bell'},
+      ring:{v:.052,min:.02,max:.12,step:.002,unit:'s',label:'ring',doc:'decay of all bell partials (timeline and dunun bells alike)'},
+    }},
+    shaker:{label:'s\u00e9k\u00e9r\u00e9',doc:'A dry burst of first-difference (highpassed) noise \u2014 the seed net snapping against the gourd.',params:{
+      decay:{v:.017,min:.008,max:.06,step:.001,unit:'s',label:'decay',doc:'length of the rattle'},
+      tone:{v:.55,min:0,max:.95,step:.01,label:'brightness',doc:'highpass strength: higher = thinner, hissier'},
+      level:{v:.7,min:0,max:1.2,step:.02,label:'level',doc:'gain inside the sample (before the mixer)'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
 
 const pat=(s,steps)=>{const a=[];for(let i=0;i<steps;i++)a.push(s[i%s.length]||'.');return a;};
 
@@ -497,22 +595,23 @@ function synMembrane(f0, decay, drop, harm, click, rng){
 }
 // a bright cracking slap: highpassed noise + a short high ping
 function synSlap(rng){
-  const n=Math.floor(0.13*SR), o=new Float32Array(n); let prev=0;
+  const D=TP.djembe, n=Math.floor(Math.max(0.13,D.slapDecay*5)*SR), o=new Float32Array(n); let prev=0;
   for(let i=0;i<n;i++){const t=i/SR,nz=rng()*2-1,hp=nz-prev;prev=nz;
-    o[i]=hp*Math.exp(-t/0.026)*0.95 + Math.sin(2*Math.PI*720*t)*Math.exp(-t/0.02)*0.28;}
+    o[i]=hp*Math.exp(-t/D.slapDecay)*0.95 + Math.sin(2*Math.PI*D.slapPing*t)*Math.exp(-t/0.02)*D.slapPingLvl;}
   return o;
 }
 // the sékéré: a dry seed-net rattle — a short burst of highpassed noise
 function synShaker(rng){
-  const n=Math.floor(0.055*SR), o=new Float32Array(n); let prev=0;
-  for(let i=0;i<n;i++){const t=i/SR,nz=rng()*2-1,hp=nz-prev*0.55;prev=nz;
-    o[i]=hp*Math.exp(-t/0.017)*0.7;}
+  const H=TP.shaker, n=Math.floor(Math.max(0.055,H.decay*3.2)*SR), o=new Float32Array(n); let prev=0;
+  for(let i=0;i<n;i++){const t=i/SR,nz=rng()*2-1,hp=nz-prev*H.tone;prev=nz;
+    o[i]=hp*Math.exp(-t/H.decay)*H.level;}
   return o;
 }
 // a metal bell: a cluster of inharmonic partials + a chiff of noise
 function synBell(base, rng){
-  const P=[1,1.5,2.42,3.66,5.1], n=Math.floor(0.18*SR), o=new Float32Array(n);
-  for(const p of P){const f=base*p;for(let i=0;i<n;i++){const t=i/SR;o[i]+=Math.sin(2*Math.PI*f*t)*Math.exp(-t/0.052)/P.length;}}
+  const ring=TP.bell.ring;
+  const P=[1,1.5,2.42,3.66,5.1], n=Math.floor(Math.max(0.18,ring*3.46)*SR), o=new Float32Array(n);
+  for(const p of P){const f=base*p;for(let i=0;i<n;i++){const t=i/SR;o[i]+=Math.sin(2*Math.PI*f*t)*Math.exp(-t/ring)/P.length;}}
   const cn=Math.floor(0.005*SR);
   for(let i=0;i<cn;i++) o[i]+=(rng()*2-1)*0.35*Math.exp(-i/(0.0016*SR));
   return o;
@@ -522,20 +621,21 @@ function synBell(base, rng){
 function bakeKit(){
   const rng=mulberry32(0x9e3779b1), K=3, kit={};
   const make=(key,fn)=>{const arr=[];for(let v=0;v<K;v++)arr.push(fn(rng));kit[key]=arr;};
-  make('bell.bell',      r=>synBell(820,r));
-  make('kenkeni.open',   r=>synMembrane(186,0.16,0.5,0.2,0.004,r));
-  make('kenkeni.mute',   r=>synMembrane(186,0.06,0.5,0.1,0.004,r));
-  make('kenkeni.dbell',  r=>synBell(560,r));
-  make('sangban.open',   r=>synMembrane(116,0.27,0.55,0.22,0.004,r));
-  make('sangban.mute',   r=>synMembrane(116,0.09,0.55,0.1,0.004,r));
-  make('sangban.dbell',  r=>synBell(540,r));
-  make('dundunba.open',  r=>synMembrane(72,0.42,0.6,0.25,0.005,r));
-  make('dundunba.mute',  r=>synMembrane(72,0.13,0.6,0.12,0.005,r));
-  make('dundunba.dbell', r=>synBell(500,r));
+  const KK=TP.kenkeni, SG=TP.sangban, DB=TP.dundunba, DJ=TP.djembe;
+  make('bell.bell',      r=>synBell(TP.bell.pitch,r));
+  make('kenkeni.open',   r=>synMembrane(KK.pitch,KK.open,KK.drop,KK.harm,0.004,r));
+  make('kenkeni.mute',   r=>synMembrane(KK.pitch,KK.mute,KK.drop,0.1,0.004,r));
+  make('kenkeni.dbell',  r=>synBell(KK.bellPitch,r));
+  make('sangban.open',   r=>synMembrane(SG.pitch,SG.open,SG.drop,SG.harm,0.004,r));
+  make('sangban.mute',   r=>synMembrane(SG.pitch,SG.mute,SG.drop,0.1,0.004,r));
+  make('sangban.dbell',  r=>synBell(SG.bellPitch,r));
+  make('dundunba.open',  r=>synMembrane(DB.pitch,DB.open,DB.drop,DB.harm,0.005,r));
+  make('dundunba.mute',  r=>synMembrane(DB.pitch,DB.mute,DB.drop,0.12,0.005,r));
+  make('dundunba.dbell', r=>synBell(DB.bellPitch,r));
   make('shaker.sh',      r=>synShaker(r));
   for(const v of ['dj1','dj2','solo']){
-    make(v+'.bass', r=>synMembrane(94,0.2,0.95,0.2,0.004,r));
-    make(v+'.tone', r=>synMembrane(320,0.12,0.28,0.5,0.006,r));
+    make(v+'.bass', r=>synMembrane(DJ.bassPitch,DJ.bassDecay,DJ.bassDrop,0.2,0.004,r));
+    make(v+'.tone', r=>synMembrane(DJ.tonePitch,DJ.toneDecay,0.28,DJ.toneHarm,0.006,r));
     make(v+'.slap', r=>synSlap(r));
   }
   return kit;
@@ -556,14 +656,14 @@ function mixHit(L,R,off,mono,pan,gain){
 // for the one-shot WAV cut.
 function renderMaster(loop){
   const A=assemble(st);
-  const tail=2.0, n=Math.ceil((A.dur+tail)*SR);
+  const tail=Math.max(2.0,TP.dundunba.open*4.5+0.1,TP.sangban.open*4.5+0.1,TP.djembe.bassDecay*4.5+0.1), n=Math.ceil((A.dur+tail)*SR);
   const L=new Float32Array(n), R=new Float32Array(n);
   const kit=bakeKit(); const idx={};
   for(const e of A.ev){
     const key=e.voice+'.'+e.tone, bank=kit[key]||kit['dj1.tone'];
     idx[key]=((idx[key]||0)+1)%bank.length;
     const mono=bank[idx[key]];
-    const vg=(VOICE_BY[e.voice]||{gain:0.7}).gain;
+    const vg=(TP.mixer[e.voice]!==undefined)?TP.mixer[e.voice]:0.7;
     mixHit(L,R,Math.floor(e.t*SR),mono,e.pan,e.vel*vg);
   }
   let oL=L, oR=R, oN=n;
@@ -589,12 +689,12 @@ function makeRoomIR(ctx,sec,exp){
 // the fixed signal path — identical realtime & offline so the WAV is faithful.
 function buildGraph(ctx, L, R, loop){
   const G={ctx};
-  G.master=ctx.createGain(); G.master.gain.value=0.95;
+  G.master=ctx.createGain(); G.master.gain.value=TP.master.gain;
   G.lim=ctx.createDynamicsCompressor();
   G.lim.threshold.value=-2;G.lim.knee.value=0;G.lim.ratio.value=20;G.lim.attack.value=0.003;G.lim.release.value=0.09;
   G.master.connect(G.lim).connect(ctx.destination);
-  G.verb=ctx.createConvolver(); G.verb.buffer=makeRoomIR(ctx,0.28,3.2);
-  G.wet=ctx.createGain(); G.wet.gain.value=0.08; G.verb.connect(G.wet).connect(G.master);
+  G.verb=ctx.createConvolver(); G.verb.buffer=makeRoomIR(ctx,TP.master.roomSize,3.2);
+  G.wet=ctx.createGain(); G.wet.gain.value=TP.master.wet; G.verb.connect(G.wet).connect(G.master);
   G.dry=ctx.createGain(); G.dry.gain.value=1; G.dry.connect(G.master);
   G.src=ctx.createBufferSource(); G.src.buffer=toStereoBuffer(ctx,L,R); G.src.loop=!!loop;
   G.src.connect(G.dry); G.src.connect(G.verb);
@@ -623,6 +723,11 @@ function stop(){
 }
 // through-composed: any change regenerates and (if playing) restarts
 function regen(){ if(RT){ stop(); play(); } else { invalidate(); } }
+
+/* OFFICINA live hook: the whole kit is baked into the master buffer, so a
+   bench edit re-renders the groove (debounced against slider drags). */
+let __tbT=0;
+TIMBRE.touch=()=>{ clearTimeout(__tbT); __tbT=setTimeout(regen,300); };
 
 /* ------------------------------ cut · WAV -------------------------------- */
 function encodeWav(L,R,sr){
