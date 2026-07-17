@@ -350,9 +350,7 @@ const OCT=7;                   // window span, octaves (C1..C8)
 const K=7;                     // partials per voice, one per octave
 const MAXV=4;                  // voice slots
 const SR=44100;
-const VP=0.16;                 // per-partial peak
-const VG=0.30;                 // per-voice gain
-const MORPH=0.8;               // s, chord morph time
+// VP / VG / MORPH now live in TIMBRE (voices.partial / voices.voice / voices.morph)
 const SLOTPANS=[0,-0.4,0.4,0.2];
 const VCOL=['#eaf2ff','#ffd98a','#8fe3ff','#ff9fb2'];
 
@@ -364,6 +362,68 @@ const PRESETS=[
  {name:'6 : 7 : 9',   r:[1,7/6,3/2],       note:'septimal minor — the blue third, 267¢'},
  {name:'16 : 20 : 25',r:[1,5/4,25/16],     note:'stacked pure 5/4s — never closes the octave (diesis 128/125)'},
 ];
+
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Open ../officina/ — the voicing bench — to edit these live inside the
+   running mix, save named presets, and export them. A preset saved there
+   applies even when this file is opened directly (localStorage); add
+   ?factory to the URL to hear the shipped voice. */
+const TIMBRE={
+  id:'scala', title:'SCALA \u00b7 op. II',
+  doc:'A Shepard\u2013Risset glissando built from pure sine partials. Each chord voice is a slot of 7 sine oscillators, one per octave of the C1\u2013C8 window; a raised-cosine loudness bell (sin\u00b2 across the window) fades partials in at the bottom and out at the top, so the ladder climbs forever without arriving. The chords are exact just-intonation ratios \u2014 the slots simply sit at fixed offsets inside the spiral. Underneath, a BOURDON hums C2 as harmonics 1..6 with a slow breathing LFO on its level; a just BELL (partials 1\u00b73\u00b75 of C5) strikes each lap. All of it meets a master gain \u2192 gentle 3:1 compressor, with a 2.2 s convolved room fed by per-bus sends.',
+  groups:{
+    master:{label:'master & room',doc:'Output gain into a gentle compressor (\u221220 dB, 3:1), and the convolved room return.',params:{
+      gain:{v:.9,min:.3,max:1.3,step:.01,label:'master gain',doc:'overall level before the compressor'},
+      verbWet:{v:.35,min:0,max:1,step:.01,label:'room return',doc:'level of the convolved reverb in the mix'},
+    }},
+    voices:{label:'the spiral voices',doc:'Four slots \u00d7 seven sine partials, one per octave. The raised-cosine bell does the Shepard trick: what enters at the bottom is silent, swells to full in the middle, and dies before the top.',params:{
+      partial:{v:.16,min:.02,max:.4,step:.005,label:'partial peak',doc:'loudness of a partial at the centre of the window \u2014 the overall voice brightness'},
+      voice:{v:.30,min:0,max:.8,step:.01,label:'voice gain',doc:'per-slot bus level under the partials'},
+      morph:{v:.8,min:.1,max:4,step:.05,unit:'s',label:'chord morph',doc:'how long a chord change takes to glide the slots to their new ratios'},
+      spread:{v:1,min:0,max:2,step:.05,label:'stereo spread',doc:'scales the slot pan positions (0 = mono, 1 = shipped image)'},
+      send:{v:.28,min:0,max:1,step:.01,label:'room send',doc:'how much of each voice feeds the room'},
+    }},
+    drone:{label:'bourdon',doc:'C2 as its first six harmonics \u2014 a just chord by construction \u2014 breathing slowly via an LFO on its gain. The ground the spiral never touches.',params:{
+      level:{v:.16,min:0,max:.5,step:.005,label:'level',doc:'bourdon bus gain when switched on'},
+      harmGain:{v:.9,min:.2,max:1.5,step:.02,label:'harmonic gain',doc:'scales the 1/n harmonic series inside the bourdon; lower = purer, darker'},
+      breathDepth:{v:.016,min:0,max:.08,step:.001,label:'breath depth',doc:'LFO depth on the bourdon level \u2014 how visibly it inhales'},
+      breathRate:{v:.11,min:.02,max:.5,step:.01,unit:'Hz',label:'breath rate',doc:'realtime breathing speed (the WAV cut locks it to the loop length instead)'},
+      send:{v:.35,min:0,max:1,step:.01,label:'room send',doc:'bourdon into the room'},
+    }},
+    bell:{label:'campana (lap bell)',doc:'Three sine partials at ratios 1\u00b73\u00b75 of C5, struck once per lap \u2014 a just bell marking each octave of ascent.',params:{
+      level:{v:1,min:0,max:2,step:.02,label:'level',doc:'strike level'},
+      decay:{v:1,min:.3,max:3,step:.05,label:'decay \u00d7',doc:'stretches all three partials\u2019 ring times (1 = shipped: 3.6/2.2/1.3 s)'},
+      send:{v:.5,min:0,max:1,step:.01,label:'room send',doc:'bell into the room \u2014 the after-ring'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
 
 /* ---------------- state ---------------- */
 const st={
@@ -398,7 +458,7 @@ function stepAdvance(s,dt){
   s.tau+=s.dir*dt/s.T;
   // chord morph: phi is unwrapped — u=frac((k+tau+phi)/OCT) stays continuous
   for(let v=0;v<MAXV;v++){
-    const d=s.phiT[v]-s.phi[v], step=dt/MORPH;
+    const d=s.phiT[v]-s.phi[v], step=dt/TP.voices.morph;
     s.phi[v]= Math.abs(d)<=step ? s.phiT[v] : s.phi[v]+Math.sign(d)*step;
     const g=s.slotT[v]-s.slotAmp[v];
     s.slotAmp[v]= Math.abs(g)<=step ? s.slotT[v] : s.slotAmp[v]+Math.sign(g)*step;
@@ -409,7 +469,7 @@ function stepAdvance(s,dt){
 /* partial geometry: slot v, index k, at state s */
 function uOf(s,v,k){ let x=(k+s.tau+s.phi[v])/OCT; return frac(x); }
 const fOf=u=>FMIN*Math.pow(2,u*OCT);
-const aOf=u=>{const w=Math.sin(Math.PI*u);return w*w*VP;};
+const aOf=u=>{const w=Math.sin(Math.PI*u);return w*w*TP.voices.partial;};
 
 /* ---------------- audio graph ---------------- */
 function makeIR(ctx){
@@ -421,13 +481,13 @@ function makeIR(ctx){
 
 function buildGraph(ctx,opts){
   const G={};
-  G.master=ctx.createGain(); G.master.gain.value=0.9;
+  G.master=ctx.createGain(); G.master.gain.value=TP.master.gain;
   G.comp=ctx.createDynamicsCompressor();
   G.comp.threshold.value=-20; G.comp.ratio.value=3;
   G.comp.attack.value=0.01; G.comp.release.value=0.3;
   G.master.connect(G.comp).connect(ctx.destination);
   G.verb=ctx.createConvolver(); G.verb.buffer=makeIR(ctx);
-  G.vgain=ctx.createGain(); G.vgain.gain.value=0.35;
+  G.vgain=ctx.createGain(); G.vgain.gain.value=TP.master.verbWet;
   G.verb.connect(G.vgain).connect(G.master);
   G.send=(node,amt)=>{const g=ctx.createGain();g.gain.value=amt;node.connect(g).connect(G.verb);};
 
@@ -436,9 +496,9 @@ function buildGraph(ctx,opts){
   G.slots=[];
   for(let v=0;v<MAXV;v++){
     const pan=ctx.createStereoPanner?ctx.createStereoPanner():ctx.createGain();
-    if(pan.pan) pan.pan.value=(pans[v]!==undefined?pans[v]:0);
-    const vg=ctx.createGain(); vg.gain.value=VG;
-    vg.connect(pan); pan.connect(G.master); G.send(pan,0.28);
+    if(pan.pan) pan.pan.value=(pans[v]!==undefined?pans[v]:0)*TP.voices.spread;
+    const vg=ctx.createGain(); vg.gain.value=TP.voices.voice;
+    vg.connect(pan); pan.connect(G.master); G.send(pan,TP.voices.send);
     const oscs=[],gains=[];
     for(let k=0;k<K;k++){
       const o=ctx.createOscillator(); o.type='sine';
@@ -449,17 +509,17 @@ function buildGraph(ctx,opts){
   }
 
   // bourdon: C2, harmonics 1..6 (just by construction)
-  G.droneGain=ctx.createGain(); G.droneGain.gain.value=st.drone?0.16:0;
-  G.droneGain.connect(G.master); G.send(G.droneGain,0.35);
+  G.droneGain=ctx.createGain(); G.droneGain.gain.value=st.drone?TP.drone.level:0;
+  G.droneGain.connect(G.master); G.send(G.droneGain,TP.drone.send);
   const F0=FMIN*2, damps=[1,.5,.33,.25,.2,.16];
   G.droneOscs=damps.map((a,i)=>{
     const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=F0*(i+1);
-    const g=ctx.createGain(); g.gain.value=a*0.9;
+    const g=ctx.createGain(); g.gain.value=a*TP.drone.harmGain;
     o.connect(g).connect(G.droneGain); return o;
   });
   // breathing LFO (rate set by caller for loop periodicity)
   G.breath=ctx.createOscillator(); G.breath.frequency.value=opts.breathHz;
-  G.breathG=ctx.createGain(); G.breathG.gain.value=0.016;
+  G.breathG=ctx.createGain(); G.breathG.gain.value=TP.drone.breathDepth;
   G.breath.connect(G.breathG).connect(G.droneGain.gain);
 
   G.ctx=ctx;
@@ -469,7 +529,7 @@ function buildGraph(ctx,opts){
 function startGraph(G,s,t0){
   G.slots.forEach(sl=>{sl.oscs.forEach(o=>o.start(t0));});
   G.droneOscs.forEach(o=>o.start(t0)); G.breath.start(t0);
-  const dg=G.droneGain.gain, tgt=s.drone?0.16:0;
+  const dg=G.droneGain.gain, tgt=s.drone?TP.drone.level:0;
   dg.setValueAtTime(0.0001,t0); dg.linearRampToValueAtTime(tgt,t0+1.2);
   G.slots.forEach((slot,v)=>{ for(let k=0;k<K;k++){
     const u=uOf(s,v,k);
@@ -481,15 +541,15 @@ function startGraph(G,s,t0){
 /* campana: just bell at C5 — partials 1,3,5 */
 function bell(G,t){
   const base=FMIN*16, P=[[1,.5,3.6],[3,.2,2.2],[5,.12,1.3]];
-  const bg=G.ctx.createGain(); bg.gain.value=1;
-  bg.connect(G.master); G.send(bg,0.5);
+  const bg=G.ctx.createGain(); bg.gain.value=TP.bell.level;
+  bg.connect(G.master); G.send(bg,TP.bell.send);
   P.forEach(([r,a,d])=>{
     const o=G.ctx.createOscillator(); o.type='sine'; o.frequency.value=base*r;
-    const g=G.ctx.createGain();
+    const g=G.ctx.createGain(), dd=d*TP.bell.decay;
     g.gain.setValueAtTime(0,t);
     g.gain.linearRampToValueAtTime(a,t+0.004);
-    g.gain.exponentialRampToValueAtTime(0.0001,t+d);
-    o.connect(g).connect(bg); o.start(t); o.stop(t+d+0.1);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dd);
+    o.connect(g).connect(bg); o.start(t); o.stop(t+dd+0.1);
   });
 }
 
@@ -527,7 +587,7 @@ let RT=null; // {ctx,G,timer,schedUntil,mirror}
 function start(){
   const ctx=new (window.AudioContext||window.webkitAudioContext)();
   __iosAudio(ctx);
-  const G=buildGraph(ctx,{breathHz:0.11});
+  const G=buildGraph(ctx,{breathHz:TP.drone.breathRate});
   const t0=ctx.currentTime+0.12;
   startGraph(G,st,t0);
   if(st.bell) bell(G,t0);
@@ -552,6 +612,21 @@ function stop(){
   $('play').textContent='SONA'; $('play').classList.remove('on');
 }
 $('play').addEventListener('click',()=>st.playing?stop():start());
+
+/* OFFICINA live hook: partial gains re-ramp within ~0.3 s via scheduleSpan
+   (aOf reads TP), so only the standing buses need pushes. */
+TIMBRE.touch=()=>{
+  if(!RT)return;
+  const G=RT.G, ct=RT.ctx.currentTime;
+  G.master.gain.setTargetAtTime(TP.master.gain,ct,.08);
+  G.vgain.gain.setTargetAtTime(TP.master.verbWet,ct,.1);
+  G.slots.forEach((sl,v)=>{ sl.vg.gain.setTargetAtTime(TP.voices.voice,ct,.08);
+    if(sl.pan.pan)sl.pan.pan.setTargetAtTime((SLOTPANS[v]!==undefined?SLOTPANS[v]:0)*TP.voices.spread,ct,.1); });
+  if(st.drone)G.droneGain.gain.setTargetAtTime(TP.drone.level,ct,.15);
+  G.breath.frequency.setTargetAtTime(TP.drone.breathRate,ct,.2);
+  G.breathG.gain.setTargetAtTime(TP.drone.breathDepth,ct,.2);
+};
+
 
 /* ---------------- loop cutter ---------------- */
 function encodeWav(L,R,sr){
@@ -649,7 +724,7 @@ $('tgDrone').addEventListener('click',()=>{
   st.drone=!st.drone;$('tgDrone').classList.toggle('on',st.drone);
   if(RT){const g=RT.G.droneGain.gain,ct=RT.ctx.currentTime;
     g.cancelScheduledValues(ct);g.setValueAtTime(g.value,ct);
-    g.linearRampToValueAtTime(st.drone?0.16:0,ct+0.6);}
+    g.linearRampToValueAtTime(st.drone?TP.drone.level:0,ct+0.6);}
 });
 $('tgBell').addEventListener('click',()=>{
   st.bell=!st.bell;$('tgBell').classList.toggle('on',st.bell);
