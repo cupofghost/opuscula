@@ -766,11 +766,90 @@ var live={playing:false,iter:null,next:null,timer:null,active:[],uiQ:[],
 /* bor (drones) lifted 0.5→0.66: the uilleann drone is a constant, present
    ground under the chanter, not a background hint — at 0.5 it was masked and
    read as "no drone, just the regulators vamping". */
-var NOMINAL={cal:0.9,bor:0.66,rgl:0.9};
-var SENDS={cal:0.16,bor:0.06,rgl:0.1};
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Open ../officina/ — the voicing bench — to edit these live inside the
+   running mix, save named presets, and export them. A preset saved there
+   applies even when this file is opened directly (localStorage); add
+   ?factory to the URL to hear the shipped voice. */
+const TIMBRE={
+  id:'bolg', title:'BOLG \u00b7 op. VI',
+  doc:'A full set of uilleann pipes, three buses. CHANTER (cal) \u2014 the conical-bore double reed: a sawtooth split through two bandpass formants (\u22481.1 and 2.6 kHz \u2014 the reedy vowel) plus a lowpass floor; the overblown octave gets a 9\u00a2 pressure kick that settles in 45 ms, tight notes get a keypad pop of highpassed click. DRONES (bor) \u2014 three standing sawtooths in octaves under everything, each behind its own lowpass with a slow independent level wobble. REGULATORS (rgl) \u2014 keyed closed pipes: short bandpassed honks vamping chords off the wrist. The BAG breathes: one 0.15 Hz pressure LFO detunes every reed \u00b12.5\u00a2 together \u2014 the whole instrument sways as one. Buses meet a master \u2192 4:1 compressor with a dryish room.',
+  groups:{
+    master:{label:'master & room',doc:'Output gain into the compressor; a 1.9 s room on per-bus sends.',params:{
+      gain:{v:.85,min:.3,max:1.2,step:.01,label:'master gain',doc:'level into the compressor'},
+      wet:{v:.28,min:0,max:1,step:.02,label:'room return',doc:'the room around the set'},
+      roomSize:{v:1.9,min:.4,max:4,step:.05,unit:'s',label:'room size',doc:'impulse length'},
+    }},
+    mixer:{label:'the set (bus levels)',doc:'What each part of the instrument sounds at when switched in.',params:{
+      cal:{v:.9,min:0,max:1.5,step:.02,label:'chanter',doc:'the melody pipe'},
+      bor:{v:.66,min:0,max:1.5,step:.02,label:'drones',doc:'the three standing pipes'},
+      rgl:{v:.9,min:0,max:1.5,step:.02,label:'regulators',doc:'the chord keys'},
+    }},
+    sends:{label:'room sends',doc:'Per-bus send into the room.',params:{
+      cal:{v:.16,min:0,max:.8,step:.01,label:'chanter',doc:'chanter into the room'},
+      bor:{v:.06,min:0,max:.8,step:.01,label:'drones',doc:'drones stay close'},
+      rgl:{v:.1,min:0,max:.8,step:.01,label:'regulators',doc:'regulators into the room'},
+    }},
+    bag:{label:'the bag',doc:'The shared breath that makes it one instrument, not three synths.',params:{
+      rate:{v:.15,min:.03,max:.6,step:.01,unit:'Hz',label:'breath rate',doc:'speed of the pressure sway'},
+      depth:{v:2.5,min:0,max:12,step:.25,unit:'\u00a2',label:'breath depth',doc:'how far the pressure detunes every reed together'},
+    }},
+    chanter:{label:'chanter reed',doc:'The formant pair is the vowel of the reed; the pop and octave-kick are the fingers.',params:{
+      level:{v:.16,min:.04,max:.4,step:.005,label:'level',doc:'note peak (\u00d7 velocity)'},
+      f1:{v:1100,min:500,max:2200,step:25,unit:'Hz',label:'formant 1',doc:'lower reed formant'},
+      f2:{v:2600,min:1200,max:5000,step:25,unit:'Hz',label:'formant 2',doc:'upper reed formant \u2014 the cane edge'},
+      body:{v:.4,min:0,max:1,step:.02,label:'body mix',doc:'the lowpassed floor under the formants'},
+      octKick:{v:9,min:0,max:30,step:.5,unit:'\u00a2',label:'octave kick',doc:'the sharp pressure surge when overblowing to the second octave'},
+      popLvl:{v:.25,min:0,max:.8,step:.01,label:'pop click',doc:'the staccato keypad pop'},
+    }},
+    drones:{label:'drones',doc:'Tenor, baritone, bass \u2014 octaves of the key note, each duller as it deepens.',params:{
+      tenor:{v:.30,min:0,max:.8,step:.01,label:'tenor level',doc:'the highest drone'},
+      baritone:{v:.36,min:0,max:.8,step:.01,label:'baritone level',doc:'the middle drone'},
+      bass:{v:.42,min:0,max:.8,step:.01,label:'bass level',doc:'the deep one'},
+      toneScale:{v:1,min:.4,max:2.5,step:.05,label:'tone \u00d7',doc:'scales all three drone lowpasses (700/520/360 Hz) \u2014 brighter or woodier together'},
+      wobble:{v:.06,min:0,max:.3,step:.01,label:'wobble',doc:'depth of each drone\u2019s slow independent level sway'},
+    }},
+    regs:{label:'regulators',doc:'The wrist chords.',params:{
+      level:{v:.30,min:0,max:.8,step:.01,label:'level',doc:'honk peak (\u00d7 velocity)'},
+      tone:{v:650,min:300,max:1500,step:10,unit:'Hz',label:'tone',doc:'bandpass centre of the honk'},
+      q:{v:1.3,min:.4,max:5,step:.1,label:'Q',doc:'narrowness \u2014 higher is more nasal'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+// bus levels + sends live in TIMBRE; these aliases keep the code readable.
+var NOMINAL=TP.mixer;
+var SENDS=TP.sends;
 
 function makeIR(ac){
-  var sr=ac.sampleRate, len=Math.floor(sr*1.9);
+  var sr=ac.sampleRate, len=Math.floor(sr*TP.master.roomSize);
   var buf=ac.createBuffer(2,len,sr);
   for(var c=0;c<2;c++){
     var rnd=mulberry32(0x0E11+c);
@@ -791,26 +870,26 @@ function makeClick(ac){
   return buf;
 }
 function makeGraph(ac){
-  var master=ac.createGain(); master.gain.value=0.85;
+  var master=ac.createGain(); master.gain.value=TP.master.gain;
   var comp=ac.createDynamicsCompressor();
   comp.threshold.value=-14; comp.ratio.value=4;
   comp.attack.value=0.01; comp.release.value=0.25;
   master.connect(comp); comp.connect(ac.destination);
   var conv=ac.createConvolver(); conv.buffer=makeIR(ac);
-  var wet=ac.createGain(); wet.gain.value=0.28;
+  var wet=ac.createGain(); wet.gain.value=TP.master.wet;
   conv.connect(wet); wet.connect(master);
-  var bus={};
+  var bus={}, sendG={};
   ['cal','bor','rgl'].forEach(function(k){
     var g=ac.createGain(); g.gain.value=NOMINAL[k];
     var send=ac.createGain(); send.gain.value=SENDS[k];
     g.connect(master); g.connect(send); send.connect(conv);
-    bus[k]=g;
+    bus[k]=g; sendG[k]=send;
   });
-  /* the bag breathes: one slow pressure wobble detunes everything ±2.5¢ */
-  var pressio=ac.createOscillator(); pressio.frequency.value=0.15;
-  var pgain=ac.createGain(); pgain.gain.value=2.5;
+  /* the bag breathes: one slow pressure wobble detunes every reed together */
+  var pressio=ac.createOscillator(); pressio.frequency.value=TP.bag.rate;
+  var pgain=ac.createGain(); pgain.gain.value=TP.bag.depth;
   pressio.connect(pgain); pressio.start(0);
-  return {master:master,bus:bus,click:makeClick(ac),pressio:pgain};
+  return {master:master,wet:wet,bus:bus,sendG:sendG,click:makeClick(ac),pressio:pgain,pressioOsc:pressio};
 }
 function ensureCtx(){
   if(!ctx){
@@ -837,6 +916,30 @@ function applyRegsTo(g){
   });
 }
 
+/* OFFICINA live hook: buses/sends/master/bag ride in now; per-note voices
+   read TP at schedule time. Drone levels/tone need a re-seat: restart the
+   standing drones if playing (debounced). */
+var __tbT=0;
+TIMBRE.touch=function(){
+  if(!ctx||!graph)return;
+  var now=ctx.currentTime;
+  try{graph.master.gain.setTargetAtTime(TP.master.gain,now,0.06)}catch(e){}
+  try{graph.wet.gain.setTargetAtTime(TP.master.wet,now,0.1)}catch(e){}
+  try{graph.pressioOsc.frequency.setTargetAtTime(TP.bag.rate,now,0.2)}catch(e){}
+  try{graph.pressio.gain.setTargetAtTime(TP.bag.depth,now,0.2)}catch(e){}
+  ['cal','bor','rgl'].forEach(function(k){
+    try{graph.sendG[k].gain.setTargetAtTime(SENDS[k],now,0.1)}catch(e){}
+  });
+  applyRegs();
+  clearTimeout(__tbT);
+  __tbT=setTimeout(function(){
+    if(!live.playing||!ctx)return;
+    var t=ctx.currentTime;
+    for(var d=0;d<live.drones.length;d++){try{live.drones[d].stop(t+0.12)}catch(e){}}
+    live.drones=buildDrones(ctx,graph,t+0.12,null);
+  },300);
+};
+
 /* chanter voice: conical-bore double reed — saw through two formants     */
 function scheduleNote(ac,g,ev,active){
   var nodes=[];
@@ -849,26 +952,26 @@ function scheduleNote(ac,g,ev,active){
     o.frequency.value=ev.f;
     if(ev.oct>=1){ /* the pressure kick of the overblown octave */
       try{
-        o.detune.setValueAtTime(9,T);
+        o.detune.setValueAtTime(TP.chanter.octKick,T);
         o.detune.linearRampToValueAtTime(0,T+0.045);
       }catch(e){}
     }
   }
   try{g.pressio.connect(o.detune)}catch(e){}
   var bp1=ac.createBiquadFilter(); bp1.type='bandpass';
-  bp1.frequency.value=1100; bp1.Q.value=1.6;
+  bp1.frequency.value=TP.chanter.f1; bp1.Q.value=1.6;
   var bp2=ac.createBiquadFilter(); bp2.type='bandpass';
-  bp2.frequency.value=2600; bp2.Q.value=2.2;
+  bp2.frequency.value=TP.chanter.f2; bp2.Q.value=2.2;
   var lp=ac.createBiquadFilter(); lp.type='lowpass';
   lp.frequency.value=3800; lp.Q.value=0.5;
   var g1=ac.createGain(); g1.gain.value=ev.oct>=1?0.5:0.65;
   var g2=ac.createGain(); g2.gain.value=ev.oct>=1?0.5:0.3;
-  var g3=ac.createGain(); g3.gain.value=0.4;
+  var g3=ac.createGain(); g3.gain.value=TP.chanter.body;
   o.connect(bp1); bp1.connect(g1);
   o.connect(bp2); bp2.connect(g2);
   o.connect(lp);  lp.connect(g3);
   var env=ac.createGain();
-  var peak=0.16*ev.vel*(ev.pop?1.35:1);
+  var peak=TP.chanter.level*ev.vel*(ev.pop?1.35:1);
   env.gain.setValueAtTime(0,T);
   env.gain.linearRampToValueAtTime(peak,T+(ev.pop?0.004:0.007));
   env.gain.setValueAtTime(peak,Math.max(T+0.008,T+D-0.012));
@@ -879,7 +982,7 @@ function scheduleNote(ac,g,ev,active){
   if(ev.pop){
     var s=ac.createBufferSource(); s.buffer=g.click;
     var hp=ac.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=2500;
-    var cg=ac.createGain(); cg.gain.value=0.25;
+    var cg=ac.createGain(); cg.gain.value=TP.chanter.popLvl;
     s.connect(hp); hp.connect(cg); cg.connect(g.bus.cal);
     s.start(T); nodes.push(s);
   }
@@ -893,9 +996,9 @@ function scheduleReg(ac,g,ev,active){
     var o=ac.createOscillator(); o.type='sawtooth'; o.frequency.value=ev.freqs[i];
     try{g.pressio.connect(o.detune)}catch(e){}
     var bp=ac.createBiquadFilter(); bp.type='bandpass';
-    bp.frequency.value=650; bp.Q.value=1.3;
+    bp.frequency.value=TP.regs.tone; bp.Q.value=TP.regs.q;
     var env=ac.createGain();
-    var pk=0.30*ev.vel;                 // was 0.085 — the vamp sat ~28 dB under
+    var pk=TP.regs.level*ev.vel;        // was 0.085 — the vamp sat ~28 dB under
     env.gain.setValueAtTime(0,T);       // the mix (masked by the chanter and by
     env.gain.linearRampToValueAtTime(pk,T+0.008);  // the drone it shares pitches
     env.gain.setTargetAtTime(0,T+0.02,Math.max(0.07,D*0.6));  // with); now it reads
@@ -911,7 +1014,8 @@ function scheduleEvent(ac,g,ev,active){
 /* three standing drones in octaves under the chanter                     */
 function buildDrones(ac,g,t0,dur){
   var made=[];
-  var spec=[[BASE,700,0.30,0.071],[BASE/2,520,0.36,0.093],[BASE/4,360,0.42,0.113]];
+  var D=TP.drones;
+  var spec=[[BASE,700*D.toneScale,D.tenor,0.071],[BASE/2,520*D.toneScale,D.baritone,0.093],[BASE/4,360*D.toneScale,D.bass,0.113]];
   for(var i=0;i<spec.length;i++){
     var o=ac.createOscillator(); o.type='sawtooth'; o.frequency.value=spec[i][0];
     try{g.pressio.connect(o.detune)}catch(e){}
@@ -919,7 +1023,7 @@ function buildDrones(ac,g,t0,dur){
     lp.frequency.value=spec[i][1]; lp.Q.value=0.4;
     var gn=ac.createGain(); gn.gain.value=spec[i][2];
     var lfo=ac.createOscillator(); lfo.frequency.value=spec[i][3];
-    var lg=ac.createGain(); lg.gain.value=spec[i][2]*0.06;
+    var lg=ac.createGain(); lg.gain.value=spec[i][2]*TP.drones.wobble;
     lfo.connect(lg); lg.connect(gn.gain);
     o.connect(lp); lp.connect(gn); gn.connect(g.bus.bor);
     o.start(t0); lfo.start(t0);
