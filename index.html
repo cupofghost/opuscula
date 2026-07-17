@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="opuscula — fourteen small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum, javanese gamelan.">
+<meta name="description" content="opuscula — fifteen small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum, javanese gamelan, harry partch's tonality diamond.">
 <title>OPVSCVLA — small musical machines</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -68,13 +68,13 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
      This file is pure HTML + CSS. No JavaScript, no audio: it is just the
      index card wall that links out to the works. Each work lives in
      its own folder as its own index.html; this page never loads them, it
-     only links to them (href="./folder/"). Fourteen works.
+     only links to them (href="./folder/"). Fifteen works.
 
      Anatomy, top to bottom:
        .wrap      the 760px column everything sits in
        .eyebrow   the "catalogvs · mmxxvi" kicker
        h1 / .sub  the title and the one-line manifesto
-       .grid      the card wall — one <a class="card"> per work (fourteen total)
+       .grid      the card wall — one <a class="card"> per work (fifteen total)
        .notes     the shared-keys reminder (space / r / c)
        .foot      the colophon + repo link
 
@@ -97,7 +97,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
 <div class="wrap">
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
-  <div class="sub">fourteen small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="sub">fifteen small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
   <hr class="rule">
 
   <div class="grid">
@@ -453,6 +453,40 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
         <h2>Gongan</h2>
         <p>Central Javanese court gamelan</p>
         <span class="tech">three bentuk · sléndro &amp; pélog · six pathet · irama I–III · cut a gendhing</span>
+      </div>
+    </a>
+
+    <a class="card" href="./diamond/" style="--bg:#101a17">
+      <div class="emblem" aria-hidden="true">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- Partch's tonality diamond: a rotated lattice of ratio cells,
+               the unity diagonal (bright copper) horizontal through the
+               middle, otonal above in copper, utonal below in teal -->
+          <g stroke="#6fa3a0" stroke-width="1" opacity="0.55">
+            <line x1="50" y1="50" x2="14" y2="50"/><line x1="50" y1="50" x2="86" y2="50"/>
+            <line x1="50" y1="50" x2="32" y2="68"/><line x1="50" y1="50" x2="68" y2="68"/>
+            <line x1="50" y1="50" x2="50" y2="86"/>
+          </g>
+          <g stroke="#c17a4a" stroke-width="1" opacity="0.7">
+            <line x1="50" y1="50" x2="32" y2="32"/><line x1="50" y1="50" x2="68" y2="32"/>
+            <line x1="50" y1="50" x2="50" y2="14"/>
+          </g>
+          <circle cx="50" cy="14" r="3" fill="#c17a4a"/>
+          <circle cx="32" cy="32" r="3" fill="#c17a4a"/>
+          <circle cx="68" cy="32" r="3" fill="#c17a4a"/>
+          <circle cx="14" cy="50" r="3" fill="#8a6a4a"/>
+          <circle cx="86" cy="50" r="3" fill="#8a6a4a"/>
+          <circle cx="32" cy="68" r="3" fill="#6fa3a0"/>
+          <circle cx="68" cy="68" r="3" fill="#6fa3a0"/>
+          <circle cx="50" cy="86" r="3" fill="#6fa3a0"/>
+          <circle cx="50" cy="50" r="4.5" fill="#e8e2d6"/>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="op">op. XV · MMXXVI</span>
+        <h2>Diamond</h2>
+        <p>Harry Partch's tonality diamond</p>
+        <span class="tech">otonality &amp; utonality · pivot modulation · 392 Hz, zero ET · cut a circuit</span>
       </div>
     </a>
 

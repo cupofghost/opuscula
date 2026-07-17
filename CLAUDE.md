@@ -34,7 +34,7 @@ re-told.
 
 ## Repo shape (see HANDOFF.md for detail)
 
-- Fourteen independent single-file Web Audio machines (`op.` dirs) + `index.html`
+- Fifteen independent single-file Web Audio machines (`op.` dirs) + `index.html`
   landing page. **No build, no bundler, no deps, no npm, no samples, no server.**
 - Machines share a design *grammar*, **not code** — each `index.html` is
   deliberately standalone. Don't factor shared code across machines. (One

@@ -7,7 +7,7 @@ start of a session — it's meant to be enough to work without re-explaining.
 
 ## Architecture
 
-**OPVSCVLA is fourteen independent single-file Web Audio machines** plus a static
+**OPVSCVLA is fifteen independent single-file Web Audio machines** plus a static
 landing page. There is **no build step, no bundler, no dependencies, no npm, no
 samples, no server-side anything.** Each `op.` is one self-contained
 `index.html` — inline `<style>`, inline `<script>`, all synthesis in the
@@ -74,6 +74,7 @@ khoomei/index.html   op. XI   KHÖÖMEI    — Mongolian throat singing
 spannung/index.html  op. XII  SPANNUNG   — self-patching modular synth
 tambour/index.html   op. XIII TAMBOUR    — French military field drum (martial-industrial)
 gongan/index.html    op. XIV  GONGAN     — Central Javanese court gamelan
+diamond/index.html   op. XV   DIAMOND    — Harry Partch's tonality diamond
 ```
 
 The `op.` roman-numeral order is fixed and lives in `index.html` and `README.md`;

@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0f1013">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>DIAMOND — Harry Partch's tonality diamond</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   DIAMOND — Harry Partch's tonality diamond, played as a journey.
+   Near-black slate #0f1013 · copper (otonal/bright) #c17a4a ·
+   glass teal (utonal/dark) #6fa3a0 · brass #a68a5b · bone #e8e2d6.
+   The look is a cut-glass diamond on a dark bench: warm copper for the
+   harmonic series, cool teal for its subharmonic mirror. Named in
+   English — Partch's own tongue, and his own word for the instrument.
+   ===================================================================== */
+:root{
+  color-scheme:dark;
+  --ground:#0f1013; --panel:#0a0b0d; --bone:#e8e2d6; --copper:#c17a4a;
+  --glass:#6fa3a0; --brass:#a68a5b;
+  --txt:#e8e2d6; --dim:#9a9186; --hair:rgba(193,122,74,.20); --hair2:rgba(193,122,74,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;background:var(--ground)}
+body{
+  background:var(--ground);
+  background-image:radial-gradient(120% 80% at 50% -8%, rgba(193,122,74,.05), transparent 55%),
+                   radial-gradient(90% 60% at 50% 110%, rgba(111,163,160,.06), transparent 60%);
+  color:var(--txt);font-family:'EB Garamond',Georgia,serif;
+  min-height:100vh;display:flex;justify-content:center;
+  padding:max(14px,env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom));
+}
+.pit{
+  width:100%;max-width:600px;background:var(--panel);
+  border:1.5px solid var(--brass);
+  box-shadow:0 0 0 5px var(--ground),0 0 0 6.5px var(--hair),inset 0 0 70px rgba(0,0,0,.55);
+  display:flex;flex-direction:column;padding:0 0 18px;
+}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:14px 0 0 14px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,11,13,.5);border:1px solid rgba(233,226,210,.24);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.7);background:rgba(10,11,13,.82);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+
+header{padding:14px 20px 12px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.3em;color:var(--copper);text-transform:uppercase}
+h1{font-family:'Cormorant SC',serif;font-weight:700;font-size:clamp(2.8rem,14vw,4.4rem);
+  letter-spacing:.14em;line-height:1;color:var(--txt);margin:6px 0 8px;text-indent:.14em;
+  text-shadow:0 1px 0 rgba(193,122,74,.22)}
+.sub{font-style:italic;font-size:1rem;color:var(--txt);line-height:1.45}
+.sub b{font-style:normal;color:var(--copper)}
+.credit{font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--dim);letter-spacing:.06em;margin-top:9px;text-transform:uppercase}
+
+.plate{position:relative;margin:2px 14px 0;border:1px solid var(--hair);background:var(--ground)}
+.plate canvas{display:block;width:100%;height:auto}
+.plate .tag{position:absolute;top:7px;left:10px;font-family:'IBM Plex Mono',monospace;font-size:.56rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.plate .tagr{left:auto;right:10px;text-align:right}
+.plate .tag b{color:var(--copper)}
+
+.controls{padding:14px 20px 0;display:flex;flex-direction:column;gap:14px}
+.lab{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.26em;color:var(--copper);text-transform:uppercase;margin-bottom:7px;display:flex;justify-content:space-between}
+.lab .rd{color:var(--txt);letter-spacing:.05em}
+
+button{font-family:'EB Garamond',serif;color:var(--txt);background:transparent;
+  border:1px solid var(--hair);cursor:pointer;touch-action:manipulation;letter-spacing:.05em}
+button:focus-visible{outline:2px solid var(--copper);outline-offset:2px}
+button:active{transform:translateY(1px)}
+button,canvas{-webkit-user-select:none;user-select:none}
+
+.pick{width:100%;padding:16px;font-family:'Cormorant SC',serif;font-weight:600;
+  font-size:1.25rem;letter-spacing:.3em;text-transform:uppercase;border-width:1.5px;
+  border-color:var(--brass);transition:background .15s,color .15s,border-color .15s}
+.pick.on{background:var(--glass);border-color:var(--glass);color:#08110f}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chips button{padding:8px 11px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--dim);letter-spacing:.04em}
+.chips button.on{background:var(--copper);color:#12080a;border-color:var(--copper)}
+.chips button small{display:block;font-size:.82em;opacity:.7;letter-spacing:0;text-transform:none}
+.chips button.on small{opacity:.85}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--hair)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;margin-top:-9px;border-radius:50%;background:var(--panel);border:2px solid var(--copper);box-shadow:0 0 7px rgba(193,122,74,.4)}
+input[type=range]::-moz-range-track{height:2px;background:var(--hair)}
+input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--panel);border:2px solid var(--copper)}
+
+.cut{width:100%;padding:13px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;border-style:dashed;border-color:var(--hair)}
+.cut:disabled{opacity:.45;cursor:default}
+.cutnote{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim);text-align:center;margin-top:7px;min-height:1em;letter-spacing:.05em}
+
+.foot{margin:16px 20px 0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;
+  letter-spacing:.2em;color:var(--dim);text-transform:uppercase;line-height:1.9;border-top:1px solid var(--hair2);padding-top:12px}
+.foot a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
+</style>
+</head>
+<body>
+<div class="pit">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+
+  <header>
+    <div class="eyebrow">op. XV · Harry Partch's tonality diamond</div>
+    <h1>Diamond</h1>
+    <div class="sub"><b>Bright and dark share one tone at every turn.</b> Harry Partch's tonality diamond lays the harmonic series beside its subharmonic mirror. This machine walks a closed circuit through every key the diamond contains, pivoting through the one pitch each pair of keys holds in common. You set how deep the diamond goes and how the walk leans; the machine composes the journey and performs it on six of Partch's own instruments.</div>
+    <div class="credit">marimba eroica · kithara · harmonic canon · diamond marimba · boo · cloud-chamber bowls — all synthesized, no samples · tuned to 392 Hz, Partch's G · zero equal temperament</div>
+  </header>
+
+  <div class="plate">
+    <canvas id="cv" width="920" height="560" aria-label="The tonality diamond as a rotated lattice of ratios, the active key's diagonal lit and sweeping; beside it, the circuit's itinerary of stations and pivots"></canvas>
+    <div class="tag">STATION · <b id="stTag">O1 · 1/1</b></div>
+    <div class="tag tagr"><span id="cycTag">12 stations</span></div>
+  </div>
+
+  <div class="controls">
+
+    <button class="pick" id="pick">Play</button>
+
+    <div class="fld">
+      <div class="lab">Limit <span class="rd" id="limitrd">11-limit · 29 tones · 12 keys</span></div>
+      <div class="chips" id="limit"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Flux <span class="rd" id="fluxrd">Walk · steady pace</span></div>
+      <div class="chips" id="flux"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Lean <span class="rd" id="leanrd">Utonal · dwell in the minor mirror</span></div>
+      <div class="chips" id="lean"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Pulse <span class="rd" id="pulserd">7 · 2+2+3</span></div>
+      <div class="chips" id="pulse"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Tempo <span class="rd" id="tempord">264 eighths/min</span></div>
+      <input type="range" id="tempo" min="200" max="340" value="264" aria-label="Eighth notes per minute">
+    </div>
+
+    <div class="fld">
+      <button class="cut" id="cut">Cut the circuit · 16-bit WAV</button>
+      <div class="cutnote" id="cutnote">renders the whole journey, home to home</div>
+    </div>
+  </div>
+
+  <details class="reader">
+    <summary>On this music · Partch's tonality diamond</summary>
+    <div class="rbody">
+      <h4>What you're hearing</h4>
+      <p>A machine walking a closed circuit through Harry Partch's tonality diamond — a lattice of just-intonation chords built from small whole-number ratios, arranged so that every "bright" chord and every "dark" chord share exactly one tone with every other. The journey visits each key exactly once, leaving each one through the tone it shares with the next, and returns home at the end. Six of Partch's own instruments perform it, synthesized from first principles.</p>
+      <h4>Harry Partch</h4>
+      <p>Partch (1901–1974) burned his early conservatory-trained scores in a potbelly stove in New Orleans in 1930 and started over from the ratios up. He spent Depression years riding freight trains and living among hoboes — <em>Barstow</em>, one of his best-known pieces, sets hitchhiker graffiti he copied from a California highway railing to speech-melody. Because no existing instrument could play the intervals he wanted, he built forty-some of his own — some from artillery-shell casings, wine-glass tops, torpedo shells — and toured with the ensemble that played them. His aesthetic he called <em>corporeal</em>: music felt in the body, spoken as much as sung, against what he saw as the abstraction of the concert tradition.</p>
+      <h4>A ratio is an identity</h4>
+      <p>Ordinary chords are built by stacking; Partch built by ratio. Take the small odd numbers — 1, 3, 5, 7, 9, 11 — as <em>identities</em>, and every ratio of one identity over another is a tone. Read a set of them one way, stacked over a common denominator, and you get an <b>otonality</b>: a chord that is a literal slice of the harmonic series, the ancestor of the major chord — bright, blazing, outward. Read the same identities the other way, as a common numerator under different denominators, and you get a <b>utonality</b>: the harmonic series turned upside down, a chord of subharmonics — dark, hollow, inward, the ancestor of the minor chord that no tempered instrument can quite reach. Partch called the shimmer of moving between the two <em>tonal flux</em>.</p>
+      <h4>The diamond</h4>
+      <p>Partch's tonality diamond arranges every ratio of every identity over every other identity in a square grid; read down a column you get an otonality, read across a row its mirror utonality, and the pattern of ratios traces the shape of a diamond turned on its corner. In 1946 he built the <b>Diamond Marimba</b>, the whole diamond laid out as physical bars — one sweep of a mallet across a row or column rips out a complete chord. This machine's canvas shows that same lattice, rotated the same way, with the sounding key's row or column lit as the machine plays through it.</p>
+      <h4>The pivot</h4>
+      <p>Because every otonality and every utonality in the diamond cross in exactly one cell, there is always exactly one tone in common between any bright key and any dark key. Leaving a key through that shared tone — hearing it, then hearing it again as the first note of the next key — is the machine's only method of modulation. A Cloud-Chamber Bowl rings that pivot tone as each key closes, carrying it across the seam into the next. There is no other way the harmony moves.</p>
+      <h4>392 Hz, and an honest limit</h4>
+      <p>Partch's whole system, which he called Monophony, tunes everything from a single 1/1 — his was G at 392 Hz, and this machine keeps his choice. Every pitch here is exactly 392 times a small-number ratio, folded into an octave: there is no equal temperament anywhere in the signal path. Partch's full scale runs to 43 tones; the diamond itself supplies 29 of them at its deepest (the 11-limit). This machine honestly plays the diamond and nothing more — the other fourteen tones of Monophony are a possible future, not a claim made here.</p>
+      <h4>Why it ends at home</h4>
+      <p>The circuit always begins and ends on the otonality built over 1 — the plain harmonic series, the one chord nature tunes by itself without any human ratio-choosing at all. Every other key in the diamond is reached by leaving home and is eventually left again; the walk touches every key in the diamond exactly once before the final pivot lands back on 1/1. How long the machine lingers in the dark utonalities before that return, versus the bright otonalities, is the one control you have over the shape of the whole journey.</p>
+      <h4>How the sound is made</h4>
+      <p>No samples. The Marimba Eroica and Diamond Marimba are struck-bar models — a fundamental plus the inharmonic overtones of a real bar, plus a mallet transient. The Kithara and Harmonic Canon are plucked strings, Karplus–Strong synthesis (a filtered noise burst decaying around a feedback loop) — the Canon in a detuned double course, bright and short; the Kithara warmed and spread into a strum. Boo is bandpassed noise with a pitched chiff. The Cloud-Chamber Bowls are close-tuned partial pairs that beat slowly against each other, the way two real bowls never quite agree. The whole circuit is rendered once into a stereo buffer and looped with its long bowl-tails folded back across the seam, so the homecoming is seamless. The WAV you cut is exactly what you hear.</p>
+      <h4>The name</h4>
+      <p>op. XV is named in English — Partch's own tongue, and <em>diamond</em> is his own word for the instrument and the lattice alike.</p>
+    </div>
+  </details>
+
+  <div class="foot">
+    op. XV · <a href="../">opvscvla</a> · keys: space=play · r=another · c=cut
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* =====================================================================
+   READER'S GUIDE — DIAMOND (op. XV)
+   ---------------------------------------------------------------------
+   Harry Partch's 11-limit tonality diamond as a journey engine. A LIMIT
+   fixes how many odd identities (1,3,5,7,9,11) the diamond uses; every
+   pair of identities (o,u) sounds one cell, fold(o/u) into an octave —
+   read down a column (u fixed) that's an OTONALITY (bright, a harmonic
+   series); read across a row (o fixed) that's a UTONALITY (dark, its
+   subharmonic mirror). Every otonality crosses every utonality in
+   exactly one cell, so the machine composes a seeded HAMILTONIAN
+   CIRCUIT: every otonality and utonality visited exactly once, strictly
+   alternating, each modulation PIVOTING through the one shared tone,
+   starting and ending on O1 — the plain harmonic series over 1/1.
+
+   No equal temperament anywhere: every frequency is 392 (Partch's G,
+   Hz) times a ratio, folded by octaves. Ratios are kept as integer
+   [num,den] pairs end to end — see fold()/diamondCell() below.
+
+   THIS FILE: math (fold/diamondCell/roots) → tables (LIMITS/PULSE/
+   STATION_BARS) → genAll (the circuit) → assemble (circuit → events) →
+   state → TIMBRE/bridge → synthesis (6 instruments) → bakeKit/
+   renderMaster → realtime transport → WAV cut → canvas (diamond lattice
+   + itinerary) → controls → hash/keys → init.
+
+   KEYS: space = play/stop · r = another circuit · c = cut a WAV
+   ===================================================================== */
+
+/* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
+function __hint(msg){
+  try{
+    const p=document.getElementById('pick')||document.querySelector('button');
+    if(!p||!p.insertAdjacentElement)return;
+    let h=document.getElementById('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin:8px 20px 0;font-style:italic;letter-spacing:.04em';
+      p.parentNode.appendChild(h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{
+    if(document.visibilityState==='visible')kick();
+    else if(ac.state==='running')ac.suspend().catch(()=>{});
+  }catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else if(document.visibilityState==='visible')setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('AUDIO SUSPENDED — tap Play again · if still silent, check the ring/silent switch');}catch(e){}},450);
+}
+
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+/* ============================ ENGINE-BEGIN ============================
+   Pure, DOM-free. The diamond's math and the journey law. */
+
+// integer-ratio math: everything downstream stays [num,den], never a float,
+// until the final Hz conversion (ratioToHz).
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=b;b=a%b;a=t;}return a||1;}
+function reduceFrac(n,d){const g=gcd(n,d);return [n/g,d/g];}
+function fold(n,d){let [a,b]=reduceFrac(n,d);while(a/b>=2)b*=2;while(a/b<1)a*=2;return reduceFrac(a,b);}
+function diamondCell(o,u){return fold(o,u);}          // fold(o/u) — the cell at row o, column u
+function rootO(u){return diamondCell(1,u);}            // otonality O_u's root: fold(1/u)
+function rootU(o){return diamondCell(o,3);}             // utonality U_o's root: fold(o/3) — the 10:12:15 frame
+
+const LIMITS={5:[1,3,5],7:[1,3,5,7],9:[1,3,5,7,9],11:[1,3,5,7,9,11]};
+const PULSE={5:[2,3],7:[2,2,3],9:[2,2,2,3]};
+// station lengths (bars) by LEAN x FLUX; home (station 0) = 2 x its O figure.
+const STATION_BARS={
+  utonal:{linger:{O:2,U:6},walk:{O:1,U:3},storm:{O:1,U:2}},
+  even:  {linger:{O:4,U:4},walk:{O:2,U:2},storm:{O:1,U:1}},
+  otonal:{linger:{O:6,U:2},walk:{O:3,U:1},storm:{O:2,U:1}},
+};
+
+function ratioComplexity(a,b){const [n,d]=reduceFrac(a[0]*b[1],a[1]*b[0]);return n*d;}
+function ratioWeight(a,b){return 1/ratioComplexity(a,b);}
+function weightedPick(rng,arr,weightFn){
+  const w=arr.map(weightFn);let tot=0;for(const x of w)tot+=x;
+  let x=rng()*tot;
+  for(let i=0;i<arr.length;i++){x-=w[i];if(x<=0)return arr[i];}
+  return arr[arr.length-1];
+}
+
+// tones of a tonality, sorted ascending by cents: O_u = fold(o/u) over o in I;
+// U_o = fold(o/u) over u in I.
+function tonalityTones(side,id,I){
+  const raw=side==='O'?I.map(o=>diamondCell(o,id)):I.map(u=>diamondCell(id,u));
+  const withCents=raw.map(r=>({r,cents:1200*Math.log2(r[0]/r[1])}));
+  withCents.sort((a,b)=>a.cents-b.cents);
+  return withCents.map(w=>w.r);
+}
+function findToneIdx(tones,ratio){
+  for(let i=0;i<tones.length;i++) if(tones[i][0]*ratio[1]===tones[i][1]*ratio[0]) return i;
+  return 0;
+}
+
+// ---- the journey: a seeded Hamiltonian circuit of the diamond -------------
+// n identities -> n otonalities + n utonalities, visited alternately, each
+// exactly once, home (O1) first and last (the loop seam). At each step the
+// next identity is a WEIGHTED pick favouring a small-ratio (consonant) move
+// from the current root. Returns 2n stations in order:
+//   O(Useq[0]=1) [home], U(Oseq[0]), O(Useq[1]), U(Oseq[1]), ... U(Oseq[n-1])
+// closing back to O(Useq[0]) via cell(Oseq[n-1],1).
+function genAll(st){
+  const I=LIMITS[st.limit], n=I.length;
+  const rng=mulberry32(((st.seed>>>0)^0x44414d44)>>>0);
+  const remU=I.filter(x=>x!==1), remO=I.slice();
+  const Useq=[1], Oseq=[];
+  let curRoot=[1,1];
+  for(let k=0;k<n;k++){
+    const oPick=weightedPick(rng,remO,o=>ratioWeight(rootU(o),curRoot));
+    remO.splice(remO.indexOf(oPick),1);
+    Oseq.push(oPick);
+    curRoot=rootU(oPick);
+    if(k<n-1){
+      const uPick=weightedPick(rng,remU,u=>ratioWeight(rootO(u),curRoot));
+      remU.splice(remU.indexOf(uPick),1);
+      Useq.push(uPick);
+      curRoot=rootO(uPick);
+    }
+  }
+  const stations=[];
+  for(let k=0;k<n;k++){
+    stations.push({side:'O',id:Useq[k],root:rootO(Useq[k]),tones:tonalityTones('O',Useq[k],I)});
+    stations.push({side:'U',id:Oseq[k],root:rootU(Oseq[k]),tones:tonalityTones('U',Oseq[k],I)});
+  }
+  const total=stations.length;
+  const pivots=stations.map((s,i)=>{
+    const prev=stations[(i-1+total)%total];
+    const O=s.side==='O'?s:prev, U=s.side==='U'?s:prev;
+    return diamondCell(U.id,O.id);
+  });
+  return {I,n,stations,pivots,Useq,Oseq};
+}
+/* ============================ ENGINE-END (genAll) ====================== */
+
+/* ============================ ENGINE-BEGIN (assemble) ==================
+   Circuit -> events. One bar = one cycle of PULSE eighths (group-heads =
+   strong beats). Per station, seeded per-instrument behaviour:
+     eroica  — root on every group-head.
+     kithara — a gliss strum of the whole tonality at arrival (+ midpoint
+               if the station is >=4 bars); direction = side (O up/U down).
+     canon   — a stepwise-walk ostinato, first note = the entering pivot;
+               repeats each bar with one seeded mutation, density rising
+               toward the station's end.
+     marimba — a 6(n)-stroke sweep at arrival + sparse off-beat strikes.
+     boo     — alternates two high tones of the tonality, accents on heads.
+     bowls   — rings the EXIT pivot (the tone bridging to the next station)
+               on the final bar's first group-head — the bridge the ear
+               crosses. (Home also gets a decorative 1/1 ring at t=0, the
+               loop point, layered in on top of the systematic exit-ring.)
+   ========================================================================= */
+function mkEvent(voice,t,ratio,extra){return Object.assign({t:Math.max(0,t),voice,ratio},extra);}
+
+function pushStrum(ev,rng,tStart,voice,side,tones,spreadMsBase){
+  const order=side==='O'?tones.slice():tones.slice().reverse();
+  const spread=Math.max(0.02,(spreadMsBase+(rng()*30-15))/1000);
+  const n=order.length;
+  for(let i=0;i<n;i++){
+    const off=n>1?(i/(n-1))*spread:0;
+    ev.push(mkEvent(voice,tStart+off,order[i],{vel:.55+(i/n)*.2}));
+  }
+}
+function pushSweep(ev,rng,tStart,tones,side,spacingMsBase){
+  const order=side==='O'?tones.slice():tones.slice().reverse();
+  let t=tStart;
+  for(let i=0;i<order.length;i++){
+    ev.push(mkEvent('marimba',t,order[i],{vel:.7}));
+    t+=Math.max(0.02,(spacingMsBase+(rng()*15-7.5))/1000);
+  }
+}
+function buildCanonPattern(rng,eighths,heads,nTones,startIdx){
+  const pat=new Array(eighths).fill(null);
+  let cur=startIdx;
+  for(let e2=0;e2<eighths;e2++){
+    const isHead=heads.includes(e2);
+    if(e2===0){pat[0]=startIdx;continue;}
+    if(!isHead&&rng()<0.35){pat[e2]=null;continue;}
+    let step=rng()<0.15?(rng()<0.5?2:-2):(rng()<0.5?1:-1);
+    if(rng()<0.1)step=0;
+    cur=clamp(cur+step,0,nTones-1);
+    pat[e2]=cur;
+  }
+  return pat;
+}
+function mutatePattern(pat,rng,eighths,nTones,heads){
+  const p=pat.slice();
+  const i=(rng()*eighths)|0;
+  const isHead=heads.includes(i);
+  if(p[i]==null){
+    let src=0;
+    for(let d=1;d<eighths;d++){const j=(i-d+eighths)%eighths;if(p[j]!=null){src=p[j];break;}}
+    p[i]=clamp(src+(rng()<0.5?1:-1),0,nTones-1);
+  }else if(!isHead&&rng()<0.3){
+    p[i]=null;
+  }else{
+    p[i]=clamp(p[i]+(rng()<0.5?1:-1),0,nTones-1);
+  }
+  return p;
+}
+function pickBooTones(tones){
+  const n=tones.length;
+  return [tones[n-1],tones[Math.max(0,n-2)]];
+}
+
+function assemble(st){
+  const G=genAll(st);
+  const {stations,pivots}=G, total=stations.length;
+  const PB=PULSE[st.pulse];
+  const eighths=PB.reduce((a,b)=>a+b,0);
+  const heads=[];{let c=0;for(const g of PB){heads.push(c);c+=g;}}
+  const eighthDur=60/st.tempo;
+  const barDur=eighths*eighthDur;
+  const LF=STATION_BARS[st.lean][st.flux];
+  const ev=[], barsArr=[], startArr=[];
+  let t=0;
+  for(let i=0;i<total;i++){
+    const s=stations[i];
+    const bars=i===0?2*LF.O:(s.side==='O'?LF.O:LF.U);
+    barsArr.push(bars);startArr.push(t);
+    const stRng=mulberry32((((st.seed>>>0)^0x44414d44)+(i+1)*2654435761)>>>0);
+    const tones=s.tones, nTones=tones.length;
+    const pivotIn=pivots[i], pivotOut=pivots[(i+1)%total];
+    const pivotInIdx=findToneIdx(tones,pivotIn);
+
+    for(let b=0;b<bars;b++)
+      for(const h of heads)
+        ev.push(mkEvent('eroica',t+b*barDur+h*eighthDur,s.root,{vel:h===0?1:.82}));
+
+    pushStrum(ev,stRng,t,'kithara',s.side,tones,TP.kithara.strumSpread);
+    if(bars>=4) pushStrum(ev,stRng,t+(bars*barDur)/2,'kithara',s.side,tones,TP.kithara.strumSpread);
+
+    pushSweep(ev,stRng,t,tones,s.side,TP.marimba.sweepSpacing);
+    for(let b=0;b<bars;b++)
+      for(let e2=0;e2<eighths;e2++){
+        if(heads.includes(e2))continue;
+        if(stRng()<0.1) ev.push(mkEvent('marimba',t+b*barDur+e2*eighthDur,tones[(stRng()*nTones)|0],{vel:.5}));
+      }
+
+    let pat=buildCanonPattern(stRng,eighths,heads,nTones,pivotInIdx);
+    for(let b=0;b<bars;b++){
+      if(b>0) pat=mutatePattern(pat,stRng,eighths,nTones,heads);
+      const densBoost=bars>1?b/(bars-1):0;
+      for(let e2=0;e2<eighths;e2++){
+        let idx=pat[e2];
+        if(idx==null&&!heads.includes(e2)&&stRng()<0.15+0.35*densBoost) idx=(stRng()*nTones)|0;
+        if(idx==null)continue;
+        ev.push(mkEvent('canon',t+b*barDur+e2*eighthDur,tones[idx],{vel:heads.includes(e2)?.72:.58}));
+      }
+    }
+
+    const [tA,tB]=pickBooTones(tones);
+    for(let b=0;b<bars;b++)
+      for(let e2=0;e2<eighths;e2++){
+        const acc=heads.includes(e2);
+        if(acc||stRng()<0.35) ev.push(mkEvent('boo',t+b*barDur+e2*eighthDur,e2%2?tB:tA,{vel:acc?.9:.5}));
+      }
+
+    const ringT=t+(bars-1)*barDur+heads[0]*eighthDur;
+    ev.push(mkEvent('bowls',ringT,pivotOut,{vel:1,sustain:true}));
+
+    t+=bars*barDur;
+  }
+  ev.push(mkEvent('bowls',0.03,[1,1],{vel:.85,sustain:true,home:true}));
+  return {ev,dur:t,stations,pivots,barsArr,startArr,barDur,eighths,heads,PB,
+    I:G.I,n:G.n,Useq:G.Useq,Oseq:G.Oseq};
+}
+/* ============================ ENGINE-END (assemble) ===================== */
+
+/* ------------------------------- state ---------------------------------- */
+const st={limit:11,flux:'walk',lean:'utonal',pulse:7,tempo:264,seed:1,playing:false};
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice. Open
+   ../officina/ — the voicing bench — to edit these live inside the running
+   mix, save named presets, and export them. A preset saved there applies
+   even when this file is opened directly (localStorage); add ?factory to
+   the URL to hear the shipped voice. The diamond itself — ratios, limits,
+   the journey/pivot law, station lengths — is NOT here: it's the law, not
+   the voice, and lives in the engine above. */
+const TIMBRE={
+  id:'diamond', title:'DIAMOND · op. XV',
+  doc:'Six of Partch’s instruments, synthesized. MARIMBA EROICA and DIAMOND MARIMBA are struck-bar models: a fundamental plus the inharmonic overtones of a real free bar, plus a mallet transient. KITHARA and HARMONIC CANON are Karplus–Strong plucked strings (a filtered noise burst decaying around a feedback loop) — the Canon short and bright in a detuned double course, the Kithara warmed and spread into a strum. BOO is bandpassed noise with a pitched chiff. CLOUD-CHAMBER BOWLS pair two close-tuned partials that beat slowly against each other. Edits to instrument groups re-render the circuit (a brief rebake); MASTER gain and room WET ride live.',
+  groups:{
+    master:{label:'master chain',doc:'Shaper (drive) into a compressor, then an output trim, plus a small dry-leaning room send — corporeal, not cathedral.',params:{
+      drive:{v:.28,min:0,max:1,step:.01,label:'drive',doc:'waveshaper amount into the compressor'},
+      compThresh:{v:-16,min:-36,max:-4,step:.5,unit:'dB',label:'comp threshold'},
+      compRatio:{v:3,min:1,max:8,step:.1,label:'comp ratio'},
+      outTrim:{v:.85,min:.4,max:1.1,step:.01,label:'out trim',doc:'post-compressor headroom'},
+      wet:{v:.08,min:0,max:.3,step:.01,label:'room return',doc:'kept dry by design — Partch loathed cathedral wash'},
+    }},
+    room:{label:'room',doc:'The impulse response for the room send.',params:{
+      size:{v:1.0,min:.2,max:2.2,step:.05,unit:'s',label:'room size'},
+      decay:{v:2.6,min:1,max:5,step:.1,label:'room decay curve'},
+    }},
+    eroica:{label:'marimba eroica',doc:'Vast low bars — the ground. Fundamental plus one arch-cut overtone, plus a soft mallet thump. Plays the station root on every group-head.',params:{
+      p2r:{v:4.0,min:2.5,max:5.5,step:.01,label:'partial ratio',doc:'the arch-cut bar overtone'},
+      p2a:{v:.22,min:0,max:.7,step:.01,label:'partial level'},
+      decay:{v:2.5,min:.8,max:5,step:.1,unit:'s',label:'ring'},
+      thump:{v:.5,min:0,max:1.2,step:.02,label:'mallet thump'},
+      level:{v:1.0,min:0,max:1.6,step:.01,label:'level'},
+    }},
+    kithara:{label:'kithara',doc:'A 6-string plucked lyre. Karplus–Strong, warmed with a body lowpass. Strums the whole tonality at station arrival (and its midpoint, on longer stations) — up for otonal, down for utonal.',params:{
+      tau:{v:.9,min:.3,max:2,step:.05,unit:'s',label:'string decay'},
+      damp:{v:.30,min:.05,max:.8,step:.01,label:'loop brightness',doc:'higher = brighter pluck'},
+      bodyLift:{v:2000,min:800,max:4000,step:20,unit:'Hz',label:'body lowpass',doc:'the warmth filter'},
+      strumSpread:{v:65,min:30,max:100,step:1,unit:'ms',label:'strum spread'},
+      level:{v:.85,min:0,max:1.5,step:.01,label:'level'},
+    }},
+    canon:{label:'harmonic canon',doc:'A bright psaltery, the machine’s melodist — a seeded stepwise ostinato per station, its first tone always the pivot just heard. Karplus–Strong, short and bright, in a detuned double course.',params:{
+      tau:{v:.35,min:.1,max:1,step:.02,unit:'s',label:'string decay'},
+      bright:{v:.42,min:.1,max:.9,step:.01,label:'brightness'},
+      courseDet:{v:3,min:0,max:10,step:.2,unit:'¢',label:'course detune'},
+      level:{v:.7,min:0,max:1.4,step:.01,label:'level'},
+    }},
+    marimba:{label:'diamond marimba',doc:'The instrument the diamond is named for — fast, bright bars in three modes. Rips a 6(n)-stroke sweep across the whole tonality at every station arrival, plus sparse off-beat strikes.',params:{
+      p2r:{v:3.9,min:2.5,max:5,step:.01,label:'partial 2 ratio'},
+      p2a:{v:.35,min:0,max:.8,step:.01,label:'partial 2 level'},
+      p3r:{v:9.2,min:6,max:12,step:.05,label:'partial 3 ratio'},
+      p3a:{v:.12,min:0,max:.5,step:.01,label:'partial 3 level'},
+      decay:{v:.4,min:.1,max:1.2,step:.02,unit:'s',label:'ring'},
+      click:{v:.6,min:0,max:1.2,step:.02,label:'mallet click'},
+      sweepSpacing:{v:38,min:20,max:60,step:1,unit:'ms',label:'sweep spacing'},
+      level:{v:.8,min:0,max:1.5,step:.01,label:'level'},
+    }},
+    boo:{label:'boo',doc:'Bamboo tubes — the engine’s hi-hat. Pitched click, strong chiff, a hollow bandpass. Alternates the tonality’s two highest tones, accented on group-heads.',params:{
+      chiff:{v:.5,min:0,max:1.2,step:.02,label:'chiff'},
+      q:{v:.6,min:.1,max:1.2,step:.02,label:'bandpass presence'},
+      decay:{v:.1,min:.03,max:.3,step:.005,unit:'s',label:'ring'},
+      level:{v:.55,min:0,max:1.2,step:.01,label:'level'},
+    }},
+    bowls:{label:'cloud-chamber bowls',doc:'Pyrex carboy tops — the pivot bells. Fundamental as a beating detuned pair, plus two inharmonic partials. Rings the tone that bridges to the next station on the final bar’s first group-head.',params:{
+      beat:{v:1.4,min:.2,max:4,step:.05,unit:'Hz',label:'beat rate'},
+      p2r:{v:2.32,min:1.8,max:3,step:.01,label:'partial 2 ratio'},
+      p2a:{v:.42,min:0,max:.9,step:.01,label:'partial 2 level'},
+      p3r:{v:3.94,min:3,max:5,step:.01,label:'partial 3 ratio'},
+      p3a:{v:.15,min:0,max:.6,step:.01,label:'partial 3 level'},
+      decay:{v:6,min:3,max:10,step:.1,unit:'s',label:'ring'},
+      strike:{v:.3,min:0,max:.8,step:.01,label:'strike'},
+      level:{v:.9,min:0,max:1.6,step:.01,label:'level'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+/* ------------------------------- audio ---------------------------------- */
+const SR=44100;
+
+// register bands per voice (Hz) — every ratio folds by octaves into its
+// voice's band; law, not voicing (see GENESIS §3.3, folded into the engine).
+const REGBAND={eroica:[49,98],kithara:[98,196],canon:[196,392],marimba:[392,784],boo:[784,1568],bowls:[392,784]};
+function ratioToHz(ratio,voice){
+  const [lo,hi]=REGBAND[voice];
+  let hz=392*ratio[0]/ratio[1];
+  while(hz<lo)hz*=2;
+  while(hz>=hi)hz/=2;
+  return hz;
+}
+
+// a one-pole lowpass over a whole buffer — used for body warmth.
+function lp1(buf,cutHz){
+  const rc=1/(2*Math.PI*Math.max(20,cutHz)), dt=1/SR, a=dt/(rc+dt);
+  let y=0; const o=new Float32Array(buf.length);
+  for(let i=0;i<buf.length;i++){y+=a*(buf[i]-y);o[i]=y;}
+  return o;
+}
+// extended Karplus-Strong: a filtered noise burst decaying around a delay
+// loop. tau ~= the exponential decay time constant in seconds.
+function ksPluck(f0,durSec,tau,bright,rng){
+  const N=Math.max(2,Math.round(SR/f0));
+  const buf=new Float32Array(N);
+  for(let i=0;i<N;i++) buf[i]=rng()*2-1;
+  const n=Math.floor(durSec*SR), o=new Float32Array(n);
+  const g=Math.exp(-1/(Math.max(.02,tau)*SR));
+  let idx=0, lp=0;
+  for(let i=0;i<n;i++){
+    const cur=buf[idx];
+    lp+=bright*(cur-lp);
+    buf[idx]=lp*g;
+    o[i]=cur;
+    idx=(idx+1)%N;
+  }
+  return o;
+}
+
+// Marimba Eroica: fundamental + one arch-cut bar partial + a mallet thump.
+function synEroica(f0,rng){
+  const E=TP.eroica, dec=E.decay;
+  const dur=Math.max(.3,dec*2.6), n=Math.floor(dur*SR), o=new Float32Array(n);
+  const parts=[[1,1],[E.p2r,E.p2a]];
+  for(const[pr,pa] of parts){
+    const f=f0*pr; if(f>SR*.45) continue;
+    const pd=dec*Math.pow(pr,-.5);
+    const w=2*Math.PI*f/SR; let ph=rng()*6.28;
+    for(let i=0;i<n;i++){ph+=w;o[i]+=Math.sin(ph)*pa*Math.exp(-(i/SR)/pd);}
+  }
+  const cn=Math.floor(.004*SR);
+  for(let i=0;i<cn;i++)o[i]+=(rng()*2-1)*E.thump*Math.exp(-i/(.002*SR));
+  return o;
+}
+// Kithara: a warmed, spread pluck (one string of the strum).
+function synKithara(f0,rng){
+  const K=TP.kithara;
+  const raw=ksPluck(f0,K.tau*3.2,K.tau,K.damp,rng);
+  return lp1(raw,K.bodyLift);
+}
+// Harmonic Canon: a bright, short double-course pluck.
+function synCanon(f0,rng){
+  const C=TP.canon;
+  const det=Math.pow(2,C.courseDet/2400);
+  const a=ksPluck(f0*det,C.tau*3.5,C.tau,C.bright,rng);
+  const b=ksPluck(f0/det,C.tau*3.5,C.tau,C.bright,rng);
+  const n=Math.max(a.length,b.length), o=new Float32Array(n);
+  for(let i=0;i<a.length;i++)o[i]+=a[i]*.6;
+  for(let i=0;i<b.length;i++)o[i]+=b[i]*.6;
+  return o;
+}
+// Diamond Marimba: fast, bright bar in three modes (1 : ~3.9 : ~9.2).
+function synMarimba(f0,rng){
+  const M=TP.marimba, dec=M.decay;
+  const dur=Math.max(.15,dec*3), n=Math.floor(dur*SR), o=new Float32Array(n);
+  const parts=[[1,1],[M.p2r,M.p2a],[M.p3r,M.p3a]];
+  for(const[pr,pa] of parts){
+    const f=f0*pr; if(f>SR*.45) continue;
+    const pd=dec*Math.pow(pr,-.7);
+    const w=2*Math.PI*f/SR; let ph=rng()*6.28;
+    for(let i=0;i<n;i++){ph+=w;o[i]+=Math.sin(ph)*pa*Math.exp(-(i/SR)/pd);}
+  }
+  const cn=Math.floor(.0015*SR);
+  for(let i=0;i<cn;i++)o[i]+=(rng()*2-1)*M.click*Math.exp(-i/(.0009*SR));
+  return o;
+}
+// Boo: bandpassed noise (difference of two lowpasses) with a pitched chiff.
+function synBoo(f0,rng){
+  const B=TP.boo, dec=B.decay;
+  const dur=Math.max(.05,dec*3), n=Math.floor(dur*SR), o=new Float32Array(n);
+  const noise=new Float32Array(n);
+  for(let i=0;i<n;i++) noise[i]=rng()*2-1;
+  const lo=lp1(noise,f0*0.7), hi=lp1(noise,f0*1.6);
+  let ph=rng()*6.28; const w=2*Math.PI*f0/SR;
+  for(let i=0;i<n;i++){
+    const t=i/SR, env=Math.exp(-t/dec);
+    ph+=w;
+    o[i]=((hi[i]-lo[i])*B.q*3+Math.sin(ph)*0.3)*env;
+    if(t<.006) o[i]+=(rng()*2-1)*B.chiff*Math.exp(-t/.003);
+  }
+  return o;
+}
+// Cloud-Chamber Bowls: fundamental as a beating detuned pair, plus two
+// inharmonic partials (the free-bowl overtones).
+function synBowl(f0,rng){
+  const W=TP.bowls, dec=W.decay;
+  const dur=Math.max(1,dec*2.4), n=Math.floor(dur*SR), o=new Float32Array(n);
+  const comp=[[f0-W.beat/2,.5,1],[f0+W.beat/2,.5,1],[f0*W.p2r,W.p2a,.5],[f0*W.p3r,W.p3a,.35]];
+  for(const[f,pa,ds] of comp){
+    if(f>SR*.45||f<20) continue;
+    const pd=dec*ds, w=2*Math.PI*f/SR; let ph=rng()*6.28;
+    for(let i=0;i<n;i++){ph+=w;o[i]+=Math.sin(ph)*pa*Math.exp(-(i/SR)/pd);}
+  }
+  const cn=Math.floor(.004*SR);
+  for(let i=0;i<cn;i++) o[i]+=(rng()*2-1)*W.strike*Math.exp(-i/(.002*SR));
+  return o;
+}
+const SYN_FN={eroica:synEroica,kithara:synKithara,canon:synCanon,marimba:synMarimba,boo:synBoo,bowls:synBowl};
+const VOICE_PAN={eroica:-0.05,kithara:-0.4,canon:0.3,marimba:0.05,boo:0.42,bowls:-0.22};
+
+// equal-power pan mix of a unit stroke into L/R; cutS (seconds), if given,
+// fades the stroke out over 40ms ending at the cut.
+function mixHit(L,R,off,mono,pan,gain,cutS){
+  const a=(pan+1)*Math.PI/4, gL=Math.cos(a)*gain, gR=Math.sin(a)*gain;
+  const len=mono.length, fadeN=Math.floor(.04*SR);
+  const cutN=cutS?Math.min(len,Math.floor(cutS*SR)):len;
+  const end=Math.min(L.length,off+cutN);
+  for(let i=off<0?0:off,j=off<0?-off:0;i<end;i++,j++){
+    let s=mono[j];
+    if(cutN<len&&j>cutN-fadeN)s*=Math.max(0,(cutN-j)/fadeN);
+    L[i]+=s*gL;R[i]+=s*gR;
+  }
+}
+// bake one buffer per (voice,ratio) that actually sounds in this pressing —
+// two variants so unisons don't machine-gun.
+function bakeKit(events){
+  const rng=mulberry32(0x6a09e667), kit={};
+  for(const e of events){
+    const key=e.voice+'.'+e.ratio[0]+'/'+e.ratio[1];
+    if(kit[key]) continue;
+    const hz=ratioToHz(e.ratio,e.voice), fn=SYN_FN[e.voice];
+    kit[key]=[fn(hz,rng),fn(hz,rng)];
+  }
+  return kit;
+}
+// render the whole circuit ONCE into stereo (deterministic in the seed).
+// loop=true folds the ring-off (the bowls' long tail, including the final
+// exit-pivot ring near the end) back over the top, so the homecoming is
+// seamless — the render literally starts on the bloom.
+function renderMaster(loop){
+  const A=assemble(st);
+  const tail=Math.max(2,TP.bowls.decay*2.4+.5);
+  const n=Math.ceil((A.dur+tail)*SR);
+  const L=new Float32Array(n), R=new Float32Array(n);
+  const kit=bakeKit(A.ev), idx={};
+  for(const e of A.ev){
+    const key=e.voice+'.'+e.ratio[0]+'/'+e.ratio[1];
+    const bank=kit[key]; if(!bank) continue;
+    idx[key]=((idx[key]||0)+1)%bank.length;
+    const vg=TP[e.voice]?TP[e.voice].level:0.7;
+    mixHit(L,R,Math.floor(e.t*SR),bank[idx[key]],VOICE_PAN[e.voice]||0,(e.vel||.8)*vg,e.cut);
+  }
+  let oL=L,oR=R,oN=n;
+  if(loop){
+    const durS=Math.round(A.dur*SR);
+    const fL=new Float32Array(durS), fR=new Float32Array(durS);
+    for(let i=0;i<n;i++){const j=i%durS;fL[j]+=L[i];fR[j]+=R[i];}
+    oL=fL;oR=fR;oN=durS;
+  }
+  let mx=0;for(let i=0;i<oN;i++){const a=Math.abs(oL[i]);if(a>mx)mx=a;const b=Math.abs(oR[i]);if(b>mx)mx=b;}
+  if(mx>0){const k=.9/mx;for(let i=0;i<oN;i++){oL[i]*=k;oR[i]*=k;}}
+  return {L:oL,R:oR,dur:A.dur,A};
+}
+
+function toStereoBuffer(ctx,L,R){const b=ctx.createBuffer(2,L.length,SR);b.getChannelData(0).set(L);b.getChannelData(1).set(R);return b;}
+function makeRoomIR(ctx,sec,exp){
+  const len=Math.max(1,Math.floor(sec*ctx.sampleRate)),b=ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,exp);lp+=0.28*((Math.random()*2-1)-lp);d[i]=lp*e*1.5;}}
+  return b;
+}
+function makeShaperCurve(amount){
+  const n=1024, curve=new Float32Array(n), k=amount*18+0.0001, norm=Math.tanh(k);
+  for(let i=0;i<n;i++){const x=i/(n-1)*2-1;curve[i]=Math.tanh(k*x)/norm;}
+  return curve;
+}
+// the fixed signal path — identical realtime & offline so the WAV is faithful.
+function buildGraph(ctx,L,R,loop){
+  const G={ctx};
+  G.shaper=ctx.createWaveShaper();G.shaper.curve=makeShaperCurve(TP.master.drive);G.shaper.oversample='2x';
+  G.comp=ctx.createDynamicsCompressor();
+  G.comp.threshold.value=TP.master.compThresh;G.comp.ratio.value=TP.master.compRatio;
+  G.comp.knee.value=6;G.comp.attack.value=0.006;G.comp.release.value=0.15;
+  G.out=ctx.createGain();G.out.gain.value=TP.master.outTrim;
+  G.shaper.connect(G.comp).connect(G.out).connect(ctx.destination);
+  G.verb=ctx.createConvolver();G.verb.buffer=makeRoomIR(ctx,TP.room.size,TP.room.decay);
+  G.wet=ctx.createGain();G.wet.gain.value=TP.master.wet;
+  G.verb.connect(G.wet).connect(G.out);
+  G.dry=ctx.createGain();G.dry.gain.value=1;G.dry.connect(G.shaper);
+  G.src=ctx.createBufferSource();G.src.buffer=toStereoBuffer(ctx,L,R);G.src.loop=!!loop;
+  G.src.connect(G.dry);G.src.connect(G.verb);
+  return G;
+}
+
+/* -------------------------- realtime transport --------------------------- */
+let RT=null;
+function play(){
+  const M=renderMaster(true);
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ctx);
+  const G=buildGraph(ctx,M.L,M.R,true);
+  RT={ctx,G,t0:ctx.currentTime+0.08,dur:M.dur};
+  G.src.start(RT.t0);
+  st.playing=true;$('pick').textContent='Stop';$('pick').classList.add('on');
+  invalidate();
+}
+function stop(){
+  if(!RT)return;
+  const g=RT.G.out.gain,ct=RT.ctx.currentTime;
+  try{g.cancelScheduledValues(ct);g.setValueAtTime(g.value,ct);g.linearRampToValueAtTime(0,ct+0.25);}catch(e){}
+  const c=RT.ctx;setTimeout(()=>{try{c.close();}catch(e){}},420);
+  RT=null;st.playing=false;$('pick').textContent='Play';$('pick').classList.remove('on');
+  invalidate();
+}
+function regen(){ if(RT){stop();play();} else {invalidate();} }
+
+/* OFFICINA live hook: master/room ride in immediately. Everything baked
+   into the master buffer applies on the NEXT play — no mid-circuit restart
+   (the ► HEAR convention); TIMBRE.demo auditions a voice on demand. */
+let __dmT=0;
+TIMBRE.touch=()=>{
+  if(RT){const ct=RT.ctx.currentTime;
+    RT.G.out.gain.setTargetAtTime(TP.master.outTrim,ct,.06);
+    RT.G.wet.gain.setTargetAtTime(TP.master.wet,ct,.08);}
+  clearTimeout(__dmT);__dmT=setTimeout(()=>{if(!RT)regen();},300);
+};
+
+/* ------------------------------ cut · WAV -------------------------------- */
+function encodeWav(L,R,sr){
+  const n=L.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');d.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  ws(36,'data');d.setUint32(40,n*4,true);
+  let o=44;for(let i=0;i<n;i++){d.setInt16(o,clamp(L[i],-1,1)*32767,true);o+=2;d.setInt16(o,clamp(R[i],-1,1)*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+async function cut(){
+  const btn=$('cut'),note=$('cutnote');btn.disabled=true;note.textContent='cutting glass…';
+  try{
+    const M=renderMaster(false);
+    const total=M.L.length/SR;
+    const ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
+    const G=buildGraph(ctx,M.L,M.R,false);
+    G.src.start(0);
+    const rb=await ctx.startRendering();
+    const blob=encodeWav(rb.getChannelData(0),rb.getChannelData(1),SR);
+    saveWav(blob,`diamond_${st.limit}limit_${st.flux}_${st.lean}.wav`);
+    note.textContent=`cut · ${st.limit}-limit · ${st.flux} · ${st.lean} · ${Math.round(M.dur)}s`;
+  }catch(e){note.textContent='render failed — '+e.message;}
+  btn.disabled=false;
+}
+
+/* ------------------------------- canvas ---------------------------------- */
+// Left: the diamond itself, rotated so the unity diagonal runs horizontal
+// (cell (i,j) at x=CX+(i+j-(n-1))*DX, y=CY+(j-i)*DY — the classic Partch
+// layout). The active tonality's row/column is lit and swept at arrival;
+// the pivot cell pulses on the final bar; visited diagonals stay faintly
+// warm (the journey trail, cleared on a new lap). Right: the itinerary —
+// one row per station, the bridging pivot between rows, home ringed,
+// current station boxed. Static layer cached offscreen; rebuilt when the
+// sounding station changes. Sleeps when idle.
+const cv=$('cv'),cx=cv.getContext('2d');
+const CW=cv.width,CH=cv.height;
+const oc=document.createElement('canvas');oc.width=CW;oc.height=CH;const ox=oc.getContext('2d');
+const LCX=225,LCY=280;
+let VIEW=null,viewDirty=true,SHOWN_I=0,visited=new Set([0]);
+let CELLPOS=[],OCOLS=[],UROWS=[],ITINPOS=[];
+
+let needsDraw=true;const invalidate=()=>{needsDraw=true;VIEW=null;viewDirty=true;visited=new Set([0]);SHOWN_I=0;};
+function refreshView(){VIEW=assemble(st);SHOWN_I=0;visited=new Set([0]);buildStatic();viewDirty=false;}
+
+function buildStatic(){
+  ox.clearRect(0,0,CW,CH);
+  ox.fillStyle='#0a0b0d';ox.fillRect(0,0,CW,CH);
+  const I=LIMITS[st.limit],n=I.length;
+  const DX=Math.min(36,150/Math.max(1,n-1)), DY=Math.min(30,120/Math.max(1,n-1));
+  CELLPOS=[];OCOLS=[];UROWS=[];
+  for(let j=0;j<n;j++)OCOLS.push([]);
+  for(let i=0;i<n;i++)UROWS.push([]);
+  for(let i=0;i<n;i++){
+    CELLPOS.push([]);
+    for(let j=0;j<n;j++){
+      const x=LCX+(i+j-(n-1))*DX, y=LCY+(j-i)*DY;
+      CELLPOS[i][j]={x,y};
+      OCOLS[j].push({x,y,i});
+      UROWS[i].push({x,y,j});
+      const cell=diamondCell(I[i],I[j]), unity=(i===j);
+      ox.fillStyle=unity?'rgba(193,122,74,.55)':'rgba(154,145,134,.35)';
+      ox.beginPath();ox.arc(x,y,unity?3.4:2.2,0,2*Math.PI);ox.fill();
+      ox.font='500 9px "IBM Plex Mono",monospace';
+      ox.fillStyle='rgba(232,226,214,.85)';
+      ox.textAlign='center';ox.textBaseline='alphabetic';
+      ox.fillText(String(cell[0]),x,y-9);
+      ox.strokeStyle='rgba(232,226,214,.4)';ox.beginPath();ox.moveTo(x-8,y-4);ox.lineTo(x+8,y-4);ox.stroke();
+      ox.textBaseline='hanging';
+      ox.fillText(String(cell[1]),x,y-2);
+      ox.font='400 7px "IBM Plex Mono",monospace';
+      ox.fillStyle='rgba(154,145,134,.55)';
+      ox.fillText(Math.round(1200*Math.log2(cell[0]/cell[1]))+'¢',x,y+11);
+    }
+  }
+  ox.font='600 14px "Cormorant SC",serif';ox.fillStyle='rgba(193,122,74,.85)';
+  ox.textAlign='center';ox.textBaseline='alphabetic';
+  ox.fillText(n+'-IDENTITY DIAMOND',LCX,LCY-150);
+  buildItinerary();
+}
+function buildItinerary(){
+  const V=VIEW, total=V.stations.length;
+  const x0=520, x1=CW-24, w=x1-x0;
+  const rowH=Math.max(24,Math.min(38,(CH-70)/total));
+  ox.font='500 10px "IBM Plex Mono",monospace';ox.fillStyle='rgba(154,145,134,.7)';
+  ox.textAlign='left';ox.textBaseline='alphabetic';
+  ox.fillText('THE CIRCUIT',x0,26);
+  ITINPOS=[];
+  let y=48;
+  for(let i=0;i<total;i++){
+    const s=V.stations[i], cyy=y+rowH*.5;
+    ITINPOS.push({x:x0,y,w,h:rowH});
+    ox.beginPath();
+    if(s.side==='O'){ox.strokeStyle='#c17a4a';ox.lineWidth=1.6;ox.arc(x0+9,cyy,7,0,2*Math.PI);ox.fillStyle='rgba(193,122,74,.25)';ox.fill();ox.stroke();}
+    else{ox.strokeStyle='#6fa3a0';ox.lineWidth=1.6;ox.arc(x0+9,cyy,7,0,2*Math.PI);ox.stroke();}
+    if(i===0){ox.strokeStyle='#e8e2d6';ox.lineWidth=1;ox.beginPath();ox.arc(x0+9,cyy,10.5,0,2*Math.PI);ox.stroke();}
+    ox.font='600 12px "Cormorant SC",serif';ox.fillStyle='#e8e2d6';
+    ox.textAlign='left';ox.textBaseline='middle';
+    ox.fillText((s.side==='O'?'O':'U')+s.id+'  '+s.root[0]+'⁄'+s.root[1],x0+24,cyy);
+    if(i<total-1){
+      const piv=V.pivots[i+1];
+      ox.font='400 9px "IBM Plex Mono",monospace';ox.fillStyle='rgba(154,145,134,.65)';
+      ox.textAlign='left';
+      ox.fillText('↓ '+piv[0]+'⁄'+piv[1],x0+24,y+rowH-4);
+    }
+    y+=rowH;
+  }
+}
+function draw(){
+  if(viewDirty||!VIEW)refreshView();
+  const V=VIEW, total=V.stations.length;
+  let playing=false, el=0;
+  if(RT){playing=true;el=Math.max(0,RT.ctx.currentTime-RT.t0)%V.dur;}
+  let acc=0, curI=0, tInStation=0;
+  if(playing){
+    for(let i=0;i<total;i++){
+      const bd=V.barsArr[i]*V.barDur;
+      if(el<acc+bd){curI=i;tInStation=el-acc;break;}
+      acc+=bd;curI=i;tInStation=el-acc;
+    }
+  }
+  if(curI!==SHOWN_I){
+    if(curI<SHOWN_I) visited=new Set();
+    visited.add(curI);SHOWN_I=curI;buildStatic();
+  }
+  cx.clearRect(0,0,CW,CH);cx.drawImage(oc,0,0);
+
+  const I=LIMITS[st.limit];
+  const s=V.stations[curI];
+  const cells = s.side==='O' ? OCOLS[I.indexOf(s.id)] : UROWS[I.indexOf(s.id)];
+  if(cells&&cells.length){
+    cx.strokeStyle = s.side==='O' ? 'rgba(193,122,74,.55)' : 'rgba(111,163,160,.55)';
+    cx.lineWidth=6;cx.lineCap='round';
+    cx.beginPath();cells.forEach((c,idx)=>{if(idx===0)cx.moveTo(c.x,c.y);else cx.lineTo(c.x,c.y);});cx.stroke();
+    if(!RM&&playing&&tInStation<0.5){
+      const frac=tInStation/0.5, idx=Math.min(cells.length-1,Math.floor(frac*cells.length));
+      const c=cells[idx];
+      cx.fillStyle='#fff';cx.globalAlpha=.8;
+      cx.beginPath();cx.arc(c.x,c.y,6,0,2*Math.PI);cx.fill();cx.globalAlpha=1;
+    }
+  }
+  visited.forEach(vi=>{
+    if(vi===curI)return;
+    const vs=V.stations[vi];
+    const vc = vs.side==='O' ? OCOLS[I.indexOf(vs.id)] : UROWS[I.indexOf(vs.id)];
+    if(!vc)return;
+    cx.strokeStyle='rgba(232,226,214,.10)';cx.lineWidth=3;
+    cx.beginPath();vc.forEach((c,idx)=>{if(idx===0)cx.moveTo(c.x,c.y);else cx.lineTo(c.x,c.y);});cx.stroke();
+  });
+  const bars=V.barsArr[curI], barDur=V.barDur;
+  if(!playing||tInStation>=(bars-1)*barDur){
+    const nextS=V.stations[(curI+1)%total];
+    const oId = s.side==='O'?nextS.id:s.id, uId = s.side==='U'?nextS.id:s.id;
+    const pi=I.indexOf(oId), pj=I.indexOf(uId);
+    if(CELLPOS[pi]&&CELLPOS[pi][pj]){
+      const pc=CELLPOS[pi][pj];
+      const pulse=RM?1:(0.5+0.5*Math.sin(performance.now()/140));
+      cx.fillStyle='rgba(255,255,255,'+(0.5*pulse)+')';
+      cx.beginPath();cx.arc(pc.x,pc.y,7+3*pulse,0,2*Math.PI);cx.fill();
+    }
+  }
+  if(ITINPOS[curI]){
+    const r=ITINPOS[curI];
+    cx.strokeStyle='#e8e2d6';cx.lineWidth=1.4;
+    cx.strokeRect(r.x-6,r.y-2,r.w+6,r.h-6);
+  }
+  $('stTag').textContent=(s.side==='O'?'O':'U')+s.id+' · '+s.root[0]+'/'+s.root[1];
+  $('cycTag').textContent=playing?('station '+(curI+1)+'/'+total):(total+' stations');
+}
+function loop(){
+  const playing=!!RT;
+  if(playing||needsDraw){draw();if(!playing)needsDraw=false;}
+  setTimeout(()=>requestAnimationFrame(loop),playing?(RM?90:40):200);
+}
+requestAnimationFrame(loop);
+
+/* ------------------------------ controls --------------------------------- */
+function chipSel(container,items,current,onPick){
+  container.innerHTML='';
+  items.forEach(([val,label,sub])=>{
+    const b=document.createElement('button');b.dataset.v=String(val);
+    b.innerHTML=sub?(label+'<small>'+sub+'</small>'):label;
+    if(String(val)===String(current))b.classList.add('on');
+    b.onclick=()=>{container.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');onPick(val);};
+    container.appendChild(b);
+  });
+}
+function syncReadouts(){
+  const counts={5:[7,6],7:[13,8],9:[19,10],11:[29,12]}[st.limit];
+  $('limitrd').textContent=st.limit+'-limit · '+counts[0]+' tones · '+counts[1]+' keys';
+  $('fluxrd').textContent={linger:'Linger · long dwelling',walk:'Walk · steady pace',storm:'Storm · quick turns'}[st.flux];
+  $('leanrd').textContent={utonal:'Utonal · dwell in the minor mirror',even:'Even · balanced',otonal:'Otonal · lean into the bright series'}[st.lean];
+  $('pulserd').textContent=st.pulse+' · '+PULSE[st.pulse].join('+');
+  $('tempord').textContent=st.tempo+' eighths/min';
+}
+chipSel($('limit'),[[5,'5-limit','7 tones · 6 keys'],[7,'7-limit','13 tones · 8 keys'],[9,'9-limit','19 tones · 10 keys'],[11,'11-limit','29 tones · 12 keys']],st.limit,v=>{
+  st.limit=+v;syncReadouts();regen();
+});
+chipSel($('flux'),[['linger','Linger','long dwelling'],['walk','Walk','steady pace'],['storm','Storm','quick turns']],st.flux,v=>{
+  st.flux=v;syncReadouts();regen();
+});
+chipSel($('lean'),[['utonal','Utonal','dwell in the minor mirror'],['even','Even','balanced'],['otonal','Otonal','lean into the bright series']],st.lean,v=>{
+  st.lean=v;syncReadouts();regen();
+});
+chipSel($('pulse'),[[5,'5','2+3'],[7,'7','2+2+3'],[9,'9','2+2+2+3']],st.pulse,v=>{
+  st.pulse=+v;syncReadouts();regen();
+});
+$('tempo').value=st.tempo;
+$('tempo').addEventListener('input',e=>{st.tempo=+e.target.value;$('tempord').textContent=st.tempo+' eighths/min';});
+$('tempo').addEventListener('change',()=>{invalidate();if(RT)regen();});
+syncReadouts();
+
+$('pick').addEventListener('click',()=>st.playing?stop():play());
+$('cut').addEventListener('click',cut);
+
+/* ---------------------- opuscula shared: hash · keys --------------------- */
+let __applying=false;
+function __state(){return {l:st.limit,f:st.flux,e:st.lean,p:st.pulse,b:st.tempo,sd:st.seed};}
+function __apply(o){
+  if(o.l!==undefined){const v=+o.l;if(LIMITS[v]){const b=$('limit').querySelector('[data-v="'+v+'"]');b&&b.click();}}
+  if(o.f&&STATION_BARS.utonal[o.f]){const b=$('flux').querySelector('[data-v="'+o.f+'"]');b&&b.click();}
+  if(o.e&&STATION_BARS[o.e]){const b=$('lean').querySelector('[data-v="'+o.e+'"]');b&&b.click();}
+  if(o.p!==undefined){const v=+o.p;if(PULSE[v]){const b=$('pulse').querySelector('[data-v="'+v+'"]');b&&b.click();}}
+  if(o.b){st.tempo=clamp(+o.b|0,200,340);$('tempo').value=st.tempo;$('tempord').textContent=st.tempo+' eighths/min';invalidate();}
+  if(o.sd!==undefined){const sd=+o.sd;if(Number.isFinite(sd)){st.seed=sd>>>0;invalidate();}}
+}
+function __hashRead(){const h=location.hash.slice(1);if(!h)return null;const o={};
+  for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}
+function __hashWrite(){if(__applying)return;
+  try{const o=__state();history.replaceState(null,'','#'+Object.entries(o).map(([k,v])=>k+'='+v).join('&'));}catch(e){}}
+document.addEventListener('click',()=>setTimeout(__hashWrite,120),true);
+document.addEventListener('change',()=>setTimeout(__hashWrite,120),true);
+
+function another(){                                 // r = another circuit
+  if(RT)stop();
+  st.seed=1+((Math.random()*1e6)|0);
+  const lims=[5,7,9,11],fluxes=['linger','walk','storm'],leans=['utonal','even','otonal'],pulses=[5,7,9];
+  $('limit').querySelector('[data-v="'+lims[(Math.random()*lims.length)|0]+'"]').click();
+  $('flux').querySelector('[data-v="'+fluxes[(Math.random()*fluxes.length)|0]+'"]').click();
+  $('lean').querySelector('[data-v="'+leans[(Math.random()*leans.length)|0]+'"]').click();
+  $('pulse').querySelector('[data-v="'+pulses[(Math.random()*pulses.length)|0]+'"]').click();
+  invalidate();play();
+}
+addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
+  if(e.code==='Space'){e.preventDefault();$('pick').click();}
+  else if(e.key==='r'||e.key==='R'){e.preventDefault();another();}
+  else if(e.key==='c'||e.key==='C')$('cut').click();
+});
+
+(function init(){const o=__hashRead();
+  if(o){__applying=true;try{__apply(o);}catch(e){}__applying=false;}
+  syncReadouts();__hashWrite();invalidate();
+})();
+
+/* ---- robust WAV save (shared) ----------------------------------------------
+   Auto-downloads where the browser allows it (desktop Chrome/Firefox/Edge,
+   Android), and ALWAYS shows a tappable "Save WAV" pill — the reliable path
+   on Safari/iOS, where a programmatic download after an async render is
+   blocked but a real tap on the link is a fresh user gesture iOS honours.   */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(10,11,13,.94);color:#e8e2d6;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#e8e2d6;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
+
+/* OFFICINA audition: a few representative strikes of one voice, freshly
+   baked with the current timbre, through the real graph. Stops the circuit
+   first; the bowls demo sizes its buffer to the ring. */
+let __demoCtx=null;
+TIMBRE.demo=(group)=>{
+  if(RT)stop();
+  const rng=mulberry32(0xD1A0011);
+  const reps={
+    eroica:[[[1,1],0],[[4,3],.9],[[3,2],1.8]],
+    kithara:[[[1,1],0],[[6,5],.02],[[3,2],.04],[[7,4],.06]],
+    canon:[[[1,1],0],[[9,8],.3],[[5,4],.6],[[4,3],.9],[[3,2],1.2],[[7,4],1.5]],
+    marimba:[[[1,1],0],[[6,5],.15],[[3,2],.3],[[7,4],.45],[[1,1],.9]],
+    boo:[[[3,2],0],[[7,4],.15],[[3,2],.3],[[7,4],.45],[[3,2],.6],[[7,4],.75]],
+    bowls:[[[1,1],0],[[3,2],2.2]],
+  };
+  const voice=(group==='master'||group==='room')?'eroica':group;
+  const list=reps[voice]||[[[1,1],0],[[5,4],.6],[[3,2],1.2],[[7,4],1.8]];
+  const secs=(voice==='bowls')?Math.min(11,TP.bowls.decay*1.4+2):3.4;
+  const n=Math.ceil(secs*SR), L=new Float32Array(n), R=new Float32Array(n);
+  const fn=SYN_FN[voice]||synEroica;
+  for(const [ratio,t] of list){
+    const hz=ratioToHz(ratio,voice), buf=fn(hz,rng);
+    const vg=TP[voice]?TP[voice].level:0.8;
+    mixHit(L,R,Math.floor((t+.05)*SR),buf,VOICE_PAN[voice]||0,.85*vg);
+  }
+  let mx=0;for(let i=0;i<n;i++){const a=Math.abs(L[i]),b=Math.abs(R[i]);if(a>mx)mx=a;if(b>mx)mx=b;}
+  if(mx>0){const k=.9/mx;for(let i=0;i<n;i++){L[i]*=k;R[i]*=k;}}
+  try{if(__demoCtx)__demoCtx.close()}catch(e){}
+  const ac=new (window.AudioContext||window.webkitAudioContext)(); __demoCtx=ac;
+  try{ac.resume()}catch(e){}
+  const G=buildGraph(ac,L,R,false); G.src.start(ac.currentTime+.03);
+  setTimeout(()=>{try{if(__demoCtx===ac){__demoCtx=null;ac.close()}}catch(e){}},Math.ceil(secs*1000)+700);
+};
+</script>
+
+</body>
+</html>
