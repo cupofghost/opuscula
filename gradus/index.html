@@ -1033,18 +1033,77 @@ function __overlay(c,tNow,L,bw,pad,Wl){
   }
 }
 
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Open ../officina/ — the voicing bench — to edit these live inside the
+   running mix, save named presets, and export them. A preset saved there
+   applies even when this file is opened directly (localStorage); add
+   ?factory to the URL to hear the shipped voice. (GRADUS schedules the
+   whole exercise at SONA, so edits apply from the next hearing.) */
+const TIMBRE={
+  id:'gradus', title:'GRADUS \u00b7 op. III',
+  doc:'Two small organ voices for the two lines of the counterpoint. Each note is a pair of sawtooth oscillators detuned a few cents either side of the pitch (their slow beat is the chorus/warmth) through a lowpass that sets the voice\u2019s vowel \u2014 the CANTUS FIRMUS darker (2.1 kHz) with a sine an octave below (the pedal ground), the COUNTERPOINT brighter (3.8 kHz) \u2014 hard-panned gently apart so the two lines can be followed by ear. Notes swell in 30 ms, hold, and release; both voices feed a 1.8 s stone-room convolver. That is the whole instrument: the interest of this machine is the law (Fux\u2019s rules), and the organ deliberately stays out of its way.',
+  groups:{
+    master:{label:'master & room',doc:'Output gain into a gentle 3:1 compressor, with the stone room on sends.',params:{
+      gain:{v:.9,min:.3,max:1.3,step:.01,label:'master gain',doc:'level into the compressor'},
+      verb:{v:.3,min:0,max:1,step:.02,label:'room return',doc:'the chapel around the lesson'},
+      roomSize:{v:1.8,min:.4,max:3.5,step:.05,unit:'s',label:'room size',doc:'impulse length of the stone room'},
+      spread:{v:.3,min:0,max:1,step:.05,label:'voice spread',doc:'how far apart the two lines sit (cantus left, counterpoint right)'},
+    }},
+    cantus:{label:'cantus firmus',doc:'The given line \u2014 the darker, grounded voice.',params:{
+      tone:{v:2100,min:800,max:6000,step:50,unit:'Hz',label:'tone',doc:'lowpass over the voice'},
+      detune:{v:3,min:0,max:15,step:.5,unit:'\u00a2',label:'chorus detune',doc:'\u00b1cents between the two saws; more = wider, wetter'},
+      level:{v:.17,min:.05,max:.4,step:.005,label:'level',doc:'note level'},
+      sub:{v:.5,min:0,max:1,step:.02,label:'pedal sub',doc:'the sine an octave below \u2014 the ground under the ground'},
+      send:{v:.24,min:0,max:.6,step:.01,label:'room send',doc:'cantus into the room'},
+    }},
+    contra:{label:'counterpoint',doc:'The composed line \u2014 the brighter answering voice.',params:{
+      tone:{v:3800,min:800,max:8000,step:50,unit:'Hz',label:'tone',doc:'lowpass over the voice'},
+      detune:{v:4,min:0,max:15,step:.5,unit:'\u00a2',label:'chorus detune',doc:'\u00b1cents between the two saws'},
+      level:{v:.15,min:.05,max:.4,step:.005,label:'level',doc:'note level'},
+      send:{v:.2,min:0,max:.6,step:.01,label:'room send',doc:'counterpoint into the room'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
 /* ---------------- audio ---------------- */
 let RT=null;
-function makeIR(ac){const len=Math.floor(1.8*ac.sampleRate),b=ac.createBuffer(2,len,ac.sampleRate);
+function makeIR(ac){const len=Math.floor(TP.master.roomSize*ac.sampleRate),b=ac.createBuffer(2,len,ac.sampleRate);
   for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
     for(let i=0;i<len;i++){const e=Math.pow(1-i/len,2.4);lp+=0.25*((Math.random()*2-1)-lp);d[i]=lp*e*3;}}return b;}
 function buildAudio(ac){
-  const G={};G.master=ac.createGain();G.master.gain.value=.9;
+  const G={};G.master=ac.createGain();G.master.gain.value=TP.master.gain;
   G.comp=ac.createDynamicsCompressor();G.comp.threshold.value=-18;G.comp.ratio.value=3;
   G.comp.attack.value=.01;G.comp.release.value=.3;
   G.master.connect(G.comp).connect(ac.destination);
   G.verb=ac.createConvolver();G.verb.buffer=makeIR(ac);
-  const vg=ac.createGain();vg.gain.value=.3;G.verb.connect(vg).connect(G.master);
+  const vg=ac.createGain();vg.gain.value=TP.master.verb;G.verb.connect(vg).connect(G.master);
   G.send=(n,a)=>{const g=ac.createGain();g.gain.value=a;n.connect(g).connect(G.verb);};
   G.ac=ac;return G;
 }
@@ -1052,17 +1111,18 @@ const mtof=m=>440*Math.pow(2,(m-69)/12);
 function voiceNote(G,when,dur,midi,kind){
   const ac=G.ac,f=mtof(midi);
   const pan=ac.createStereoPanner?ac.createStereoPanner():ac.createGain();
-  if(pan.pan)pan.pan.value=kind==='cf'?-0.3:0.3;
+  const V=kind==='cf'?TP.cantus:TP.contra;
+  if(pan.pan)pan.pan.value=kind==='cf'?-TP.master.spread:TP.master.spread;
   const lp=ac.createBiquadFilter();lp.type='lowpass';
-  lp.frequency.value=kind==='cf'?2100:3800;lp.Q.value=.4;
+  lp.frequency.value=V.tone;lp.Q.value=.4;
   const g=ac.createGain();g.gain.value=0;
-  lp.connect(g).connect(pan).connect(G.master);G.send(pan,kind==='cf'?.24:.2);
-  const det=kind==='cf'?3:4;
+  lp.connect(g).connect(pan).connect(G.master);G.send(pan,V.send);
+  const det=V.detune;
   [det,-det].forEach(c=>{const o=ac.createOscillator();o.type='sawtooth';
     o.frequency.value=f;o.detune.value=c;o.connect(lp);o.start(when);o.stop(when+dur+.25);});
   if(kind==='cf'){const s=ac.createOscillator();s.type='sine';s.frequency.value=f/2;
-    const sg=ac.createGain();sg.gain.value=.5;s.connect(sg).connect(lp);s.start(when);s.stop(when+dur+.25);}
-  const lvl=kind==='cf'?.17:.15;
+    const sg=ac.createGain();sg.gain.value=TP.cantus.sub;s.connect(sg).connect(lp);s.start(when);s.stop(when+dur+.25);}
+  const lvl=V.level;
   g.gain.setValueAtTime(0,when);
   g.gain.linearRampToValueAtTime(lvl,when+.03);
   g.gain.setValueAtTime(lvl,when+Math.max(.03,dur-.07));
