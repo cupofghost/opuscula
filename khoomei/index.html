@@ -357,19 +357,27 @@ const st={ style:'khoomei', keyi:1, pace:66, breath:50, ground:false, seed:1, pl
 
 /* ---------------- composition: seeded overtone melody -------------------
    A slow, mostly-stepwise walk up and down the manner's harmonic set —
-   overtone melodies move between neighbouring rungs, hold, and rest for
-   breath. Returns [{harm, dur(beats), rest, glide}]. */
+   overtone melodies move between neighbouring rungs, hold, and rest. A breath
+   is woven in every eight-to-twelve beats: the whole voice stops, as a
+   singer's must. Returns [{harm,dur(beats),rest,glide}] or {breath,dur}. */
 function makePhrase(style, seed){
   const rng=mulberry32((seed>>>0)^0x6a09e667);
-  const H=style.harms, N=24, out=[];
+  const H=style.harms, N=26, out=[];
   let i=Math.max(0, H.indexOf(8)>=0?H.indexOf(8):(H.length>>1));
+  let sinceBreath=0, target=8+((rng()*5)|0);
   for(let k=0;k<N;k++){
+    if(k>0 && sinceBreath>=target){                 // take a breath
+      out.push({breath:true, dur:pick(rng,[1,1,1.5])});
+      sinceBreath=0; target=8+((rng()*5)|0); continue;
+    }
     const step=pick(rng,[-2,-1,-1,0,1,1,2]);
     i=clamp(i+step,0,H.length-1);
-    const rest=(k>0 && rng()<0.13);
-    const dur=pick(rng,[1,1,1,2,2,2,3,4]);
+    const rest=(k>0 && rng()<0.10);
+    const dur=pick(rng,[1,1,1,2,2,2,3]);
     out.push({harm:H[i], dur, rest, glide:rng()<0.6});
+    sinceBreath+=dur;
   }
+  if(!out.some(n=>n.breath)) out.splice(Math.floor(out.length*0.6),0,{breath:true,dur:1.2});
   return out;
 }
 
@@ -438,7 +446,8 @@ function buildGraph(ctx, style, f0){
   G.whistle.connect(G.master); G.whistle.connect(G.verb);
 
   // ---- breath: air hiss that tracks the whistle, the "sss" of sygyt ----
-  G.noise=ctx.createBufferSource(); G.noise.buffer=noiseBuffer(ctx,2.2); G.noise.loop=true;
+  G.noiseBuf=noiseBuffer(ctx,2.2);
+  G.noise=ctx.createBufferSource(); G.noise.buffer=G.noiseBuf; G.noise.loop=true;
   G.bpNoise=ctx.createBiquadFilter(); G.bpNoise.type='bandpass'; G.bpNoise.frequency.value=h0; G.bpNoise.Q.value=TP.breath.q;
   G.breath=ctx.createGain(); G.breath.gain.value=0.0001;
   G.noise.connect(G.bpNoise); G.bpNoise.connect(G.breath); G.breath.connect(G.master); G.breath.connect(G.verb);
@@ -463,14 +472,40 @@ function startGraph(G,t0){
   G.gOsc0.start(t0); G.gOsc1.start(t0);
 }
 
-// schedule ONE overtone note at time t: glide the whistle (and its breath) to
-// the chosen harmonic and swell/rest its loudness.
-function scheduleNote(G,note,t,f0,style,breathAmt){
+// a soft intake between phrases: rising band of noise, the singer breathing in.
+function inhale(G,t,dur,breathAmt){
+  const ctx=G.ctx;
+  const s=ctx.createBufferSource(); s.buffer=G.noiseBuf; s.loop=true; s.playbackRate.value=0.8+Math.random()*0.3;
+  const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=0.8;
+  bp.frequency.setValueAtTime(480,t); bp.frequency.linearRampToValueAtTime(1500,t+dur);   // rising = intake
+  const g=ctx.createGain(); const pk=0.05+breathAmt*0.55;
+  g.gain.setValueAtTime(0.0001,t);
+  g.gain.linearRampToValueAtTime(pk,t+dur*0.6);
+  g.gain.setTargetAtTime(0.0001,t+dur*0.7,0.07);
+  s.connect(bp); bp.connect(g); g.connect(G.master);
+  s.start(t); s.stop(t+dur+0.25);
+}
+// schedule ONE event at time t. A breath stops the whole voice (an inhale
+// sounds; any morin-khuur ground plays on). Otherwise glide the whistle to the
+// harmonic and set its loudness — and set the drone to a slowly-swelling level
+// so the voice is never dead-flat and returns after each breath.
+function scheduleNote(G,note,t,dur,f0,style,breathAmt){
+  const swell=style.drone*(0.80+0.20*(0.5+0.5*Math.sin(t*2*Math.PI/5.5)));   // gentle dynamic
+  if(note.breath){
+    G.whistle.gain.setTargetAtTime(0.0001,t,0.05);
+    G.droneBus.gain.setTargetAtTime(0.0001,t+0.02,0.06);
+    G.growlDepth.gain.setTargetAtTime(0.0001,t,0.05);
+    G.breath.gain.setTargetAtTime(0.0001,t,0.05);
+    inhale(G,t+dur*0.28,Math.min(0.55,dur*0.55),breathAmt);
+    return;
+  }
   const f=note.harm*f0;
   const tc=note.glide?TP.whistle.glide:TP.whistle.snap;
   G.bp1.frequency.setTargetAtTime(f,t,tc);
   G.bp2.frequency.setTargetAtTime(f,t,tc);
   G.bpNoise.frequency.setTargetAtTime(f,t,tc);
+  G.droneBus.gain.setTargetAtTime(swell,t,0.12);                            // restore + breathe
+  G.growlDepth.gain.setTargetAtTime(swell*0.5*style.growl,t,0.12);
   if(note.rest){
     G.whistle.gain.setTargetAtTime(0.0001,t,0.06);
     G.breath.gain.setTargetAtTime(breathAmt*TP.breath.restDuck,t,0.06);
@@ -501,8 +536,9 @@ function sched(){
   while(RT.nextT<ahead){
     const note=RT.phrase[RT.pi%RT.phrase.length];
     const dur=note.dur*RT.beat;
-    scheduleNote(RT.G,note,RT.nextT,RT.f0,RT.style,st.breath/100*RT.style.breath*TP.breath.level);
-    if(!note.rest) RT.cur={harm:note.harm,lvl:1,at:RT.nextT};
+    scheduleNote(RT.G,note,RT.nextT,dur,RT.f0,RT.style,st.breath/100*RT.style.breath*TP.breath.level);
+    if(note.breath) RT.cur={harm:0,lvl:0,breath:true,at:RT.nextT};
+    else if(!note.rest) RT.cur={harm:note.harm,lvl:1,at:RT.nextT};
     RT.nextT+=dur; RT.pi++;
   }
 }
@@ -603,7 +639,7 @@ async function cut(){
     if(st.ground)G.groundBus.gain.setValueAtTime(TP.ground.level,0.02);
     // schedule the phrase across the whole span
     let t=0.14, pi=0;
-    while(t<dur){ const nn=phrase[pi%phrase.length]; scheduleNote(G,nn,t,f0,style,breathAmt); t+=nn.dur*beat; pi++; }
+    while(t<dur){ const nn=phrase[pi%phrase.length]; scheduleNote(G,nn,t,nn.dur*beat,f0,style,breathAmt); t+=nn.dur*beat; pi++; }
     // let the last note breathe, then fade the master
     G.master.gain.setValueAtTime(TP.master.gain,dur-0.4); G.master.gain.linearRampToValueAtTime(0.0001,total-0.15);
     const rb=await ctx.startRendering();
@@ -707,7 +743,7 @@ function draw(now){
     cx.fillStyle='rgba(255,240,200,'+glow+')'; cx.beginPath(); cx.arc(mx2,y,7,0,7); cx.fill();
   }
   // overtone readout
-  $('otRd').textContent = (RT&&RT.cur.harm)?('h'+RT.cur.harm+' · '+Math.round(RT.cur.harm*f0)+' Hz'):'—';
+  $('otRd').textContent = (RT&&RT.cur&&RT.cur.breath)?'breath':(RT&&RT.cur.harm)?('h'+RT.cur.harm+' · '+Math.round(RT.cur.harm*f0)+' Hz'):'—';
 }
 requestAnimationFrame(draw);
 
