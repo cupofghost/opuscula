@@ -1,0 +1,1415 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0a0a0c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>SUBLOW — sound system music</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   SUBLOW — dubstep / sound system session
+   page #0a0a0c · cabinets #15151a · grille #1d1d24 · LEDs = per RIDDIM
+   The dress is the rig at a dance: a wall of speaker cabinets, lit low.
+   ===================================================================== */
+html{background:#0a0a0c}
+:root{
+  color-scheme:dark;
+  --page:#0a0a0c; --cab:#15151a; --cab2:#1d1d24;
+  --ink:#b5731f;            /* LED / accent — stamped per riddim via JS */
+  --txt:#f0e9dc; --dim:rgba(240,233,220,.72);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  background:var(--page);
+  color:var(--txt);
+  font-family:'Space Grotesk',system-ui,sans-serif;
+  min-height:100vh;display:flex;justify-content:center;
+  padding:max(18px,env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom));
+}
+.sleeve{width:100%;max-width:560px}
+.mono{font-family:'IBM Plex Mono',monospace}
+
+/* ---- header: dubplate etching ---- */
+.runout{display:flex;justify-content:space-between;align-items:baseline;
+  font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.18em;color:var(--dim);
+  text-transform:uppercase;margin-bottom:6px}
+h1{font-weight:600;font-size:clamp(2.6rem,11vw,3.6rem);letter-spacing:.32em;color:var(--txt);
+  text-align:center;margin:2px 0 0;text-indent:.32em}
+.sub{text-align:center;font-size:.82rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-top:2px}
+
+/* ---- the stack ---- */
+.rig{position:relative;margin:18px auto 0;width:min(86vw,440px)}
+canvas#stack{width:100%;display:block}
+.flyer{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  margin-top:8px;padding:7px 10px;border:1.5px solid var(--ink);
+  font-family:'IBM Plex Mono',monospace;text-transform:uppercase}
+.flyer .aff{font-weight:600;font-size:.92rem;letter-spacing:.2em;color:var(--txt)}
+.flyer .gloss{font-size:.6rem;letter-spacing:.1em;color:var(--dim)}
+.flyer .tech{font-size:.62rem;letter-spacing:.08em;color:var(--dim);text-align:right}
+
+/* ---- controls ---- */
+.controls{margin-top:20px;display:flex;flex-direction:column;gap:16px}
+.lab{font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--dim);
+  display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.lab .rd{font-family:'IBM Plex Mono',monospace;letter-spacing:.08em;color:var(--txt)}
+
+button{
+  font-family:'IBM Plex Mono',monospace;color:var(--txt);
+  background:transparent;border:1.5px solid var(--txt);cursor:pointer;
+  letter-spacing:.2em;text-transform:uppercase;touch-action:manipulation;
+}
+button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+button:active{transform:translateY(1px)}
+button,canvas,.flyer{-webkit-user-select:none;user-select:none}
+button:disabled{opacity:.4;cursor:default}
+
+.playbtn{width:100%;padding:15px;font-size:1.15rem;letter-spacing:.5em;border-width:2px;font-weight:600}
+.playbtn.on{background:var(--txt);color:var(--page)}
+
+.chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.chips button{padding:9px 4px;font-size:.72rem;letter-spacing:.1em;line-height:1.5;border-color:rgba(240,233,220,.45);color:rgba(240,233,220,.8)}
+.chips button .en{display:block;font-size:.6rem;opacity:.85;letter-spacing:.08em}
+.chips button.on{border-color:var(--txt);color:var(--txt);background:rgba(240,233,220,.1);border-width:2px;padding:8px 3px}
+
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--dim)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;margin-top:-8px;border-radius:50%;
+  background:var(--page);border:2px solid var(--txt)}
+input[type=range]::-moz-range-track{height:2px;background:var(--dim)}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--page);border:2px solid var(--txt)}
+
+/* mute strip — 8 parts, two rows of four */
+.strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.strip button{padding:9px 2px;font-size:.62rem;letter-spacing:.05em;border-color:rgba(240,233,220,.45);color:var(--txt)}
+.strip button.off{opacity:.32;text-decoration:line-through}
+
+.cut{width:100%;padding:12px;font-size:.8rem;letter-spacing:.3em;border-style:dashed}
+.cutnote{font-family:'IBM Plex Mono',monospace;text-align:center;font-size:.7rem;letter-spacing:.1em;color:var(--dim);margin-top:6px;min-height:1em}
+
+/* ledger */
+.ledger{margin-top:4px;border-top:1px solid rgba(201,196,184,.22);padding-top:10px;
+  font-family:'IBM Plex Mono',monospace;font-size:.74rem;line-height:2;letter-spacing:.05em;color:var(--dim)}
+.ledger b{color:var(--txt);font-weight:500}
+.colophon{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.24em;
+  color:var(--dim);margin-top:16px;text-transform:uppercase}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+@media(min-width:900px){.sleeve{max-width:620px}.rig{width:min(86vw,480px)}}
+
+/* exit to opuscula (shared) */
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:-moz-fit-content;width:fit-content;align-items:center;gap:.55em;margin:0 0 16px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+@media(prefers-reduced-motion:reduce){.exit{transition:none}}
+
+/* ── on this music: expandable reader notes (shared across the opuscula) ── */
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
+</style>
+</head>
+<body>
+<div class="sleeve">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+
+  <div class="runout"><span>OP. XVI · SIDE A</span><span id="matrix">DUB —</span></div>
+  <h1>SUBLOW</h1>
+  <div class="sub">sound system music · dubstep · one-forty</div>
+
+  <div class="rig">
+    <canvas id="stack" aria-label="A sound system speaker stack; below it, the two-bar bass riddim drawn as the wobble it speaks"></canvas>
+    <div class="flyer">
+      <div><span class="aff" id="laff">WOBBLE</span> <span class="gloss" id="lgloss">the talk</span></div>
+      <div class="tech" id="ltech">— BPM · —</div>
+    </div>
+  </div>
+
+  <div class="controls">
+
+    <div style="display:flex;gap:10px">
+      <button class="playbtn" id="play" style="flex:1">RUN IT</button>
+      <button class="playbtn" id="pullup" style="flex:0 0 38%;font-size:.82rem;letter-spacing:.24em" disabled>PULL UP ⟲</button>
+    </div>
+
+    <div>
+      <div class="lab">Riddim · pick the session</div>
+      <div class="chips" id="aff"></div>
+    </div>
+
+    <div>
+      <div class="lab">Talk · how much the bass speaks <span class="rd" id="talkrd"></span></div>
+      <div class="chips" style="grid-template-columns:repeat(4,1fr)" id="talk"></div>
+    </div>
+
+    <div class="row2">
+      <div>
+        <div class="lab">Tempo <span class="rd" id="temprd">— bpm</span></div>
+        <input type="range" id="tempo" min="136" max="145" value="140">
+      </div>
+      <div>
+        <div class="lab">New dub</div>
+        <button style="width:100%;padding:10px;font-size:.72rem" id="aliud">NEW DUB · NEW SEED</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="lab">Parts · the rig</div>
+      <div class="strip" id="strip"></div>
+    </div>
+
+    <div>
+      <button class="cut" id="cut">CUT A DUB · 16-BIT WAV</button>
+      <div class="cutnote" id="cutnote">renders 64 bars offline · this seed · this riddim</div>
+    </div>
+
+    <div class="ledger" id="ledger"></div>
+
+    <details class="reader">
+      <summary>On this music · dubstep</summary>
+      <div class="rbody">
+        <h4>What you're hearing</h4>
+        <p>A seeded dubstep dub, generated and synthesized in full — sub-bass, halfstep drums, dread atmosphere — dressed as a sound system stack at a dance. The machine composes the tune; you choose the session it plays and how much the bass is allowed to speak.</p>
+        <h4>Croydon</h4>
+        <p>Dubstep came out of one record shop. Around 2000, in the basement of Big Apple Records in Croydon, South London, producers like El-B and Horsepower Productions were stripping UK garage of its sweetness — darker chords, heavier subs, more space — and the shop's regulars included teenagers named Skream and Benga. The sound found its room at <em>FWD&gt;&gt;</em>, a night at Plastic People in Shoreditch whose system was tuned so low the music could live in frequencies most clubs never touch, and its broadcast tower in Rinse FM, a pirate station transmitting from tower-block roofs. On pirate radio the deep end had a name before the genre did: <em>sublow</em>.</p>
+        <h4>The sound system</h4>
+        <p>Underneath all of it is Jamaica. The sound system — a crew, a wall of custom speakers, and exclusive one-off acetates called <em>dubplates</em> — arrived in London with Caribbean migration, and with it came dub itself: King Tubby and Lee Perry remixing songs into skeletons of bass, drums and echo. Dubstep inherited the whole culture: the dubplate as the unit of exchange, the bassbins as the true instrument, the MC, and the <em>rewind</em> — when a tune lands hard enough, the selector wheels it back and drops it again. PULL UP does exactly that.</p>
+        <h4>The halfstep law</h4>
+        <p>The genre's law is austere. The tempo sits at 140 beats per minute, but the snare falls only on the third beat of the bar — <em>halfstep</em> — so the music moves at 70 while its hats shuffle at 140. That empty space is not a lack; it is the point. Into it goes the true melody-carrier: the sub-bass, felt more than heard, its line written low and slow. And when the bass moves above the sub it <em>talks</em> — a filter opened and closed by an oscillator locked to divisions of the tempo, quarter, eighth, triplet, sixteenth. The wobble is not vibrato; it is rhythm. This machine writes the bass pattern as a sentence of those divisions.</p>
+        <h4>Meditate on bass weight</h4>
+        <p>In 2005 Digital Mystikz — Mala and Coki, with Loefah and the MC Sgt Pokes — opened DMZ in a Brixton club, under the motto <em>come meditate on bass weight</em>. Their strain of the music is the deep one this machine wakes up in: sparse, patient, tribal percussion, a sine sub that swells rather than snarls, dub's cavernous space. The other sessions lean elsewhere — toward the dungeon, toward the mid-range chatter the later wobble era made famous, back toward the music's garage blood, and east toward the snake-charmer lines Skream loved.</p>
+        <h4>Tuning</h4>
+        <p>As elsewhere in this catalogue, everything voiced above the bass is tuned in <em>just intonation</em> — exact whole-number ratios from the sounding sub root, with the flat seventh taken as the harmonic 7/4 — so the pads lock beat-free onto the low end instead of shimmering against it. The sub itself is a near-pure sine, floored where the cabinets still speak, and nothing else is allowed below it: the kick is tuned short and tight so the sub owns the floor.</p>
+        <h4>The name</h4>
+        <p><em>Sublow</em> — London pirate radio's word for the bottom octaves, and for this music in the years before "dubstep" settled. The machine speaks the scene's English throughout: you run a dub, you pull it up, you cut a plate.</p>
+      </div>
+    </details>
+
+    <div class="colophon">bass weight · stereo up top · mono below<br>
+    op. XVI · <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:2px">opvscvla</a> · keys: space=run · u=pull up · r=new dub · c=cut</div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* =====================================================================
+   READER'S GUIDE — SUBLOW (op. XVI)
+   ---------------------------------------------------------------------
+   A seeded dubstep generator styled as a sound system stack. Five RIDDIM
+   presets (sessions) steer key, mode, palette, space and drum feel; a
+   TALK level 0–3 governs the wobble grammar of the bass; from a seed the
+   ENGINE writes the bass riddim, the halfstep drums and a 64-bar
+   arrangement, all synthesized (no samples).
+
+   ⚠ SCAFFOLD STATUS: this file is the designed SHELL of the machine —
+   UI, state, hash, TIMBRE schema, OFFICINA bridge, and the canvas are
+   real and working; the ENGINE and AUDIO sections are contracted stubs.
+   See sublow/NOTES.md for the full composition + synthesis spec, the
+   verify plan, and the registration checklist. Fenced TODO(SONNET)
+   blocks mark exactly what remains. RILLE (../rille/index.html) is the
+   reference implementation for the skeleton (realtime bar scheduler +
+   offline cut) — same shape, different law.
+
+   THE SHARED SKELETON (every opuscula work is built the same way):
+     · __hint / __iosAudio — iOS audio unlock (verbatim from RILLE).
+     · a seeded generator that COMPOSES the piece (ENGINE below).
+     · an audio graph built only from oscillators/noise — never samples.
+     · TWO renderers: realtime look-ahead bar scheduler + offline 64-bar
+       WAV cut (identical events, deterministic).
+     · a <canvas> — here the stack + the riddim lane; sleeps when idle.
+     · a hash-permalink block: THE URL IS THE PRESSING.
+
+   KEYS: space = run/hold · u = pull up (rewind) · r = new dub · c = cut
+
+   THIS FILE: helpers → LAW (JI, riddims, talk) → TIMBRE/bridge →
+   ENGINE stubs → state → AUDIO stubs → stack canvas → UI wiring → hash.
+   ===================================================================== */
+
+/* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
+function __hint(msg){
+  try{
+    const p=document.getElementById('play')||document.getElementById('playBtn')||document.querySelector('button');
+    if(!p||!p.insertAdjacentElement)return;
+    let h=document.getElementById('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin-top:6px;font-style:italic;letter-spacing:.04em';
+      p.insertAdjacentElement('afterend',h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{
+    if(document.visibilityState==='visible')kick();
+    else if(ac.state==='running')ac.suspend().catch(()=>{});
+  }catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else if(document.visibilityState==='visible')setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('AUDIO SUSPENDED — tap RUN IT again · if silent, check the ring/mute switch');}catch(e){}},450);
+}
+
+/* ---------------------------- helpers ---------------------------- */
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+const NOTE=['c','c#','d','d#','e','f','f#','g','g#','a','a#','b'];
+const mtof=m=>440*Math.pow(2,(m-69)/12);
+
+/* ============================== THE LAW ==============================
+   Everything in this section is compositional law, NOT voicing — it
+   stays out of TIMBRE (same rule as RILLE's moods and GONGAN's laras). */
+
+/* ---- just intonation over the sub root (catalogue convention) ----
+   Every pitched voice ABOVE the bass (pad, stab, lead) is tuned as an
+   exact ratio from the sounding sub root, not 12-TET. The ♭7 is the
+   harmonic seventh 7/4 (the dub lean). The bass itself may move by
+   scale degree; when it does, the new sub root becomes the reference.
+   jiFreq(semitoneOffsetFromRoot, rootMidi) → Hz.                      */
+const JI=[1, 16/15, 9/8, 6/5, 5/4, 4/3, 45/32, 3/2, 8/5, 5/3, 7/4, 15/8];
+const jiFreq=(off,rootMidi)=>{
+  const oct=Math.floor(off/12), s=((off%12)+12)%12;
+  return mtof(rootMidi)*JI[s]*Math.pow(2,oct);
+};
+
+/* ---- the sub law (engine constants, fixed) ----
+   SUB_FLOOR = MIDI 28 (E1, 41.2 Hz) — no fundamental below it; lower
+   degrees fold up an octave. XOVER = 110 Hz — the sub voice lives
+   below it (pure sine + a breath of 2nd harmonic), the wobble/mid
+   voice is highpassed above it. Nothing but the sub and the kick's
+   first 100 ms may live under the crossover. Sub is centre-panned,
+   never sent to reverb or delay.                                      */
+const SUB_FLOOR=28, XOVER=110;
+
+/* ---- halfstep drum law (fixed, verify asserts these) ----
+   16th grid, 2-bar phrase = 32 steps. THE SNARE FALLS ON BEAT 3 AND
+   ONLY BEAT 3 (steps 8 and 24) — full velocity, every bar. The kick
+   always takes step 0; extra kicks are seeded from KICK_CELLS and may
+   NEVER land on a snare step. Ghost snares are quiet (vel ≤ .35) and
+   never displace the 3.                                               */
+const STEPS=32, SNARE_STEPS=[8,24];
+const KICK_CELLS=[3,4,6,10,11,14,19,20,22,27,30]; // syncopated 16ths, both bars, snare steps excluded
+
+/* ---- the talk: wobble grammar ----
+   A bass note carries a wobble token: LFO cycles PER BEAT, tempo-locked
+   (0 = hold: no wobble, pure weight; 0.5 = half-note breathe; 1 = ¼;
+   2 = ⅛; 3 = ⅛-triplet; 4 = 1/16). TALK is the user's law and OVERRIDES
+   the riddim's default level; the riddim keeps its flavour (LFO shape,
+   saturation, FM). Level 3 also allows a mid-note rate switch and the
+   octave dive. The wobble is rhythm, not vibrato — divisions only.    */
+const TALKS=[
+ {id:0,name:'WEIGHT', gloss:'pure sub',      divs:[0,0.5]},
+ {id:1,name:'BREATHE',gloss:'slow swell',    divs:[0.5,1,2]},
+ {id:2,name:'TALK',   gloss:'the classic wub',divs:[1,2,3]},
+ {id:3,name:'CHATTER',gloss:'full chat',     divs:[2,3,4],sw:true},
+];
+
+/* ---- RIDDIMS (the sessions) ----
+   Like RILLE's Affekte: each fixes key, mode, feel and palette. All law.
+   root = MIDI of the sub fundamental (E1..G1 — where the cabinets speak).
+   Fields:
+     talk       default TALK level (user override wins)
+     swing      16th-note swing amount (fraction of a step)
+     kickDens   probability weight for extra kicks from KICK_CELLS
+     ghost      ghost-snare density
+     hatRate    8 or 16 (hat grid)
+     shaker     16th shaker bed under the hats (the DMZ tribal floor)
+     percDens   tuned-percussion density (congas/rim/metal)
+     percKind   'skin' (congas) | 'metal' (dungeon ticks) | 'rim' (garage)
+     pad        'drone' (held root+5th swell) | 'stab' (offbeat shells) | 'thin'
+     lead       melodic lead voice on/off (EAST's snake line)
+     wobShape   'sine' | 'tri' (LFO shape into the filter)
+     fm         FM growl index on the mid bass (0 = clean)
+     verb/dly   space law (delay time is tempo-locked in DLY_DIV)
+     order      part entry order across the arrangement
+   NB pads voice root+fifth+octave(+ninth) — NO THIRDS anywhere in the
+   pad law: the dark, mode-ambiguous dubstep chord. EAST's lead mode is
+   phrygian dominant (hijaz); its third-less pads make that possible.  */
+const PARTS=['sub','kick','snare','hats','perc','pad','lead','fx'];
+const PARTLABEL={sub:'SUB',kick:'KICK',snare:'SNARE',hats:'HATS',perc:'PERC',pad:'PAD',lead:'LEAD',fx:'FX'};
+
+const MOODS=[
+ {id:'meditate',name:'MEDITATE',gloss:'deep · dread weight',ink:'#2f5d49',
+  bpm:140,root:29,mode:[0,2,3,5,7,8,10],modeName:'F aeolian',
+  talk:0,swing:.04,kickDens:.15,ghost:.08,hatRate:8,shaker:true,
+  percDens:.35,percKind:'skin',pad:'drone',lead:false,
+  wobShape:'sine',fm:0,verb:{sec:4.2,mix:.3},dly:{fb:.6,mix:.28},
+  order:['perc','hats','pad','fx']},
+ {id:'dungeon',name:'DUNGEON',gloss:'dark · military',ink:'#7d2b22',
+  bpm:142,root:28,mode:[0,1,3,5,7,8,10],modeName:'E phrygian',
+  talk:1,swing:.02,kickDens:.25,ghost:.05,hatRate:16,shaker:false,
+  percDens:.2,percKind:'metal',pad:'stab',lead:false,
+  wobShape:'tri',fm:2.4,verb:{sec:2.0,mix:.18},dly:{fb:.45,mix:.2},
+  order:['hats','perc','pad','fx']},
+ {id:'wobble',name:'WOBBLE',gloss:'the talk',ink:'#b5731f',
+  bpm:140,root:31,mode:[0,2,3,5,7,8,10],modeName:'G aeolian',
+  talk:2,swing:.05,kickDens:.3,ghost:.15,hatRate:16,shaker:false,
+  percDens:.15,percKind:'skin',pad:'thin',lead:false,
+  wobShape:'sine',fm:.8,verb:{sec:1.8,mix:.14},dly:{fb:.5,mix:.22},
+  order:['hats','pad','perc','fx']},
+ {id:'steppa',name:'STEPPA',gloss:'garage blood · 2-step',ink:'#4f3f7d',
+  bpm:138,root:30,mode:[0,2,3,5,7,9,10],modeName:'F♯ dorian',
+  talk:1,swing:.11,kickDens:.4,ghost:.3,hatRate:16,shaker:false,
+  percDens:.25,percKind:'rim',pad:'stab',lead:false,
+  wobShape:'sine',fm:0,verb:{sec:1.6,mix:.16},dly:{fb:.45,mix:.2},
+  order:['hats','pad','perc','fx']},
+ {id:'east',name:'EAST',gloss:'melodic · the snake line',ink:'#8a6a35',
+  bpm:140,root:28,mode:[0,1,4,5,7,8,10],modeName:'E hijaz',
+  talk:1,swing:.05,kickDens:.2,ghost:.12,hatRate:16,shaker:false,
+  percDens:.2,percKind:'skin',pad:'drone',lead:true,
+  wobShape:'sine',fm:0,verb:{sec:2.6,mix:.22},dly:{fb:.55,mix:.26},
+  order:['hats','lead','perc','pad','fx']},
+];
+
+/* ---- arrangement law (64 bars = the cut = the live loop) ----
+   1–8   INTRO    fx + pad + light perc · siren call at bar 4 · no drums, no sub
+   9–16  BUILD    drums in, no sub · lead/pad carry · riser last 2 bars · snare roll bar 16
+   17–32 DROP A   everything · pad rests bars 17–24, returns 25
+   33–40 BREAK    sub + kick out · pad/lead/perc · siren at bar 34
+   41–56 DROP B   everything · TALK bumped +1 (capped 3) · ghost density ×1.5 — same tune, more chat
+   57–64 OUTRO    strips to sub + perc + fx · loops seamlessly into INTRO
+   PULL UP (live only): spinback FX ≈ .8 s → scheduler jumps to bar 17.   */
+const BARS=64;
+const DLY_DIV=0.75;             // delay time = dotted eighth (fraction of a beat × 3/2... see NOTES)
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice
+   (the sound-design targets — the implementing session must make the
+   voices read these and ONLY these; re-voicing then happens on the
+   OFFICINA bench). Per-RIDDIM numbers (verb/dly mixes, fm, densities)
+   stay in MOODS — they are law; TIMBRE is the voice underneath.       */
+const TIMBRE={
+  id:'sublow', title:'SUBLOW · op. XVI',
+  doc:'A dubstep sound system. Master: pre-gain → tanh shaper (gentle — the weight must stay clean) → 4:1 compressor → output trim, with one shared reverb + a tempo-locked filtered feedback delay as sends. Voices: SUB — near-pure sine floored at E1 with a breath of 2nd harmonic so laptops still feel it, centre, never sent to FX; WOB — the mid bass above the 110 Hz crossover, detuned saws through a resonant lowpass swept by a tempo-locked LFO (the talk), optional FM growl, saturated; KICK — tuned short and tight so the sub owns the floor; SNARE — the genre’s big beat-3 crack: pitched body + bandpassed noise + rim knock, wet; HATS — shuffled ticks; PERC — congas/rim/metal by session; PAD — third-less detuned saws, slow, wide, wet; LEAD — EAST’s plucky mono snake line into the delay; FX — dub siren, spinback, crackle on the part bus, hiss post-comp so it never pumps.',
+  groups:{
+    master:{label:'master chain',doc:'Shared out. The shaper is gentler than RILLE’s — sub weight distorts ugly.',params:{
+      pre:{v:.9,min:.3,max:1.3,step:.01,label:'pre gain',doc:'level into the shaper'},
+      drive:{v:1.25,min:.5,max:4,step:.05,label:'shaper drive',doc:'tanh hardness — keep low; the sub must stay clean'},
+      out:{v:.8,min:.4,max:1,step:.01,label:'output trim',doc:'post-comp headroom; the WAV must never clip'},
+    }},
+    sub:{label:'sub',doc:'The true lead. Sine, floored at E1 by law, centre, dry.',params:{
+      lvl:{v:.95,min:.3,max:1.2,step:.01,label:'level',doc:'sub note peak'},
+      harm2:{v:.14,min:0,max:.5,step:.01,label:'2nd harmonic',doc:'octave-up breath so small speakers read the line'},
+      glide:{v:.06,min:0,max:.2,step:.005,unit:'s',label:'glide',doc:'portamento between bass notes'},
+      attack:{v:.02,min:.004,max:.1,step:.002,unit:'s',label:'attack',doc:'sub swell-in; longer = deeper pocket'},
+    }},
+    wob:{label:'wobble (mid bass)',doc:'The talk. Highpassed at the 110 Hz crossover by law; the LFO rate is the composition’s token, not a knob.',params:{
+      lvl:{v:.5,min:0,max:1,step:.01,label:'level',doc:'mid-bass peak'},
+      lo:{v:150,min:110,max:400,step:5,unit:'Hz',label:'sweep floor',doc:'filter cutoff at LFO bottom'},
+      hi:{v:1900,min:600,max:5000,step:25,unit:'Hz',label:'sweep top',doc:'filter cutoff at LFO top'},
+      q:{v:9,min:1,max:18,step:.5,label:'resonance',doc:'the vowel of the talk'},
+      sat:{v:1.8,min:1,max:5,step:.1,label:'saturation',doc:'tanh drive on the wobble bus'},
+      dt:{v:7,min:0,max:15,step:.5,unit:'¢',label:'detune',doc:'±cents between the saw pair'},
+    }},
+    kick:{label:'kick',doc:'Short and tight — under 100 ms of low end, then out of the sub’s way.',params:{
+      pitch:{v:88,min:60,max:140,step:1,unit:'Hz',label:'pitch',doc:'where the drop starts'},
+      floor:{v:46,min:35,max:60,step:1,unit:'Hz',label:'floor',doc:'where the drop lands'},
+      drop:{v:.05,min:.02,max:.15,step:.005,unit:'s',label:'drop time',doc:'speed of the fall'},
+      dec:{v:.2,min:.08,max:.4,step:.01,unit:'s',label:'decay',doc:'body length — keep short'},
+      click:{v:.18,min:0,max:.6,step:.01,label:'click',doc:'the 2.8 kHz beater tick'},
+      duck:{v:.25,min:0,max:.6,step:.01,label:'sub duck',doc:'how much the kick dips the sub for its punch window'},
+    }},
+    snare:{label:'snare',doc:'The beat-3 crack. Three layers: pitched body, noise crack, rim knock.',params:{
+      body:{v:.5,min:0,max:1,step:.02,label:'body',doc:'pitched-layer level'},
+      bodyHz:{v:186,min:120,max:280,step:2,unit:'Hz',label:'body pitch',doc:'fundamental (drops ~30 Hz over the hit)'},
+      crack:{v:.6,min:0,max:1,step:.02,label:'crack',doc:'bandpassed-noise level'},
+      crackHz:{v:1750,min:800,max:4000,step:25,unit:'Hz',label:'crack tone',doc:'noise bandpass centre'},
+      dec:{v:.16,min:.06,max:.35,step:.01,unit:'s',label:'decay',doc:'hit length'},
+      rim:{v:.35,min:0,max:1,step:.02,label:'rim knock',doc:'the 1.1 kHz damped tick (STEPPA leans on it)'},
+    }},
+    hats:{label:'hats & shaker',doc:'Shuffled 140 over the 70. Closed chokes open.',params:{
+      hp:{v:8200,min:4000,max:12000,step:100,unit:'Hz',label:'highpass',doc:'tick brightness'},
+      lvl:{v:.32,min:0,max:.8,step:.02,label:'level',doc:'closed tick level (× velocity)'},
+      dec:{v:.028,min:.01,max:.1,step:.002,unit:'s',label:'decay',doc:'tick length'},
+      openLen:{v:.16,min:.06,max:.5,step:.01,unit:'s',label:'open length',doc:'open hat ring'},
+      shakerLvl:{v:.16,min:0,max:.5,step:.01,label:'shaker',doc:'the 16th shaker bed (MEDITATE)'},
+    }},
+    perc:{label:'percussion',doc:'The tribal floor: congas (skin), rim (garage), metal ticks (dungeon).',params:{
+      tone:{v:330,min:180,max:600,step:5,unit:'Hz',label:'skin tone',doc:'conga fundamental (bends down ~10%)'},
+      dec:{v:.22,min:.08,max:.5,step:.01,unit:'s',label:'decay',doc:'stroke length'},
+      lvl:{v:.4,min:0,max:.9,step:.02,label:'level',doc:'stroke level (× velocity)'},
+      metalHz:{v:2400,min:1200,max:5000,step:50,unit:'Hz',label:'metal tone',doc:'dungeon tick pair centre (inharmonic)'},
+    }},
+    pad:{label:'pad',doc:'Third-less by law (root·fifth·octave·ninth). Slow, dark, wet.',params:{
+      lvl:{v:.14,min:0,max:.5,step:.01,label:'level',doc:'swell peak'},
+      warm:{v:1500,min:800,max:4000,step:25,unit:'Hz',label:'warmth',doc:'lowpass over the saws'},
+      attack:{v:1.2,min:.1,max:3,step:.05,unit:'s',label:'attack',doc:'swell-in'},
+      dt:{v:6,min:0,max:15,step:.5,unit:'¢',label:'detune',doc:'±cents of the pair — the width'},
+      subOct:{v:.2,min:0,max:.6,step:.02,label:'sub octave',doc:'sine an octave under the pad root (above XOVER)'},
+    }},
+    lead:{label:'lead',doc:'EAST’s mono snake line — plucky, gliding, thrown into the delay.',params:{
+      lvl:{v:.3,min:0,max:.7,step:.01,label:'level',doc:'note peak (× velocity)'},
+      warm:{v:2600,min:1200,max:6000,step:50,unit:'Hz',label:'warmth',doc:'lowpass over the voice'},
+      glide:{v:.04,min:0,max:.15,step:.005,unit:'s',label:'glide',doc:'portamento — the snake'},
+      dec:{v:.4,min:.1,max:1.2,step:.02,unit:'s',label:'decay',doc:'pluck length'},
+      sq:{v:.35,min:0,max:1,step:.02,label:'square mix',doc:'square under the saw — hollow reed colour'},
+    }},
+    fx:{label:'fx & surface',doc:'The dance, not the tune: siren, spinback, dust.',params:{
+      siren:{v:.1,min:0,max:.4,step:.01,label:'siren',doc:'dub siren level (section seams)'},
+      spin:{v:.5,min:0,max:1,step:.02,label:'spinback',doc:'PULL UP rewind level'},
+      crackle:{v:.08,min:0,max:.4,step:.005,label:'crackle',doc:'dubplate grit on the part bus'},
+      hiss:{v:.004,min:0,max:.02,step:.0005,label:'hiss',doc:'constant surface, post-comp so it never pumps'},
+      riser:{v:.15,min:0,max:.5,step:.01,label:'riser',doc:'noise sweep into the drops'},
+    }},
+    sends:{label:'FX sends',doc:'Into the shared reverb + tempo-locked delay (the session sets the returns). The sub sends nothing, by law.',params:{
+      snareV:{v:.55,min:0,max:1.2,step:.02,label:'snare → verb',doc:'the crack into the room'},
+      padV:{v:.6,min:0,max:1.2,step:.02,label:'pad → verb',doc:'pad into the room'},
+      percV:{v:.3,min:0,max:1.2,step:.02,label:'perc → verb',doc:'perc into the room'},
+      leadD:{v:.6,min:0,max:1.2,step:.02,label:'lead → delay',doc:'the snake into the echo'},
+      hatD:{v:.12,min:0,max:1.2,step:.02,label:'hats → delay',doc:'tick throws'},
+      sirenD:{v:.8,min:0,max:1.2,step:.02,label:'siren → delay',doc:'the siren IS mostly its echo'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+/* ============================== ENGINE ==================================
+   The composer. genAll(seed, moodIdx, talk, bpm) → g, pure and deterministic
+   (cached on st.g by the caller). Full spec in sublow/NOTES.md §2 — this
+   implementation follows it with a few pragmatic simplifications noted
+   inline (fills and pad envelopes are computed procedurally rather than
+   pre-stored; harmless, since nothing downstream depends on the storage
+   shape, only on the sounding result). */
+const DEGPOOL=[[0,5],[-5,2],[3,2],[5,1.5],[7,1.5],[-12,1],[12,.7],[-2,.8]];
+const DEGSUM=DEGPOOL.reduce((s,[,w])=>s+w,0);
+function pickDeg(rng){
+  let r=rng()*DEGSUM,acc=0;
+  for(const[d,w]of DEGPOOL){acc+=w;if(r<acc)return d;}
+  return 0;
+}
+function makeBass(rng,talkLevel){
+  const divs=TALKS[talkLevel].divs, sw=TALKS[talkLevel].sw;
+  const notes=[{bar:0,step:0,len:6+((rng()*6)|0),deg:0,div:divs[(rng()*divs.length)|0],dive:false}];
+  let cursor=notes[0].step+notes[0].len, guard=0;
+  const cap=talkLevel<=1?5:8;
+  while(cursor<30&&notes.length<cap&&guard<60){
+    guard++;
+    if(rng()<.18){cursor+=2+((rng()*3)|0);continue;}
+    const bar=cursor>=16?1:0, step=cursor%16;
+    let len=4+((rng()*8)|0);
+    if(step+len>16)len=16-step;
+    if(len<2){cursor+=2;continue;}
+    const dive=sw&&rng()<.15;
+    notes.push({bar,step,len,deg:pickDeg(rng),div:divs[(rng()*divs.length)|0],dive});
+    cursor+=len;
+  }
+  return notes;
+}
+function makeDrums(rng,M){
+  const kick=[0];
+  for(const s of KICK_CELLS)if(rng()<M.kickDens)kick.push(s);
+  kick.sort((a,b)=>a-b);
+  const ghost=[],used=new Set(kick);
+  const ghostN=Math.round(M.ghost*10);
+  for(let i=0;i<ghostN;i++){
+    let s,tries=0;
+    do{s=(rng()*32)|0;tries++;}while((SNARE_STEPS.includes(s)||used.has(s))&&tries<20);
+    if(tries<20){used.add(s);ghost.push({step:s,vel:.15+rng()*.2});}
+  }
+  const hats=[],hatStep=M.hatRate===8?4:2;
+  for(let s=0;s<32;s+=hatStep)
+    hats.push({step:s,open:(s%16===14)&&rng()<.8,vel:.55+rng()*.35});
+  const perc=[],percN=Math.round(M.percDens*10);
+  for(let i=0;i<percN;i++){
+    let s,tries=0;
+    do{s=(rng()*32)|0;tries++;}while(SNARE_STEPS.includes(s)&&tries<20);
+    perc.push({step:s,kind:M.percKind,vel:.4+rng()*.4});
+  }
+  return{kick,snare:SNARE_STEPS.slice(),ghost,hats,perc};
+}
+function makePad(rng){
+  const pad=[];
+  for(let b=0;b<8;b++){
+    const root=(b%2===1)?8:0;                 // i on even breaths, ♭VI on odd — third-less either way
+    const degs=[root,root+7,root+12];
+    if(rng()<.4)degs.push(root+14);
+    pad.push({block:b,degs});
+  }
+  return pad;
+}
+function makeLead(rng,M){
+  if(!M.lead)return[];
+  const range=[...M.mode.map(d=>d+12),...M.mode.map(d=>d+24)];
+  const cell=[];
+  const phrase=bar=>{let cursor=0;
+    while(cursor<16){
+      if(rng()<.35){cursor+=2+((rng()*2)|0);continue;}
+      const len=Math.min(2+((rng()*3)|0),16-cursor);
+      cell.push({bar,step:cursor,len,off:range[(rng()*range.length)|0],vel:.6+rng()*.3});
+      cursor+=len;
+    }};
+  for(let b=0;b<4;b++)phrase(b);
+  // land the last note of the response (bar 3) on the root or fifth
+  for(let i=cell.length-1;i>=0;i--)if(cell[i].bar===3){cell[i].off=(rng()<.5?12:19);break;}
+  return cell;
+}
+function makeArrange(){
+  const arr=[];
+  for(let bar=0;bar<BARS;bar++){
+    let parts;
+    if(bar<8)        parts={sub:0,kick:0,snare:0,hats:0,perc:1,pad:1,lead:1,fx:1};       // INTRO
+    else if(bar<16)  parts={sub:0,kick:1,snare:1,hats:1,perc:1,pad:1,lead:1,fx:1};       // BUILD
+    else if(bar<24)  parts={sub:1,kick:1,snare:1,hats:1,perc:1,pad:0,lead:1,fx:0};       // DROP A (pad rests)
+    else if(bar<32)  parts={sub:1,kick:1,snare:1,hats:1,perc:1,pad:1,lead:1,fx:0};       // DROP A (pad back)
+    else if(bar<40)  parts={sub:0,kick:0,snare:1,hats:1,perc:1,pad:1,lead:1,fx:1};       // BREAK
+    else if(bar<48)  parts={sub:1,kick:1,snare:1,hats:1,perc:1,pad:0,lead:1,fx:0};       // DROP B (pad rests)
+    else if(bar<56)  parts={sub:1,kick:1,snare:1,hats:1,perc:1,pad:1,lead:1,fx:0};       // DROP B (pad back)
+    else             parts={sub:1,kick:0,snare:0,hats:0,perc:1,pad:0,lead:0,fx:1};       // OUTRO
+    arr.push({name:bar<8?'INTRO':bar<16?'BUILD':bar<32?'DROP A':bar<40?'BREAK':bar<56?'DROP B':'OUTRO',parts});
+  }
+  return arr;
+}
+function genAll(seed,moodIdx,talk,bpm){
+  // NB bpm is accepted (matches the call signature every control site uses)
+  // but deliberately NOT folded into the seed: tempo is a playback rate, not
+  // a compositional choice — dragging the slider re-times the same riddim
+  // rather than rerolling it (the wobble LFO rate already reads st.bpm live
+  // at schedule time, so a tempo change re-vibes the very next bar).
+  const M=MOODS[moodIdx];
+  const rng=mulberry32((seed^(moodIdx*0x9e3779b1)^(talk*0x2545f4ff))>>>0);
+  const bass=makeBass(rng,talk);
+  const bassBTalk=Math.min(3,talk+1);
+  const bDivs=TALKS[bassBTalk].divs;
+  const bassB=bass.map(n=>({...n,
+    div:bDivs[(rng()*bDivs.length)|0],
+    dive:n.dive||(TALKS[bassBTalk].sw&&rng()<.2)}));
+  return{
+    seed,mood:moodIdx,talk,bpm,root:M.root,
+    bass,bassB,
+    drums:makeDrums(rng,M),
+    pad:makePad(rng),
+    lead:makeLead(rng,M),
+    arrange:makeArrange(),
+    matrix:seed.toString(36),
+  };
+}
+/* ============================ ENGINE-END ================================ */
+
+/* ------------------------------ state ------------------------------ */
+const st={
+  playing:false, paused:false,          // paused stays false — no pause UI; __iosAudio reads it
+  seed:(Math.random()*0x7fffffff)|0,
+  mood:2,                               // WOBBLE is the front door
+  talk:null,                            // null = riddim default; 0..3 = user law
+  bpm:140,
+  mask:255,                             // 8 parts, bit i = PARTS[i] audible
+  g:null,                               // cached genAll output
+};
+const effTalk=()=>st.talk==null?MOODS[st.mood].talk:st.talk;
+
+/* ============================== AUDIO ====================================
+   The whole audio path. Synthesis recipes with numbers documented in
+   sublow/NOTES.md §3; graph shape follows RILLE's skeleton (master
+   pre→shaper→comp→out, shared verb+delay sends, a duck bus) simplified to
+   a single deck (no crossfader — this machine doesn't beatmix decks). */
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function makeNoise(ac){const b=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);
+  const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b;}
+function makeCrackle(ac){const b=ac.createBuffer(1,ac.sampleRate*4,ac.sampleRate);
+  const d=b.getChannelData(0);
+  for(let i=0;i<700;i++){const p=(Math.random()*d.length)|0,a=(Math.random()**2)*.9;
+    d[p]=a*(Math.random()<.5?-1:1);if(p+1<d.length)d[p+1]=-a*.4;}
+  return b;}
+function makeIR(ac,sec){const len=Math.max(1,Math.floor(sec*ac.sampleRate)),b=ac.createBuffer(2,len,ac.sampleRate);
+  for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,2.1);lp+=0.22*((Math.random()*2-1)-lp);d[i]=lp*e*3;}}return b;}
+function shaperCurve(k){const n=1024,c=new Float32Array(n);
+  for(let i=0;i<n;i++){const x=i/(n-1)*2-1;c[i]=Math.tanh(x*k)/Math.tanh(k);}return c;}
+
+/* ---------------- the graph ----------------
+   master: pre → shaper → comp → out → destination. G.floor: hiss tap
+   straight to destination, post-comp (never pumped). Shared verb+delay
+   sends. G.duck: kick env dips sub+pad (the only parts on the duck bus —
+   wob/mid-bass and everything else stays unducked). Sub is lowpassed at
+   the crossover (it's already ~sine, this is the safety); wob is
+   highpassed there — nothing else lives below XOVER except the kick's
+   own short body. Wob has no separate mixer channel: it sums into
+   part.sub, since the user perceives "the bass" (sub+talk) as one part. */
+function buildGraph(ac){
+  const M=MOODS[st.mood],G={ac,openHats:[]};
+  G.noise=makeNoise(ac);G.crackle=makeCrackle(ac);
+  G.pre=ac.createGain();G.pre.gain.value=TP.master.pre;
+  G.shape=ac.createWaveShaper();G.shape.curve=shaperCurve(TP.master.drive);G.shape.oversample='2x';
+  G.comp=ac.createDynamicsCompressor();
+  G.comp.threshold.value=-12;G.comp.ratio.value=4;G.comp.knee.value=6;
+  G.comp.attack.value=.003;G.comp.release.value=.18;
+  G.out=ac.createGain();G.out.gain.value=TP.master.out;
+  G.pre.connect(G.shape).connect(G.comp).connect(G.out).connect(ac.destination);
+  G.floor=ac.createGain();G.floor.gain.value=1;G.floor.connect(ac.destination);
+
+  G.verb=ac.createConvolver();G.verb.buffer=makeIR(ac,M.verb.sec);
+  G.vret=ac.createGain();G.vret.gain.value=M.verb.mix;G.verb.connect(G.vret).connect(G.pre);
+  const dlyTime=clamp((60/st.bpm)*DLY_DIV,.01,1.9);
+  G.dly=ac.createDelay(2);G.dly.delayTime.value=dlyTime;
+  G.dfb=ac.createGain();G.dfb.gain.value=M.dly.fb;
+  const dlp=ac.createBiquadFilter();dlp.type='lowpass';dlp.frequency.value=3000;
+  G.dly.connect(dlp).connect(G.dfb).connect(G.dly);
+  G.dret=ac.createGain();G.dret.gain.value=M.dly.mix;dlp.connect(G.dret).connect(G.pre);
+
+  G.sum=ac.createGain();G.sum.gain.value=1;G.sum.connect(G.pre);
+  G.duck=ac.createGain();G.duck.gain.value=1;G.duck.connect(G.sum);
+  G.part={};
+  for(const p of PARTS){
+    const gn=ac.createGain();gn.gain.value=(st.mask>>PARTS.indexOf(p)&1)?1:0;
+    gn.connect((p==='sub'||p==='pad')?G.duck:G.sum);
+    G.part[p]=gn;
+  }
+  G.subLP=ac.createBiquadFilter();G.subLP.type='lowpass';G.subLP.frequency.value=XOVER*3;G.subLP.Q.value=.5;
+  G.subLP.connect(G.part.sub);
+  G.wobHP=ac.createBiquadFilter();G.wobHP.type='highpass';G.wobHP.frequency.value=XOVER;G.wobHP.Q.value=.5;
+  G.wobHP.connect(G.part.sub);
+
+  G.psend={};
+  const sv=(node,amt,key)=>{const g=ac.createGain();g.gain.value=amt;node.connect(g).connect(G.verb);G.psend[key]=g;};
+  const sd=(node,amt,key)=>{const g=ac.createGain();g.gain.value=amt;node.connect(g).connect(G.dly);G.psend[key]=g;};
+  sv(G.part.snare,TP.sends.snareV,'snareV');
+  sv(G.part.pad,TP.sends.padV,'padV');
+  sv(G.part.perc,TP.sends.percV,'percV');
+  sd(G.part.lead,TP.sends.leadD,'leadD');
+  sd(G.part.hats,TP.sends.hatD,'hatD');
+  sd(G.part.fx,TP.sends.sirenD,'sirenD');
+  return G;
+}
+
+/* ---------------- voices (schedule-time; read TP live) ---------------- */
+function vSub(G,t,rootMidi,deg,len){
+  const ac=G.ac;
+  let note=rootMidi+deg;while(note<SUB_FLOOR)note+=12;
+  const f=mtof(note);
+  const o=ac.createOscillator(),o2=ac.createOscillator(),gn=ac.createGain(),g2=ac.createGain();
+  o.type='sine';o.frequency.setValueAtTime(G.lastSubFreq||f,t);
+  o.frequency.linearRampToValueAtTime(f,t+TP.sub.glide);
+  o2.type='sine';o2.frequency.value=f*2;g2.gain.value=TP.sub.harm2;
+  G.lastSubFreq=f;
+  gn.gain.setValueAtTime(0,t);
+  gn.gain.linearRampToValueAtTime(TP.sub.lvl,t+TP.sub.attack);
+  gn.gain.setValueAtTime(TP.sub.lvl,t+Math.max(TP.sub.attack,len-.06));
+  gn.gain.exponentialRampToValueAtTime(.0001,t+len+.1);
+  o.connect(gn);o2.connect(g2).connect(gn);gn.connect(G.subLP);
+  o.start(t);o.stop(t+len+.18);o2.start(t);o2.stop(t+len+.18);
+}
+// the talk: mid bass, an octave above the sub note, resonant lowpass swept
+// by a tempo-locked LFO whose RATE (cycles/sec = div × bpm/60) is the
+// rhythmic division — the wobble is rhythm, not vibrato.
+function vWob(G,t,len,div,dive,M){
+  const ac=G.ac,rateHz=div*(st.bpm/60);
+  const f=(G.lastSubFreq||110)*2;
+  const filt=ac.createBiquadFilter();filt.type='lowpass';filt.Q.value=TP.wob.q;
+  const lo=TP.wob.lo,hi=TP.wob.hi;
+  filt.frequency.value=(hi+lo)/2;
+  const lfo=ac.createOscillator();lfo.type=(M.wobShape==='tri'?'triangle':'sine');
+  lfo.frequency.value=rateHz;
+  const lfoGain=ac.createGain();lfoGain.gain.value=(hi-lo)/2;
+  lfo.connect(lfoGain).connect(filt.frequency);
+  const sat=ac.createWaveShaper();sat.curve=shaperCurve(TP.wob.sat);sat.oversample='2x';
+  const gn=ac.createGain();
+  gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(TP.wob.lvl,t+.015);
+  gn.gain.setValueAtTime(TP.wob.lvl,t+Math.max(.02,len-.05));
+  gn.gain.exponentialRampToValueAtTime(.0001,t+len+.08);
+  for(const det of[-TP.wob.dt,TP.wob.dt]){
+    const o=ac.createOscillator();o.type='sawtooth';
+    o.frequency.setValueAtTime(f,t);o.detune.value=det;
+    if(dive)o.frequency.exponentialRampToValueAtTime(Math.max(30,f/2),t+len);
+    if(M.fm>0){
+      const mod=ac.createOscillator(),modg=ac.createGain();
+      mod.type='sine';mod.frequency.value=f*1.5;modg.gain.value=M.fm*40;
+      mod.connect(modg).connect(o.detune);mod.start(t);mod.stop(t+len+.1);
+    }
+    o.connect(filt);o.start(t);o.stop(t+len+.18);
+  }
+  filt.connect(sat).connect(gn).connect(G.wobHP);
+  lfo.start(t);lfo.stop(t+len+.18);
+}
+function vKick(G,t){
+  const ac=G.ac,o=ac.createOscillator(),gn=ac.createGain();
+  o.type='sine';
+  o.frequency.setValueAtTime(TP.kick.pitch,t);
+  o.frequency.exponentialRampToValueAtTime(TP.kick.floor,t+TP.kick.drop);
+  gn.gain.setValueAtTime(0,t);gn.gain.linearRampToValueAtTime(1,t+.004);
+  gn.gain.exponentialRampToValueAtTime(.001,t+TP.kick.dec);
+  o.connect(gn).connect(G.part.kick);o.start(t);o.stop(t+TP.kick.dec+.1);
+  const c=ac.createOscillator(),cg=ac.createGain();
+  c.type='triangle';c.frequency.value=2800;
+  cg.gain.setValueAtTime(TP.kick.click,t);cg.gain.exponentialRampToValueAtTime(.0001,t+.012);
+  c.connect(cg).connect(G.part.kick);c.start(t);c.stop(t+.03);
+  const d=G.duck.gain;
+  d.setValueAtTime(1,t);
+  d.linearRampToValueAtTime(1-TP.kick.duck,t+.008);
+  d.exponentialRampToValueAtTime(1,t+.16);
+}
+function vSnare(G,t,vel){
+  const ac=G.ac;
+  const o=ac.createOscillator(),og=ac.createGain();
+  o.type='triangle';
+  o.frequency.setValueAtTime(TP.snare.bodyHz,t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(60,TP.snare.bodyHz-30),t+TP.snare.dec*.8);
+  og.gain.setValueAtTime(TP.snare.body*vel,t);
+  og.gain.exponentialRampToValueAtTime(.0001,t+TP.snare.dec);
+  o.connect(og).connect(G.part.snare);o.start(t);o.stop(t+TP.snare.dec+.05);
+  const s=ac.createBufferSource();s.buffer=G.noise;
+  const bp=ac.createBiquadFilter();bp.type='bandpass';bp.frequency.value=TP.snare.crackHz;bp.Q.value=1.1;
+  const sg=ac.createGain();
+  sg.gain.setValueAtTime(TP.snare.crack*vel,t);
+  sg.gain.exponentialRampToValueAtTime(.0001,t+TP.snare.dec*.7);
+  s.connect(bp).connect(sg).connect(G.part.snare);
+  s.start(t,Math.random()*1.5);s.stop(t+TP.snare.dec+.1);
+  const r=ac.createOscillator(),rg=ac.createGain();
+  r.type='sine';r.frequency.value=1100;
+  rg.gain.setValueAtTime(TP.snare.rim*vel,t);
+  rg.gain.exponentialRampToValueAtTime(.0001,t+.03);
+  r.connect(rg).connect(G.part.snare);r.start(t);r.stop(t+.05);
+}
+function vHat(G,t,open,vel){
+  const ac=G.ac,s=ac.createBufferSource();s.buffer=G.noise;
+  const hp=ac.createBiquadFilter();hp.type='highpass';hp.frequency.value=TP.hats.hp;
+  const gn=ac.createGain(),dec=open?TP.hats.openLen:TP.hats.dec;
+  gn.gain.setValueAtTime(TP.hats.lvl*vel,t);
+  gn.gain.exponentialRampToValueAtTime(.0001,t+dec);
+  s.connect(hp).connect(gn).connect(G.part.hats);
+  s.start(t,Math.random()*1.5);s.stop(t+dec+.05);
+  if(!open){
+    for(const oh of G.openHats)if(oh.end>t){
+      oh.gn.gain.cancelScheduledValues(t);oh.gn.gain.setValueAtTime(oh.gn.gain.value||.0001,t);
+      oh.gn.gain.exponentialRampToValueAtTime(.0001,t+.02);
+    }
+    G.openHats=G.openHats.filter(o=>o.end>t+.5);
+  }else G.openHats.push({gn,end:t+dec});
+}
+function vShaker(G,t,vel){
+  const ac=G.ac,s=ac.createBufferSource();s.buffer=G.noise;
+  const hp=ac.createBiquadFilter();hp.type='highpass';hp.frequency.value=9000;
+  const gn=ac.createGain();
+  gn.gain.setValueAtTime(TP.hats.shakerLvl*vel,t);
+  gn.gain.exponentialRampToValueAtTime(.0001,t+.02);
+  s.connect(hp).connect(gn).connect(G.part.hats);
+  s.start(t,Math.random()*1.5);s.stop(t+.04);
+}
+function vPerc(G,t,kind,vel){
+  const ac=G.ac;
+  if(kind==='metal'){
+    for(const mul of[1,1.47]){
+      const o=ac.createOscillator(),gn=ac.createGain();
+      o.type='square';o.frequency.value=TP.perc.metalHz*mul;
+      gn.gain.setValueAtTime(TP.perc.lvl*vel*.5,t);
+      gn.gain.exponentialRampToValueAtTime(.0001,t+.08);
+      o.connect(gn).connect(G.part.perc);o.start(t);o.stop(t+.12);
+    }
+    return;
+  }
+  const o=ac.createOscillator(),gn=ac.createGain();
+  o.type='sine';
+  const base=kind==='rim'?1500:TP.perc.tone;
+  o.frequency.setValueAtTime(base,t);
+  o.frequency.exponentialRampToValueAtTime(base*.9,t+TP.perc.dec);
+  gn.gain.setValueAtTime(TP.perc.lvl*vel,t);
+  gn.gain.exponentialRampToValueAtTime(.0001,t+(kind==='rim'?.05:TP.perc.dec));
+  o.connect(gn).connect(G.part.perc);o.start(t);o.stop(t+TP.perc.dec+.05);
+  if(kind==='skin'){
+    const s=ac.createBufferSource();s.buffer=G.noise;
+    const hp=ac.createBiquadFilter();hp.type='highpass';hp.frequency.value=2000;
+    const ng=ac.createGain();ng.gain.setValueAtTime(.15*vel,t);ng.gain.exponentialRampToValueAtTime(.0001,t+.02);
+    s.connect(hp).connect(ng).connect(G.part.perc);s.start(t,Math.random()*1.5);s.stop(t+.04);
+  }
+}
+// third-less by law: degs are semitone offsets from the sub root (root
+// already folded in for the ♭VI breaths), voiced in JI via jiFreq.
+function vPad(G,t,rootMidi,degs,len,short,lvlMul){
+  lvlMul=lvlMul||1;
+  const ac=G.ac,gn=ac.createGain();
+  const atk=short?Math.min(TP.pad.attack*.3,len*.3):TP.pad.attack;
+  const lvl=TP.pad.lvl*lvlMul;
+  gn.gain.setValueAtTime(0,t);
+  gn.gain.linearRampToValueAtTime(lvl,t+atk);
+  gn.gain.setValueAtTime(lvl,t+Math.max(atk,len-len*.2));
+  gn.gain.linearRampToValueAtTime(0,t+len);
+  const warm=ac.createBiquadFilter();warm.type='lowpass';warm.frequency.value=TP.pad.warm;warm.Q.value=.4;
+  gn.connect(warm).connect(G.part.pad);
+  for(const deg of degs)for(const det of[-TP.pad.dt,TP.pad.dt]){
+    const o=ac.createOscillator();o.type='sawtooth';
+    o.frequency.value=jiFreq(deg,rootMidi);o.detune.value=det;
+    o.connect(gn);o.start(t);o.stop(t+len+.2);
+  }
+  const so=ac.createOscillator(),sog=ac.createGain();
+  so.type='sine';so.frequency.value=jiFreq(degs[0]-12,rootMidi);sog.gain.value=TP.pad.subOct;
+  so.connect(sog).connect(gn);so.start(t);so.stop(t+len+.2);
+}
+function vLead(G,t,rootMidi,off,len,vel){
+  const ac=G.ac,f=jiFreq(off,rootMidi),gn=ac.createGain();
+  gn.gain.setValueAtTime(0,t);
+  gn.gain.linearRampToValueAtTime(TP.lead.lvl*vel,t+.012);
+  gn.gain.exponentialRampToValueAtTime(.0001,t+len+TP.lead.dec);
+  const warm=ac.createBiquadFilter();warm.type='lowpass';warm.frequency.value=TP.lead.warm;warm.Q.value=.5;
+  gn.connect(warm).connect(G.part.lead);
+  const o=ac.createOscillator(),sq=ac.createOscillator(),sqg=ac.createGain();
+  o.type='sawtooth';o.frequency.setValueAtTime(G.lastLeadFreq||f,t);o.frequency.linearRampToValueAtTime(f,t+TP.lead.glide);
+  sq.type='square';sq.frequency.setValueAtTime(G.lastLeadFreq||f,t);sq.frequency.linearRampToValueAtTime(f,t+TP.lead.glide);
+  sqg.gain.value=TP.lead.sq;
+  G.lastLeadFreq=f;
+  o.connect(gn);sq.connect(sqg).connect(gn);
+  o.start(t);o.stop(t+len+TP.lead.dec+.1);sq.start(t);sq.stop(t+len+TP.lead.dec+.1);
+}
+function vSiren(G,t){
+  const ac=G.ac,len=1.4,o=ac.createOscillator(),gn=ac.createGain();
+  o.type='sine';
+  o.frequency.setValueAtTime(400,t);
+  o.frequency.linearRampToValueAtTime(1100,t+len*.5);
+  o.frequency.linearRampToValueAtTime(400,t+len);
+  gn.gain.setValueAtTime(0,t);
+  gn.gain.linearRampToValueAtTime(TP.fx.siren,t+.1);
+  gn.gain.linearRampToValueAtTime(0,t+len);
+  o.connect(gn).connect(G.part.fx);o.start(t);o.stop(t+len+.1);
+}
+function vRiser(G,t,len){
+  const ac=G.ac,s=ac.createBufferSource();s.buffer=G.noise;s.loop=true;
+  const bp=ac.createBiquadFilter();bp.type='bandpass';bp.Q.value=1.2;
+  bp.frequency.setValueAtTime(300,t);bp.frequency.exponentialRampToValueAtTime(6000,t+len);
+  const gn=ac.createGain();
+  gn.gain.setValueAtTime(.0001,t);
+  gn.gain.exponentialRampToValueAtTime(Math.max(.0002,TP.fx.riser),t+len*.9);
+  gn.gain.linearRampToValueAtTime(0,t+len);
+  s.connect(bp).connect(gn).connect(G.part.fx);s.start(t);s.stop(t+len+.1);
+}
+function vSpinback(G,t){
+  const ac=G.ac,len=.8;
+  const s=ac.createBufferSource();s.buffer=G.noise;s.loop=true;
+  const bp=ac.createBiquadFilter();bp.type='bandpass';bp.Q.value=2;
+  bp.frequency.setValueAtTime(3000,t);bp.frequency.exponentialRampToValueAtTime(80,t+len);
+  const o=ac.createOscillator();o.type='sawtooth';
+  o.frequency.setValueAtTime(600,t);o.frequency.exponentialRampToValueAtTime(40,t+len);
+  const gn=ac.createGain();
+  gn.gain.setValueAtTime(TP.fx.spin,t);gn.gain.linearRampToValueAtTime(0,t+len);
+  s.connect(bp).connect(gn).connect(G.part.fx);o.connect(gn);
+  s.start(t);s.stop(t+len+.05);o.start(t);o.stop(t+len+.05);
+}
+function startDust(G,when){
+  const ac=G.ac;
+  const c=ac.createBufferSource();c.buffer=G.crackle;c.loop=true;
+  const lp=ac.createBiquadFilter();lp.type='lowpass';lp.frequency.value=5000;
+  const cg=ac.createGain();cg.gain.value=TP.fx.crackle;
+  c.connect(lp).connect(cg).connect(G.part.fx);c.start(when);
+  const h=ac.createBufferSource();h.buffer=G.noise;h.loop=true;
+  const hlp=ac.createBiquadFilter();hlp.type='lowpass';hlp.frequency.value=6000;
+  const hg=ac.createGain();hg.gain.value=TP.fx.hiss;
+  h.connect(hlp).connect(hg).connect(G.floor);h.start(when);
+  return[c,h];
+}
+
+/* ---------------- shared bar scheduler ----------------
+   One arrangement bar = 16 sixteenths; the riddim/drum patterns are
+   2-bar cells (32 steps) so every arrangement bar reads half of them,
+   keyed by bh = bar%2. DROP B (bars 40-55) reads g.bassB (same tune,
+   talk bumped) and ghosts run hotter ("more chat", not more notes). */
+function scheduleBar(G,g,barAbs,t0,stepDur){
+  const bar=((barAbs%BARS)+BARS)%BARS;
+  const M=MOODS[g.mood],ar=g.arrange[bar],bh=bar%2;
+  const swAmt=M.swing*stepDur*2,sw=s=>(s%2===1?swAmt:0);
+  const inDropB=bar>=40&&bar<56, fillBar=bar%8===7;
+  const bassSrc=inDropB?g.bassB:g.bass;
+
+  if(ar.parts.sub)for(const n of bassSrc){
+    if(n.bar!==bh)continue;
+    const t=t0+n.step*stepDur+sw(n.step),len=n.len*stepDur;
+    vSub(G,t,g.root,n.deg,len);
+    if(n.div>0)vWob(G,t,len,n.div,n.dive,M);
+  }
+  if(ar.parts.kick)for(const s of g.drums.kick){
+    if(Math.floor(s/16)!==bh)continue;
+    const ls=s%16;vKick(G,t0+ls*stepDur+sw(ls));
+  }
+  if(ar.parts.snare){
+    for(const s of g.drums.snare){
+      if(Math.floor(s/16)!==bh)continue;
+      const ls=s%16;vSnare(G,t0+ls*stepDur+sw(ls),1);
+    }
+    const ghostMul=inDropB?1.5:1;
+    for(const gh of g.drums.ghost){
+      if(Math.floor(gh.step/16)!==bh)continue;
+      const ls=gh.step%16;vSnare(G,t0+ls*stepDur+sw(ls),Math.min(.5,gh.vel*ghostMul));
+    }
+    if(fillBar)for(const r of[[12,.3],[13,.45],[14,.6]])
+      vSnare(G,t0+r[0]*stepDur,r[1]);
+  }
+  if(ar.parts.hats){
+    for(const h of g.drums.hats){
+      if(Math.floor(h.step/16)!==bh)continue;
+      const ls=h.step%16;vHat(G,t0+ls*stepDur+sw(ls),h.open,h.vel);
+    }
+    if(M.shaker)for(let s=0;s<16;s++)vShaker(G,t0+s*stepDur,.5+(s%4===0?.2:0));
+  }
+  if(ar.parts.perc)for(const p of g.drums.perc){
+    if(Math.floor(p.step/16)!==bh)continue;
+    const ls=p.step%16;vPerc(G,t0+ls*stepDur+sw(ls),p.kind,p.vel);
+  }
+  if(ar.parts.pad&&bar%8===0){
+    const pd=g.pad[Math.floor(bar/8)%8],full=8*16*stepDur;
+    if(M.pad==='stab'){/* handled per-2-bars below */}
+    else if(M.pad==='thin')vPad(G,t0,g.root,[7],full,false,.5);
+    else vPad(G,t0,g.root,pd.degs,full);
+  }
+  if(ar.parts.pad&&M.pad==='stab'&&bar%2===0){
+    const pd=g.pad[Math.floor(bar/8)%8];
+    vPad(G,t0,g.root,pd.degs,2*16*stepDur*.82,true);
+  }
+  if(ar.parts.lead&&g.lead.length){
+    const lb=bar%4;
+    for(const n of g.lead){
+      if(n.bar!==lb)continue;
+      vLead(G,t0+n.step*stepDur,g.root,n.off,n.len*stepDur,n.vel);
+    }
+  }
+  if(ar.parts.fx){
+    if(bar===4||bar===34)vSiren(G,t0);
+    if(bar===14)vRiser(G,t0,stepDur*32);
+  }
+}
+
+/* ---------------- realtime transport ---------------- */
+let ac=null, G=null, RT=null;
+function ensureG(){ if(!st.g)st.g=genAll(st.seed,st.mood,effTalk(),st.bpm); return st.g; }
+
+function play(){
+  const g=ensureG();
+  ac=new(window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ac);
+  G=buildGraph(ac);
+  const dust=startDust(G,ac.currentTime+.05);
+  const stepDur=60/st.bpm/4, t0=ac.currentTime+.1;
+  RT={ac,G,g,dust,timer:null,bars:[{bar:0,t:t0,dur:stepDur}],nextBar:1};
+  scheduleBar(G,g,0,t0,stepDur);
+  RT.timer=setInterval(schedTick,40);
+  st.playing=true;
+  playBtn.textContent='STOP IT';playBtn.classList.add('on');
+  $('pullup').disabled=false;
+  startRAF();
+}
+function schedTick(){
+  if(!RT)return;
+  const cur=RT.bars[RT.bars.length-1],endT=cur.t+16*cur.dur;
+  if(RT.ac.currentTime>endT-.35){
+    const bar=RT.nextBar,dur=60/st.bpm/4,t=endT;
+    scheduleBar(RT.G,RT.g,bar,t,dur);
+    RT.bars.push({bar,t,dur});
+    if(RT.bars.length>24)RT.bars.splice(0,RT.bars.length-24);
+    RT.nextBar=bar+1;
+  }
+}
+function stop(){
+  if(!RT)return;
+  clearInterval(RT.timer);
+  const c=RT.ac;RT=null;
+  setTimeout(()=>c.close(),150);
+  st.playing=false;
+  playBtn.textContent='RUN IT';playBtn.classList.remove('on');
+  $('pullup').disabled=true;
+  render();
+}
+// PULL UP: the rewind. Spin back, then land the next scheduled bar on the
+// drop (bar 17, index 16) — faked by rewriting the scheduler's bar log so
+// schedTick fires again right when the spinback finishes.
+function pullUp(){
+  if(!RT)return;
+  const dur=60/st.bpm/4, spin=.8, jumpT=RT.ac.currentTime+spin;
+  vSpinback(RT.G,RT.ac.currentTime+.02);
+  RT.bars=[{bar:15,t:jumpT-16*dur,dur}];
+  RT.nextBar=16;
+}
+async function cut(){
+  const g=ensureG(),btn=$('cut'),note=$('cutnote');
+  btn.disabled=true;note.textContent='cutting…';
+  try{
+    const stepDur=60/st.bpm/4,loopSec=BARS*16*stepDur,total=loopSec+1.6;
+    const oac=new OfflineAudioContext(2,Math.ceil(total*44100),44100);
+    const savedMood=st.mood,savedBpm=st.bpm; // buildGraph reads these
+    const OG=buildGraph(oac);
+    startDust(OG,.05);
+    let t=.08;
+    for(let bar=0;bar<BARS;bar++){scheduleBar(OG,g,bar,t,stepDur);t+=16*stepDur;}
+    const rb=await oac.startRendering();
+    const L=rb.getChannelData(0),R=rb.getChannelData(1);
+    const loopLen=Math.round(loopSec*44100);
+    const foldL=new Float32Array(loopLen),foldR=new Float32Array(loopLen);
+    for(let i=0;i<loopLen;i++){foldL[i]=L[i];foldR[i]=R[i];}
+    for(let i=loopLen;i<L.length;i++){foldL[i-loopLen]+=L[i];foldR[i-loopLen]+=R[i];}
+    const blob=encodeWav(foldL,foldR,44100);
+    const slug=MOODS[st.mood].name.toLowerCase();
+    saveWav(blob,'sublow_'+slug+'_'+st.bpm+'bpm_'+st.seed.toString(36)+'.wav');
+    note.textContent='cut · '+(loopLen/44100).toFixed(0)+' s · '+MOODS[st.mood].name;
+  }catch(e){note.textContent='cut failed — '+e.message;}
+  btn.disabled=false;
+}
+function encodeWav(Lc,Rc,sr){
+  const n=Lc.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const w=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  w(0,'RIFF');d.setUint32(4,36+n*4,true);w(8,'WAVE');w(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  w(36,'data');d.setUint32(40,n*4,true);let o=44;
+  for(let i=0;i<n;i++){d.setInt16(o,clamp(Lc[i],-1,1)*32767,true);o+=2;d.setInt16(o,clamp(Rc[i],-1,1)*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+/* robust WAV save (shared convention): auto-downloads where allowed, and
+   always shows a tappable pill — the reliable path on iOS Safari, where a
+   programmatic download after an async render is blocked. Copied verbatim
+   from RILLE per HANDOFF (two machines shipped without it once). */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(14,14,16,.92);color:#e9e2d2;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#e9e2d2;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
+
+TIMBRE.touch=()=>{
+  if(!RT)return;
+  const ct=RT.ac.currentTime,G2=RT.G;
+  G2.pre.gain.setTargetAtTime(TP.master.pre,ct,.05);
+  G2.out.gain.setTargetAtTime(TP.master.out,ct,.05);
+  G2.shape.curve=shaperCurve(TP.master.drive);
+  for(const k in G2.psend)if(TP.sends[k]!=null)G2.psend[k].gain.setTargetAtTime(TP.sends[k],ct,.08);
+};
+TIMBRE.demo=()=>{ if(!RT)playBtn.click(); };
+/* ============================= AUDIO-END ================================ */
+
+/* ========================= the stack (canvas) =========================
+   Identity object: the rig — a wall of cabinets. Two scoop subs at the
+   bottom, two kick bins, a mid/top row with horns, an LED strip in
+   red·gold·green. Below the wall: the RIDDIM LANE — the 2-bar bass
+   phrase drawn as the wave it speaks (each note a squiggle whose period
+   is its wobble division; a hold is a straight line), kicks and the
+   beat-3 snare marked underneath.
+   Static wall+lane cached to an offscreen layer; when the engine lands,
+   the dynamic pass (TODO(SONNET)) redraws only: sub-cone excursion from
+   the sounding bass env, horn flash on snare, LED VU, playhead. Idle =
+   draw once; loop only while playing; prefers-reduced-motion = playhead
+   only.                                                                */
+const cv=document.getElementById('stack'), cx=cv.getContext('2d');
+let oc=null;   // cached static layer
+
+function sizeCanvas(){
+  const w=cv.clientWidth, h=Math.round(w*.92), dpr=Math.min(2,window.devicePixelRatio||1);
+  cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+  cv.style.height=h+'px';
+  cx.setTransform(dpr,0,0,dpr,0,0);
+  oc=null; render();
+}
+function box(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);
+  c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function cone(c,x,y,r,ink){
+  c.fillStyle='#101014';c.beginPath();c.arc(x,y,r,0,7);c.fill();
+  c.strokeStyle='rgba(240,233,220,.18)';c.lineWidth=1.5;c.stroke();
+  c.strokeStyle='rgba(240,233,220,.10)';c.lineWidth=1;
+  c.beginPath();c.arc(x,y,r*.62,0,7);c.stroke();
+  c.fillStyle=ink;c.beginPath();c.arc(x,y,r*.16,0,7);c.fill();
+}
+function buildStatic(){
+  const w=cv.clientWidth,h=Math.round(w*.92);
+  oc=document.createElement('canvas');
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  oc.width=Math.round(w*dpr);oc.height=Math.round(h*dpr);
+  const c=oc.getContext('2d');c.setTransform(dpr,0,0,dpr,0,0);
+  const ink=MOODS[st.mood].ink;
+  const wallH=h*.72, laneY=h*.78, m=w*.03;
+  // ---- the wall ----
+  const cw=(w-3*m)/2;
+  const rows=[  // [y, height, drawer]
+    [wallH*.52, wallH*.46, (c,x,y,bw,bh)=>{ // scoop subs: one huge cone
+      cone(c,x+bw/2,y+bh/2,Math.min(bw,bh)*.36,ink);}],
+    [wallH*.24, wallH*.26, (c,x,y,bw,bh)=>{ // kick bins: two cones
+      cone(c,x+bw*.28,y+bh/2,Math.min(bw,bh)*.32,ink);
+      cone(c,x+bw*.72,y+bh/2,Math.min(bw,bh)*.32,ink);}],
+    [0, wallH*.22, (c,x,y,bw,bh)=>{         // tops: cone + horn slot
+      cone(c,x+bw*.24,y+bh/2,Math.min(bw,bh)*.3,ink);
+      c.fillStyle='#0d0d11';c.fillRect(x+bw*.44,y+bh*.3,bw*.44,bh*.4);
+      c.strokeStyle='rgba(240,233,220,.18)';c.lineWidth=1.5;
+      c.strokeRect(x+bw*.44,y+bh*.3,bw*.44,bh*.4);
+      c.fillStyle=ink;c.fillRect(x+bw*.44+bw*.19,y+bh*.44,bw*.06,bh*.12);}],
+  ];
+  for(const[y,bh,draw]of rows)for(let i=0;i<2;i++){
+    const x=m+i*(cw+m);
+    c.fillStyle='#15151a';box(c,x,y,cw,bh,4);c.fill();
+    c.strokeStyle='rgba(240,233,220,.22)';c.lineWidth=1.5;box(c,x,y,cw,bh,4);c.stroke();
+    draw(c,x,y,cw,bh);
+    c.fillStyle='rgba(240,233,220,.25)';  // corner fasteners
+    for(const[fx,fy]of[[x+5,y+5],[x+cw-5,y+5],[x+5,y+bh-5],[x+cw-5,y+bh-5]])
+      {c.beginPath();c.arc(fx,fy,1.4,0,7);c.fill();}
+  }
+  // LED strip between the wall and the lane — red · gold · green
+  const LED=['#a63a2c','#c99a3f','#3f7d55'];
+  for(let i=0;i<24;i++){
+    c.fillStyle=LED[Math.floor(i/8)];c.globalAlpha=.5;
+    c.fillRect(m+i*(w-2*m)/24,wallH+h*.015,(w-2*m)/24*.55,3);c.globalAlpha=1;
+  }
+  // ---- the riddim lane ----
+  const g=ensureG();
+  drawLane(c,m,laneY,w-2*m,h-laneY-4,ink,{bass:g.bass,drums:g.drums});
+  return oc;
+}
+function drawLane(c,x,y,w,h,ink,rid){
+  const stepW=w/STEPS, midY=y+h*.42, amp=h*.3;
+  c.strokeStyle='rgba(240,233,220,.14)';c.lineWidth=1;
+  for(let i=0;i<=STEPS;i+=4){const gx=x+i*stepW;   // beat lines; bar line heavier
+    c.globalAlpha=i%16===0?.5:.22;c.beginPath();c.moveTo(gx,y);c.lineTo(gx,y+h*.7);c.stroke();}
+  c.globalAlpha=1;
+  // bass notes as the wave they speak
+  c.strokeStyle=ink;c.lineWidth=2;c.lineCap='round';
+  for(const n of rid.bass){
+    const s=n.bar*16+n.step, x0=x+s*stepW+2, x1=x+(s+n.len)*stepW-2;
+    c.globalAlpha=.95;c.beginPath();
+    if(!n.div){c.moveTo(x0,midY);c.lineTo(x1,midY);}          // hold: pure weight
+    else{const beats=n.len/4, cycles=Math.max(1,Math.round(beats*n.div));
+      const N=Math.max(12,cycles*10);
+      for(let i=0;i<=N;i++){const px=x0+(x1-x0)*i/N,
+        py=midY-Math.sin(i/N*cycles*Math.PI*2)*amp*(n.dive?1-i/N*.5:1);
+        i?c.lineTo(px,py):c.moveTo(px,py);}}
+    c.stroke();
+    c.globalAlpha=.5;c.fillStyle=ink;                          // note-degree tick at entry
+    c.fillRect(x0-1,midY-amp-6,2,4);
+  }
+  c.globalAlpha=1;
+  // drums under the wave: kick blocks, THE snare, ghosts, hat ticks
+  const dy=y+h*.82;
+  c.fillStyle='rgba(240,233,220,.85)';
+  for(const s of rid.drums.kick)c.fillRect(x+s*stepW+1,dy,stepW*.6,h*.14);
+  c.fillStyle=ink;
+  for(const s of rid.drums.snare)c.fillRect(x+s*stepW,dy-h*.1,stepW*.8,h*.28);
+  c.fillStyle='rgba(240,233,220,.35)';
+  for(const gh of rid.drums.ghost)c.fillRect(x+gh.step*stepW+1,dy+h*.03,stepW*.5,h*.08);
+  for(const ht of rid.drums.hats){c.globalAlpha=.3*ht.vel;
+    c.fillRect(x+ht.step*stepW+1,y+h*.72,stepW*.4,ht.open?h*.1:h*.05);}
+  c.globalAlpha=1;
+}
+// find the sounding bass note (if any) at time `now`, for the sub-cone excursion
+function soundingBass(g,bar,step){
+  const inDropB=bar>=40&&bar<56, bassSrc=inDropB?g.bassB:g.bass, bh=bar%2;
+  for(const n of bassSrc){
+    if(n.bar!==bh)continue;
+    if(step>=n.step&&step<n.step+n.len)return{n,frac:(step-n.step)/n.len};
+  }
+  return null;
+}
+function render(){
+  if(!oc)oc=buildStatic();
+  const w=cv.clientWidth,h=Math.round(w*.92),dpr=Math.min(2,window.devicePixelRatio||1);
+  cx.clearRect(0,0,cv.width/dpr,cv.height/dpr);
+  cx.drawImage(oc,0,0,w,h);
+  if(!RT)return;
+  const g=RT.g,now=RT.ac.currentTime;
+  let e=RT.bars[0];
+  for(let i=RT.bars.length-1;i>=0;i--)if(RT.bars[i].t<=now){e=RT.bars[i];break;}
+  const bar=((e.bar%BARS)+BARS)%BARS, step=clamp((now-e.t)/e.dur,0,15.999);
+  const wallH=h*.72,laneY=h*.78,m=w*.03,cw=(w-3*m)/2;
+  const ink=MOODS[st.mood].ink;
+  if(!RM){
+    // sub-cone excursion: the bottom row breathes with the sounding note's wobble
+    const sb=soundingBass(g,bar,Math.floor(step));
+    let exc=0;
+    if(sb){
+      if(sb.n.div>0){const ph=(step-sb.n.step)/16*4*sb.n.div*Math.PI*2;exc=Math.sin(ph)*.5+.5;}
+      else exc=.6;
+    }
+    const subY=wallH*.52+wallH*.46/2;
+    for(let i=0;i<2;i++){
+      const cxp=m+i*(cw+m)+cw/2,r=Math.min(cw,wallH*.46)*.36*(1+exc*.06);
+      cx.save();cx.globalAlpha=.5+exc*.5;
+      cx.beginPath();cx.arc(cxp,subY,r*.7,0,7);
+      cx.strokeStyle=ink;cx.lineWidth=1.2;cx.stroke();cx.restore();
+    }
+    // horn flash on the snare (beat 3 — always local step 8, both halves of
+    // the 2-bar drum cell), decaying over ~200ms
+    const sinceBeat3=now-(e.t+8*e.dur);
+    if(sinceBeat3>=0&&sinceBeat3<.2){
+      const flash=1-sinceBeat3/.2, topY=wallH*.11;
+      cx.save();cx.globalAlpha=flash*.7;
+      for(let i=0;i<2;i++){const cxp=m+i*(cw+m)+cw*.24;
+        cx.beginPath();cx.arc(cxp,topY,cw*.22,0,7);cx.fillStyle='#e9c96a';cx.fill();}
+      cx.restore();
+    }
+    // LED VU: green resting, gold on hits, red only in the drop sections
+    const ar=g.arrange[bar],hot=ar.parts.sub&&ar.parts.kick;
+    const LED=hot?'#c9503a':'#3f7d55';
+    cx.save();cx.globalAlpha=.55+exc*.35;
+    for(let i=0;i<24;i++)cx.fillRect(m+i*(w-2*m)/24,wallH+h*.015,(w-2*m)/24*.55,3),cx.fillStyle=(i/24<(.3+exc*.5))?'#c99a3f':LED;
+    cx.restore();
+  }
+  // lane playhead — always drawn while playing, even under reduced-motion
+  const lx=m+(bar%2*16+step)/32*(w-2*m);
+  cx.save();cx.strokeStyle=ink;cx.lineWidth=1.5;cx.globalAlpha=.9;
+  cx.beginPath();cx.moveTo(lx,laneY);cx.lineTo(lx,h-4);cx.stroke();cx.restore();
+}
+let __rafOn=false;
+function frameLoop(){
+  render();
+  if(RT)requestAnimationFrame(frameLoop);
+  else __rafOn=false;
+}
+function startRAF(){ if(__rafOn)return; __rafOn=true; requestAnimationFrame(frameLoop); }
+
+/* ---------------------------- UI wiring ---------------------------- */
+const $=id=>document.getElementById(id);
+const playBtn=$('play');
+
+function stamp(){
+  const M=MOODS[st.mood];
+  document.documentElement.style.setProperty('--ink',M.ink);
+  $('laff').textContent=M.name; $('lgloss').textContent=M.gloss;
+  $('ltech').textContent=st.bpm+' BPM · '+M.modeName;
+  $('matrix').textContent='DUB '+st.seed.toString(36).toUpperCase();
+  $('talkrd').textContent=st.talk==null?'riddim default':TALKS[st.talk].name;
+  $('temprd').textContent=st.bpm+' bpm';
+  const T=TALKS[effTalk()];
+  $('ledger').innerHTML=
+    'SEED <b>'+st.seed.toString(36)+'</b> · RIDDIM <b>'+M.name+'</b> · <b>'+M.modeName+'</b><br>'+
+    'TALK <b>'+T.name+'</b> ('+T.gloss+') · SWING <b>'+Math.round(M.swing*100)+'%</b> · '+
+    'SUB <b>'+mtof(M.root).toFixed(1)+' Hz</b>';
+}
+function rechips(sel,items,cur,onpick,lab){
+  const el=$(sel);el.innerHTML='';
+  items.forEach((it,i)=>{const b=document.createElement('button');
+    b.innerHTML=lab(it);if(i===cur)b.classList.add('on');
+    b.onclick=()=>{onpick(i);refresh();};el.appendChild(b);});
+}
+function refresh(){
+  rechips('aff',MOODS,st.mood,i=>{st.mood=i;st.g=null;oc=null;},
+    M=>M.name+'<span class="en">'+M.gloss+'</span>');
+  rechips('talk',TALKS,st.talk==null?-1:st.talk,i=>{st.talk=(st.talk===i?null:i);st.g=null;oc=null;},
+    T=>T.name+'<span class="en">'+T.gloss+'</span>');
+  const strip=$('strip');strip.innerHTML='';
+  PARTS.forEach((p,i)=>{const b=document.createElement('button');
+    b.textContent=PARTLABEL[p];
+    if(!(st.mask>>i&1))b.classList.add('off');
+    b.onclick=()=>{
+      st.mask^=1<<i;
+      b.classList.toggle('off',!(st.mask>>i&1));
+      if(RT)RT.G.part[p].gain.setTargetAtTime((st.mask>>i&1)?1:0,RT.ac.currentTime,.02);
+      writeHash();
+    };strip.appendChild(b);});
+  // change-while-playing: mood/talk/seed edits regenerate the score and hand
+  // it to the running scheduler — the transport keeps going, the NEXT bar
+  // (already queued by schedTick) is the first to sound the change.
+  if(RT){ensureG();RT.g=st.g;}
+  stamp();writeHash();render();
+}
+$('tempo').addEventListener('input',e=>{
+  st.bpm=+e.target.value;$('temprd').textContent=st.bpm+' bpm';
+  // tempo is a playback rate, not a compositional choice — no regen; the
+  // scheduler and the wobble LFO both read st.bpm live, so this re-vibes
+  // on the next bar with no restart.
+  writeHash();
+});
+$('tempo').addEventListener('change',()=>refresh());
+$('aliud').addEventListener('click',()=>{st.seed=(Math.random()*0x7fffffff)|0;st.g=null;oc=null;refresh();});
+
+playBtn.addEventListener('click',()=>st.playing?stop():play());
+$('pullup').addEventListener('click',()=>pullUp());
+$('cut').addEventListener('click',()=>cut());
+
+document.addEventListener('keydown',e=>{
+  if(e.repeat||e.metaKey||e.ctrlKey||e.altKey)return;
+  const tag=(document.activeElement&&document.activeElement.tagName)||'';
+  if(tag==='INPUT'||tag==='TEXTAREA')return;
+  if(e.code==='Space'){e.preventDefault();playBtn.click();}
+  else if(e.key==='u'){$('pullup').click();}
+  else if(e.key==='r'){$('aliud').click();}
+  else if(e.key==='c'){$('cut').click();}
+});
+
+/* ------------------------- hash permalink -------------------------
+   v1: #v=1&s=<seed36>&m=<mood>&t=<talk|x>&b=<bpm>&k=<mask>
+   t=x means "riddim default" (null). THE URL IS THE PRESSING — keep v1
+   stable; additions bump v and must keep reading v1.                 */
+function writeHash(){
+  const q=new URLSearchParams();
+  q.set('v','1');q.set('s',st.seed.toString(36));q.set('m',st.mood);
+  q.set('t',st.talk==null?'x':st.talk);q.set('b',st.bpm);q.set('k',st.mask);
+  history.replaceState(null,'','#'+q.toString());
+}
+function readHash(){
+  if(!location.hash)return;
+  try{
+    const q=new URLSearchParams(location.hash.slice(1));
+    if(q.get('s'))st.seed=parseInt(q.get('s'),36)||st.seed;
+    if(q.get('m')!=null)st.mood=clamp(+q.get('m')|0,0,MOODS.length-1);
+    const t=q.get('t');st.talk=(t==null||t==='x')?null:clamp(+t|0,0,3);
+    if(q.get('b'))st.bpm=clamp(+q.get('b')|0,136,145);
+    if(q.get('k')!=null)st.mask=(+q.get('k')|0)&255;
+  }catch(e){}
+}
+
+/* ------------------------------- boot ------------------------------- */
+readHash();
+$('tempo').value=st.bpm;
+window.addEventListener('resize',sizeCanvas);
+sizeCanvas();
+refresh();
+</script>
+</body>
+</html>
