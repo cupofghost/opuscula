@@ -241,6 +241,59 @@ Conventions when touching this layer:
 
 Newest first.
 
+### BOLG — softer regulators + the whole set now animates (op. VI)
+**Branch:** `claude/uilleann-pipe-sound-graphics-3zm1mq` · **File:**
+`bolg/index.html` · **Status:** done, verified headless (Chromium). No new
+op., no registry changes. Two asks from the maintainer, both landed:
+
+- **Regulators re-voiced — pressed, not struck.** `scheduleReg` had an 8 ms
+  linear strike then an immediate `setTargetAtTime` decay (τ≈0.096) — a plucky
+  honk. Now: a soft bloom to full over `atk`, held at full until the key lifts
+  (`hold`× the note), then a long ring-down (`rel`). Three new TIMBRE `regs`
+  params drive it — **atk .045 s · hold .9× · rel .2 s** (were the hard-coded
+  .008/immediate/.096); `level`/`tone`/`q` unchanged. Verified in an offline
+  render: single chord is NaN-free, peak .26, and still carries ~7 % energy
+  in the 0.55–0.75 s window (the old envelope was silent by then). The full
+  64-reg-event cut renders clean at peak .54 — the longer tails don't push the
+  mix into clip. Doc strings (top-level + group) updated: "bloom in softly and
+  sustain … pressed and held, not struck."
+- **FIG I is now the full set, and the other pipes animate like the chanter.**
+  Was just the chanter maker's-plate. Now, left→right off a shared stock rail:
+  the **chanter** (unchanged — holes still fill with the fingering), three
+  **drones** (DORDÁIN — graduated pipes with tuning-slide ferrules + end beads;
+  a cane glow that **breathes** with the bag LFO and each drone's own slow
+  level-sway, plus a bright "column of air" bead riding the wobble; lit only
+  while playing + `bor` on), and three **regulators** (RIALTÓIRÍ — keyed pipes
+  whose body + keys **flare cane** on each chord strike and **decay over the
+  audio release**, `rel`+0.18; lit only while playing + `rgl` on). Note readout
+  moved to the **top-right** header (was mid-plate) — deliberately right, not
+  left, so the `position:sticky` exit pill can't cover it. Layout is a fraction
+  of `chW` so it holds in both the wide (desktop, FIG I ≈34 % strip) and
+  stacked (mobile, full-width) figures — screenshot-checked both.
+- **Plumbing:** reg strikes were excluded from the UI queue; added a parallel
+  `live.regQ` (drained in `loop()` into `regAnim[3]={t,vel}`), reset in
+  start/stop. `drawHash` gets a `Math.round(ctx.currentTime*12)` term **only
+  while playing and motion allowed**, so the canvas redraws ~12 fps for the
+  breath/flare and still sleeps when idle. `prefers-reduced-motion`: drones
+  sit steadily lit (no breath/bead motion), no anim tick — verified the RM
+  path renders clean.
+- **Verify** (`scratchpad/verify-bolg.mjs` + `verify-cut.mjs` + `verify-rm.mjs`,
+  playwright-core + bundled Chromium at `chromium-1194/.../chrome`, launched
+  `--headless=new` — the 1.48 default `--headless=old` is gone from this binary;
+  headless_shell still crashes per the RILLE note, so use full chrome). All
+  pass: schema well-formed, offline reg-voice + full cut NaN-free/no-clip, live
+  play shows drones=3/regs=3 and reg flares firing, zero non-font page errors,
+  both layouts + RM screenshot-checked. Scratchpad not committed (GONGAN/TESSERA
+  precedent).
+- **Deferred (maintainer, same message):** a *guitar* strum in **HOLLER** (make
+  it strum instead of all strings at once) — explicitly "save that for later,"
+  untouched here. BOLG has no guitar; the only chordal voice is the regulators.
+- **Pick-ups:** the drone "column of air" bead drifts very slowly (0.07–0.11 Hz)
+  — fine as ambient life, could tie to the bag rate if more motion is wanted;
+  the regulator→pipe mapping lights all three pipes together on a strike (a
+  wrist chord), not per-note — per-pipe by pitch is possible if the maintainer
+  wants each reg to speak its own note.
+
 ### TESSERA — new machine, op. XVII (a self-predicting language model)
 **Branch:** `claude/llm-machine-architecture-5ji49g` · **File:**
 `tessera/index.html` · **Status:** done, verified headless (Chromium). New

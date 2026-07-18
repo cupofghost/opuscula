@@ -161,9 +161,9 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:190px;ba
 </header>
 
 <section class="figure">
-  <canvas id="fig" aria-label="Figure I: the chanter drawn as a maker's plate, its eight holes closing and opening with the fingering of each note. Figure II: the tune laid out as thirty-two bars, A A B B, the current bar lit."></canvas>
+  <canvas id="fig" aria-label="Figure I: the full set drawn as a maker's plate — the chanter's eight holes closing and opening with the fingering of each note, beside the three drones glowing and breathing with the bag and the three regulators flaring as each keyed chord sounds. Figure II: the tune laid out as thirty-two bars, A A B B, the current bar lit."></canvas>
   <div class="caption">
-    <span>F&Iacute;OR I &mdash; AN FEAD&Aacute;N · M&Eacute;ARA&Iacute;OCHT</span>
+    <span>F&Iacute;OR I &mdash; AN SEIT · FEAD&Aacute;N · DORD&Aacute;IN · RIALT&Oacute;IR&Iacute;</span>
     <span>F&Iacute;OR II &mdash; AN CHUAIRT · 8+8 BARRA · AABB</span>
   </div>
 </section>
@@ -765,7 +765,7 @@ try{RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').
 
 /* ------------------------------- audio ---------------------------------- */
 var ctx=null, graph=null, rendering=false;
-var live={playing:false,paused:false,iter:null,next:null,timer:null,active:[],uiQ:[],
+var live={playing:false,paused:false,iter:null,next:null,timer:null,active:[],uiQ:[],regQ:[],
           drones:[],state:{r:0,s:0,b:0}};
 
 /* bor (drones) lifted 0.5→0.66: the uilleann drone is a constant, present
@@ -781,7 +781,7 @@ var live={playing:false,paused:false,iter:null,next:null,timer:null,active:[],ui
    ?factory to the URL to hear the shipped voice. */
 const TIMBRE={
   id:'bolg', title:'BOLG \u00b7 op. VI',
-  doc:'A full set of uilleann pipes, three buses. CHANTER (cal) \u2014 the conical-bore double reed: a sawtooth split through two bandpass formants (\u22481.1 and 2.6 kHz \u2014 the reedy vowel) plus a lowpass floor; the overblown octave gets a 9\u00a2 pressure kick that settles in 45 ms, tight notes get a keypad pop of highpassed click. DRONES (bor) \u2014 three standing sawtooths in octaves under everything, each behind its own lowpass with a slow independent level wobble. REGULATORS (rgl) \u2014 keyed closed pipes: short bandpassed honks vamping chords off the wrist. The BAG breathes: one 0.15 Hz pressure LFO detunes every reed \u00b12.5\u00a2 together \u2014 the whole instrument sways as one. Buses meet a master \u2192 4:1 compressor with a dryish room.',
+  doc:'A full set of uilleann pipes, three buses. CHANTER (cal) \u2014 the conical-bore double reed: a sawtooth split through two bandpass formants (\u22481.1 and 2.6 kHz \u2014 the reedy vowel) plus a lowpass floor; the overblown octave gets a 9\u00a2 pressure kick that settles in 45 ms, tight notes get a keypad pop of highpassed click. DRONES (bor) \u2014 three standing sawtooths in octaves under everything, each behind its own lowpass with a slow independent level wobble. REGULATORS (rgl) \u2014 keyed closed pipes: bandpassed reed chords that bloom in softly and sustain, vamped off the wrist (pressed and held, not struck). The BAG breathes: one 0.15 Hz pressure LFO detunes every reed \u00b12.5\u00a2 together \u2014 the whole instrument sways as one. Buses meet a master \u2192 4:1 compressor with a dryish room.',
   groups:{
     master:{label:'master & room',doc:'Output gain into the compressor; a 1.9 s room on per-bus sends.',params:{
       gain:{v:.85,min:.3,max:1.2,step:.01,label:'master gain',doc:'level into the compressor'},
@@ -817,10 +817,13 @@ const TIMBRE={
       toneScale:{v:1,min:.4,max:2.5,step:.05,label:'tone \u00d7',doc:'scales all three drone lowpasses (700/520/360 Hz) \u2014 brighter or woodier together'},
       wobble:{v:.06,min:0,max:.3,step:.01,label:'wobble',doc:'depth of each drone\u2019s slow independent level sway'},
     }},
-    regs:{label:'regulators',doc:'The wrist chords.',params:{
-      level:{v:.30,min:0,max:.8,step:.01,label:'level',doc:'honk peak (\u00d7 velocity)'},
-      tone:{v:650,min:300,max:1500,step:10,unit:'Hz',label:'tone',doc:'bandpass centre of the honk'},
+    regs:{label:'regulators',doc:'The wrist chords \u2014 pressed and held, not struck.',params:{
+      level:{v:.30,min:0,max:.8,step:.01,label:'level',doc:'chord peak (\u00d7 velocity)'},
+      tone:{v:650,min:300,max:1500,step:10,unit:'Hz',label:'tone',doc:'bandpass centre of the chord'},
       q:{v:1.3,min:.4,max:5,step:.1,label:'Q',doc:'narrowness \u2014 higher is more nasal'},
+      atk:{v:.045,min:.004,max:.2,step:.002,unit:'s',label:'attack',doc:'how slowly each chord blooms in \u2014 longer is a gentler press, less of a strike'},
+      hold:{v:.9,min:.2,max:1.6,step:.05,label:'hold \u00d7',doc:'how much of the note the chord stays at full before it releases \u2014 the wrist keeping the key down'},
+      rel:{v:.2,min:.04,max:.8,step:.01,unit:'s',label:'release',doc:'how long the chord rings down after the key lifts'},
     }},
   }
 };
@@ -998,20 +1001,27 @@ function scheduleNote(ac,g,ev,active){
 function scheduleReg(ac,g,ev,active){
   var nodes=[];
   var T=ev.t,D=ev.dur;
+  /* pressed, not struck: a soft bloom in, held at full while the wrist keeps
+     the key down, then a long ring-down — a keyed reed, not a plucked honk */
+  var atk=TP.regs.atk, rel=TP.regs.rel;
+  var t1=T+atk;                              // fully bloomed
+  var t2=Math.max(t1+0.01,T+D*TP.regs.hold); // the key lifts
+  var endT=t2+rel*5+0.05;
   for(var i=0;i<ev.freqs.length;i++){
     var o=ac.createOscillator(); o.type='sawtooth'; o.frequency.value=ev.freqs[i];
     try{g.pressio.connect(o.detune)}catch(e){}
     var bp=ac.createBiquadFilter(); bp.type='bandpass';
     bp.frequency.value=TP.regs.tone; bp.Q.value=TP.regs.q;
     var env=ac.createGain();
-    var pk=TP.regs.level*ev.vel;        // was 0.085 — the vamp sat ~28 dB under
-    env.gain.setValueAtTime(0,T);       // the mix (masked by the chanter and by
-    env.gain.linearRampToValueAtTime(pk,T+0.008);  // the drone it shares pitches
-    env.gain.setTargetAtTime(0,T+0.02,Math.max(0.07,D*0.6));  // with); now it reads
+    var pk=TP.regs.level*ev.vel;
+    env.gain.setValueAtTime(0,T);
+    env.gain.linearRampToValueAtTime(pk,t1);  // gentle attack, no click
+    env.gain.setValueAtTime(pk,t2);           // sustained at full
+    env.gain.setTargetAtTime(0,t2,rel);       // then rings away
     o.connect(bp); bp.connect(env); env.connect(g.bus.rgl);
-    o.start(T); o.stop(T+D+0.4); nodes.push(o);
+    o.start(T); o.stop(endT); nodes.push(o);
   }
-  active.push({nodes:nodes,endT:T+D+0.5});
+  active.push({nodes:nodes,endT:endT+0.1});
 }
 function scheduleEvent(ac,g,ev,active){
   if(ev.kind==='reg')scheduleReg(ac,g,ev,active);
@@ -1044,7 +1054,9 @@ function tickSched(){
   var la=ctx.currentTime+0.2;
   while(live.next&&live.next.t<la){
     scheduleEvent(ctx,graph,live.next,live.active);
-    if(live.next.kind!=='reg'){
+    if(live.next.kind==='reg'){
+      live.regQ.push({t:live.next.t,vel:live.next.vel});
+    }else{
       live.uiQ.push({t:live.next.t,round:live.next.round,mensura:live.next.mensura,
                      cell:live.next.cell,idx:live.next.idx,varied:live.next.varied});
     }
@@ -1061,6 +1073,7 @@ function start(){
                      {r:live.state.r,s:live.state.s,b:live.state.b,t:t0});
   live.next=live.iter.next().value;
   live.drones=buildDrones(ctx,graph,ctx.currentTime,null);
+  live.regQ=[]; for(var ri=0;ri<3;ri++)regAnim[ri]={t:-9,vel:0};
   live.playing=true; live.paused=false;
   live.timer=setInterval(tickSched,45);
   el.btnSona.textContent='STAD';
@@ -1080,7 +1093,8 @@ function stop(){
     }
     for(var d=0;d<live.drones.length;d++){try{live.drones[d].stop(now+0.15)}catch(e){}}
   }
-  live.active=[]; live.uiQ=[]; live.drones=[];
+  live.active=[]; live.uiQ=[]; live.regQ=[]; live.drones=[];
+  for(var ri=0;ri<3;ri++)regAnim[ri]={t:-9,vel:0};
   live.paused=false;
   el.btnSona.textContent='SEINN';
   el.btnSos.disabled=true; el.btnSos.textContent='SOS'; el.btnSos.classList.remove('on');
@@ -1189,6 +1203,10 @@ function ledgerLive(){
 var cv=null, off=null, staticDirty=true;
 var rafOn=false, needsDraw=true, lastFrame=0, lastHash='';
 var GEO=null;
+/* per-regulator flare {strike time, velocity}; DWOB = the three drones' slow
+   independent level-sway rates, mirroring buildDrones' LFO spec. */
+var regAnim=[{t:-9,vel:0},{t:-9,vel:0},{t:-9,vel:0}];
+var DWOB=[0.071,0.093,0.113];
 
 function sizeCanvas(){
   if(!cv)return;
@@ -1243,9 +1261,23 @@ function renderStatic(w,h,dpr){
   if(stacked){g.moveTo(0,chH);g.lineTo(w,chH)}
   else{g.moveTo(chW,0);g.lineTo(chW,h)}
   g.stroke();
-  /* --- FIG I: the chanter, maker's-plate elevation --- */
-  var cx=chW*0.42, top=34*dpr, bot=chH-46*dpr;
-  var wTop=9*dpr, wBot=17*dpr;
+  /* --- FIG I: the full set, maker's-plate elevation ----------------------
+     the chanter (holes dancing with the fingering) beside the drone and
+     regulator ranks, drawn from the common stock they all rise from. The
+     ranks light and breathe with what's actually sounding (drawDynamic). */
+  var IX=14*dpr, IW=chW-28*dpr;
+  var top=54*dpr, bot=chH-42*dpr;
+  var railY=top-4*dpr;
+  /* note readout sits top-right of the plate — clear of the sticky exit pill */
+  GEO.noteX=chW-14*dpr; GEO.noteY=32*dpr;
+  var chanterX=IX+IW*0.18;
+  var droneX=[IX+IW*0.37,IX+IW*0.47,IX+IW*0.57];
+  var regX=[IX+IW*0.72,IX+IW*0.83,IX+IW*0.94];
+  /* the common stock the drones and regulators rise from */
+  g.strokeStyle='rgba(174,182,184,0.28)'; g.lineWidth=2*dpr;
+  g.beginPath();g.moveTo(droneX[0]-9*dpr,railY);g.lineTo(regX[2]+7*dpr,railY);g.stroke();
+  /* chanter body */
+  var cx=chanterX, wTop=8*dpr, wBot=15*dpr;
   g.strokeStyle=COL.metal; g.lineWidth=1.2*dpr;
   g.beginPath();
   g.moveTo(cx-wTop,top); g.lineTo(cx-wBot,bot);
@@ -1261,25 +1293,62 @@ function renderStatic(w,h,dpr){
     g.beginPath();g.moveTo(cx-ww-2*dpr,yy);g.lineTo(cx+ww+2*dpr,yy);g.stroke();
   }
   /* holes: thumb (back, dashed, offset) then seven front */
-  var hr=6*dpr;
+  var hr=5.5*dpr;
   var ty=top+(bot-top)*0.10;
-  GEO.holes.push({x:cx-wTop-16*dpr,y:ty,back:true});
+  GEO.holes.push({x:cx-wTop-15*dpr,y:ty,back:true});
   for(var i=0;i<7;i++){
     var yy2=top+(bot-top)*(0.16+i*0.105);
     GEO.holes.push({x:cx,y:yy2,back:false});
   }
-  g.font=(9*dpr)+"px 'Courier Prime',monospace";
+  g.font=(8.5*dpr)+"px 'Courier Prime',monospace";
   g.fillStyle=COL.dim;
   g.textAlign='right'; g.textBaseline='middle';
-  g.fillText('ORDÓG',GEO.holes[0].x-10*dpr,GEO.holes[0].y);
+  g.fillText('ORDÓG',GEO.holes[0].x-9*dpr,GEO.holes[0].y);
   g.textAlign='center'; g.textBaseline='alphabetic';
-  g.fillText('GLÚIN',cx,bot+16*dpr);
+  g.fillText('GLÚIN',cx,bot+15*dpr);
   /* knee line */
   g.strokeStyle='rgba(174,182,184,0.3)';
   g.setLineDash([3*dpr,3*dpr]);
-  g.beginPath();g.moveTo(cx-30*dpr,bot+6*dpr);g.lineTo(cx+30*dpr,bot+6*dpr);g.stroke();
+  g.beginPath();g.moveTo(cx-26*dpr,bot+6*dpr);g.lineTo(cx+26*dpr,bot+6*dpr);g.stroke();
   g.setLineDash([]);
-  GEO.hr=hr; GEO.kneeY=bot+6*dpr; GEO.cx=cx; GEO.noteX=chW*0.72; GEO.noteY=top+(bot-top)*0.4;
+  GEO.hr=hr; GEO.kneeY=bot+6*dpr; GEO.cx=cx;
+  /* drones — three standing pipes, graduated (tenor · baritone · bass) */
+  GEO.drones=[];
+  var dLen=[0.60,0.78,0.96], dLvl=[TP.drones.tenor,TP.drones.baritone,TP.drones.bass];
+  var dw=4*dpr;
+  for(i=0;i<3;i++){
+    var db=railY+(bot-railY)*dLen[i];
+    g.strokeStyle=COL.metal; g.lineWidth=1*dpr;
+    g.strokeRect(droneX[i]-dw,railY,dw*2,db-railY);
+    /* tuning-slide ferrule */
+    g.strokeStyle=COL.brass;
+    var sy=railY+(db-railY)*0.46;
+    g.strokeRect(droneX[i]-dw-1*dpr,sy,dw*2+2*dpr,5*dpr);
+    /* end bead */
+    g.beginPath();g.arc(droneX[i],db,dw+1.5*dpr,0,6.2832);g.stroke();
+    GEO.drones.push({x:droneX[i],top:railY,bot:db,w:dw,lvl:dLvl[i]});
+  }
+  /* regulators — three keyed pipes (bass · baritone · tenor) */
+  GEO.regs=[];
+  var rLen=[0.82,0.70,0.58], rw=4.5*dpr, kf=[0.42,0.60,0.78];
+  for(i=0;i<3;i++){
+    var rb=railY+(bot-railY)*rLen[i];
+    g.strokeStyle=COL.metal; g.lineWidth=1*dpr;
+    g.strokeRect(regX[i]-rw,railY,rw*2,rb-railY);
+    var keys=[];
+    for(var kk=0;kk<3;kk++){
+      var ky=railY+(rb-railY)*kf[kk];
+      g.strokeStyle=COL.brass; g.lineWidth=1*dpr;
+      g.strokeRect(regX[i]+rw,ky-2*dpr,7*dpr,4*dpr);
+      keys.push({y:ky});
+    }
+    GEO.regs.push({x:regX[i],top:railY,bot:rb,w:rw,keys:keys});
+  }
+  /* rank labels */
+  g.font=(8.5*dpr)+"px 'Courier Prime',monospace";
+  g.fillStyle=COL.faint; g.textAlign='center'; g.textBaseline='top';
+  g.fillText('DORDÁIN',droneX[1],bot+6*dpr);
+  g.fillText('RIALTÓIRÍ',regX[1],bot+6*dpr);
   /* --- FIG II: bar grid frame --- */
   var gp=18*dpr;
   var gx=GEO.gx+gp, gy=GEO.gy+gp+8*dpr, gw=GEO.gw-2*gp, gh=GEO.gh-2*gp-26*dpr;
@@ -1334,18 +1403,49 @@ function drawDynamic(g,dpr){
     g.textAlign='center';g.textBaseline='middle';
     g.fillText(fing.oct>=2?'++':'+',GEO.holes[0].x,GEO.holes[0].y-18*dpr);
   }
+  /* --- the other pipes: drones breathe, regulators flare with the chords -- */
+  var now=(live.playing&&ctx)?ctx.currentTime:0;
+  var sounding=live.playing;
+  if(GEO.drones){
+    var breath=RM?0.82:(0.66+0.34*Math.sin(now*6.2832*TP.bag.rate));
+    for(i=0;i<3;i++){
+      if(!(sounding&&P.reg.bor))break;
+      var d=GEO.drones[i];
+      var wob=RM?1:(1-TP.drones.wobble*(0.5-0.5*Math.sin(now*6.2832*DWOB[i])));
+      var a=Math.min(0.9,(0.30+d.lvl*0.9)*breath*wob);
+      g.fillStyle='rgba(216,162,74,'+a.toFixed(3)+')';   /* cane glow */
+      g.fillRect(d.x-d.w,d.top,d.w*2,d.bot-d.top);
+      /* the column of air — a slow bright bead riding the drone's own sway */
+      var by=d.top+(d.bot-d.top)*(0.5-0.5*Math.cos(now*6.2832*DWOB[i]));
+      g.fillStyle='rgba(221,228,226,'+(a*0.5).toFixed(3)+')';
+      g.beginPath();g.arc(d.x,by,d.w,0,6.2832);g.fill();
+    }
+  }
+  if(GEO.regs){
+    for(i=0;i<3;i++){
+      var rr=GEO.regs[i], ra=regAnim[i], gl=0;
+      if(sounding&&P.reg.rgl&&ra.t>=0&&now>=ra.t)
+        gl=ra.vel*Math.exp(-(now-ra.t)/(TP.regs.rel+0.18));
+      if(gl<=0.02)continue;
+      g.fillStyle='rgba(192,143,63,'+Math.min(0.85,gl*0.8).toFixed(3)+')';
+      g.fillRect(rr.x-rr.w,rr.top,rr.w*2,rr.bot-rr.top);
+      g.fillStyle='rgba(216,162,74,'+Math.min(0.95,gl).toFixed(3)+')';
+      for(var kk=0;kk<rr.keys.length;kk++)
+        g.fillRect(rr.x+rr.w,rr.keys[kk].y-2*dpr,7*dpr,4*dpr);
+    }
+  }
   /* note readout */
   if(cur.idx>=0){
     var pc=idx%7;
     var r=pcRatio(pc,cnat);
     g.fillStyle=COL.hi;
-    g.font=(22*dpr)+"px 'Courier Prime',monospace";
-    g.textAlign='left'; g.textBaseline='alphabetic';
+    g.font=(19*dpr)+"px 'Courier Prime',monospace";
+    g.textAlign='right'; g.textBaseline='alphabetic';
     g.fillText(degName(idx,cnat),GEO.noteX,GEO.noteY);
     g.fillStyle=COL.dim;
-    g.font=(10*dpr)+"px 'Courier Prime',monospace";
+    g.font=(9.5*dpr)+"px 'Courier Prime',monospace";
     g.fillText(r[0]+'/'+r[1]+' · '+degFreq(idx,cnat).toFixed(1)+' Hz',
-               GEO.noteX,GEO.noteY+16*dpr);
+               GEO.noteX,GEO.noteY+14*dpr);
   }
   /* FIG II: glyphs, variation ticks, playhead */
   var gr=GEO.grid;
@@ -1391,7 +1491,10 @@ function draw(){
   drawDynamic(g,dpr);
 }
 function drawHash(){
-  return rev+'|'+cur.round+'|'+cur.mensura+'|'+cur.cell+'|'+cur.idx+'|'+(live.playing?1:0);
+  /* while playing (and motion allowed) redraw ~12 fps so the drones breathe
+     and the regulator flares decay smoothly between note events */
+  var a=(live.playing&&ctx&&!RM)?('|'+Math.round(ctx.currentTime*12)):'';
+  return rev+'|'+cur.round+'|'+cur.mensura+'|'+cur.cell+'|'+cur.idx+'|'+(live.playing?1:0)+a;
 }
 function loop(ts){
   if(!live.playing&&!needsDraw){rafOn=false;return}
@@ -1409,6 +1512,10 @@ function loop(ts){
       }
       cur={round:e.round,mensura:e.mensura,cell:e.cell,idx:e.idx,varied:e.varied};
       moved=true;
+    }
+    while(live.regQ.length&&live.regQ[0].t<=now){
+      var rq=live.regQ.shift();
+      for(var ri=0;ri<3;ri++)regAnim[ri]={t:rq.t,vel:rq.vel};
     }
     if(moved)ledgerLive();
   }
