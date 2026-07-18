@@ -212,6 +212,10 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:190px;ba
       <span>LUAS <b id="lblTempus">108</b> buillí/nóim</span>
       <input type="range" id="inpTempus" min="40" max="140" step="1" value="108">
     </div>
+    <div class="fld" title="months since the reeds were last serviced — 0 is fresh-set, true just intonation; higher lets each pipe drift its own small, fixed way">
+      <span>AOIS NA RIBÍ <b id="lblAois">0</b> m&iacute;</span>
+      <input type="range" id="inpAois" min="0" max="36" step="1" value="0">
+    </div>
   </div>
   <div class="row reg">
     <span class="reglab">PÍOPAÍ</span>
@@ -233,6 +237,7 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:190px;ba
     <dt>AN tSEIT</dt><dd id="ledIns">—</dd>
     <dt>AN CHUAIRT</dt><dd id="ledRot">—</dd>
     <dt>BONN</dt><dd>ré 1/1 = 293.3 Hz · lá 3/2 = 440 · dosanna D₄·D₃·D₂</dd>
+    <dt>RIBÍ</dt><dd id="ledAois">—</dd>
   </dl>
 </section>
 
@@ -243,6 +248,8 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:190px;ba
     <p>Generated Irish piping: a melody on the chanter over three steady drones, with keyed <em>regulators</em> vamping chords beneath — all tuned justly and synthesized from scratch.</p>
     <h4>The instrument</h4>
     <p>The uilleann pipes are Ireland's bellows-blown bagpipe, developed through the eighteenth century. Unlike the mouth-blown Highland pipes, the player pumps a bellows under one elbow — <em>uilleann</em> means “of the elbow” — feeding a bag under the other, which keeps the reed dry and lets the chanter sing sweetly across two octaves indoors. A full set adds three drones tuned to the tonic and three <em>regulators</em>, keyed pipes the piper strikes with the wrist to punch out chords. Alone among bagpipes, its chanter can be stopped dead against the knee, giving crisp, articulate phrasing.</p>
+    <h4>Tuning, and the reeds' age</h4>
+    <p>Every pipe here is tuned exactly just — no equal temperament anywhere in the set. Left at <b>AOIS NA RIBÍ</b> 0 it stays that way, fresh-reeded. But reed cane is a living material: heat, damp and simple wear slowly bend a real set off true between reedings, each reed wandering its own direction. Turning the slider up models that — a small, capped drift, worse the longer since the last reeding, seeded so the same set always ages the same way, and never drifting back to true on its own.</p>
     <h4>Ornament as grammar</h4>
     <p>Because the pipes sound continuously and cannot be tongued, a piper separates repeated notes with grace-note ornaments — <em>cuts</em>, <em>taps</em>, <em>rolls</em>, and <em>crans</em> (the ornament used low on the chanter, where a roll won't fit). This machine treats that as law, expanding the ornaments as it generates reels, jigs, slip jigs, hornpipes and the free-flowing slow airs.</p>
     <h4>The name</h4>
@@ -751,9 +758,22 @@ function encodeWav(chL,chR,sr){
 
 
 /* ------------------------------- state ---------------------------------- */
-var P={forma:'ril',modus:'reion',stilus:'oscailte',bpm:108,seed:0,
+var P={forma:'ril',modus:'reion',stilus:'oscailte',bpm:108,seed:0,age:0,
        reg:{cal:true,bor:true,rgl:true}};
 function seedHex(){return (P.seed>>>0).toString(16).padStart(8,'0')}
+
+/* AOIS · reed condition. At age 0 every pipe is exactly just (factory
+   behaviour, unchanged). Past that each of the seven reeds — chanter, three
+   drones, three regulators — carries its own fixed direction (seeded, so a
+   pressing's instrument always ages the same way), scaled by how long since
+   it was last reeded; nothing re-centres or chases true till serviced. */
+var reedBias={chanter:0,drones:[0,0,0],regs:[0,0,0]};
+function computeReedBias(seed){
+  var rng=mulberry32((seed^0x5EEDED)>>>0);
+  return {chanter:rng()*2-1,drones:[rng()*2-1,rng()*2-1,rng()*2-1],
+          regs:[rng()*2-1,rng()*2-1,rng()*2-1]};
+}
+function driftCents(bias){return (P.age/36)*TP.reeding.ceiling*bias}
 
 var tune=null;
 var cur={round:0,mensura:-1,cell:0,idx:-1,varied:false};
@@ -781,7 +801,7 @@ var live={playing:false,paused:false,iter:null,next:null,timer:null,active:[],ui
    ?factory to the URL to hear the shipped voice. */
 const TIMBRE={
   id:'bolg', title:'BOLG \u00b7 op. VI',
-  doc:'A full set of uilleann pipes, three buses. CHANTER (cal) \u2014 the conical-bore double reed: a sawtooth split through two bandpass formants (\u22481.1 and 2.6 kHz \u2014 the reedy vowel) plus a lowpass floor; the overblown octave gets a 9\u00a2 pressure kick that settles in 45 ms, tight notes get a keypad pop of highpassed click. DRONES (bor) \u2014 three standing sawtooths in octaves under everything, each behind its own lowpass with a slow independent level wobble. REGULATORS (rgl) \u2014 keyed closed pipes: bandpassed reed chords that bloom in softly and sustain, vamped off the wrist (pressed and held, not struck). The BAG breathes: one 0.15 Hz pressure LFO detunes every reed \u00b12.5\u00a2 together \u2014 the whole instrument sways as one. Buses meet a master \u2192 4:1 compressor with a dryish room.',
+  doc:'A full set of uilleann pipes, three buses. CHANTER (cal) \u2014 the conical-bore double reed: a sawtooth split through two bandpass formants (\u22481.1 and 2.6 kHz \u2014 the reedy vowel) plus a lowpass floor; the overblown octave gets a 9\u00a2 pressure kick that settles in 45 ms, tight notes get a keypad pop of highpassed click. DRONES (bor) \u2014 three standing sawtooths in octaves under everything, each behind its own lowpass with a slow independent level wobble. REGULATORS (rgl) \u2014 keyed closed pipes: bandpassed reed chords that bloom in softly and sustain, vamped off the wrist (pressed and held, not struck). The BAG breathes: one 0.15 Hz pressure LFO detunes every reed \u00b12.5\u00a2 together \u2014 the whole instrument sways as one. Every pipe is exact just intonation at AOIS 0; the REEDING axis lets each of the seven reeds wander its own small, seeded, capped way the longer since the set was last reeded. Buses meet a master \u2192 4:1 compressor with a dryish room.',
   groups:{
     master:{label:'master & room',doc:'Output gain into the compressor; a 1.9 s room on per-bus sends.',params:{
       gain:{v:.85,min:.3,max:1.2,step:.01,label:'master gain',doc:'level into the compressor'},
@@ -824,6 +844,9 @@ const TIMBRE={
       atk:{v:.045,min:.004,max:.2,step:.002,unit:'s',label:'attack',doc:'how slowly each chord blooms in \u2014 longer is a gentler press, less of a strike'},
       hold:{v:.9,min:.2,max:1.6,step:.05,label:'hold \u00d7',doc:'how much of the note the chord stays at full before it releases \u2014 the wrist keeping the key down'},
       rel:{v:.2,min:.04,max:.8,step:.01,unit:'s',label:'release',doc:'how long the chord rings down after the key lifts'},
+    }},
+    reeding:{label:'reed condition',doc:'Every pipe is tuned exactly just at AOIS 0 (fresh-reeded). Past that, each of the seven reeds (chanter, three drones, three regulators) drifts its own fixed, seeded way \u2014 never re-centred, never chased back to true till serviced.',params:{
+      ceiling:{v:9,min:0,max:24,step:.5,unit:'\u00a2',label:'drift ceiling',doc:'the most any single reed can wander from true at full AOIS \u2014 worst case, not the average'},
     }},
   }
 };
@@ -953,17 +976,22 @@ TIMBRE.touch=function(){
 function scheduleNote(ac,g,ev,active){
   var nodes=[];
   var T=ev.t, D=ev.dur;
+  var drift=driftCents(reedBias.chanter);
   var o=ac.createOscillator(); o.type='sawtooth';
   if(ev.fFrom&&ev.slide){
     o.frequency.setValueAtTime(ev.fFrom,T);
     o.frequency.linearRampToValueAtTime(ev.f,T+Math.min(0.14,D*0.5));
+    if(drift)o.detune.setValueAtTime(drift,T);
   }else{
     o.frequency.value=ev.f;
-    if(ev.oct>=1){ /* the pressure kick of the overblown octave */
+    if(ev.oct>=1){ /* the pressure kick of the overblown octave, riding on
+                      whatever the reed's own drift already sits at */
       try{
-        o.detune.setValueAtTime(TP.chanter.octKick,T);
-        o.detune.linearRampToValueAtTime(0,T+0.045);
+        o.detune.setValueAtTime(drift+TP.chanter.octKick,T);
+        o.detune.linearRampToValueAtTime(drift,T+0.045);
       }catch(e){}
+    }else if(drift){
+      o.detune.setValueAtTime(drift,T);
     }
   }
   try{g.pressio.connect(o.detune)}catch(e){}
@@ -1009,6 +1037,7 @@ function scheduleReg(ac,g,ev,active){
   var endT=t2+rel*5+0.05;
   for(var i=0;i<ev.freqs.length;i++){
     var o=ac.createOscillator(); o.type='sawtooth'; o.frequency.value=ev.freqs[i];
+    o.detune.value=driftCents(reedBias.regs[i]||0);
     try{g.pressio.connect(o.detune)}catch(e){}
     var bp=ac.createBiquadFilter(); bp.type='bandpass';
     bp.frequency.value=TP.regs.tone; bp.Q.value=TP.regs.q;
@@ -1034,6 +1063,7 @@ function buildDrones(ac,g,t0,dur){
   var spec=[[BASE,700*D.toneScale,D.tenor,0.071],[BASE/2,520*D.toneScale,D.baritone,0.093],[BASE/4,360*D.toneScale,D.bass,0.113]];
   for(var i=0;i<spec.length;i++){
     var o=ac.createOscillator(); o.type='sawtooth'; o.frequency.value=spec[i][0];
+    o.detune.value=driftCents(reedBias.drones[i]);
     try{g.pressio.connect(o.detune)}catch(e){}
     var lp=ac.createBiquadFilter(); lp.type='lowpass';
     lp.frequency.value=spec[i][1]; lp.Q.value=0.4;
@@ -1047,6 +1077,18 @@ function buildDrones(ac,g,t0,dur){
     made.push(o); made.push(lfo);
   }
   return made;
+}
+/* AOIS slider riding live: the drones are the only long-running voices, so
+   they're the only ones that need a push — the chanter and regulators
+   read driftCents() fresh at every note/chord and pick up the new age
+   on their own next entrance. */
+function applyAgeLive(){
+  if(!live.playing||!ctx)return;
+  var now=ctx.currentTime;
+  for(var i=0;i<3;i++){
+    var o=live.drones[i*2];
+    if(o)try{o.detune.setTargetAtTime(driftCents(reedBias.drones[i]),now,0.15)}catch(e){}
+  }
 }
 
 function tickSched(){
@@ -1157,6 +1199,7 @@ function regen(opts){
   var was=live.playing;
   if(was)stop();
   if(opts.newSeed)P.seed=(Math.random()*4294967296)>>>0;
+  reedBias=computeReedBias(P.seed);
   tune=generateTune(P.seed,{forma:P.forma,modus:P.modus,stilus:P.stilus});
   live.state={r:0,s:0,b:0};
   cur={round:0,mensura:-1,cell:0,idx:-1,varied:false};
@@ -1181,7 +1224,14 @@ function ledgerStatic(){
   el.ledOrn.textContent='gearrthacha '+c.cut+' · smeachanna '+c.tap+' · rollaí '+c.roll
     +' · crainn '+c.cran+' · pléascanna '+c.pop+' · sleamhnuithe '+c.slide;
   instrumentum();
+  ledgerAois();
   ledgerLive();
+}
+function ledgerAois(){
+  if(!el.ledAois)return;
+  if(P.age<=0){el.ledAois.textContent='0 mí — fresh-reeded, true just intonation';return}
+  var pct=P.age/36;
+  el.ledAois.textContent=P.age+' mí — drifting up to ±'+(TP.reeding.ceiling*pct).toFixed(1)+'¢ from true';
 }
 function instrumentum(){
   var r=P.reg,txt;
@@ -1531,6 +1581,7 @@ function startRaf(){
 var hashT=null,lastHashWritten='';
 function __state(){
   return '#f='+P.forma+'&m='+P.modus+'&st='+P.stilus+'&t='+P.bpm
+    +'&a='+P.age
     +'&s='+seedHex()
     +'&reg='+['cal','bor','rgl'].map(function(k){return P.reg[k]?1:0}).join('');
 }
@@ -1552,6 +1603,7 @@ function __apply(h){
   if(q.m&&MODES[q.m])P.modus=q.m;
   if(q.st&&(q.st==='oscailte'||q.st==='teann'||q.st==='lom'))P.stilus=q.st;
   if(q.t){var t=+q.t;if(t>=40&&t<=140)P.bpm=Math.round(t)}
+  if(q.a!=null){var a=+q.a;if(isFinite(a)&&a>=0&&a<=36)P.age=Math.round(a)}
   if(q.s&&/^[0-9a-fA-F]{1,8}$/.test(q.s))P.seed=parseInt(q.s,16)>>>0;
   if(q.reg&&/^[01]{3}$/.test(q.reg)){
     ['cal','bor','rgl'].forEach(function(k,ix){P.reg[k]=q.reg.charAt(ix)==='1'});
@@ -1565,8 +1617,8 @@ function __apply(h){
 var el={};
 function grabEls(){
   ['btnSona','btnSos','btnAliud','btnSeco','selForma','selModus','selStilus','inpTempus',
-   'lblTempus','stopCal','stopBor','stopRgl','hintSusp',
-   'ledMat','ledFor','ledMod','ledGam','ledSti','ledOrn','ledIns','ledRot']
+   'lblTempus','inpAois','lblAois','stopCal','stopBor','stopRgl','hintSusp',
+   'ledMat','ledFor','ledMod','ledGam','ledSti','ledOrn','ledIns','ledRot','ledAois']
   .forEach(function(id){el[id]=document.getElementById(id)});
   cv=document.getElementById('fig');
 }
@@ -1576,6 +1628,8 @@ function syncControls(){
   el.selStilus.value=P.stilus;
   el.inpTempus.value=String(P.bpm);
   el.lblTempus.textContent=String(P.bpm);
+  el.inpAois.value=String(P.age);
+  el.lblAois.textContent=String(P.age);
   stopBtn('stopCal','cal');stopBtn('stopBor','bor');stopBtn('stopRgl','rgl');
 }
 function stopBtn(id,k){
@@ -1599,6 +1653,10 @@ function wire(){
     P.bpm=+el.inpTempus.value; el.lblTempus.textContent=String(P.bpm);
     if(live.playing){stop();start()}
     writeHash();
+  });
+  el.inpAois.addEventListener('input',function(){
+    P.age=+el.inpAois.value; el.lblAois.textContent=String(P.age);
+    ledgerAois(); applyAgeLive(); writeHash();
   });
   [['stopCal','cal'],['stopBor','bor'],['stopRgl','rgl']]
   .forEach(function(pair){

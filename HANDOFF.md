@@ -241,6 +241,70 @@ Conventions when touching this layer:
 
 Newest first.
 
+### BOLG — AOIS: optional, capped, seeded reed-age drift (op. VI)
+**Branch:** `claude/uilleann-pipe-sound-graphics-3zm1mq` (same branch as the
+regulator/graphics session above) · **File:** `bolg/index.html` · **Status:**
+done, verified headless (Chromium). No new op., no registry changes.
+
+Maintainer's framing: BOLG should stay just intonation where possible, but
+real reeds drift — temperature, damp, wear — so model that as an *optional*,
+capped, progressive detune, not a toggle that breaks the tuning by default.
+
+- **Confirmed BOLG was already 100% JI** (grepped for `mtof`/semitone-ET —
+  zero hits; chanter/drones/regs all resolve through `pcRatio`/`BASE`
+  octaves). Nothing to fix there; the ask was additive.
+- **AOIS NA RIBÍ** (age of the reeds), a new page-level slider (0–36 "mí",
+  default **0**) beside LUAS, hash key `a=` (round-trips through a fresh
+  permalink load same as every other control). At 0 every pipe is *exactly*
+  just — factory/default behaviour is bit-identical to before this session.
+- **The model:** each of the **seven independent reeds** (chanter, 3 drones,
+  3 regulator ranks) gets a fixed direction in `[-1,1]`, drawn once from
+  `computeReedBias(P.seed)` (a dedicated `mulberry32` stream, XORed off the
+  tune's own seed so the composition and the instrument's condition are
+  reproducible together but don't fight for the same randomness). Actual
+  detune = `(age/36) × TP.reeding.ceiling × bias` — linear in the slider, so
+  turning it up is monotonically "more out of tune," capped by a new TIMBRE
+  param (**`reeding.ceiling`, default 9¢** — deliberately small, same order
+  as the existing octave-kick constant, so "not by a lot" per the ask; a
+  worst-case reed at full age is still under a tenth of a semitone off).
+  Nothing chases back to true on its own — only re-reeding (turning AOIS back
+  down) does.
+- **Wiring:** `driftCents()` is read fresh at every chanter note and every
+  regulator chord (`scheduleNote`/`scheduleReg`), so those pick up an AOIS
+  change on their next entrance with no extra plumbing. Drones are the one
+  long-running voice, so the slider's `input` handler also calls
+  `applyAgeLive()`, which rides the three live drone oscillators'
+  `.detune` via `setTargetAtTime` (τ .15 s) — no transport restart, matching
+  the "change-while-playing re-vibes, doesn't restart" convention (unlike
+  LUAS/bpm, which already restarts here — precedent for *not* doing that
+  wasn't available, so AOIS deliberately does better). `TIMBRE.touch`'s
+  existing debounced drone rebuild already re-seats `reeding.ceiling` edits
+  made from OFFICINA with no changes needed there. Offline `seco()` cut reads
+  the same module-level `reedBias`/`P.age`, so a WAV pressing carries whatever
+  AOIS was dialed in, deterministically.
+- **Ledger + reader:** new `RIBÍ` ledger row (`0 mí — fresh-reeded, true just
+  intonation`, or the months plus a `±x.x¢` ceiling readout at that age) and a
+  new reader-notes paragraph ("Tuning, and the reeds' age") explaining the
+  conceit in plain language.
+- **Verified headless** (`scratchpad/verify-aois.mjs`, alongside the
+  pre-existing `verify-bolg.mjs`/`verify-cut.mjs`/`verify-rm.mjs`, all
+  re-run clean): age 0 ⇒ exactly zero drift on all seven reeds regardless of
+  seed; age scales linearly and monotonically (18 is exactly half of 36's
+  drift, every seed checked); every drifted value stays ≤ the TIMBRE ceiling;
+  `computeReedBias` is deterministic per seed and differs across seeds; hash
+  round-trips `a=` through a real fresh-permalink load; UI slider/label/ledger
+  stay in sync after restore; live drag to AOIS 36 while playing visibly
+  moves the three live drone oscillators' `.detune`; offline cut at AOIS 30 is
+  NaN-free and unclipped. Zero non-font console/page errors.
+- **Pick-ups:** the regulator↔freq-index↔rank mapping (`reedBias.regs[i]`
+  against `ev.freqs[i]`) assumes chord arrays are always length-3 pc-triples
+  (true for every mode in `CHORDS` today) — would need revisiting if a future
+  mode ships a chord of a different size. AOIS is deliberately independent of
+  the existing `bag` breath LFO (volatile, oscillating, already-shipped) —
+  the two are meant to read as separate causes (live breath vs. secular
+  condition) and stack additively on the same `.detune` param; no attempt was
+  made to unify them.
+
 ### BOLG — softer regulators + the whole set now animates (op. VI)
 **Branch:** `claude/uilleann-pipe-sound-graphics-3zm1mq` · **File:**
 `bolg/index.html` · **Status:** done, verified headless (Chromium). No new
