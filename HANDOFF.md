@@ -446,8 +446,25 @@ VESNIANKA kolomyika 4+4+6 with the *hukannia* whoop, trio KOLYSKOVA lullaby).
   only on vesnianka lines 2/4; determinism (same seed+law ⇒ identical event
   list; lap-reseed reproducible); realtime transport runs, pause/resume
   holds, offline cut NaN-free and peak-normalised with head energy, hash
-  and OFFICINA schema/set/bulk round-trip (9 groups, 40 params). Zero
+  and OFFICINA schema/set/bulk round-trip (9 groups, 48 params). Zero
   pageerrors throughout.
+- **Follow-up (maintainer, after bench tweaks): independent per-voice
+  vibrato + more human/breathy.** Each voice's `v.vibLFO` ran at the exact
+  same shared `throat.vibRate` — four throats in lockstep. Now every singer
+  offsets it by her own `vibOff` (new per-singer TIMBRE param, distinct
+  factory defaults), a slow per-voice "wander" LFO (`throat.vibWander`/
+  `vibWanderDepth`, rate itself multiplied by a fixed per-singer constant so
+  the four wanders never sync) modulates that rate over time, and an
+  always-on micro-jitter LFO (`throat.jitter`, fixed distinct Hz per singer)
+  adds a small flicker under every note, not just held ones — the existing
+  slow vibrato law (fades in only past `vibDelay`) is untouched. For "sounds
+  more human": a continuous breathy **aspiration** noise (new `breath.
+  aspiration` param) rides under each voice on the *same* line-envelope
+  (`v.env`) as the tone, shaped near her own formants (`1800×formantScale`
+  bandpass) — no new scheduling needed, it fades with the phrase for free.
+  TIMBRE: 40→**48 params** (throat +3, breath +1, four singer groups +1
+  each). `TIMBRE.touch` extended for all of the above; `buildVoice` now
+  takes the shared noise buffer so aspiration doesn't need its own.
 - **Pick-up ideas** (carried from the brief): a VESILNA wedding-ladkannia
   genre; a second tonic literal an octave down for a mixed-voice mode;
   humanized stagger of the pidkhoplennia entrance; a "far across the

@@ -287,6 +287,11 @@ const SINGERS=[
   {id:'vyvid', label:'Вивід',        band:[[3,2],[9,4]]},    // the descant — silent in zaspiv, octave at the crown
 ];
 const BASOK_SET=[[1,1],[8,9],[3,4]];   // her anchors are literal, not mode-derived (VOCES.md §5)
+// fixed per-singer "personality" constants (not TIMBRE): how fast each throat's
+// vibrato-rate wander drifts, and each throat's own micro-jitter rate — kept
+// distinct so four independent LFOs never phase-lock into one mechanical wobble.
+const WANDER_MULT={zaspiv:1.0, druha:1.35, basok:0.8, vyvid:1.6};
+const JITTER_HZ={zaspiv:2.7, druha:3.4, basok:2.3, vyvid:3.9};
 
 // pseudo-lyric syllable grammar (VOCES.md §7) — not words, mouth-true
 const ONSETS_W=[['',.14],['h',.06],['d',.07],['k',.07],['l',.08],['m',.09],['n',.09],['p',.07],
@@ -329,11 +334,14 @@ const TIMBRE={
       wet:{v:.12,min:0,max:.5,step:.01,label:'room send',doc:'how much of the quartet reaches the convolved village room (seeded IR, so the WAV stays deterministic)'},
       drive:{v:.06,min:0,max:.3,step:.01,label:'shaper drive',doc:'warmth only — the DIAMOND lesson: past ~0.1 the voices fuzz'},
     }},
-    throat:{label:'throat',doc:'The glottal source shared by all four singers (each offsets it slightly): 36 harmonics at 1/n^tilt, and the late village vibrato.',params:{
+    throat:{label:'throat',doc:'The glottal source shared by all four singers (each offsets it slightly): 36 harmonics at 1/n^tilt, and the late village vibrato — each throat’s own rate (base + her vibOff, in the singer groups below), slowly wandering, plus an always-on micro-jitter so no note sits perfectly still.',params:{
       tilt:{v:.60,min:.35,max:1.1,step:.01,label:'spectral tilt',doc:'roll-off exponent of the buzz (1/n^tilt): lower = brighter, more of the white-voice ring'},
-      vibRate:{v:5.2,min:3,max:8,step:.1,unit:'Hz',label:'vibrato rate',doc:'speed of the late vibrato on long holds'},
+      vibRate:{v:5.2,min:3,max:8,step:.1,unit:'Hz',label:'vibrato rate',doc:'base speed of the late vibrato on long holds; each singer offsets this by her own vibOff so four throats never lock into the same wobble'},
       vibDepth:{v:9,min:0,max:25,step:.5,unit:'¢',label:'vibrato depth',doc:'width of the late vibrato; village voice stays under ~12'},
       vibDelay:{v:1.1,min:.3,max:3,step:.05,unit:'s',label:'vibrato delay',doc:'a held tone stays straight this long before the vibrato fades in'},
+      vibWander:{v:.12,min:.03,max:.4,step:.01,unit:'Hz',label:'vibrato wander rate',doc:'how fast each singer’s vibrato rate itself slowly drifts — the difference between a mechanical wobble and a breathing one; each throat wanders at its own speed'},
+      vibWanderDepth:{v:.5,min:0,max:2,step:.05,unit:'Hz',label:'vibrato wander depth',doc:'how far the vibrato rate drifts from its base; 0 is a perfectly steady, robotic wobble'},
+      jitter:{v:2.4,min:0,max:8,step:.1,unit:'¢',label:'micro-jitter',doc:'a small, always-on pitch flicker under every note (not just held ones) — the natural instability of a real throat, distinct from the slower vibrato; the biggest single lever against sounding synthetic'},
     }},
     vowels:{label:'vowel bank',doc:'Four parallel formant bandpasses per voice, tuned by the syllable’s vowel (the table is law). These params shape how the bank reads.',params:{
       openness:{v:.15,min:0,max:.25,step:.01,label:'openness',doc:'scales F1 upward — the throat opened wide; the open-air carry of the style'},
@@ -354,33 +362,38 @@ const TIMBRE={
       portaMs:{v:80,min:20,max:200,step:5,unit:'ms',label:'portamento',doc:'slide time between slurred steps'},
       fallCents:{v:45,min:0,max:120,step:2,unit:'¢',label:'release fall',doc:'the sighing downward let-go on every line-final release'},
     }},
-    breath:{label:'breath & consonants',doc:'The air of the room: the shared inhale between lines, and the small noise onsets that make syllables read as speech.',params:{
+    breath:{label:'breath & consonants',doc:'The air of the room: the shared inhale between lines, the small noise onsets that make syllables read as speech, and a continuous breathy aspiration riding under every held tone — the throat, not just the room, breathing.',params:{
       inhale:{v:.35,min:0,max:1,step:.02,label:'inhale level',doc:'the quartet’s audible breath between lines — structural, not decoration'},
       consonant:{v:.30,min:0,max:1,step:.02,label:'consonant level',doc:'syllable-onset noise bursts (s/sh bands, stop clicks)'},
+      aspiration:{v:.09,min:0,max:.35,step:.01,label:'aspiration',doc:'continuous breathy noise mixed under every voice’s tone, shaped near her own formants — the single biggest lever for a throat instead of a pure buzz'},
     }},
     zaspiv:{label:'singer · zaspivuvachka',doc:'The leader. Sings the skeleton; opens every verse alone.',params:{
       level:{v:.90,min:0,max:1.2,step:.01,label:'level',doc:'her place in the blend — first among equals'},
       formantScale:{v:1.00,min:.85,max:1.15,step:.005,label:'formant scale',doc:'scales all four formants — the size of the frame that sings'},
       tiltOff:{v:0,min:-.2,max:.3,step:.01,label:'tilt offset',doc:'her brightness relative to the shared throat tilt'},
       pan:{v:-.10,min:-1,max:1,step:.02,label:'pan',doc:'where she stands — a semicircle in a room, not a mix'},
+      vibOff:{v:0,min:-1,max:1,step:.05,unit:'Hz',label:'vibrato offset',doc:'her own vibrato rate, apart from the others — so four throats never lock into the same wobble'},
     }},
     druha:{label:'singer · druha',doc:'The second — the weave at unison and third.',params:{
       level:{v:.80,min:0,max:1.2,step:.01,label:'level',doc:'her place in the blend'},
       formantScale:{v:1.03,min:.85,max:1.15,step:.005,label:'formant scale',doc:'slightly bigger frame than the leader'},
       tiltOff:{v:.05,min:-.2,max:.3,step:.01,label:'tilt offset',doc:'a touch darker than the leader'},
       pan:{v:.10,min:-1,max:1,step:.02,label:'pan',doc:'where she stands'},
+      vibOff:{v:.28,min:-1,max:1,step:.05,unit:'Hz',label:'vibrato offset',doc:'her own vibrato rate, apart from the others'},
     }},
     basok:{label:'singer · basok',doc:'The low anchor — a woman’s low chest voice, not a man’s bass.',params:{
       level:{v:.85,min:0,max:1.2,step:.01,label:'level',doc:'her place in the blend'},
       formantScale:{v:1.06,min:.85,max:1.15,step:.005,label:'formant scale',doc:'the biggest frame of the four'},
       tiltOff:{v:.10,min:-.2,max:.3,step:.01,label:'tilt offset',doc:'darkest of the four'},
       pan:{v:.20,min:-1,max:1,step:.02,label:'pan',doc:'where she stands'},
+      vibOff:{v:-.35,min:-1,max:1,step:.05,unit:'Hz',label:'vibrato offset',doc:'her own vibrato rate, apart from the others'},
     }},
     vyvid:{label:'singer · vyvid',doc:'The descant — thinner, brighter, above the weave.',params:{
       level:{v:.75,min:0,max:1.2,step:.01,label:'level',doc:'her place in the blend — she carries by register, not level'},
       formantScale:{v:.94,min:.85,max:1.15,step:.005,label:'formant scale',doc:'the smallest, brightest frame'},
       tiltOff:{v:-.05,min:-.2,max:.3,step:.01,label:'tilt offset',doc:'brightest of the four'},
       pan:{v:-.22,min:-1,max:1,step:.02,label:'pan',doc:'where she stands'},
+      vibOff:{v:.52,min:-1,max:1,step:.05,unit:'Hz',label:'vibrato offset',doc:'her own vibrato rate, apart from the others'},
     }},
   }
 };
@@ -560,7 +573,7 @@ function makeShaperCurve(drive){
   for(let i=0;i<n;i++){const x=i/(n-1)*2-1;c[i]=Math.tanh(x*(1+k))/norm;}
   return c;
 }
-function buildVoice(ctx,sid){
+function buildVoice(ctx,sid,noiseBuf){
   const v={id:sid};
   v.osc=ctx.createOscillator();
   v.osc.setPeriodicWave(glottalWave(ctx,TP.throat.tilt+TP[sid].tiltOff));
@@ -591,9 +604,29 @@ function buildVoice(ctx,sid){
   v.voiceLevel=ctx.createGain(); v.voiceLevel.gain.value=TP[sid].level;
   v.pan.connect(v.voiceLevel);
 
-  v.vibLFO=ctx.createOscillator(); v.vibLFO.type='sine'; v.vibLFO.frequency.value=TP.throat.vibRate;
+  // vibrato: each singer's OWN rate (base + her vibOff), never in lockstep —
+  // a slow "wander" LFO modulates that rate itself so it isn't a mechanical
+  // wobble, and a fast, always-on jitter LFO adds a small pitch flicker even
+  // on short notes (the vibrato proper still only fades in on long holds).
+  v.vibLFO=ctx.createOscillator(); v.vibLFO.type='sine'; v.vibLFO.frequency.value=TP.throat.vibRate+TP[sid].vibOff;
   v.vibDepth=ctx.createGain(); v.vibDepth.gain.value=0;
   v.vibLFO.connect(v.vibDepth); v.vibDepth.connect(v.osc.detune);
+
+  v.wobLFO=ctx.createOscillator(); v.wobLFO.type='sine'; v.wobLFO.frequency.value=TP.throat.vibWander*WANDER_MULT[sid];
+  v.wobDepth=ctx.createGain(); v.wobDepth.gain.value=TP.throat.vibWanderDepth;
+  v.wobLFO.connect(v.wobDepth); v.wobDepth.connect(v.vibLFO.frequency);
+
+  v.jitLFO=ctx.createOscillator(); v.jitLFO.type='sine'; v.jitLFO.frequency.value=JITTER_HZ[sid];
+  v.jitDepth=ctx.createGain(); v.jitDepth.gain.value=TP.throat.jitter;
+  v.jitLFO.connect(v.jitDepth); v.jitDepth.connect(v.osc.detune);
+
+  // aspiration: a continuous breathy noise under the tone, shaped near her
+  // own formants, riding the SAME line-envelope as the voice (v.env) so it
+  // breathes in and out with the phrase rather than needing its own scheduling.
+  v.aspSrc=ctx.createBufferSource(); v.aspSrc.buffer=noiseBuf; v.aspSrc.loop=true;
+  v.aspBP=ctx.createBiquadFilter(); v.aspBP.type='bandpass'; v.aspBP.frequency.value=1800*TP[sid].formantScale; v.aspBP.Q.value=1.2;
+  v.aspGain=ctx.createGain(); v.aspGain.gain.value=TP.breath.aspiration;
+  v.aspSrc.connect(v.aspBP); v.aspBP.connect(v.aspGain); v.aspGain.connect(v.env);
   return v;
 }
 function buildGraph(ctx){
@@ -615,14 +648,16 @@ function buildGraph(ctx){
 
   G.voices={};
   SINGERS.forEach(s=>{
-    const v=buildVoice(ctx,s.id);
+    const v=buildVoice(ctx,s.id,G.noiseBuf);
     v.voiceLevel.connect(G.pre);
     const send=ctx.createGain(); send.gain.value=0.35; v.voiceLevel.connect(send); send.connect(G.verb);
     G.voices[s.id]=v;
   });
   return G;
 }
-function startGraph(G,t0){ SINGERS.forEach(s=>{const v=G.voices[s.id]; v.osc.start(t0); v.vibLFO.start(t0);}); }
+function startGraph(G,t0){ SINGERS.forEach(s=>{const v=G.voices[s.id];
+  v.osc.start(t0); v.vibLFO.start(t0); v.wobLFO.start(t0); v.jitLFO.start(t0); v.aspSrc.start(t0);
+}); }
 
 // the shared breath between lines — KHÖÖMEI's inhale pattern
 function inhale(G,t,dur){
@@ -1015,7 +1050,12 @@ TIMBRE.touch=()=>{
     SINGERS.forEach(s=>{
       const v=RT.G.voices[s.id];
       v.osc.setPeriodicWave(glottalWave(RT.ctx,TP.throat.tilt+TP[s.id].tiltOff));
-      v.vibLFO.frequency.setTargetAtTime(TP.throat.vibRate,ct,.1);
+      v.vibLFO.frequency.setTargetAtTime(TP.throat.vibRate+TP[s.id].vibOff,ct,.1);
+      v.wobLFO.frequency.setTargetAtTime(TP.throat.vibWander*WANDER_MULT[s.id],ct,.1);
+      v.wobDepth.gain.setTargetAtTime(TP.throat.vibWanderDepth,ct,.1);
+      v.jitDepth.gain.setTargetAtTime(TP.throat.jitter,ct,.1);
+      v.aspBP.frequency.setTargetAtTime(1800*TP[s.id].formantScale,ct,.1);
+      v.aspGain.gain.setTargetAtTime(TP.breath.aspiration,ct,.1);
       v.bpGain[1].gain.setTargetAtTime(Math.pow(10,TP.vowels.g2/20),ct,.05);
       v.bpGain[2].gain.setTargetAtTime(Math.pow(10,TP.vowels.g3/20),ct,.05);
       v.bpGain[3].gain.setTargetAtTime(Math.pow(10,TP.vowels.g4/20),ct,.05);
