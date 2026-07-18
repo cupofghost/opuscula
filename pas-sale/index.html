@@ -283,23 +283,54 @@ function __iosAudio(ac){
   const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
   kick();
   try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
-  // stop the sound when the page is backgrounded (phone locked, app switched
-  // or closed) — a playback-session AudioContext otherwise keeps rendering in
-  // the background. Suspend on hidden; only auto-resume while visible.
-  const onVis=()=>{try{
-    if(document.visibilityState==='visible')kick();
-    else if(ac.state==='running')ac.suspend().catch(()=>{});
-  }catch(e){}};
+  // playback-session AudioContext keeps rendering when backgrounded (phone
+  // locked, app switched) — that's wanted now (lock-screen listening via
+  // Media Session, below), so only ever resume here, never suspend on hide.
+  const onVis=()=>{try{if(document.visibilityState==='visible')kick();}catch(e){}};
   document.addEventListener&&document.addEventListener('visibilitychange',onVis);
   window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
   try{ac.addEventListener('statechange',()=>{
     if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
     if(ac.state==='running')__hint('');
-    else if(document.visibilityState==='visible')setTimeout(kick,60);
+    else setTimeout(kick,60);
   });}catch(e){}
   setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
     __hint('AUDIO SUSPENSUM — tap play again · if still silent, check the ring/silent switch');}catch(e){}},450);
 }
+
+/* ---- Media Session: lock-screen / notification-shade transport ----
+   A silent looping <audio> element anchors the OS "now playing" session —
+   Web Audio alone doesn't reliably surface one — and keeps the tab exempt
+   from background timer throttling so the lookahead scheduler stays live
+   with the phone locked. */
+const __SILENCE='data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+let __silAudio=null;
+function __mediaSessionInit(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.setActionHandler('play',()=>{if(!playing)start();});
+    navigator.mediaSession.setActionHandler('pause',()=>{if(playing)stop();});
+    navigator.mediaSession.setActionHandler('stop',()=>{if(playing)stop();});
+    navigator.mediaSession.setActionHandler('nexttrack',()=>{encore();});
+  }catch(e){}
+}
+function __mediaSessionUpdate(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.metadata=new MediaMetadata({
+      title:'PAS SALÉ', artist:'OPVSCVLA · op. I',
+      album:'matrice n° '+songSeed.toString(16).toUpperCase()
+    });
+    navigator.mediaSession.playbackState=playing?'playing':'paused';
+  }catch(e){}
+}
+function __silStart(){
+  try{
+    if(!__silAudio){__silAudio=new Audio(__SILENCE);__silAudio.loop=true;__silAudio.setAttribute('playsinline','');}
+    __silAudio.play().catch(()=>{});
+  }catch(e){}
+}
+function __silStop(){try{__silAudio&&__silAudio.pause();}catch(e){}}
 
 /* =====================================================================
    PAS SALÉ — a zydeco two-step in G, 70 bars.
@@ -812,6 +843,7 @@ async function start(){
   ptr=0; t0=ctx.currentTime+.12; playing=true;
   playBtn.textContent='ARRÊTE'; playBtn.classList.add('playing');
   tempoR.disabled=true;
+  __mediaSessionInit(); __mediaSessionUpdate(); __silStart();
   timer=setInterval(()=>{
     if(!playing) return;
     const horizon=ctx.currentTime+.18;
@@ -832,6 +864,7 @@ function stop(){
   counter.textContent='tape stopped';
   document.querySelectorAll('.row.now').forEach(r=>r.classList.remove('now'));
   dots.forEach(d=>d.classList.remove('on'));
+  __mediaSessionUpdate(); __silStop();
 }
 playBtn.addEventListener('click', ()=> playing?stop():start());
 
