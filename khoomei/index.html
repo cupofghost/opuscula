@@ -142,6 +142,9 @@ footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
       <input type="range" id="breath" min="0" max="100" value="50" aria-label="Breath / air">
     </div>
     <div class="fld" style="justify-content:center">
+      <label class="tog"><input type="checkbox" id="tovshuur" checked><span>Tovshuur</span></label>
+    </div>
+    <div class="fld" style="justify-content:center">
       <label class="tog"><input type="checkbox" id="ground"><span>Morin-khuur ground</span></label>
     </div>
   </div>
@@ -164,7 +167,7 @@ footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
       <h4>The three manners</h4>
       <p><em>Khöömei</em> proper is the middle, throaty voice, its overtones full and warm. <em>Sygyt</em> — "whistle" — squeezes the resonance until the overtone rings out piercing and pure, high on the ladder. <em>Kargyraa</em> drops the voice an octave into a growl: the vocal folds and the false folds above them beat together at half speed, so the drone doubles down into the chest and the overtones ride a deeper, rougher ground.</p>
       <h4>The steppe</h4>
-      <p>Overtone singing belongs to the herding peoples of the Altai and the Mongolian west — Chandmani in Khovd is called its cradle — and to their Tuvan and Bashkir neighbours. It is bound up with a reverence for the sounding world: the wind over grass, water over stone, the cliff that answers back. Singers speak of imitating a landscape rather than composing against it. UNESCO inscribed Mongolian <em>khöömei</em> on its list of the Intangible Cultural Heritage of Humanity in 2010. The morin khuur — the horse-head fiddle whose two strings can bow a drone and a fifth beneath the voice — is its usual companion; switch on the ground and it joins in.</p>
+      <p>Overtone singing belongs to the herding peoples of the Altai and the Mongolian west — Chandmani in Khovd is called its cradle — and to their Tuvan and Bashkir neighbours. It is bound up with a reverence for the sounding world: the wind over grass, water over stone, the cliff that answers back. Singers speak of imitating a landscape rather than composing against it. UNESCO inscribed Mongolian <em>khöömei</em> on its list of the Intangible Cultural Heritage of Humanity in 2010. The morin khuur — the horse-head fiddle whose two strings can bow a drone and a fifth beneath the voice — is its usual companion, and so is the <em>tovshuur</em>, the small two-stringed plucked lute of the Altai and Oirat, tuned in fourths and struck in a steady drive under the voice. Switch on either accompaniment and it joins in — the lute carrying on through the singer's breaths.</p>
       <h4>The name</h4>
       <p>Mongolian <em>khöömei</em> (хөөмий) means the pharynx, the throat itself — the instrument named for the part of the body that plays it. Op. XI is titled in that tongue.</p>
     </div>
@@ -358,7 +361,7 @@ const styleOf=id=>({label:STYLES[id].label,harms:STYLES[id].harms,
   bodyLP:TP[id].bodyLP,sub:TP[id].subLvl,growl:TP[id].growlAmt,breath:TP[id].breathAmt});
 
 /* ------------------------------- state ---------------------------------- */
-const st={ style:'khoomei', keyi:1, pace:66, breath:50, ground:false, seed:1, playing:false };
+const st={ style:'khoomei', keyi:1, pace:66, breath:50, ground:false, tovshuur:true, seed:1, playing:false };
 
 /* ---------------- composition: seeded overtone melody -------------------
    A slow, mostly-stepwise walk up and down the manner's harmonic set —
@@ -404,6 +407,41 @@ function makeRoomIR(ctx,sec,exp){
   for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
     for(let i=0;i<len;i++){const e=Math.pow(1-i/len,exp);lp+=0.22*((Math.random()*2-1)-lp);d[i]=lp*e*1.4;}}
   return b;
+}
+
+/* -------- tovshuur: the two-string plucked lute, tuned in fourths --------
+   The western-Mongolian (Altai/Oirat) singers' plucked accompaniment. Two
+   Karplus–Strong strings — the drone tonic and a fourth above it — baked once
+   per pitch, struck in a steady ostinato that carries on THROUGH the singer's
+   breaths, filling the texture the voice leaves. */
+function ksBuffer(ctx, freq, dur, bright){
+  const sr=ctx.sampleRate, N=Math.max(2,Math.round(sr/freq)), n=Math.max(N+2,Math.floor(dur*sr));
+  const buf=ctx.createBuffer(1,n,sr), d=buf.getChannelData(0);
+  const line=new Float32Array(N); for(let i=0;i<N;i++)line[i]=Math.random()*2-1;
+  const damp=clamp(0.5-bright*0.12,0.3,0.5); let idx=0,prev=0,mx=0;
+  for(let i=0;i<n;i++){ const cur=line[idx]; line[idx]=(cur*(1-damp)+prev*damp)*0.996; prev=cur; d[i]=cur; idx=(idx+1)%N; if(Math.abs(cur)>mx)mx=Math.abs(cur); }
+  if(mx>0){const k=0.9/mx; for(let i=0;i<n;i++)d[i]*=k;}
+  const fa=Math.floor(0.002*sr); for(let i=0;i<fa;i++)d[i]*=i/fa;                 // de-click attack
+  const fo=Math.floor(0.02*sr);  for(let i=0;i<fo && i<n;i++)d[n-1-i]*=i/fo;      // de-click tail
+  return buf;
+}
+function bakeTov(G,f0){ G.tovBuf=[ksBuffer(G.ctx,2*f0,1.35,0.55), ksBuffer(G.ctx,2*f0*4/3,1.2,0.5)]; }  // tonic + a fourth
+function pluckTov(G,t,si,vel){
+  const s=G.ctx.createBufferSource(); s.buffer=G.tovBuf[si];
+  const g=G.ctx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vel,t+0.004);
+  s.connect(g); g.connect(G.tovBus); s.start(t); s.stop(t+1.5);
+}
+// a steady eight-step ostinato: the tonic string on the beats, the fourth on
+// the offbeats, with a seeded gallop — the drive under the voice.
+function makeTov(seed){
+  const rng=mulberry32((seed>>>0)^0x1a2f0b7d), pat=[];
+  for(let s=0;s<8;s++){
+    if(s%2===0) pat.push({str:0,vel:s===0?0.55:0.42});
+    else pat.push(rng()<0.72?{str:1,vel:0.30}:null);
+  }
+  if(rng()<0.5) pat[3]={str:0,vel:0.30};
+  if(rng()<0.4) pat[6]={str:1,vel:0.30};
+  return pat;
 }
 
 // The fixed signal path — identical realtime & offline, so the WAV is faithful.
@@ -467,6 +505,13 @@ function buildGraph(ctx, style, f0){
     G['gOsc'+ix]=o; G['gLp'+ix]=lp; G['gGain'+ix]=g;
   });
   G.groundBus.connect(G.master);
+
+  // ---- tovshuur: plucked-lute accompaniment (two strings, a fourth apart) ----
+  G.tovBus=ctx.createGain(); G.tovBus.gain.value=0.5;
+  const tlp=ctx.createBiquadFilter(); tlp.type='lowpass'; tlp.frequency.value=3200; tlp.Q.value=0.5;
+  G.tovBus.connect(tlp); tlp.connect(G.master);
+  const tsend=ctx.createGain(); tsend.gain.value=0.12; tlp.connect(tsend); tsend.connect(G.verb);
+  bakeTov(G,f0);
   return G;
 }
 
@@ -530,7 +575,8 @@ function play(){
   const style=styleOf(st.style), f0=KEYS[st.keyi].hz;
   const G=buildGraph(ctx,style,f0);
   startGraph(G,ctx.currentTime+0.06);
-  RT={ctx,G,style,f0,beat:60/st.pace,phrase:makePhrase(style,st.seed),pi:0,nextT:ctx.currentTime+0.14,cur:{harm:0,lvl:0},timer:0};
+  RT={ctx,G,style,f0,beat:60/st.pace,phrase:makePhrase(style,st.seed),pi:0,nextT:ctx.currentTime+0.14,cur:{harm:0,lvl:0},timer:0,
+      tovNext:ctx.currentTime+0.14,tovStep:0,tovPat:makeTov(st.seed)};
   applyGround();
   RT.timer=setInterval(sched,55);
   st.playing=true; st.paused=false; $('play').textContent='Stop'; $('play').classList.add('on'); $('status').textContent='SINGING';
@@ -546,6 +592,13 @@ function sched(){
     if(note.breath) RT.cur={harm:0,lvl:0,breath:true,at:RT.nextT};
     else if(!note.rest) RT.cur={harm:note.harm,lvl:1,at:RT.nextT};
     RT.nextT+=dur; RT.pi++;
+  }
+  // the tovshuur runs on its own steady pulse — on through the breaths
+  const eighth=(60/st.pace)/2;
+  while(RT.tovNext<ahead){
+    const step=RT.tovPat[RT.tovStep%RT.tovPat.length];
+    if(st.tovshuur && step) pluckTov(RT.G,RT.tovNext,step.str,step.vel*(0.85+0.3*Math.random()));
+    RT.tovNext+=eighth; RT.tovStep++;
   }
 }
 function stop(){
@@ -564,6 +617,7 @@ function reVibe(){
   if(!RT)return;
   const G=RT.G, f0=KEYS[st.keyi].hz, ct=RT.ctx.currentTime;
   RT.style=style; RT.f0=f0; RT.beat=60/st.pace; RT.phrase=makePhrase(style,st.seed);
+  RT.tovPat=makeTov(st.seed); bakeTov(G,f0);                 // re-string the lute for the new drone/seed
   G.mainOsc.frequency.setTargetAtTime(f0,ct,0.09);
   G.subOsc.frequency.setTargetAtTime(f0/2,ct,0.09);
   G.subGain.gain.setTargetAtTime(style.sub,ct,0.1);
@@ -647,6 +701,8 @@ async function cut(){
     // schedule the phrase across the whole span
     let t=0.14, pi=0;
     while(t<dur){ const nn=phrase[pi%phrase.length]; scheduleNote(G,nn,t,nn.dur*beat,f0,style,breathAmt); t+=nn.dur*beat; pi++; }
+    if(st.tovshuur){ const eighth=(60/st.pace)/2, tovPat=makeTov(st.seed); let tt=0.14, ts=0;
+      while(tt<dur){ const step=tovPat[ts%tovPat.length]; if(step) pluckTov(G,tt,step.str,step.vel); tt+=eighth; ts++; } }
     // let the last note breathe, then fade the master
     G.master.gain.setValueAtTime(TP.master.gain,dur-0.4); G.master.gain.linearRampToValueAtTime(0.0001,total-0.15);
     const rb=await ctx.startRendering();
@@ -683,6 +739,7 @@ $('pace').addEventListener('change',reVibe);
 $('breath').addEventListener('input',e=>{st.breath=+e.target.value;$('breathRd').textContent=st.breath;
   if(RT)RT.G.breath.gain.setTargetAtTime(st.breath/100*RT.style.breath*TP.breath.level,RT.ctx.currentTime,0.1);});
 $('breath').addEventListener('change',()=>writeHash());
+$('tovshuur').addEventListener('change',e=>{st.tovshuur=e.target.checked;writeHash();});
 $('ground').addEventListener('change',e=>{st.ground=e.target.checked;applyGround();writeHash();});
 $('play').addEventListener('click',play);
 /* Pause · Resume: suspend/resume the AudioContext. The phrase is scheduled off
@@ -766,7 +823,7 @@ function draw(now){
 requestAnimationFrame(draw);
 
 /* ----------------------------- permalink -------------------------------- */
-function __state(){return {st:st.style,k:st.keyi,p:st.pace,b:st.breath,g:st.ground?1:0,sd:st.seed};}
+function __state(){return {st:st.style,k:st.keyi,p:st.pace,b:st.breath,g:st.ground?1:0,tv:st.tovshuur?1:0,sd:st.seed};}
 let __applying=false;
 function applyHash(o){
   if(o.st&&STYLES[o.st]){st.style=o.st;$('styleRd').textContent=STYLES[o.st].label;
@@ -776,6 +833,7 @@ function applyHash(o){
   if(o.p!==undefined){st.pace=clamp(+o.p|0,34,132);$('pace').value=st.pace;$('paceRd').textContent=st.pace;}
   if(o.b!==undefined){st.breath=clamp(+o.b|0,0,100);$('breath').value=st.breath;$('breathRd').textContent=st.breath;}
   if(o.g!==undefined){st.ground=(+o.g===1);$('ground').checked=st.ground;}
+  if(o.tv!==undefined){st.tovshuur=(+o.tv===1);$('tovshuur').checked=st.tovshuur;}
   if(o.sd!==undefined){st.seed=(+o.sd|0)||1;}
 }
 function readHash(){const h=location.hash.slice(1);if(!h)return null;const o={};
