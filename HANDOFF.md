@@ -239,6 +239,40 @@ Conventions when touching this layer:
 
 Newest first.
 
+### PAS SALÉ — lock-screen playback via Media Session API
+**Branch:** `claude/app-link-request-vj8sml` · **File:** `pas-sale/index.html`
+· **Status:** done, verified headless (Chromium). Prototype for a
+maintainer-requested feature (listen with the phone locked/backgrounded) —
+**not yet swept to the other sixteen machines.**
+
+- **`__iosAudio`'s hide-suspend removed:** it used to deliberately
+  `ac.suspend()` on `visibilitychange`→hidden (comment: "stop the sound when
+  the page is backgrounded"). That was the opposite of what's wanted now, so
+  it's gone — the context only ever gets `kick()`ed (resumed), never
+  suspended, on visibility/statechange. `pagehide` still suspends (real
+  navigation/unload, not backgrounding).
+- **Media Session added** (`__mediaSessionInit`/`__mediaSessionUpdate`):
+  wires lock-screen/notification-shade play/pause/stop to `start()`/`stop()`,
+  and **next-track to `encore()`** (a natural fit — "another take"). Metadata
+  (title/artist/matrice-as-album) refreshes on every start/stop.
+- **Silent looping `<audio>` anchor** (`__silStart`/`__silStop`, `__SILENCE`
+  data-URI, 8kHz/8-bit/50ms): pure Web Audio doesn't reliably surface an OS
+  "now playing" session or stay exempt from background tab-timer throttling;
+  a real (silent) `<audio>` element playing alongside does both. Starts/stops
+  with the transport.
+- **Verified headless:** `ctx.state` stays `'running'` after a simulated
+  `visibilitychange`→hidden (previously it suspended); Media Session
+  metadata/`playbackState` update correctly; the silence anchor plays while
+  the transport runs. Script `/tmp/…/verify_pas_sale.js` (scratch, not
+  committed).
+- **Pick-up:** if this holds up on a real phone, sweep the same
+  `__iosAudio`/Media Session/silence-anchor pattern to the other sixteen
+  machines **on its own dedicated branch** (per the cross-machine-sweep
+  rule) — don't bolt it onto unrelated per-machine work. Each machine's
+  metadata title/op. number and `start()`/`stop()`/encore-equivalent names
+  differ, so it's a copy-adapt, not a literal duplicate-verbatim like the
+  OFFICINA bridge.
+
 ### TESSERA — new machine, op. XVII (a self-predicting language model)
 **Branch:** `claude/llm-machine-architecture-5ji49g` · **File:**
 `tessera/index.html` · **Status:** done, verified headless (Chromium). New
