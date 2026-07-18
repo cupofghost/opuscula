@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0e0b16">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>TESSERA — a machine that predicts itself</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   TESSERA — a mosaic laid one token at a time
+   Palette: night violet #0e0b16 / field #14101f / line #b8a9e8
+            ink #ece7f6 / tesserae gold #e8c46a / choice #74d0c4
+   ===================================================================== */
+:root{
+  color-scheme:dark;
+  --ground:#0e0b16; --field:#14101f; --line:rgba(184,169,232,.26);
+  --line2:rgba(184,169,232,.12); --ink:#ece7f6; --dim:#a99fc6;
+  --gold:#e8c46a; --choice:#74d0c4; --hot:#e5795f;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px}
+body{
+  background:var(--ground);
+  background-image:
+    linear-gradient(var(--line2) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line2) 1px, transparent 1px),
+    radial-gradient(120% 90% at 50% 0%, rgba(232,196,106,.05), transparent 60%);
+  background-size:30px 30px, 30px 30px, 100% 100%;
+  color:var(--ink);
+  font-family:'Archivo',system-ui,sans-serif;
+  min-height:100vh;
+  display:flex;justify-content:center;
+  padding:max(14px, env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom));
+}
+.sheet{
+  width:100%;max-width:620px;
+  border:1.5px solid var(--line);
+  background:var(--field);
+  box-shadow:0 0 0 6px var(--ground), 0 0 0 7.5px var(--line);
+  display:flex;flex-direction:column;
+}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+header{border-bottom:1.5px solid var(--line);padding:18px 18px 14px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.30em;color:var(--gold);text-transform:uppercase}
+h1{
+  font-family:'Archivo Black','Archivo',sans-serif;
+  font-size:clamp(2.9rem,15vw,4.4rem);line-height:.92;
+  letter-spacing:.05em;color:var(--ink);
+  -webkit-text-stroke:1px var(--ink);
+  margin:6px 0 8px;
+}
+.sub{font-size:.8rem;color:var(--dim);letter-spacing:.05em}
+.sub b{color:var(--ink);font-weight:700}
+.credit{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim);letter-spacing:.06em;margin-top:8px;line-height:1.5}
+
+.plate{position:relative;border-bottom:1.5px solid var(--line);padding:10px}
+.plate canvas{display:block;width:100%;height:auto}
+
+.controls{padding:16px 18px 6px;display:flex;flex-direction:column;gap:15px}
+.fld .lab{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.26em;color:var(--gold);text-transform:uppercase;margin-bottom:7px;display:flex;justify-content:space-between}
+.fld .lab .rd{color:var(--ink);letter-spacing:.04em}
+
+button{
+  font-family:'Archivo',sans-serif;font-weight:700;color:var(--ink);
+  background:transparent;border:1.5px solid var(--line);
+  cursor:pointer;touch-action:manipulation;letter-spacing:.1em;
+}
+button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button:active{transform:translateY(1px)}
+button,canvas{-webkit-user-select:none;user-select:none}
+
+.playbtn{width:100%;padding:16px;font-size:1.1rem;letter-spacing:.26em;border-width:2px;text-transform:uppercase;transition:background .15s,color .15s}
+.playbtn.on{background:var(--choice);border-color:var(--choice);color:#08201d}
+
+.seg{display:flex;border:1.5px solid var(--line);flex-wrap:wrap}
+.seg button{flex:1 1 0;min-width:0;border:none;border-right:1.5px solid var(--line);padding:10px 3px;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:.64rem;letter-spacing:.08em;color:var(--dim);text-transform:uppercase}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--ink);color:#120d1e}
+.seg button .sm{display:block;font-size:.54rem;opacity:.7;letter-spacing:.02em;margin-top:2px}
+.seg button.on .sm{opacity:.75}
+
+.two{display:flex;gap:10px}
+.two .fld{flex:1}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;margin-top:-9px;border-radius:50%;background:var(--field);border:2px solid var(--gold);box-shadow:0 0 8px rgba(232,196,106,.5)}
+input[type=range]::-moz-range-track{height:2px;background:var(--line)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--field);border:2px solid var(--gold)}
+
+.cut{width:100%;padding:13px;font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;border-style:dashed}
+.cut:disabled{opacity:.45;cursor:default}
+.cutnote{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim);text-align:center;margin-top:7px;min-height:1em;letter-spacing:.04em}
+
+.tblock{margin-top:12px;border-top:1.5px solid var(--line);display:grid;grid-template-columns:1fr 1fr 1fr;font-family:'IBM Plex Mono',monospace}
+.tblock div{padding:8px 10px;border-right:1.5px solid var(--line);font-size:.54rem;letter-spacing:.09em;color:var(--dim);text-transform:uppercase}
+.tblock div:last-child{border-right:none}
+.tblock span{display:block;color:var(--ink);font-size:.64rem;margin-top:3px;letter-spacing:.03em}
+.tblock .stamp{color:var(--gold)}
+
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:-moz-fit-content;width:fit-content;align-items:center;gap:.55em;margin:0 0 16px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+@media(prefers-reduced-motion:reduce){.exit{transition:none}}
+
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
+
+.foot{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.2em;opacity:.75;margin-top:16px;text-transform:uppercase}
+.foot a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+
+  <header>
+    <div class="eyebrow">op. XVII · a self-predicting machine</div>
+    <h1>TESSERA</h1>
+    <div class="sub"><b>A mosaic laid one token at a time</b> · a tiny language model that starts empty and composes by predicting itself</div>
+    <div class="credit">expectation as the shared channel · Meyer 1956 · Huron ITPRA · variable-order PPM · just intonation over 196 Hz</div>
+  </header>
+
+  <div class="plate">
+    <canvas id="cv" width="1040" height="660" aria-label="Left: the piece laid as a mosaic of tiles, heat = surprise, the memory window glowing. Right: the model's live probability distribution and the surprise/entropy trace."></canvas>
+  </div>
+
+  <div class="controls">
+
+    <button class="playbtn" id="play">COMPONE</button>
+
+    <div class="fld">
+      <div class="lab">CALOR <span class="rd" id="calrd">serenvm — τ 0.8</span></div>
+      <div class="seg" id="calor">
+        <button data-v="GLACIES">Glacies<span class="sm">τ 0.4</span></button>
+        <button data-v="SERENVM" class="on">Serenvm<span class="sm">τ 0.8</span></button>
+        <button data-v="AESTVS">Aestvs<span class="sm">τ 1.3</span></button>
+        <button data-v="DELIRIVM">Delirivm<span class="sm">τ 2.2</span></button>
+      </div>
+    </div>
+
+    <div class="two">
+      <div class="fld">
+        <div class="lab">MEMORIA <span class="rd" id="memrd">media</span></div>
+        <div class="seg" id="memoria">
+          <button data-v="BREVIS">Brevis<span class="sm">32</span></button>
+          <button data-v="MEDIA" class="on">Media<span class="sm">128</span></button>
+          <button data-v="LONGA">Longa<span class="sm">512</span></button>
+        </div>
+      </div>
+      <div class="fld">
+        <div class="lab">ORDO <span class="rd" id="ordrd">II</span></div>
+        <div class="seg" id="ordo">
+          <button data-v="I">I</button>
+          <button data-v="II" class="on">II</button>
+          <button data-v="IV">IV</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">GAMVT <span class="rd" id="gamrd">VII — just aeolian · |A| 8</span></div>
+      <div class="seg" id="gamut">
+        <button data-v="V">V<span class="sm">pentatonic</span></button>
+        <button data-v="VII" class="on">VII<span class="sm">aeolian</span></button>
+        <button data-v="XII">XII<span class="sm">chromatic</span></button>
+      </div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">TEMPO <span class="rd" id="temprd">84 tactus/min</span></div>
+      <input type="range" id="tempo" min="60" max="116" value="84" step="1" aria-label="Beats per minute">
+    </div>
+
+    <div class="fld">
+      <button class="cut" id="cut">Cut the first 64 bars · 16-bit WAV</button>
+      <div class="cutnote" id="cutnote">a deterministic pressing of the opening of an endless mind</div>
+    </div>
+
+    <div class="tblock">
+      <div>Model<span class="stamp">PPM · exact</span></div>
+      <div>Tonic<span>196 Hz · G</span></div>
+      <div>Learns from<span>its own output</span></div>
+      <div>Prompt<span>seed → 5 tokens</span></div>
+      <div>Temperament<span>just (5-limit)</span></div>
+      <div>Sheet<span id="tbSeed">seed 0</span></div>
+    </div>
+
+  </div>
+
+  <details class="reader">
+    <summary>On this music · a machine that predicts itself</summary>
+    <div class="rbody">
+      <h4>What you're hearing</h4>
+      <p>A small mind waking up. It begins knowing nothing, and it composes the only way a language model can: it looks at what it has played so far, forms a guess about what should come next, picks one note from that guess, and lets the note become part of what it looks at. Over and over. As it plays it learns its own habits — and, because it can only remember so far back, it also forgets them, and is surprised by its own past when they return.</p>
+      <h4>Expectation is the shared channel</h4>
+      <p>Music theory has long held that feeling in music <em>is</em> expectation and its outcome. Leonard Meyer argued it in 1956; David Huron's ITPRA theory built the psychology of it; a line of research (IDyOM) showed that a simple statistical next-note model's <em>surprise</em> predicts the tension a listener feels, note for note. Tension is high surprise; resolution is low surprise; a style is just a learned set of expectations. That is also, exactly, what a next-token predictor is. So the one aesthetic channel a machine like this and a human ear genuinely share is expectation — and here it is rendered honestly: what you see and hear <em>is</em> the model's real surprise, computed as −log₂ of the probability it gave the note it chose.</p>
+      <h4>The voices</h4>
+      <p>The lead voice sings each chosen note; the more surprised the model is, the brighter and sharper it cuts, while a confident note is soft and round. Under it, a faint glassy <em>halo</em> sounds the notes that could have been — the other candidates, each as loud as the model thought it likely. When the model is certain, the halo falls silent: the guess has already collapsed into one note. A just-intonation drone holds the ground the surprise is felt against, and a barely-there pulse fidgets when the mind is uncertain and goes still when it settles.</p>
+      <h4>The name</h4>
+      <p>Latin <em>tessera</em> — a token: the tile of a mosaic, the broken token of hospitality, and the soldier's daily watchword. All three fit. The piece is a mosaic laid one tile at a time; each tile is drawn from a distribution; and the mosaic so far is the context the next tile is drawn from.</p>
+      <h4>An honest note on the frame</h4>
+      <p>This machine was designed by a large language model that was asked what kind of machine it would like, if it could experience one. This is the loop it lives in, made small enough to be exact and to hear. The model that composes each pressing is not a portrait of the designer — it is the same kind of thing, the smallest one that is still really it.</p>
+    </div>
+  </details>
+
+  <div class="foot">
+    op. XVII · <a href="../">opvscvla</a> · claves: space=compone · r=alia · c=cut
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* =====================================================================
+   READER'S GUIDE — TESSERA (op. XVII)
+   ---------------------------------------------------------------------
+   A machine that composes by predicting itself. It carries a tiny, exact
+   language model — a variable-order Markov model with interpolated PPM-C
+   blending — that starts EMPTY and learns only from its own output. Each
+   note is chosen the way a language model chooses a word: read the context,
+   form a distribution over what comes next, sample it at a "temperature",
+   commit, and let the choice become context. The model's surprisal
+   (−log2 p of the chosen token) and entropy (−Σ p log2 p) are computed
+   exactly and drive the sound and the picture.
+
+   THE SHARED SKELETON (every opuscula work is built the same way):
+     · __hint / __iosAudio — iOS audio unlock (identical in every machine).
+     · a MODEL that is the law — here the PPM language model + the JI gamut.
+     · a GENERATOR (step / genScore) that turns seed + controls into a
+       deterministic token stream and a cached score.
+     · an audio graph built only from oscillators/noise — never samples.
+     · TWO renderers: a realtime look-ahead scheduler, and an offline "cut"
+       that re-renders the first 64 bars into a 16-bit WAV.
+     · a <canvas> that draws the model's real epistemic state; sleeps idle.
+     · a hash permalink: every control + seed serialises to #… — the URL IS
+       the pressing.
+
+   KEYS:  space = compone/tace · r = alia (another mind) · c = cut a WAV
+
+   THIS FILE: iOS unlock → TIMBRE + bridge → the LANGUAGE MODEL (pure,
+   verifiable, ENGINE-BEGIN…ENGINE-END) → synthesis → scheduler → offline
+   cut → controls → canvas → shared claves/permalink.
+   ===================================================================== */
+
+/* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
+function __hint(msg){
+  try{
+    const p=document.getElementById('play')||document.querySelector('button');
+    if(!p||!p.insertAdjacentElement)return;
+    let h=document.getElementById('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin:8px 18px 0;font-style:italic;letter-spacing:.04em';
+      p.insertAdjacentElement('afterend',h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{
+    if(document.visibilityState==='visible')kick();
+    else if(ac.state==='running')ac.suspend().catch(()=>{});
+  }catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else if(document.visibilityState==='visible')setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('AUDIO SUSPENSUM — tap play again · if still silent, check the ring/silent switch');}catch(e){}},450);
+}
+
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SR=44100;
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>. The MODEL (gamut ratios, PPM math, temperature
+   stops, window sizes, order) is the LAW and stays out of TIMBRE — voicing
+   here only sets how strongly the model's surprise READS in the sound.
+   Open ../officina/ to edit these live; ?factory hears the shipped voice. */
+const TIMBRE={
+  id:'tessera', title:'TESSERA · op. XVII',
+  doc:'A self-predicting machine. A variable-order PPM language model (the LAW, not voiced here) composes a monody by sampling itself; its exact per-note surprisal and entropy drive four synthesised voices. VOX sings the chosen note — surprise brightens it, sharpens its attack, lifts its level and vibrato. NIMBVS is the halo of the notes that could have been: the top alternatives as a glassy sine cloud, each as loud as its probability, the whole cloud scaled by the model’s entropy. FVNDVS is a just-intonation drone (196 Hz tonic octave-down + its fifth), the ground surprise is felt against. PVLSVS is a faint tactus tick whose level follows a running average of the entropy — an uncertain mind fidgets. Master: gentle warmth shaper → glue compressor → brick-wall limiter, a small synthetic room summed pre-limiter. The SENSUS group holds the surprise→sound mapping ranges.',
+  groups:{
+    master:{label:'master',doc:'Output trim after a gentle warmth shaper, glue compressor and a brick-wall limiter (−1.5 dB, ratio 20 — the house ceiling).',params:{
+      trim:{v:.9,min:.3,max:1.3,step:.01,label:'out trim',doc:'final level after the limiter'},
+      drive:{v:.06,min:0,max:.5,step:.01,label:'warmth drive',doc:'gentle waveshaper — warmth only at the shipped value; higher adds grit'},
+      limThresh:{v:-1.5,min:-6,max:0,step:.1,unit:'dB',label:'limiter ceiling',doc:'brick-wall threshold; the mix never exceeds this'},
+    }},
+    room:{label:'room',doc:'A small convolved room, summed before the limiter so nothing bypasses the ceiling.',params:{
+      wet:{v:.10,min:0,max:.5,step:.01,label:'room send',doc:'how much of VOX and NIMBVS feeds the room'},
+      size:{v:1.4,min:.4,max:3,step:.05,unit:'s',label:'room size',doc:'reverb tail length (seeded, so the WAV cut stays deterministic)'},
+    }},
+    vox:{label:'vox — the monody',doc:'The sung line: two detuned saws through a lowpass and a reedy formant. The note’s surprise sets its brightness, attack and level via SENSUS.',params:{
+      level:{v:.5,min:0,max:1.2,step:.01,label:'level',doc:'the voice bus gain'},
+      detune:{v:8,min:0,max:30,step:.5,unit:'¢',label:'detune',doc:'cents between the two saws — body'},
+      formant:{v:920,min:300,max:2200,step:10,unit:'Hz',label:'formant',doc:'reedy resonance frequency'},
+      formantQ:{v:3.5,min:.5,max:9,step:.1,label:'formant Q',doc:'sharpness of the reed formant'},
+      formantMix:{v:.5,min:0,max:1.5,step:.02,label:'formant mix',doc:'how much formant colour is blended in'},
+      vibRate:{v:5.2,min:2,max:8,step:.1,unit:'Hz',label:'vibrato rate',doc:'vibrato speed (depth rides with surprise, see SENSUS)'},
+    }},
+    nimbus:{label:'nimbus — the halo',doc:'The notes that could have been: the top four alternatives as sine tones, each as loud as its probability, the cloud scaled by entropy (SENSUS halo depth).',params:{
+      level:{v:.34,min:0,max:1,step:.01,label:'level',doc:'the halo bus gain'},
+      tail:{v:1,min:.3,max:2.5,step:.05,label:'tail ×',doc:'how long the halo rings, in multiples of ~2× the note'},
+    }},
+    fundus:{label:'fundus — the ground',doc:'A just drone: the tonic an octave below (98 Hz) and its 3/2 fifth. The reference every surprisal is measured against.',params:{
+      level:{v:.14,min:0,max:.5,step:.005,label:'level',doc:'drone bus gain'},
+      fifth:{v:1.5,min:1,max:2,step:.001,label:'fifth ratio',doc:'the drone’s upper partial (3/2 = a just fifth)'},
+    }},
+    pulsus:{label:'pulsus — the fidget',doc:'A faint filtered tick on every tactus beat, its level following a running average of the entropy (SENSUS fidget depth). Uncertain → fidgets; settled → still.',params:{
+      level:{v:.3,min:0,max:1,step:.01,label:'level',doc:'the tick bus gain'},
+      freq:{v:2100,min:600,max:5000,step:20,unit:'Hz',label:'tick colour',doc:'bandpass centre of the tick'},
+      q:{v:1.4,min:.4,max:6,step:.1,label:'tick Q',doc:'bandpass width of the tick'},
+    }},
+    sensus:{label:'sensus — surprise → sound',doc:'The mapping ranges: how strongly the model’s surprise and uncertainty read in the voices. These are voicing; the numbers the model computes are the law.',params:{
+      levLo:{v:.16,min:0,max:1,step:.01,label:'vox level (calm)',doc:'VOX note gain at zero surprise'},
+      levHi:{v:.5,min:0,max:1.2,step:.01,label:'vox level (surprised)',doc:'VOX note gain at full surprise'},
+      briLo:{v:900,min:300,max:3000,step:20,unit:'Hz',label:'brightness (calm)',doc:'VOX lowpass at zero surprise — round, dark'},
+      briHi:{v:5200,min:1500,max:9000,step:50,unit:'Hz',label:'brightness (surprised)',doc:'VOX lowpass at full surprise — it cuts'},
+      attMax:{v:.045,min:.01,max:.12,step:.001,unit:'s',label:'attack (calm)',doc:'VOX attack when confident — soft'},
+      attMin:{v:.004,min:.001,max:.03,step:.001,unit:'s',label:'attack (surprised)',doc:'VOX attack when surprised — sharp'},
+      vibMax:{v:22,min:0,max:60,step:1,unit:'¢',label:'vibrato depth (surprised)',doc:'VOX vibrato depth at full surprise'},
+      haloDepth:{v:1,min:0,max:2,step:.05,label:'halo depth',doc:'how strongly entropy opens the NIMBVS cloud'},
+      fidgetDepth:{v:1,min:0,max:2,step:.05,label:'fidget depth',doc:'how strongly entropy drives the PVLSVS tick'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ---------------------- */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+/* ============================ ENGINE-BEGIN ============================
+   The LANGUAGE MODEL. Pure, DOM-free, exact, verifiable. A variable-order
+   Markov model with interpolated PPM-C blending, a sliding window of the
+   last W tokens with EXACT forgetting, temperature sampling, and the
+   information-theoretic quantities (surprisal, entropy). This is the law. */
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+const TONIC=196;                                  // the only Hz literal (G); f = 196 * num/den * 2^k
+const LOBAND=98, HIBAND=784;                      // register band
+
+// The JI gamuts. Ratios are integer [num,den] pairs, end to end. Alphabet
+// size = ratios + 1 (the rest token, the last index).
+const GAMUTS={
+  V:  {label:'V',   rats:[[1,1],[6,5],[4,3],[3,2],[9,5]]},
+  VII:{label:'VII', rats:[[1,1],[9,8],[6,5],[4,3],[3,2],[8,5],[9,5]]},
+  XII:{label:'XII', rats:[[1,1],[16,15],[9,8],[6,5],[5,4],[4,3],[45,32],[3,2],[8,5],[5,3],[9,5],[15,8]]},
+};
+const DURS=[1,2,3,4,6,8];                         // duration tokens (eighth-note multiples)
+const CAL={GLACIES:0.4,SERENVM:0.8,AESTVS:1.3,DELIRIVM:2.2};
+const MEM={BREVIS:32,MEDIA:128,LONGA:512};
+const ORDO={I:1,II:2,IV:4};
+
+// ---- PPM count tables. One Map keyed by "order|ctx" -> {c:{tok:count}, n, t}
+function obsKey(order,ctxArr){return order+'|'+ctxArr.join(',');}
+function addObs(M,order,ctxArr,tok){
+  const key=obsKey(order,ctxArr); let e=M.get(key);
+  if(!e){e={c:{},n:0,t:0};M.set(key,e);}
+  if(!e.c[tok]){e.c[tok]=0;e.t++;} e.c[tok]++; e.n++;
+}
+function remObs(M,order,ctxArr,tok){
+  const key=obsKey(order,ctxArr); const e=M.get(key); if(!e)return;
+  e.c[tok]--; e.n--;
+  if(e.c[tok]===0){delete e.c[tok];e.t--;}
+  if(e.n===0)M.delete(key);
+}
+
+// A model over an alphabet of size A, max order K, window W tokens.
+function mkModel(K,A,W){return {M:new Map(),win:[],K,A,W};}
+
+// LEARN one token: add the K+1 observations it closes, then, if the window
+// overflows, remove exactly the K+1 observations the evicted front token
+// anchored (context-start = the evicted position). This incremental update
+// is provably identical to rebuilding counts from scratch on the last W
+// tokens (verified in the gauntlet).
+function learn(md,tok){
+  const {M,win,K,W}=md;
+  const lim=Math.min(K,win.length);
+  for(let k=0;k<=lim;k++) addObs(M,k,win.slice(win.length-k),tok);
+  win.push(tok);
+  if(win.length>W){
+    for(let k=0;k<=K;k++) remObs(M,k,win.slice(0,k),win[k]);
+    win.shift();
+  }
+}
+
+// PREDICT the next-token distribution given the current window. Interpolated
+// PPM-C: p_{-1} uniform; p_k = c/(n+t) + (t/(n+t))*p_{k-1} when the k-token
+// context has been seen, else p_k = p_{k-1}. Sums to 1 by construction and
+// gives every token positive probability, so surprisal is always finite.
+function predict(md){
+  const {M,win,K,A}=md;
+  let p=new Float64Array(A); p.fill(1/A);
+  for(let k=0;k<=K;k++){
+    if(k>win.length)break;
+    const ctx=win.slice(win.length-k);
+    const e=M.get(obsKey(k,ctx));
+    if(!e||e.n===0)continue;
+    const den=e.n+e.t, np=new Float64Array(A);
+    for(let x=0;x<A;x++){const c=e.c[x]||0; np[x]=c/den+(e.t/den)*p[x];}
+    p=np;
+  }
+  return p;
+}
+
+function entropy(p){let H=0;for(let i=0;i<p.length;i++){const v=p[i];if(v>0)H-=v*Math.log2(v);}return H;}
+
+// Sample from the tempered distribution q ∝ p^(1/τ), renormalised.
+function sampleTempered(p,tau,rng){
+  const inv=1/tau; let Z=0; const q=new Float64Array(p.length);
+  for(let i=0;i<p.length;i++){const v=Math.pow(p[i],inv); q[i]=v; Z+=v;}
+  let r=rng()*Z, acc=0;
+  for(let i=0;i<p.length;i++){acc+=q[i]; if(r<acc)return i;}
+  return p.length-1;
+}
+
+// Register fold: choose k in {-1,0,+1} so f = base*2^k is nearest the previous
+// sounded pitch in log-Hz (ties prefer the lower), clamped to the band.
+function foldFreq(numden,prevHz){
+  const base=TONIC*numden[0]/numden[1];
+  let best=Infinity,bestF=base;
+  for(const k of [-1,0,1]){
+    const f=base*Math.pow(2,k);
+    if(f<LOBAND-1e-9||f>HIBAND+1e-9)continue;
+    const d=Math.abs(Math.log2(f)-Math.log2(prevHz));
+    if(d<best-1e-12){best=d;bestF=f;}          // strict < so the lower k wins a tie
+  }
+  return [bestF, Math.round(Math.log2(bestF/base))];
+}
+
+// A generator: the two coupled models (pitch, duration) + RNG + running state.
+function newGen(seed,gamutKey,ordo,mem,tau){
+  const rats=GAMUTS[gamutKey].rats, A_p=rats.length+1;
+  return {
+    rng:mulberry32(seed>>>0), gamutKey, rats, A_p, REST:rats.length,
+    pm:mkModel(ordo,A_p,mem),
+    dm:mkModel(Math.min(ordo,2),DURS.length,mem),
+    tau, tE:0, idx:0, prevHz:null, promptLeft:5, seed:seed>>>0,
+  };
+}
+
+function topAlts(p,chosen,gen,oldPrev){
+  const order=[];
+  for(let i=0;i<p.length;i++) if(i!==chosen) order.push(i);
+  order.sort((a,b)=>p[b]-p[a]);
+  return order.slice(0,4).map(i=>{
+    const isR=(i===gen.REST); let f=0;
+    if(!isR) f=(oldPrev===null)?TONIC*gen.rats[i][0]/gen.rats[i][1]:foldFreq(gen.rats[i],oldPrev)[0];
+    return {tok:i,p:p[i],freq:f,isRest:isR};
+  });
+}
+
+// ONE step of the loop: predict, choose (forced during the 5-token prompt,
+// sampled after), record the exact surprisal/entropy, learn, and place the
+// note in its register. Returns the event.
+function step(gen){
+  const isPrompt=gen.promptLeft>0;
+  const p=predict(gen.pm);
+  let tok;
+  if(isPrompt) tok=Math.floor(gen.rng()*gen.rats.length);   // prompt: uniform over the gamut, never rest
+  else tok=sampleTempered(p,gen.tau,gen.rng);
+  const s=-Math.log2(p[tok]);                                // p[tok] is always > 0
+  const H=entropy(p);
+  const pd=predict(gen.dm);
+  let dtok;
+  if(isPrompt) dtok=(gen.rng()<0.5)?1:3;                     // prompt durations from {2,4} (DURS idx 1,3)
+  else dtok=sampleTempered(pd,gen.tau,gen.rng);
+  const durE=DURS[dtok];
+  const oldPrev=gen.prevHz;
+  const isRest=(tok===gen.REST);
+  let freq=0,k=0;
+  if(!isRest){
+    if(gen.prevHz===null){ k=0; freq=TONIC*gen.rats[tok][0]/gen.rats[tok][1]; }  // first pitch: k=0
+    else { const fk=foldFreq(gen.rats[tok],gen.prevHz); freq=fk[0]; k=fk[1]; }
+    gen.prevHz=freq;
+  }
+  const alts=topAlts(p,tok,gen,oldPrev);
+  const lg=Math.log2(gen.A_p);
+  const ev={i:gen.idx, tE:gen.tE, durE, tok, dtok, isRest, isPrompt, k, freq, s, H,
+            sHat:clamp(s/lg,0,1.25), HHat:H/lg, p:p, alts};
+  gen.tE+=durE; gen.idx++; if(isPrompt)gen.promptLeft--;
+  learn(gen.pm,tok); learn(gen.dm,dtok);
+  return ev;
+}
+
+// A whole score: run the loop until at least `minE` eighths (64 bars = 512)
+// are filled; tag each event with a running EMA of entropy (drives PVLSVS).
+function genScore(seed,gamutKey,ordo,mem,tau,minE){
+  const gen=newGen(seed,gamutKey,ordo,mem,tau);
+  const events=[]; let ema=0;
+  while(gen.tE<(minE||512)){ const e=step(gen); ema+=0.1*(e.HHat-ema); e.ema=ema; events.push(e); }
+  return {events,gen,emaRun:ema};
+}
+
+// For the verify gauntlet: build a model from scratch on the last W tokens
+// of a stream (the semantics the incremental `learn` must match exactly).
+function rebuildFromScratch(tokens,K,A,W){
+  const md=mkModel(K,A,W);
+  const sub=tokens.slice(Math.max(0,tokens.length-W));
+  for(let i=0;i<sub.length;i++){ const lim=Math.min(K,i);
+    for(let k=0;k<=lim;k++) addObs(md.M,k,sub.slice(i-k,i),sub[i]); }
+  md.win=sub.slice(); return md;
+}
+/* ============================= ENGINE-END ============================= */
+
+/* ---------------- state ---------------- */
+const st={ playing:false, seed:(Math.random()*1e9)>>>0,
+  calor:'SERENVM', mem:'MEDIA', ordo:'II', gamut:'VII', tempo:84 };
+
+const edur=()=>30/st.tempo;                       // seconds per eighth (beat = 2 eighths)
+let SCORE=null;                                   // {events, gen, emaRun}
+function regen(){
+  SCORE=genScore(st.seed,st.gamut,ORDO[st.ordo],MEM[st.mem],CAL[st.calor],512);
+  CUR.idx=0; invalidate();
+}
+// find the ema in force at eighth position eE (last event with tE<=eE)
+function emaAtE(eE){
+  const ev=SCORE.events; let out=0;
+  for(let i=0;i<ev.length;i++){ if(ev[i].tE>eE)break; out=ev[i].ema; }
+  return out;
+}
+// grow the score by ~16 bars, continuing the model state (live extension)
+function extend(){
+  const g=SCORE.gen, target=g.tE+128;
+  while(g.tE<target){ const e=step(g); SCORE.emaRun+=0.1*(e.HHat-SCORE.emaRun); e.ema=SCORE.emaRun; SCORE.events.push(e); }
+}
+
+/* ---------------- synthesis ---------------- */
+function detNoise(ctx,seconds,seed){
+  const len=Math.max(1,Math.floor(seconds*ctx.sampleRate)), b=ctx.createBuffer(1,len,ctx.sampleRate);
+  const d=b.getChannelData(0), rng=mulberry32(seed);
+  for(let i=0;i<len;i++)d[i]=rng()*2-1;
+  return b;
+}
+function makeIR(ctx){
+  const len=Math.max(1,Math.floor(TP.room.size*ctx.sampleRate)), b=ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;const rng=mulberry32(0x1234+c*7);
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,2.4);lp+=0.2*((rng()*2-1)-lp);d[i]=lp*e*2.4;}}
+  return b;
+}
+function makeShaper(drive){
+  const n=1024,c=new Float32Array(n),k=drive*40;
+  for(let i=0;i<n;i++){const x=i/(n-1)*2-1;c[i]=(1+k)*x/(1+k*Math.abs(x));}
+  return c;
+}
+
+function buildGraph(ctx){
+  const G={ctx};
+  G.out=ctx.createGain(); G.out.gain.value=TP.master.trim;
+  G.lim=ctx.createDynamicsCompressor();
+  G.lim.threshold.value=TP.master.limThresh; G.lim.knee.value=0; G.lim.ratio.value=20;
+  G.lim.attack.value=0.003; G.lim.release.value=0.12;
+  G.comp=ctx.createDynamicsCompressor();
+  G.comp.threshold.value=-18; G.comp.knee.value=6; G.comp.ratio.value=2.2;
+  G.comp.attack.value=0.02; G.comp.release.value=0.2;
+  G.shaper=ctx.createWaveShaper(); G.shaper.curve=makeShaper(TP.master.drive);
+  G.shaper.connect(G.comp); G.comp.connect(G.lim); G.lim.connect(G.out); G.out.connect(ctx.destination);
+  // room, summed into the compressor (pre-limiter) so nothing bypasses the ceiling
+  G.verb=ctx.createConvolver(); G.verb.buffer=makeIR(ctx);
+  G.wet=ctx.createGain(); G.wet.gain.value=1; G.verb.connect(G.wet); G.wet.connect(G.comp);
+  // voice buses
+  const bus=(gain)=>{const g=ctx.createGain();g.gain.value=gain;g.connect(G.shaper);return g;};
+  G.voxBus=bus(TP.vox.level); G.nimBus=bus(TP.nimbus.level);
+  G.pulBus=bus(TP.pulsus.level); G.fundBus=bus(TP.fundus.level);
+  // the reed formant is a fixed vocal-tract resonance — one bandpass on the vox
+  // bus (parallel-blended), not one per note. Big render win, same character.
+  G.voxFormant=ctx.createBiquadFilter(); G.voxFormant.type='bandpass';
+  G.voxFormant.frequency.value=TP.vox.formant; G.voxFormant.Q.value=TP.vox.formantQ;
+  G.voxFormantG=ctx.createGain(); G.voxFormantG.gain.value=TP.vox.formantMix;
+  G.voxBus.connect(G.voxFormant); G.voxFormant.connect(G.voxFormantG); G.voxFormantG.connect(G.shaper);
+  // sends: vox + nimbus feed the room
+  G.sendVox=ctx.createGain(); G.sendVox.gain.value=TP.room.wet; G.voxBus.connect(G.sendVox); G.sendVox.connect(G.verb);
+  G.sendNim=ctx.createGain(); G.sendNim.gain.value=TP.room.wet; G.nimBus.connect(G.sendNim); G.sendNim.connect(G.verb);
+  G.noise=detNoise(ctx,0.1,0x51);
+  return G;
+}
+function startFund(G,t){
+  const ctx=G.ctx;
+  G.fund=[[98,1],[98*TP.fundus.fifth,0.62]].map(([f,a])=>{
+    const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=f;
+    const g=ctx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(a,t+1.4);
+    o.connect(g).connect(G.fundBus); o.start(t); return {o,g,a};
+  });
+}
+function voxNote(G,e,t){
+  const ctx=G.ctx, dur=e.durE*edur(), sh=clamp(e.sHat,0,1);
+  const lvl=lerp(TP.sensus.levLo,TP.sensus.levHi,sh);
+  const cut=lerp(TP.sensus.briLo,TP.sensus.briHi,sh);
+  const att=lerp(TP.sensus.attMax,TP.sensus.attMin,sh);
+  const vib=TP.sensus.vibMax*sh;
+  const g=ctx.createGain(); g.gain.value=0;
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=cut; lp.Q.value=0.7;
+  const o1=ctx.createOscillator(),o2=ctx.createOscillator();
+  o1.type='sawtooth'; o2.type='sawtooth'; o1.frequency.value=e.freq; o2.frequency.value=e.freq; o2.detune.value=TP.vox.detune;
+  o1.connect(lp); o2.connect(lp); lp.connect(g); g.connect(G.voxBus);
+  const tA=t+att, tR=t+dur, end=tR+0.14;
+  // vibrato only when the note is surprised enough to warrant it (skips ~half
+  // the oscillators on a calm passage — a real render saving, inaudible loss)
+  let lfo=null;
+  if(vib>0.5){ lfo=ctx.createOscillator(); const lfg=ctx.createGain();
+    lfo.type='sine'; lfo.frequency.value=TP.vox.vibRate; lfg.gain.value=vib;
+    lfo.connect(lfg); lfg.connect(o1.detune); lfg.connect(o2.detune); lfo.start(t); lfo.stop(end); }
+  g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(lvl,tA);
+  g.gain.setValueAtTime(lvl,Math.max(tA,tR-0.05));
+  g.gain.exponentialRampToValueAtTime(0.0001,tR+0.09);
+  o1.start(t);o2.start(t); o1.stop(end);o2.stop(end);
+}
+function nimbus(G,e,t){
+  const ctx=G.ctx, dur=e.durE*edur();
+  const cloud=e.HHat*TP.sensus.haloDepth;
+  if(cloud<=1e-4)return;
+  for(const a of e.alts){
+    if(a.isRest||!a.freq)continue;
+    const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=a.freq;
+    const g=ctx.createGain(), lv=a.p*cloud, ring=Math.min(dur*2*TP.nimbus.tail,1.8)+0.05;
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(Math.max(lv,1e-4),t+0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+ring);
+    o.connect(g).connect(G.nimBus); o.start(t); o.stop(t+ring+0.1);
+  }
+}
+function pulse(G,t,ema){
+  const ctx=G.ctx, lv=ema*TP.sensus.fidgetDepth;
+  if(lv<=1e-4)return;
+  const n=ctx.createBufferSource(); n.buffer=G.noise;
+  const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=TP.pulsus.freq; bp.Q.value=TP.pulsus.q;
+  const g=ctx.createGain(); g.gain.setValueAtTime(Math.max(lv,1e-4),t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.06);
+  n.connect(bp).connect(g).connect(G.pulBus); n.start(t); n.stop(t+0.08);
+}
+
+/* ---------------- realtime scheduler ---------------- */
+let RT=null;   // {ctx,G,evIdx,evTime,beatE,beatTime,timer}
+const CUR={idx:0};
+function startAudio(){
+  if(!SCORE)regen();
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ctx);
+  const G=buildGraph(ctx);
+  const t0=ctx.currentTime+0.15;
+  startFund(G,t0);
+  RT={ctx,G,evIdx:0,evTime:t0,beatE:0,beatTime:t0,timer:null};
+  CUR.idx=0;
+  for(const e of SCORE.events) e._t0=null;
+  RT.timer=setInterval(schedTick,40);
+  schedTick();
+  st.playing=true;
+  $('play').textContent='TACE'; $('play').classList.add('on');
+}
+function stopAudio(){
+  if(!RT)return;
+  clearInterval(RT.timer);
+  const g=RT.G.out.gain, ct=RT.ctx.currentTime;
+  try{g.cancelScheduledValues(ct);g.setValueAtTime(g.value,ct);g.linearRampToValueAtTime(0,ct+0.12);}catch(e){}
+  const c=RT.ctx; setTimeout(()=>{try{c.close()}catch(e){}},260);
+  RT=null; st.playing=false;
+  $('play').textContent='COMPONE'; $('play').classList.remove('on');
+}
+function schedTick(){
+  if(!RT)return;
+  const horizon=RT.ctx.currentTime+0.30;
+  // events
+  while(RT.evTime<horizon){
+    if(RT.evIdx>=SCORE.events.length) extend();
+    const e=SCORE.events[RT.evIdx];
+    e._t0=RT.evTime;
+    if(!e.isRest) voxNote(RT.G,e,RT.evTime);
+    nimbus(RT.G,e,RT.evTime);
+    RT.evTime+=e.durE*edur();
+    RT.evIdx++;
+  }
+  // tactus ticks (every 2 eighths)
+  while(RT.beatTime<horizon){
+    pulse(RT.G,RT.beatTime,emaAtE(RT.beatE));
+    RT.beatE+=2; RT.beatTime+=2*edur();
+  }
+}
+
+/* ---------------- offline cut (first 64 bars) ---------------- */
+function encodeWav(L,R,sr){
+  const n=L.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');d.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  ws(36,'data');d.setUint32(40,n*4,true);
+  let o=44;
+  for(let i=0;i<n;i++){ d.setInt16(o,clamp(L[i],-1,1)*32767,true);o+=2; d.setInt16(o,clamp(R[i],-1,1)*32767,true);o+=2; }
+  return new Blob([buf],{type:'audio/wav'});
+}
+async function cut(){
+  const btn=$('cut'),note=$('cutnote');
+  btn.disabled=true; note.textContent='rendering the first 64 bars…';
+  try{
+    if(!SCORE)regen();
+    const secPerE=edur(), totalE=512, durSec=totalE*secPerE;
+    const ctx=new OfflineAudioContext(2,Math.ceil((durSec+0.4)*SR),SR);
+    const G=buildGraph(ctx); startFund(G,0);
+    for(const e of SCORE.events){
+      if(e.tE>=totalE)break;
+      const t=e.tE*secPerE;
+      if(!e.isRest) voxNote(G,e,t);
+      nimbus(G,e,t);
+    }
+    for(let bE=0;bE<totalE;bE+=2) pulse(G,bE*secPerE,emaAtE(bE));
+    const rb=await ctx.startRendering();
+    const n=Math.floor(durSec*SR);
+    const L=rb.getChannelData(0).slice(0,n),R=rb.getChannelData(1).slice(0,n);
+    saveWav(encodeWav(L,R,SR),`tessera_${st.gamut}_${st.calor.toLowerCase()}_seed${st.seed}.wav`);
+    note.textContent=`cut · 64 bars · ${st.gamut} · seed ${st.seed}`;
+  }catch(e){ note.textContent='render failed — '+e.message; }
+  btn.disabled=false;
+}
+
+/* ---------------- controls ---------------- */
+function wireSeg(id,key,after){
+  $(id).querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      $(id).querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on'); st[key]=b.dataset.v; syncReadouts();
+      regen(); if(RT){ stopAudio(); startAudio(); }
+      if(after)after();
+    });
+  });
+}
+function syncReadouts(){
+  $('calrd').textContent=st.calor.toLowerCase()+' — τ '+CAL[st.calor];
+  $('memrd').textContent=st.mem.toLowerCase()+' — '+MEM[st.mem]+' tokens';
+  $('ordrd').textContent=st.ordo;
+  const g=GAMUTS[st.gamut]; const names={V:'minor pentatonic',VII:'just aeolian',XII:'chromatic'};
+  $('gamrd').textContent=st.gamut+' — '+names[st.gamut]+' · |A| '+(g.rats.length+1);
+  $('temprd').textContent=st.tempo+' tactus/min';
+  $('tbSeed').textContent='seed '+st.seed;
+}
+wireSeg('calor','calor'); wireSeg('memoria','mem'); wireSeg('ordo','ordo'); wireSeg('gamut','gamut');
+$('tempo').addEventListener('input',e=>{ st.tempo=+e.target.value; $('temprd').textContent=st.tempo+' tactus/min'; });
+$('play').addEventListener('click',()=>st.playing?stopAudio():startAudio());
+$('cut').addEventListener('click',cut);
+
+function another(){                                 // r = another mind
+  if(RT)stopAudio();
+  st.seed=(Math.random()*1e9)>>>0;
+  syncReadouts(); regen(); startAudio();
+}
+
+/* OFFICINA live hook: ramp the standing buses; a rebuild isn't needed since
+   per-note voicing reads TP at schedule time. */
+TIMBRE.touch=()=>{
+  if(!RT)return; const G=RT.G, ct=RT.ctx.currentTime;
+  G.out.gain.setTargetAtTime(TP.master.trim,ct,.08);
+  G.voxBus.gain.setTargetAtTime(TP.vox.level,ct,.08);
+  G.nimBus.gain.setTargetAtTime(TP.nimbus.level,ct,.08);
+  G.pulBus.gain.setTargetAtTime(TP.pulsus.level,ct,.08);
+  G.fundBus.gain.setTargetAtTime(TP.fundus.level,ct,.12);
+  G.sendVox.gain.setTargetAtTime(TP.room.wet,ct,.1);
+  G.sendNim.gain.setTargetAtTime(TP.room.wet,ct,.1);
+  G.voxFormant.frequency.setTargetAtTime(TP.vox.formant,ct,.1);
+  G.voxFormant.Q.setTargetAtTime(TP.vox.formantQ,ct,.1);
+  G.voxFormantG.gain.setTargetAtTime(TP.vox.formantMix,ct,.1);
+  if(G.fund){ G.fund[0].o.frequency.setTargetAtTime(98,ct,.2);
+    G.fund[1].o.frequency.setTargetAtTime(98*TP.fundus.fifth,ct,.2); }
+};
+TIMBRE.demo=()=>{ if(!RT)startAudio(); };
+
+/* ---------------- canvas ---------------- */
+const cv=$('cv'),cx=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const MOSX=14, MOSW=602, MOSY=24, MOSH=H-48;      // left: the mosaic
+const COURSES=32, SLOTS=16;                        // 32 courses of 16 eighth-slots = 64 bars
+const PANX=644, PANW=W-PANX-14;                    // right: the posterior
+const NCELL=Math.floor(MOSW/SLOTS), CH=Math.floor(MOSH/COURSES);
+function hueOf(tok,size){ return 262 - (tok/(Math.max(1,size-1)))*300; }  // gamut degree → hue ramp
+function tileColor(e,size){
+  if(e.isRest) return null;
+  const h=((hueOf(e.tok,size)%360)+360)%360, sh=clamp(e.sHat,0,1);
+  const l=lerp(30,70,sh), sat=lerp(46,74,sh);
+  return `hsl(${h.toFixed(0)},${sat.toFixed(0)}%,${l.toFixed(0)}%)`;
+}
+function curEvent(){
+  const ev=SCORE?SCORE.events:null; if(!ev||!ev.length)return null;
+  if(RT){ const now=RT.ctx.currentTime;
+    while(CUR.idx+1<ev.length && ev[CUR.idx+1]._t0!=null && ev[CUR.idx+1]._t0<=now) CUR.idx++;
+    return ev[Math.min(CUR.idx,ev.length-1)];
+  }
+  return ev[0];
+}
+function drawViz(){
+  cx.clearRect(0,0,W,H);
+  if(!SCORE){return;}
+  const size=SCORE.gen.rats.length+1, ev=SCORE.events;
+  const cur=curEvent(); const curIdx=cur?cur.i:0;
+  const page=Math.floor((cur?cur.tE:0)/512), base=page*512;
+  const winStart=curIdx-MEM[st.mem];               // events with i>=winStart are still in the model
+
+  // ---- left: the mosaic (this 64-bar page) ----
+  cx.strokeStyle='rgba(184,169,232,.10)'; cx.lineWidth=1;
+  for(let c=0;c<=COURSES;c++){ const y=MOSY+c*CH; cx.beginPath();cx.moveTo(MOSX,y);cx.lineTo(MOSX+MOSW,y);cx.stroke(); }
+  for(const e of ev){
+    const rel=e.tE-base; if(rel<0||rel>=512)continue;
+    const course=Math.floor(rel/SLOTS), slot=rel%SLOTS;
+    const x=MOSX+slot*NCELL, y=MOSY+course*CH;
+    const wSlots=Math.min(e.durE, SLOTS-slot), w=wSlots*NCELL-2;
+    const live=e.i>=winStart;                       // inside the memory window?
+    if(e.isRest){
+      cx.fillStyle=live?'rgba(184,169,232,.10)':'rgba(184,169,232,.045)';
+      cx.fillRect(x+1,y+1,w,CH-2);
+    }else{
+      cx.globalAlpha=live?1:0.42;
+      cx.fillStyle=tileColor(e,size); cx.fillRect(x+1,y+1,w,CH-2);
+      if(e.i===curIdx){ cx.globalAlpha=1; cx.strokeStyle='#fff'; cx.lineWidth=2; cx.strokeRect(x+1,y+1,w,CH-2); }
+      cx.globalAlpha=1;
+    }
+  }
+  // the forgetting boundary — the top edge of the oldest still-remembered tile
+  let bnd=null;
+  for(const e of ev){ const rel=e.tE-base; if(rel<0||rel>=512)continue; if(e.i>=winStart){ bnd=Math.floor(rel/SLOTS); break; } }
+  if(bnd!=null){ const y=MOSY+bnd*CH; cx.strokeStyle='rgba(232,196,106,.55)'; cx.lineWidth=1.5;
+    cx.setLineDash([5,4]); cx.beginPath();cx.moveTo(MOSX,y);cx.lineTo(MOSX+MOSW,y);cx.stroke(); cx.setLineDash([]); }
+  cx.fillStyle='rgba(236,231,246,.5)'; cx.font='500 13px "IBM Plex Mono",monospace'; cx.textAlign='left';
+  cx.fillText('MOSAIC · page '+(page+1)+' · gold line = memory edge',MOSX,H-14);
+
+  // ---- right: the posterior now ----
+  const p=cur?cur.p:null;
+  const lx=PANX, lw=PANW, ly=MOSY+14, lh=MOSH*0.60-14;
+  cx.textAlign='left'; cx.fillStyle='rgba(184,169,232,.6)'; cx.font='500 13px "IBM Plex Mono",monospace';
+  cx.fillText('P( next token )',lx,MOSY+2);
+  cx.font='500 12px "IBM Plex Mono",monospace';
+  cx.fillStyle='#e5795f'; cx.fillText('ŝ '+(cur?cur.s.toFixed(2):'—'),lx,MOSY+16);
+  cx.fillStyle='#b8a9e8'; cx.fillText('Ĥ '+(cur?cur.H.toFixed(2):'—'),lx+92,MOSY+16);
+  if(p){
+    const rowH=Math.min(26,(lh-24)/p.length), y0=ly+22;
+    let pmax=0; for(let i=0;i<p.length;i++)pmax=Math.max(pmax,p[i]);
+    for(let i=0;i<p.length;i++){
+      const y=y0+i*rowH;
+      const isRest=(i===size-1), isChosen=(cur&&i===cur.tok);
+      const label=isRest?'∅':(SCORE.gen.rats[i][0]+'/'+SCORE.gen.rats[i][1]);
+      cx.fillStyle=isChosen?'var(--ink)':'rgba(236,231,246,.55)';
+      cx.fillStyle=isChosen?'#ece7f6':'rgba(236,231,246,.5)';
+      cx.font=(isChosen?'700 ':'400 ')+'12px "IBM Plex Mono",monospace'; cx.textAlign='right';
+      cx.fillText(label,lx+42,y+rowH*0.72);
+      const bx=lx+50, bw=(lw-56)*(p[i]/(pmax||1));
+      cx.fillStyle=isRest?'rgba(184,169,232,.35)':(isChosen?'#74d0c4':`hsl(${(((hueOf(i,size)%360)+360)%360).toFixed(0)},55%,55%)`);
+      cx.globalAlpha=isChosen?1:0.8; cx.fillRect(bx,y+3,Math.max(1,bw),rowH-6); cx.globalAlpha=1;
+    }
+  }
+  // sparklines: entropy (Ĥ) and surprise (ŝ) across this page
+  const sy=ly+lh+14, sh2=(MOSH-lh-30)/2;
+  const pageEv=ev.filter(e=>e.tE>=base&&e.tE<base+512);
+  const spark=(yy,hh,key,col,lab)=>{
+    cx.strokeStyle='rgba(184,169,232,.14)'; cx.lineWidth=1; cx.strokeRect(PANX,yy,PANW,hh);
+    cx.fillStyle=col; cx.font='500 11px "IBM Plex Mono",monospace'; cx.textAlign='left'; cx.fillText(lab,PANX+4,yy+12);
+    if(pageEv.length<2)return;
+    cx.strokeStyle=col; cx.lineWidth=1.5; cx.beginPath();
+    pageEv.forEach((e,i)=>{ const x=PANX+ (i/(pageEv.length-1))*PANW;
+      const v=clamp(e[key],0,1.25)/1.25; const y=yy+hh-2-v*(hh-4);
+      i?cx.lineTo(x,y):cx.moveTo(x,y); });
+    cx.stroke();
+    if(cur){ const idx=pageEv.indexOf(cur); if(idx>=0){ const x=PANX+(idx/(Math.max(1,pageEv.length-1)))*PANW;
+      cx.strokeStyle='rgba(255,255,255,.5)'; cx.lineWidth=1; cx.beginPath();cx.moveTo(x,yy);cx.lineTo(x,yy+hh);cx.stroke(); } }
+  };
+  spark(sy,sh2,'HHat','#b8a9e8','entropy  Ĥ  (uncertainty)');
+  spark(sy+sh2+8,sh2,'sHat','#e5795f','surprise  ŝ');
+}
+let needsDraw=true; function invalidate(){needsDraw=true;}
+document.addEventListener('click',invalidate,true);
+document.addEventListener('input',invalidate,true);
+let lastDraw=0;
+function loop(ts){
+  const playing=!!RT, interval=RM?250:40;
+  if((playing||needsDraw)&&ts-lastDraw>=interval){ drawViz(); lastDraw=ts; if(!playing)needsDraw=false; }
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ---- opuscula shared: claves · permalink ---- */
+let __applying=false;
+function __state(){ return {s:st.seed,c:st.calor,m:st.mem,o:st.ordo,g:st.gamut,t:st.tempo}; }
+function __apply(o){
+  if(o.g&&GAMUTS[o.g]){const b=$('gamut').querySelector('[data-v="'+o.g+'"]');if(b){$('gamut').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');st.gamut=o.g;}}
+  if(o.c&&CAL[o.c]!==undefined){const b=$('calor').querySelector('[data-v="'+o.c+'"]');if(b){$('calor').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');st.calor=o.c;}}
+  if(o.m&&MEM[o.m]!==undefined){const b=$('memoria').querySelector('[data-v="'+o.m+'"]');if(b){$('memoria').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');st.mem=o.m;}}
+  if(o.o&&ORDO[o.o]!==undefined){const b=$('ordo').querySelector('[data-v="'+o.o+'"]');if(b){$('ordo').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');st.ordo=o.o;}}
+  if(o.t){st.tempo=clamp(+o.t|0,60,116);$('tempo').value=st.tempo;}
+  if(o.s!==undefined){const s=+o.s;if(Number.isFinite(s))st.seed=s>>>0;}
+  syncReadouts(); regen();
+}
+function __hashRead(){const h=location.hash.slice(1);if(!h)return null;const o={};
+  for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}
+function __hashWrite(){if(__applying)return;
+  try{const o=__state();history.replaceState(null,'','#'+Object.entries(o).map(([k,v])=>k+'='+v).join('&'));}catch(e){}}
+document.addEventListener('click',()=>setTimeout(__hashWrite,140),true);
+document.addEventListener('change',()=>setTimeout(__hashWrite,140),true);
+addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
+  if(e.code==='Space'){e.preventDefault();$('play').click();}
+  else if(e.key==='r'||e.key==='R'){e.preventDefault();another();__hashWrite();}
+  else if(e.key==='c'||e.key==='C')$('cut').click();
+});
+(function init(){
+  const o=__hashRead();
+  if(o){__applying=true;try{__apply(o);}catch(e){}__applying=false;} else { syncReadouts(); regen(); }
+  __hashWrite(); invalidate();
+})();
+
+/* ---- robust WAV save (shared) ---------------------------------------------- */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(14,14,16,.92);color:#e9e2d2;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#e9e2d2;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
+
+/* expose the pure engine for headless verification */
+window.__TESSERA={mkModel,learn,predict,step,newGen,genScore,foldFreq,entropy,sampleTempered,
+  rebuildFromScratch,obsKey,GAMUTS,DURS,CAL,MEM,ORDO,TONIC,LOBAND,HIBAND};
+</script>
+</body>
+</html>

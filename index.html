@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="description" content="opuscula — sixteen small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum, javanese gamelan, harry partch's tonality diamond, dubstep.">
+<meta name="description" content="opuscula — seventeen small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum, javanese gamelan, harry partch's tonality diamond, dubstep, a self-predicting language model.">
 <title>OPVSCVLA — small musical machines</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -68,13 +68,13 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
      This file is pure HTML + CSS. No JavaScript, no audio: it is just the
      index card wall that links out to the works. Each work lives in
      its own folder as its own index.html; this page never loads them, it
-     only links to them (href="./folder/"). Sixteen works.
+     only links to them (href="./folder/"). Seventeen works.
 
      Anatomy, top to bottom:
        .wrap      the 760px column everything sits in
        .eyebrow   the "catalogvs · mmxxvi" kicker
        h1 / .sub  the title and the one-line manifesto
-       .grid      the card wall — one <a class="card"> per work (sixteen total)
+       .grid      the card wall — one <a class="card"> per work (seventeen total)
        .notes     the shared-keys reminder (space / r / c)
        .foot      the colophon + repo link
 
@@ -97,7 +97,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
 <div class="wrap">
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
-  <div class="sub">sixteen small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="sub">seventeen small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
   <hr class="rule">
 
   <div class="grid">
@@ -508,6 +508,39 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
         <h2>Sublow</h2>
         <p>Dubstep — sound system music</p>
         <span class="tech">five riddims · halfstep 140 · the talk 0–3 · pull up ⟲ · cut a dub</span>
+      </div>
+    </a>
+
+    <a class="card" href="./tessera/" style="--bg:#171226">
+      <div class="emblem" aria-hidden="true">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- a mosaic of tesserae, each a token drawn from a distribution;
+               one tile lit gold — the choice — its neighbours the alternatives -->
+          <g stroke="#171226" stroke-width="1.6">
+            <rect x="12" y="12" width="18" height="18" rx="2" fill="#6a5aa8"/>
+            <rect x="32" y="12" width="18" height="18" rx="2" fill="#4a8f86"/>
+            <rect x="52" y="12" width="18" height="18" rx="2" fill="#3f5aa0"/>
+            <rect x="72" y="12" width="16" height="18" rx="2" fill="#6f9f52"/>
+            <rect x="12" y="32" width="18" height="18" rx="2" fill="#3f5aa0"/>
+            <rect x="32" y="32" width="18" height="18" rx="2" fill="#e8c46a"/>
+            <rect x="52" y="32" width="18" height="18" rx="2" fill="#6f9f52"/>
+            <rect x="72" y="32" width="16" height="18" rx="2" fill="#74d0c4"/>
+            <rect x="12" y="52" width="18" height="18" rx="2" fill="#6f9f52"/>
+            <rect x="32" y="52" width="18" height="18" rx="2" fill="#3f5aa0"/>
+            <rect x="52" y="52" width="18" height="18" rx="2" fill="#8a5a9a"/>
+            <rect x="72" y="52" width="16" height="18" rx="2" fill="#4a8f86"/>
+            <rect x="12" y="72" width="18" height="16" rx="2" fill="#4a8f86"/>
+            <rect x="32" y="72" width="18" height="16" rx="2" fill="#6f9f52"/>
+            <rect x="52" y="72" width="18" height="16" rx="2" fill="#3f5aa0"/>
+            <rect x="72" y="72" width="16" height="16" rx="2" fill="#6a5aa8"/>
+          </g>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="op">op. XVII · MMXXVI</span>
+        <h2>Tessera</h2>
+        <p>a machine that predicts itself</p>
+        <span class="tech">an empty language model learns its own output · surprisal is the sound · cut 64 bars</span>
       </div>
     </a>
 
