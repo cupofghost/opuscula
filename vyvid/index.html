@@ -116,7 +116,7 @@ footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
     <canvas id="cv" width="1200" height="720" aria-label="A linen band embroidered with the mode's tuning: each scale degree stitched at its exact ratio, the four singers' threads beneath"></canvas>
     <div class="readout mono">
       <span id="pisnyaName">—</span>
-      <span id="status">SCAFFOLD</span>
+      <span id="status">READY</span>
       <span>ТЕРЦІЯ · <span id="thirdRd" class="live">—</span></span>
     </div>
   </div>
@@ -182,16 +182,6 @@ footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 'use strict';
 /* ===================================================================
    VYVID — steppe women's quartet · op. XVIII · single-file web audio
-   -------------------------------------------------------------------
-   ******************* SCAFFOLD — ENGINE NOT YET BUILT *******************
-   This file is the scaffold produced by the design session. The page
-   grammar, controls, hash permalink, keys, TIMBRE + OFFICINA bridge,
-   saveWav/encodeWav, iOS unlock and the tuning-law tables below are DONE
-   and working; the generator, audio graph, scheduler, offline cut and the
-   live canvas pass are STUBS marked "TO BUILD", each pointing at the
-   section of vyvid/VOCES.md (the design brief in this directory) that
-   specifies it. Build the engine against that brief, verify headless,
-   register the machine, delete VOCES.md.
    -------------------------------------------------------------------
    Four synthesized women's voices in подголосочная / підголоскова
    polyphony: zaspivuvachka (leader, opens each verse alone), druha
@@ -274,6 +264,11 @@ function scaleOf(ladId,striyId){                  // resolve 'T' → exact pairs
 }
 const ratHz=(pair)=>TONIC*(VYSOTY[st.vys].r[0]/VYSOTY[st.vys].r[1])*(pair[0]/pair[1]);
 const cents=(pair)=>1200*Math.log2(pair[0]/pair[1]);   // display/verify math only
+// exact ratio arithmetic — every pitch stays an integer [num,den] pair, never a float
+function gcdI(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=b;b=a%b;a=t;}return a||1;}
+function redPair(p){const g=gcdI(p[0],p[1]);return [p[0]/g,p[1]/g];}
+function mulPair(a,b){return redPair([a[0]*b[0],a[1]*b[1]]);}
+function divPair(a,b){return redPair([a[0]*b[1],a[1]*b[0]]);}
 
 // genres (VOCES.md §6). ladDefault applies on genre pick unless the user
 // has overridden the lad since (RILLE Lösung precedent).
@@ -291,6 +286,25 @@ const SINGERS=[
   {id:'basok', label:'Басок',        band:[[2,3],[9,8]]},    // anchors {1/1, 8/9, 3/4}; tacet in kolyskova
   {id:'vyvid', label:'Вивід',        band:[[3,2],[9,4]]},    // the descant — silent in zaspiv, octave at the crown
 ];
+const BASOK_SET=[[1,1],[8,9],[3,4]];   // her anchors are literal, not mode-derived (VOCES.md §5)
+
+// pseudo-lyric syllable grammar (VOCES.md §7) — not words, mouth-true
+const ONSETS_W=[['',.14],['h',.06],['d',.07],['k',.07],['l',.08],['m',.09],['n',.09],['p',.07],
+  ['r',.08],['s',.08],['t',.08],['v',.06],['z',.05],['b',.05],['zh',.01],['ch',.01],['sh',.02],['st',.02],['dn',.01]];
+const VOWEL_W=[['a',.30],['o',.24],['y',.14],['e',.12],['u',.12],['i',.08]];
+const CODA_W=[['',.82],['n',.045],['m',.045],['r',.045],['s',.045]];
+function wpick(rng,table){let x=rng(),acc=0;for(const[v,w]of table){acc+=w;if(x<acc)return v;}return table[table.length-1][0];}
+// the degrees a singer can actually reach: the mode's ratios plus their octave
+// doublings/halvings, clipped to her absolute band (VOCES.md §5 bands).
+function degreeSetFor(lad,striy,band){
+  const base=scaleOf(lad,striy), cLo=cents(band[0])-0.01, cHi=cents(band[1])+0.01;
+  const out=[], seen=new Set();
+  const add=p=>{const key=p[0]+'/'+p[1]; if(seen.has(key))return; const c=cents(p);
+    if(c>=cLo&&c<=cHi){seen.add(key);out.push(p);}};
+  base.forEach(p=>{add(p);add(redPair([p[0]*2,p[1]]));add(redPair([p[0],p[1]*2]));});
+  out.sort((a,b)=>cents(a)-cents(b));
+  return out;
+}
 
 // vowel formant targets, female open-throat (VOCES.md §8). Vowels come from
 // the pseudo-lyric syllable stream; y = Ukrainian и.
@@ -401,51 +415,339 @@ const st={ pisnya:'protyazhna', lad:'zhurba', ladOverride:false, striy:'stepom',
   vys:1, protyah:1.00, mute:{zaspiv:false,druha:false,basok:false,vyvid:false},
   seed:1, playing:false, paused:false };
 
-/* ====================== TO BUILD (VOCES.md §5–§7) ========================
-   genAll(st): seed → the whole song, deterministic.
-     1. skeleton tune for the leader (per lad/genre; range ≤ 16/9; line-
-        finals on 1/1; verse 1 line 1 opens "oi");
-     2. pseudo-lyric syllable stream (meters per PISNI[].syl, vowels from
-        the weighted table in §7);
-     3. per-verse realization for all four singers under the sonority law
-        (§5): zaspiv solo half-line, druha unison/third weave, basok
-        anchors, vyvid descant with the octave crown;
-     4. per-singer per-verse detune walks + the convergence ramps (§3.3);
-     5. the time law (§6): syllable durations, melismas, line-final
-        stretch, breaths. Returns the event list the scheduler and the
-        offline cut both walk — one code path, so the WAV is faithful.
-   Realtime loops verses endlessly, re-realizing each lap (lap n seeded
-   from (seed, n) — deterministic too). ====================================*/
-function genAll(){ return null; /* TO BUILD */ }
+/* ============================================================================
+   genAll(seed) — VOCES.md §5–§7. Builds one whole song, deterministic: a flat
+   per-syllable timeline shared by all four singers (heterophony = one lyric,
+   four throats), each syllable annotated with every active singer's pitch
+   pair, vowel, and detune-walk target. The scheduler and the offline cut both
+   walk this exact same array, so the WAV is faithful to what plays live.
+   ==========================================================================*/
+function genAll(seed){
+  const cfg=PISNI[st.pisnya], lad=st.lad, striy=st.striy;
+  const rng=mulberry32((seed>>>0)^0x51ed270b);
+  const secPerBeat=60/cfg.beat;
+  const breathBeats=0.6/secPerBeat;
+  const kw=(st.pisnya==='kolyskova')?0.5:1;         // law: kolyskova halves width/scoop
 
-/* ====================== TO BUILD (VOCES.md §8) ===========================
-   buildGraph(ctx): 4 voices — glottal PeriodicWave (36 harms, 1/n^
-   (throat.tilt+singer.tiltOff)) → 4 parallel formant bandpasses (vowel
-   targets × singer.formantScale; openness lifts F1) + direct lowpassed
-   path → per-syllable env → StereoPanner(singer.pan) → voice gain →
-   sum → shaper(drive) → comp 2.4:1 → limiter −1.5 dB/20:1 → out trim;
-   seeded village-room IR on a send (wet). Shared noise buffer for the
-   inhale (KHÖÖMEI's pattern) and consonant bursts. Identical graph for
-   OfflineAudioContext. schedTick: RILLE-family, ~40 ms timer, ~0.3 s
-   lookahead off ac.currentTime; detunes via osc.detune (cents = pure
-   ratio math). =========================================================*/
-function buildGraph(ctx){ return null; /* TO BUILD */ }
+  const leaderSet=degreeSetFor(lad,striy,SINGERS[0].band);
+  const vyvidSet=degreeSetFor(lad,striy,SINGERS[3].band);
+  const tonicIdxL=leaderSet.findIndex(p=>p[0]===1&&p[1]===1);
+  let li=tonicIdxL>=0?tonicIdxL:(leaderSet.length>>1);
+  let vi=vyvidSet.length>>1;
+  const T=STRIYI[striy].third;
 
-/* -------------------------- realtime transport ---------------------------
-   TO BUILD (VOCES.md §8–§9): real play/stop on the pattern below; pause is
-   already wired (ctx.suspend/resume with the st.paused guard the unlock
-   respects). Until the engine exists, play explains itself. */
+  const syl=[];
+  let prevDruhaRel='unison';
+  const walk={zaspiv:0,druha:0,basok:0,vyvid:0};
+
+  for(let vs=0; vs<cfg.verses; vs++){
+    for(let ln=0; ln<cfg.lines; ln++){
+      const isSongFinalLine=(vs===cfg.verses-1)&&(ln===cfg.lines-1);
+      cfg.syl.forEach((glen,gi)=>{
+        const isFirstGroup=(gi===0), isLastGroup=(gi===cfg.syl.length-1);
+        const zaspivSolo=(ln===0 && isFirstGroup);        // the leader opens each verse alone
+        let groupBasok=null;
+        if(!cfg.trio && !zaspivSolo)
+          groupBasok = isLastGroup ? [1,1] : pick(rng,[BASOK_SET[0],BASOK_SET[0],BASOK_SET[1],BASOK_SET[2]]);
+
+        for(let si=0; si<glen; si++){
+          const isFirstOfLine=(gi===0&&si===0);
+          const isLastOfLine=(gi===cfg.syl.length-1&&si===glen-1);
+          const hukannia=(st.pisnya==='vesnianka'&&(ln===1||ln===3)&&isLastOfLine);
+          const isOi=(vs===0&&ln===0&&gi===0&&si===0);
+          const stress=(si===0)||(rng()<0.3);
+
+          const s={};
+          if(isOi){ s.onset=''; s.vowel='o'; s.coda='i'; s.disp='ой'; }
+          else if(hukannia){ s.onset='h'; s.vowel='u'; s.coda=''; s.disp='гу'; }
+          else { s.onset=wpick(rng,ONSETS_W); s.vowel=wpick(rng,VOWEL_W); s.coda=wpick(rng,CODA_W); s.disp=s.onset+s.vowel+s.coda; }
+          s.stress=stress; s.isFirstOfLine=isFirstOfLine; s.isLastOfLine=isLastOfLine;
+          s.hukannia=hukannia; s.zaspivSolo=zaspivSolo; s.isSongFinalLine=isSongFinalLine;
+          s.verseIdx=vs; s.lineIdx=ln;
+
+          // --- duration in beats (VOCES.md §6) ---
+          let dur;
+          if(st.pisnya==='protyazhna'){ dur=wpick(rng,[[0.5,.4],[0.75,.35],[1,.25]]); if(isLastOfLine)dur*=3.5; }
+          else if(st.pisnya==='vesnianka'){ dur=hukannia?1.3:1.0; }
+          else { dur=[1.5,.75,.75,1.5,.75,.75][si%6]; }
+          s.dur=dur;
+
+          // --- LEADER: the skeleton tune ---
+          let leaderPair;
+          if(hukannia) leaderPair=mulPair(leaderSet[li],[3,2]);          // the whoop, a fifth up
+          else if(isLastOfLine){ leaderPair=[1,1]; li=tonicIdxL>=0?tonicIdxL:li; }
+          else { li=clamp(li+pick(rng,[-2,-1,-1,0,1,1,2]),0,leaderSet.length-1); leaderPair=leaderSet[li]; }
+          s.zaspiv={pair:leaderPair,silent:false};
+
+          // --- DRUHA: unison or a third below the leader's CURRENT tone ---
+          if(zaspivSolo) s.druha={pair:null,silent:true};
+          else if(isLastOfLine){ prevDruhaRel='unison'; s.druha={pair:[1,1],silent:false,rel:'unison'}; }
+          else {
+            const passing=(!isFirstOfLine && rng()<0.12);
+            let rel, dp;
+            if(passing){
+              const base=prevDruhaRel==='third'?divPair(leaderPair,T):leaderPair;
+              dp=mulPair(base, rng()<0.5?[9,8]:[8,9]); rel='passing';
+            } else {
+              const peak=li>=leaderSet.length*0.6;
+              rel=(rng()<(peak?0.7:0.35))?'third':'unison';
+              dp=(rel==='third')?divPair(leaderPair,T):leaderPair;
+              prevDruhaRel=rel;
+            }
+            s.druha={pair:dp,silent:false,rel};
+          }
+
+          // --- BASOK: the fixed anchors, one pick per group ---
+          s.basok=(cfg.trio||zaspivSolo)?{pair:null,silent:true}:{pair:groupBasok,silent:false};
+
+          // --- VYVID: silent in the zaspiv, stepwise & loosely contrary, the crown at cadence ---
+          if(zaspivSolo) s.vyvid={pair:null,silent:true};
+          else if(isLastOfLine){
+            const p=isSongFinalLine?[2,1]:[3,2];
+            vi=vyvidSet.findIndex(q=>q[0]===p[0]&&q[1]===p[1]); if(vi<0)vi=vyvidSet.length>>1;
+            s.vyvid={pair:p,silent:false};
+          } else {
+            const dir=rng()<0.65?-1:1;
+            vi=clamp(vi+pick(rng,[1,1,2])*dir,0,vyvidSet.length-1);
+            s.vyvid={pair:vyvidSet[vi],silent:false};
+          }
+
+          // --- per-singer detune walk (§3.3): converge to 0 at every line-final ---
+          ['zaspiv','druha','basok','vyvid'].forEach(sid=>{
+            if(s[sid].silent) return;
+            if(isLastOfLine){ s[sid].detune=0; walk[sid]=0; }
+            else{
+              const w=TP.striy.width*kw, ws=TP.striy.walkStep*kw;
+              walk[sid]=clamp(walk[sid]+(rng()*2-1)*ws,-w,w);
+              s[sid].detune=walk[sid];
+            }
+          });
+          syl.push(s);
+        }
+      });
+      syl.push({breath:true,dur:breathBeats});
+    }
+  }
+  return {syl,cfg};
+}
+
+/* ============================================================================
+   buildGraph(ctx) — VOCES.md §8. Four continuous formant-synthesis voices +
+   the house master chain. Identical for the realtime AudioContext and the
+   offline render, so the cut WAV matches what plays live.
+   ==========================================================================*/
+function glottalWave(ctx,tilt){
+  const N=36, real=new Float32Array(N), imag=new Float32Array(N);
+  for(let n=1;n<N;n++) imag[n]=1/Math.pow(n,tilt);
+  return ctx.createPeriodicWave(real,imag,{disableNormalization:false});
+}
+function noiseBuffer(ctx,secs){
+  const n=Math.max(1,Math.floor(secs*ctx.sampleRate)),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
+  return b;
+}
+// a fixed seed (not the song seed) — the village room doesn't change verse to
+// verse; only the song does. This is what makes the offline WAV deterministic.
+function makeRoomIR(ctx,sec,exp){
+  const rng=mulberry32(0xC12E5A17);
+  const len=Math.max(1,Math.floor(sec*ctx.sampleRate)),b=ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,exp);lp+=0.22*((rng()*2-1)-lp);d[i]=lp*e*1.4;}}
+  return b;
+}
+function makeShaperCurve(drive){
+  const n=1024,c=new Float32Array(n),k=Math.max(0.0001,drive)*8,norm=Math.tanh(1+k);
+  for(let i=0;i<n;i++){const x=i/(n-1)*2-1;c[i]=Math.tanh(x*(1+k))/norm;}
+  return c;
+}
+function buildVoice(ctx,sid){
+  const v={id:sid};
+  v.osc=ctx.createOscillator();
+  v.osc.setPeriodicWave(glottalWave(ctx,TP.throat.tilt+TP[sid].tiltOff));
+  v.osc.frequency.value=TONIC;
+
+  const qs=[TP.vowels.q1,TP.vowels.q2,TP.vowels.q34,TP.vowels.q34];
+  const gdb=[0,TP.vowels.g2,TP.vowels.g3,TP.vowels.g4];
+  v.bp=[]; v.bpGain=[];
+  for(let i=0;i<4;i++){
+    const f=ctx.createBiquadFilter(); f.type='bandpass'; f.Q.value=qs[i]; f.frequency.value=700;
+    const g=ctx.createGain(); g.gain.value=Math.pow(10,gdb[i]/20);
+    v.osc.connect(f); f.connect(g);
+    v.bp.push(f); v.bpGain.push(g);
+  }
+  v.direct=ctx.createBiquadFilter(); v.direct.type='lowpass'; v.direct.frequency.value=900; v.direct.Q.value=0.6;
+  v.directGain=ctx.createGain(); v.directGain.gain.value=TP.vowels.direct;
+  v.osc.connect(v.direct); v.direct.connect(v.directGain);
+
+  v.formSum=ctx.createGain(); v.formSum.gain.value=1;
+  v.bpGain.forEach(g=>g.connect(v.formSum)); v.directGain.connect(v.formSum);
+
+  v.env=ctx.createGain(); v.env.gain.value=0.0001;
+  v.formSum.connect(v.env);
+
+  v.pan=ctx.createStereoPanner(); v.pan.pan.value=TP[sid].pan;
+  v.env.connect(v.pan);
+
+  v.voiceLevel=ctx.createGain(); v.voiceLevel.gain.value=TP[sid].level;
+  v.pan.connect(v.voiceLevel);
+
+  v.vibLFO=ctx.createOscillator(); v.vibLFO.type='sine'; v.vibLFO.frequency.value=TP.throat.vibRate;
+  v.vibDepth=ctx.createGain(); v.vibDepth.gain.value=0;
+  v.vibLFO.connect(v.vibDepth); v.vibDepth.connect(v.osc.detune);
+  return v;
+}
+function buildGraph(ctx){
+  const G={ctx,active:{zaspiv:false,druha:false,basok:false,vyvid:false}};
+  G.pre=ctx.createGain(); G.pre.gain.value=1;
+  G.shaper=ctx.createWaveShaper(); G.shaper.curve=makeShaperCurve(TP.master.drive);
+  G.comp=ctx.createDynamicsCompressor();
+  G.comp.threshold.value=-18;G.comp.knee.value=6;G.comp.ratio.value=2.4;G.comp.attack.value=0.006;G.comp.release.value=0.15;
+  G.lim=ctx.createDynamicsCompressor();
+  G.lim.threshold.value=-1.5;G.lim.knee.value=0;G.lim.ratio.value=20;G.lim.attack.value=0.002;G.lim.release.value=0.1;
+  G.trim=ctx.createGain(); G.trim.gain.value=TP.master.gain;
+  G.pre.connect(G.shaper); G.shaper.connect(G.comp); G.comp.connect(G.lim); G.lim.connect(G.trim); G.trim.connect(ctx.destination);
+
+  G.verb=ctx.createConvolver(); G.verb.buffer=makeRoomIR(ctx,1.2,2.2);
+  G.wet=ctx.createGain(); G.wet.gain.value=TP.master.wet;
+  G.verb.connect(G.wet); G.wet.connect(G.pre);
+
+  G.noiseBuf=noiseBuffer(ctx,2.2);
+
+  G.voices={};
+  SINGERS.forEach(s=>{
+    const v=buildVoice(ctx,s.id);
+    v.voiceLevel.connect(G.pre);
+    const send=ctx.createGain(); send.gain.value=0.35; v.voiceLevel.connect(send); send.connect(G.verb);
+    G.voices[s.id]=v;
+  });
+  return G;
+}
+function startGraph(G,t0){ SINGERS.forEach(s=>{const v=G.voices[s.id]; v.osc.start(t0); v.vibLFO.start(t0);}); }
+
+// the shared breath between lines — KHÖÖMEI's inhale pattern
+function inhale(G,t,dur){
+  const ctx=G.ctx;
+  const s=ctx.createBufferSource(); s.buffer=G.noiseBuf; s.loop=true; s.playbackRate.value=0.85+Math.random()*0.2;
+  const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=0.8;
+  bp.frequency.setValueAtTime(420,t); bp.frequency.linearRampToValueAtTime(1400,t+dur);
+  const g=ctx.createGain(); const pk=0.04+TP.breath.inhale*0.5;
+  g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(pk,t+dur*0.6); g.gain.setTargetAtTime(0.0001,t+dur*0.7,0.08);
+  s.connect(bp); bp.connect(g); g.connect(G.pre);
+  s.start(t); s.stop(t+dur+0.2);
+}
+// a syllable-onset noise burst — s/sh a soft band, stops a hard click
+function consonant(G,t,onset){
+  if(!onset||TP.breath.consonant<=0) return;
+  const ctx=G.ctx, lvl=TP.breath.consonant, isStop=/^(d|k|t|p|b)$/.test(onset);
+  const s=ctx.createBufferSource(); s.buffer=G.noiseBuf;
+  const bp=ctx.createBiquadFilter(); const g=ctx.createGain();
+  if(isStop){ bp.type='bandpass'; bp.frequency.value=2500; bp.Q.value=0.7;
+    g.gain.setValueAtTime(lvl*0.5,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.015);
+    s.connect(bp); bp.connect(g); g.connect(G.pre); s.start(t); s.stop(t+0.02);
+  } else { bp.type='bandpass'; bp.frequency.value=6000; bp.Q.value=1.2;
+    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(lvl*0.6,t+0.01); g.gain.setTargetAtTime(0.0001,t+0.02,0.03);
+    s.connect(bp); bp.connect(g); g.connect(G.pre); s.start(t); s.stop(t+0.08);
+  }
+}
+// one singer's note at time t for real duration dur (seconds). fresh = new
+// attack (line start or a silent→active entrance); closing = release at the
+// end of this note (line-final). All intonation (VOCES.md §3.3) rides on
+// osc.detune in cents — a pure ratio operation, never equal-tempered.
+function schedNote(G,sid,note,t,dur,fresh,closing,hukannia){
+  const v=G.voices[sid];
+  if(note.pair){
+    const f=ratHz(note.pair);
+    if(fresh) v.osc.frequency.setValueAtTime(f,t);
+    else v.osc.frequency.linearRampToValueAtTime(f,t+Math.min(TP.striy.portaMs/1000,dur*0.4));
+  }
+  const vt=VOWELS[note.vowel]||VOWELS.a, sc=TP[sid].formantScale, op=1+TP.vowels.openness;
+  const sm=Math.max(0.01,Math.min(TP.striy.portaMs/1000/3,dur*0.15));
+  v.bp[0].frequency.setTargetAtTime(vt[0]*sc*op,t,sm);
+  v.bp[1].frequency.setTargetAtTime(vt[1]*sc,t,sm);
+  v.bp[2].frequency.setTargetAtTime(vt[2]*sc,t,sm);
+  v.bp[3].frequency.setTargetAtTime(vt[3]*sc,t,sm);
+
+  if(fresh){
+    const atk=hukannia?0.015:0.032;
+    v.env.gain.cancelScheduledValues(t); v.env.gain.setValueAtTime(0.0001,t);
+    v.env.gain.linearRampToValueAtTime(1,t+atk);
+  }
+  if(closing){
+    const rel=hukannia?0.06:0.11;
+    v.env.gain.setTargetAtTime(0.0001,t+dur-rel,rel/3);
+  }
+
+  const dt=note.detune||0;
+  const kolyW=(st.pisnya==='kolyskova')?0.5:1;
+  if(hukannia){
+    v.osc.detune.cancelScheduledValues(t); v.osc.detune.setValueAtTime(0,t);
+    v.osc.detune.linearRampToValueAtTime(60,t+0.09);                 // the whoop's fast upward gliss
+  } else if(fresh){
+    const scoop=TP.striy.scoopCents*kolyW;
+    v.osc.detune.cancelScheduledValues(t); v.osc.detune.setValueAtTime(dt-scoop,t);
+    v.osc.detune.linearRampToValueAtTime(dt,t+TP.striy.scoopMs/1000);
+  } else v.osc.detune.setTargetAtTime(dt,t,0.05);
+  if(closing&&!hukannia){
+    v.osc.detune.linearRampToValueAtTime(0,t+dur*0.6);              // §3.3.3 convergence
+    v.osc.detune.setTargetAtTime(-TP.striy.fallCents,t+dur*0.85,0.06); // the sighing release fall
+  }
+  if(dur>TP.throat.vibDelay){
+    v.vibDepth.gain.setValueAtTime(0,t);
+    v.vibDepth.gain.setTargetAtTime(TP.throat.vibDepth,t+TP.throat.vibDelay,0.25);
+  } else v.vibDepth.gain.setTargetAtTime(0,t,0.05);
+}
+function silenceVoice(G,sid,t,rel){ G.voices[sid].env.gain.setTargetAtTime(0.0001,t,rel/3||0.05); }
+function scheduleSyllable(G,s,t,dur){
+  ['zaspiv','druha','basok','vyvid'].forEach(sid=>{
+    const note=s[sid], wasActive=G.active[sid];
+    if(!note||note.silent){ if(wasActive)silenceVoice(G,sid,t,0.09); G.active[sid]=false; return; }
+    const fresh=!wasActive||s.isFirstOfLine;
+    schedNote(G,sid,note,t,dur,fresh,s.isLastOfLine,s.hukannia);
+    if(fresh) consonant(G,t,s.onset);
+    G.active[sid]=true;
+  });
+}
+function applyMute(sid){
+  if(!RT)return;
+  RT.G.voices[sid].voiceLevel.gain.setTargetAtTime(st.mute[sid]?0.0001:TP[sid].level,RT.ctx.currentTime,.08);
+}
+
+/* -------------------------- realtime transport --------------------------- */
 let RT=null;
+function secPerBeatNow(){ return (60/RT.song.cfg.beat)*st.protyah; }
+function schedTick(){
+  if(!RT)return;
+  const ahead=RT.ctx.currentTime+0.35;
+  while(RT.nextT<ahead){
+    if(RT.idx>=RT.song.syl.length){ RT.lap++; RT.song=genAll((st.seed+RT.lap*0x9E3779B1)|0); RT.idx=0; }
+    const item=RT.song.syl[RT.idx++];
+    const real=item.dur*secPerBeatNow();
+    if(item.breath) inhale(RT.G,RT.nextT,Math.min(0.7,real));
+    else scheduleSyllable(RT.G,item,RT.nextT,real);
+    RT.nextT+=real;
+  }
+}
 function play(){
   if(RT){stop();return;}
-  $('cutnote').textContent='the engine is not built yet — this page is the scaffold; the spec is vyvid/VOCES.md';
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ctx);
+  const G=buildGraph(ctx);
+  startGraph(G,ctx.currentTime+0.06);
+  SINGERS.forEach(s=>{if(st.mute[s.id])G.voices[s.id].voiceLevel.gain.value=0.0001;});
+  RT={ctx,G,song:genAll(st.seed),idx:0,lap:0,nextT:ctx.currentTime+0.15,timer:0};
+  RT.timer=setInterval(schedTick,50);
+  st.playing=true; st.paused=false;
+  $('play').textContent='Stop'; $('play').classList.add('on'); $('status').textContent='SINGING';
+  $('pause').disabled=false; $('pause').textContent='Pause'; $('pause').classList.remove('on');
 }
 function stop(){
   if(!RT)return;
+  const t=RT.ctx.currentTime;
+  ['zaspiv','druha','basok','vyvid'].forEach(sid=>silenceVoice(RT.G,sid,t,0.12));
   clearInterval(RT.timer);
-  const c=RT.ctx; setTimeout(()=>{try{c.close();}catch(e){}},340);
+  const c=RT.ctx; setTimeout(()=>{try{c.close();}catch(e){}},400);
   RT=null; st.playing=false; st.paused=false;
-  $('play').textContent='Sing'; $('play').classList.remove('on'); $('status').textContent='SCAFFOLD';
+  $('play').textContent='Sing'; $('play').classList.remove('on'); $('status').textContent='READY';
   $('pause').disabled=true; $('pause').textContent='Pause'; $('pause').classList.remove('on');
 }
 function togglePause(){
@@ -455,15 +757,16 @@ function togglePause(){
   else{st.paused=true; RT.ctx.suspend();
     $('pause').textContent='Resume'; $('pause').classList.add('on'); $('status').textContent='PAUSED';}
 }
-// regenerate + hand to a running transport (convention: no restart)
+// regenerate + hand to a running transport at the next line boundary rather
+// than restarting the transport (the repo's change-while-playing convention).
 function reVibe(){
-  writeHash(); draw();
+  writeHash();
   $('pisnyaName').textContent=PISNI[st.pisnya].label.toUpperCase();
   const T=STRIYI[st.striy].third;
   $('thirdRd').textContent=T[0]+'/'+T[1]+' ≈ '+Math.round(cents(T))+'¢';
-  if(!RT)return;
-  /* TO BUILD: RT.g = genAll(); scheduler picks the new score up at the
-     next line boundary (change-while-playing convention). */
+  buildStaticBand();
+  if(RT){ RT.song=genAll(st.seed); RT.idx=0; }
+  draw();
 }
 
 /* ------------------------------ cut · WAV -------------------------------- */
@@ -498,10 +801,33 @@ function encodeWav(L,R,sr){
   return new Blob([buf],{type:'audio/wav'});
 }
 async function cut(){
-  /* TO BUILD (VOCES.md §8, §12): render ONE whole song (all verses) into an
-     OfflineAudioContext through the identical graph, peak-normalise to 0.9,
-     saveWav(encodeWav(L,R,SR), `vyvid_${st.pisnya}_${st.lad}.wav`). */
-  $('cutnote').textContent='the engine is not built yet — this page is the scaffold; the spec is vyvid/VOCES.md';
+  const btn=$('cut'),note=$('cutnote'); btn.disabled=true; note.textContent='embroidering to disc…';
+  try{
+    const song=genAll(st.seed);
+    let totalBeats=0; song.syl.forEach(it=>totalBeats+=it.dur);
+    const secPerBeat=(60/song.cfg.beat)*st.protyah;
+    const total=totalBeats*secPerBeat+1.4;
+    const ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
+    const G=buildGraph(ctx);
+    startGraph(G,0.02);
+    SINGERS.forEach(s=>{if(st.mute[s.id])G.voices[s.id].voiceLevel.gain.value=0.0001;});
+    let t=0.1;
+    song.syl.forEach(item=>{
+      const real=item.dur*secPerBeat;
+      if(item.breath) inhale(G,t,Math.min(0.7,real));
+      else scheduleSyllable(G,item,t,real);
+      t+=real;
+    });
+    G.trim.gain.setValueAtTime(TP.master.gain,t-0.5);
+    G.trim.gain.linearRampToValueAtTime(0.0001,t+0.9);
+    const rb=await ctx.startRendering();
+    let L=rb.getChannelData(0), R=rb.getChannelData(1);
+    let mx=0; for(let i=0;i<L.length;i++){const a=Math.abs(L[i]);if(a>mx)mx=a;const b=Math.abs(R[i]);if(b>mx)mx=b;}
+    if(mx>0){const k=0.9/mx; for(let i=0;i<L.length;i++){L[i]*=k;R[i]*=k;}}
+    saveWav(encodeWav(L,R,SR),`vyvid_${st.pisnya}_${st.lad}_${st.striy}.wav`);
+    note.textContent=`cut · ${PISNI[st.pisnya].label.toLowerCase()} · ${LADY[st.lad].label.toLowerCase()} · ${STRIYI[st.striy].label.toLowerCase()}`;
+  }catch(e){ note.textContent='render failed — '+e.message; }
+  btn.disabled=false;
 }
 
 /* ------------------------------ controls -------------------------------- */
@@ -541,14 +867,13 @@ chipRow($('vysChips'), VYSOTY.map((k,i)=>[String(i),k.label]), String(st.vys), v
     b.addEventListener('click',()=>{
       st.mute[s.id]=!st.mute[s.id]; b.classList.toggle('on',!st.mute[s.id]);
       $('holosyRd').textContent=SINGERS.filter(x=>!st.mute[x.id]).length;
-      writeHash();
-      /* TO BUILD: ramp the singer's voice gain in a running graph */
+      writeHash(); applyMute(s.id);
     });
     host.appendChild(b);
   });
 })();
-$('protyah').addEventListener('input',e=>{st.protyah=+e.target.value/100;$('protyahRd').textContent=st.protyah.toFixed(2);
-  /* TO BUILD: the scheduler reads st.protyah live — stretch, no regeneration */});
+$('protyah').addEventListener('input',e=>{st.protyah=+e.target.value/100;$('protyahRd').textContent=st.protyah.toFixed(2);});
+  // the scheduler reads st.protyah live at each schedule step — stretch, no regeneration
 $('protyah').addEventListener('change',()=>writeHash());
 $('play').addEventListener('click',play);
 $('pause').addEventListener('click',togglePause);
@@ -556,73 +881,89 @@ $('another').addEventListener('click',()=>{st.seed=(Math.random()*0x7fffffff)|0;
 $('cut').addEventListener('click',cut);
 
 /* ------------------------------ canvas -----------------------------------
-   SCAFFOLD RENDER (working): the linen band embroidered with the current
-   lad × striy — every degree stitched at its exact cents position, ratio
-   above, cents below; the four singers' threads beneath with their bands.
-   TO BUILD (VOCES.md §10): the rushnyk proper — the realized song as
-   cross-stitch across time, cadence convergences as eight-point stars,
-   the lyric line under the band, a needle playhead; static layer cached;
-   prefers-reduced-motion → needle only. The ladder below should survive
-   as the READY state or fold into the band's left margin. */
+   VOCES.md §10 — the rushnyk: the song embroidered. A static offscreen layer
+   (rebuilt only on regeneration — reVibe) draws the linen band with the whole
+   realized song as cross-stitch, one colour-thread per voice, gold eight-
+   point stars at every cadence unison; the live pass just blits it and draws
+   a needle at the current position + the syllable being sung. */
 const cv=$('cv'), cx=cv.getContext('2d'), CW=cv.width, CH=cv.height;
 const SINGER_COL={zaspiv:'#c74a3a', druha:'#2b2320', basok:'#7a3328', vyvid:'#d9a441'};
+const BX0=100, BX1=CW-100, BY=CH*0.44, BH=300;
+const REDUCE_MOTION=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function stitchX(cx2,x,y,s,col){ // one cross-stitch
   cx2.strokeStyle=col; cx2.lineWidth=Math.max(2,s*0.22); cx2.lineCap='round';
   cx2.beginPath(); cx2.moveTo(x-s,y-s); cx2.lineTo(x+s,y+s);
   cx2.moveTo(x+s,y-s); cx2.lineTo(x-s,y+s); cx2.stroke();
 }
-function draw(){
-  cx.clearRect(0,0,CW,CH);
-  cx.fillStyle='#171019'; cx.fillRect(0,0,CW,CH);
-  const scale=scaleOf(st.lad,st.striy);
-  const cs=scale.map(cents), lo=Math.min(...cs), hi=Math.max(...cs);
-  const bx0=100, bx1=CW-100, by=CH*0.40, bh=150;
-  // the linen band
-  cx.fillStyle='#e7dcc4'; cx.fillRect(bx0-18,by-bh/2-14,(bx1-bx0)+36,bh+28);
-  cx.strokeStyle='#c74a3a'; cx.lineWidth=3;
-  cx.strokeRect(bx0-18,by-bh/2-14,(bx1-bx0)+36,bh+28);
-  cx.strokeStyle='rgba(43,35,32,.5)'; cx.lineWidth=1;
-  cx.strokeRect(bx0-12,by-bh/2-8,(bx1-bx0)+24,bh+16);
-  // header
-  cx.fillStyle='rgba(236,225,204,.7)'; cx.textAlign='left'; cx.textBaseline='middle';
-  cx.font='500 24px "IBM Plex Mono",monospace';
-  cx.fillText(LADY[st.lad].label+' · '+STRIYI[st.striy].label+' · '
-    +Math.round(TONIC*(VYSOTY[st.vys].r[0]/VYSOTY[st.vys].r[1]))+' Hz', bx0-18, 46);
-  cx.fillStyle='rgba(236,225,204,.35)'; cx.font='400 18px "IBM Plex Mono",monospace';
-  cx.fillText('the mode, stitched at its exact ratios', bx0-18, 76);
-  // degrees as stitches at exact cents positions
-  const T=STRIYI[st.striy].third, vo=(LADY[st.lad].vyvidOnly||[]).map(p=>p.join('/'));
-  scale.forEach((p,i)=>{
-    const x=bx0+(cs[i]-lo)/(hi-lo)*(bx1-bx0);
-    const isT=(p[0]===T[0]&&p[1]===T[1])||(p[0]===T[0]*2&&p[1]===T[1]);
-    const isV=vo.indexOf(p.join('/'))>=0;
-    const col=isT?'#c74a3a':(isV?'#d9a441':'#2b2320');
-    stitchX(cx,x,by,isT?13:10,col);
-    if(isT){stitchX(cx,x,by-26,7,col);stitchX(cx,x,by+26,7,col);} // the third gets a column — the zone
-    cx.fillStyle='#2b2320'; cx.textAlign='center';
-    cx.font='500 21px "IBM Plex Mono",monospace';
-    cx.fillText(p[0]+'/'+p[1], x, by-bh/2+16);
-    cx.fillStyle='rgba(43,35,32,.55)'; cx.font='400 16px "IBM Plex Mono",monospace';
-    cx.fillText(Math.round(cs[i])+'¢', x, by+bh/2-14);
-  });
-  // the four singers' threads with their bands (law: SINGERS[].band)
-  const ty0=by+bh/2+70, tgap=54;
-  cx.textBaseline='middle';
-  SINGERS.forEach((s,i)=>{
-    const y=ty0+i*tgap, mut=st.mute[s.id];
-    const x0=bx0+((cents(s.band[0])-(-702))/(1404-(-702)))*(bx1-bx0)*0.9;
-    const x1=bx0+((cents(s.band[1])-(-702))/(1404-(-702)))*(bx1-bx0)*0.9;
-    cx.strokeStyle=mut?'rgba(236,225,204,.12)':SINGER_COL[s.id];
-    cx.lineWidth=i===3?3:4; cx.globalAlpha=mut?.5:(i===1?.85:1);
-    cx.beginPath(); cx.moveTo(x0,y); cx.lineTo(x1,y); cx.stroke(); cx.globalAlpha=1;
-    cx.fillStyle=mut?'rgba(236,225,204,.25)':'rgba(236,225,204,.75)';
-    cx.textAlign='left'; cx.font='400 19px "IBM Plex Mono",monospace';
-    cx.fillText(s.label+(mut?' · мовчить':''), x1+18, y);
-  });
-  cx.fillStyle='rgba(236,225,204,.30)'; cx.textAlign='left';
-  cx.font='400 17px "IBM Plex Mono",monospace';
-  cx.fillText('scaffold — the engine is to build · vyvid/VOCES.md', bx0-18, CH-24);
+function drawStar(o,x,y,r,col){
+  o.strokeStyle=col; o.lineWidth=1.7;
+  for(let k=0;k<8;k++){const a=k*Math.PI/4; o.beginPath(); o.moveTo(x,y); o.lineTo(x+Math.cos(a)*r,y+Math.sin(a)*r); o.stroke();}
 }
+function pitchY(centsVal){ const lo=-300,hi=1500; const f=clamp((centsVal-lo)/(hi-lo),0,1); return BY+BH/2-f*BH; }
+let stBuf=null, stSong=null;
+function buildStaticBand(){
+  stSong=genAll(st.seed);
+  const off=document.createElement('canvas'); off.width=CW; off.height=CH;
+  const o=off.getContext('2d');
+  o.fillStyle='#171019'; o.fillRect(0,0,CW,CH);
+  o.fillStyle='#e7dcc4'; o.fillRect(BX0-18,BY-BH/2-14,(BX1-BX0)+36,BH+28);
+  o.strokeStyle='#c74a3a'; o.lineWidth=3; o.strokeRect(BX0-18,BY-BH/2-14,(BX1-BX0)+36,BH+28);
+  o.strokeStyle='rgba(43,35,32,.5)'; o.lineWidth=1; o.strokeRect(BX0-12,BY-BH/2-8,(BX1-BX0)+24,BH+16);
+
+  const totalBeats=stSong.syl.reduce((a,x)=>a+x.dur,0);
+  let bcum=0;
+  stSong.syl.forEach(item=>{
+    const x=BX0+(bcum/totalBeats)*(BX1-BX0);
+    if(!item.breath){
+      ['zaspiv','druha','basok','vyvid'].forEach(sid=>{
+        const n=item[sid]; if(!n||n.silent)return;
+        const y=pitchY(cents(n.pair));
+        stitchX(o,x,y,item.isLastOfLine?9:5,SINGER_COL[sid]);
+      });
+      if(item.isLastOfLine){
+        drawStar(o,x,pitchY(0),15,'#d9a441');
+        o.strokeStyle='rgba(43,35,32,.3)'; o.lineWidth=1;
+        o.beginPath(); o.moveTo(x,BY-BH/2-6); o.lineTo(x,BY+BH/2+6); o.stroke();
+      }
+    }
+    bcum+=item.dur;
+  });
+  o.fillStyle='rgba(43,35,32,.6)'; o.textAlign='left'; o.font='400 15px "IBM Plex Mono",monospace';
+  o.fillText('the realized song — one thread per voice · gold stars at every cadence unison', BX0-14, BY-BH/2-22);
+  stBuf=off;
+}
+function draw(){
+  if(!stBuf) buildStaticBand();
+  cx.clearRect(0,0,CW,CH); cx.drawImage(stBuf,0,0);
+  cx.fillStyle='rgba(236,225,204,.75)'; cx.textAlign='left'; cx.textBaseline='middle';
+  cx.font='500 22px "IBM Plex Mono",monospace';
+  cx.fillText(PISNI[st.pisnya].label+' · '+LADY[st.lad].label+' · '+STRIYI[st.striy].label+' · '
+    +Math.round(TONIC*(VYSOTY[st.vys].r[0]/VYSOTY[st.vys].r[1]))+' Hz', BX0-18, 34);
+
+  let frac=0, curTxt='—';
+  if(RT){
+    const total=RT.song.syl.reduce((a,x)=>a+x.dur,0);
+    let cum=0; for(let i=0;i<RT.idx-1&&i<RT.song.syl.length;i++)cum+=RT.song.syl[i].dur;
+    frac=clamp(cum/total,0,1);
+    const cur=RT.song.syl[Math.max(0,RT.idx-1)];
+    if(cur&&!cur.breath) curTxt=(cur.disp||'').toUpperCase();
+  }
+  const nx=BX0+frac*(BX1-BX0);
+  cx.strokeStyle='#e7dcc4'; cx.lineWidth=2;
+  cx.beginPath(); cx.moveTo(nx,BY-BH/2-14); cx.lineTo(nx,BY+BH/2+14); cx.stroke();
+  cx.fillStyle='rgba(236,225,204,.85)'; cx.textAlign='center'; cx.font='500 20px "IBM Plex Mono",monospace';
+  cx.fillText(curTxt, CW/2, BY+BH/2+40);
+  cx.fillStyle='rgba(236,225,204,.30)'; cx.textAlign='left'; cx.font='400 15px "IBM Plex Mono",monospace';
+  cx.fillText('op. XVIII · vyvid — the rushnyk, embroidered', BX0-18, CH-20);
+}
+let __lastDraw=0;
+function frameLoop(now){
+  requestAnimationFrame(frameLoop);
+  if(REDUCE_MOTION||!RT) return;
+  if(now-__lastDraw<50) return; __lastDraw=now;
+  draw();
+}
+requestAnimationFrame(frameLoop);
 
 /* ----------------------------- permalink -------------------------------- */
 function __state(){const m=(st.mute.zaspiv?1:0)|(st.mute.druha?2:0)|(st.mute.basok?4:0)|(st.mute.vyvid?8:0);
@@ -666,10 +1007,30 @@ addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
   reVibe();
 })();
 
-/* OFFICINA hooks. TO BUILD: touch should ramp master/room/voice params into
-   a running graph (continuous-machine convention); demo starts the
-   transport. Until then they are safe no-ops beyond a redraw. */
-TIMBRE.touch=()=>{ reVibe(); };
+/* OFFICINA live hook: push bench edits into the running graph (continuous-
+   machine convention — no restart). demo starts the transport. */
+TIMBRE.touch=()=>{
+  if(RT){
+    const ct=RT.ctx.currentTime;
+    SINGERS.forEach(s=>{
+      const v=RT.G.voices[s.id];
+      v.osc.setPeriodicWave(glottalWave(RT.ctx,TP.throat.tilt+TP[s.id].tiltOff));
+      v.vibLFO.frequency.setTargetAtTime(TP.throat.vibRate,ct,.1);
+      v.bpGain[1].gain.setTargetAtTime(Math.pow(10,TP.vowels.g2/20),ct,.05);
+      v.bpGain[2].gain.setTargetAtTime(Math.pow(10,TP.vowels.g3/20),ct,.05);
+      v.bpGain[3].gain.setTargetAtTime(Math.pow(10,TP.vowels.g4/20),ct,.05);
+      v.bp[0].Q.setTargetAtTime(TP.vowels.q1,ct,.05); v.bp[1].Q.setTargetAtTime(TP.vowels.q2,ct,.05);
+      v.bp[2].Q.setTargetAtTime(TP.vowels.q34,ct,.05); v.bp[3].Q.setTargetAtTime(TP.vowels.q34,ct,.05);
+      v.directGain.gain.setTargetAtTime(TP.vowels.direct,ct,.05);
+      if(!st.mute[s.id]) v.voiceLevel.gain.setTargetAtTime(TP[s.id].level,ct,.05);
+      v.pan.pan.setTargetAtTime(TP[s.id].pan,ct,.05);
+    });
+    RT.G.wet.gain.setTargetAtTime(TP.master.wet,ct,.1);
+    RT.G.trim.gain.setTargetAtTime(TP.master.gain,ct,.1);
+    RT.G.shaper.curve=makeShaperCurve(TP.master.drive);
+  }
+  draw();
+};
 TIMBRE.demo=()=>{ if(!RT)play(); };
 </script>
 </body>
