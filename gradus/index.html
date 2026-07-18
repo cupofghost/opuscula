@@ -9,6 +9,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="color-scheme" content="light">
 <title>GRADUS — machina contrapuncti</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
 <style>
@@ -78,6 +82,7 @@ button:focus-visible{outline:2px solid var(--rubric);outline-offset:2px}
 
 .playbtn{width:100%;padding:14px;font-size:1.3rem;letter-spacing:.4em;border-width:2px}
 .playbtn.on{background:var(--rubric);border-color:var(--rubric);color:var(--paper)}
+.playbtn:disabled{opacity:.4;cursor:default}
 
 .seg{display:flex;border:1.5px solid var(--ink)}
 .seg button{flex:1;border:none;border-right:1px solid var(--ink);padding:10px 2px;font-size:.9rem;background:transparent}
@@ -175,7 +180,10 @@ button,canvas{-webkit-user-select:none;user-select:none}
 
   <div class="controls">
 
-    <button class="playbtn" id="play">SONA</button>
+    <div style="display:flex;gap:10px">
+      <button class="playbtn" id="play" style="flex:1">SONA</button>
+      <button class="playbtn" id="pause" style="flex:0 0 34%" disabled>MORA</button>
+    </div>
 
     <div>
       <div class="lab">Modus <span class="rd" id="modusrd"></span></div>
@@ -248,7 +256,7 @@ button,canvas{-webkit-user-select:none;user-select:none}
     </details>
 
     <div class="colophon">species I–IV · ficta at the clausula · sine temperament · sheet 1 of 1<br>
-    op. III · <a href="../">opvscvla</a> · claves: space=sona · r=aliud · c=cut</div>
+    op. III · <a href="../">opvscvla</a> · claves: space=sona · p=mora · r=aliud · c=cut</div>
   </div>
 </div>
 
@@ -285,7 +293,7 @@ button,canvas{-webkit-user-select:none;user-select:none}
        copy the address bar and the exact piece reloads.
 
    KEYS (wired at the bottom, same in every work):
-       space = play/stop   ·   r = another counterpoint   ·   c = cut a WAV
+       space = play/stop   ·   p = mora (pause/resume)   ·   r = another counterpoint   ·   c = cut a WAV
 
    THIS FILE: helpers/PRNG → ENGINE (cantus firmus → counterpoint search)
    → state & driver → notation plate → audio → WAV → UI → shared permalink.
@@ -306,7 +314,7 @@ function __hint(msg){
 }
 function __iosAudio(ac){
   try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
-  const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  const kick=()=>{try{if(!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
   kick();
   try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
   // stop the sound when the page is backgrounded (phone locked, app switched
@@ -1146,7 +1154,8 @@ function start(){
   const G=buildAudio(ac);const t0=ac.currentTime+.15;
   const total=schedule(G,t0);
   RT={ac,t0,end:t0+total,timer:setInterval(()=>{if(RT&&RT.ac.currentTime>RT.end)stop();},200)};
-  st.playing=true;$('play').textContent='TACE';$('play').classList.add('on');
+  st.playing=true;st.paused=false;$('play').textContent='TACE';$('play').classList.add('on');
+  $('pause').disabled=false;$('pause').textContent='MORA';$('pause').classList.remove('on');
   tick();
 }
 function stop(){
@@ -1154,8 +1163,9 @@ function stop(){
   clearInterval(RT.timer);
   const c=RT.ac;RT=null;
   setTimeout(()=>c.close(),120);
-  st.playing=false;
+  st.playing=false;st.paused=false;
   $('play').textContent='SONA';$('play').classList.remove('on');
+  $('pause').disabled=true;$('pause').textContent='MORA';$('pause').classList.remove('on');
   const te=$('tactus');if(te)te.textContent='figured plate';
   drawPlate();
 }
@@ -1175,6 +1185,16 @@ function tick(ts){
   requestAnimationFrame(tick);
 }
 $('play').addEventListener('click',()=>st.playing?stop():start());
+/* MORA · PERGE: suspend/resume the AudioContext (the plate is scheduled off
+   ac.currentTime, which freezes while suspended — the tactus stands in place). */
+function togglePause(){
+  if(!RT||!st.playing)return;
+  if(st.paused){st.paused=false;RT.ac.resume();
+    $('pause').textContent='MORA';$('pause').classList.remove('on');}
+  else{st.paused=true;RT.ac.suspend();
+    $('pause').textContent='PERGE';$('pause').classList.add('on');}
+}
+$('pause').addEventListener('click',togglePause);
 
 /* ---------------- WAV ---------------- */
 function encodeWav(Lc,Rc,sr){
@@ -1281,6 +1301,7 @@ document.addEventListener('change',()=>setTimeout(__hashWrite,120),true);
 addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
   if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
   if(e.code==='Space'){e.preventDefault();$('play').click();}
+  else if(e.key==='p'||e.key==='P')togglePause();
   else if(e.key==='r'||e.key==='R')$('aliud').click();
   else if(e.key==='c'||e.key==='C')$('cut').click();});
 (function(){const o=__hashRead();

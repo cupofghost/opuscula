@@ -10,6 +10,10 @@
 <meta name="apple-mobile-web-app-title" content="COCHLEA">
 <meta name="description" content="COCHLEA — a just-intonation comma pump. Every interval pure, every return imperfect. op. V of the opuscula.">
 <title>COCHLEA · op. V · opvscvla</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vollkorn:ital,wght@0,400;0,600;1,400&family=Cutive+Mono&display=swap" rel="stylesheet">
@@ -168,6 +172,7 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:170px;ba
 <section class="ctls">
   <div class="row">
     <button id="btnSona" class="btn big">SONA</button>
+    <button id="btnMora" class="btn" disabled>MORA</button>
     <button id="btnAliud" class="btn">ALIUD</button>
     <button id="btnSeco" class="btn">SECO &middot; WAV</button>
     <div id="hintSusp" class="hint" role="status">AUDIO SUSPENSUM &mdash; TANGE ITERUM</div>
@@ -251,7 +256,7 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:170px;ba
 </details>
 
 <footer class="colophon">
-  op. V · <a href="../">opvscvla</a> · claves: space=sona · r=aliud · c=cut<br>
+  op. V · <a href="../">opvscvla</a> · claves: space=sona · p=mora · r=aliud · c=cut<br>
   <span class="fine">pellis helmholtziana — aes, viride atrum, Vollkorn/Cutive · MMXXVI</span>
 </footer>
 
@@ -290,7 +295,7 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:170px;ba
        location.hash, so THE URL IS THE PRESSING — copy it to replay exactly.
 
    KEYS (wired near the bottom, same in every work):
-       space = play/stop   ·   r = another pump   ·   c = cut a WAV
+       space = play/stop   ·   p = mora (pause/resume)   ·   r = another pump   ·   c = cut a WAV
 
    THIS FILE: ENGINE (fraction math → walk → analysis → plan → WAV) →
    state → audio → SECO/WAV → regen → ledger → canvas → hash permalinks →
@@ -677,7 +682,7 @@ try{RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').
 
 /* ------------------------------- audio ---------------------------------- */
 var ctx=null, graph=null, rendering=false;
-var live={playing:false,iter:null,next:null,timer:null,active:[],uiQ:[],
+var live={playing:false,paused:false,iter:null,next:null,timer:null,active:[],uiQ:[],
           state:{l:0,i:0,tonic:1}};
 
 function makeIR(ac){
@@ -833,9 +838,10 @@ function start(){
   live.iter=planIter(walk,ana,{bpm:P.bpm,seed:P.seed,laps:null},
                      {l:live.state.l,i:live.state.i,tonic:live.state.tonic,t:t0});
   live.next=live.iter.next().value;
-  live.playing=true;
+  live.playing=true; live.paused=false;
   live.timer=setInterval(tickSched,45);
   el.btnSona.textContent='TACE';
+  el.btnMora.disabled=false; el.btnMora.textContent='MORA'; el.btnMora.classList.remove('on');
   updateHint(); needsDraw=true; startRaf();
 }
 function stop(){
@@ -850,11 +856,23 @@ function stop(){
       for(var n=0;n<nds.length;n++){try{nds[n].stop(now+0.08)}catch(e){}}
     }
   }
-  live.active=[]; live.uiQ=[];
+  live.active=[]; live.uiQ=[]; live.paused=false;
   el.btnSona.textContent='SONA';
+  el.btnMora.disabled=true; el.btnMora.textContent='MORA'; el.btnMora.classList.remove('on');
   updateHint(); needsDraw=true; startRaf();
 }
 function togglePlay(){ if(live.playing)stop(); else start(); }
+/* MORA · PERGE: suspend/resume the shared AudioContext. Every event is scheduled
+   against ctx.currentTime, which freezes while suspended, so the spiral and the
+   drifting comma hold and pick up exactly where they paused. */
+function togglePause(){
+  if(!live.playing||!ctx)return;
+  if(live.paused){live.paused=false; ctx.resume();
+    el.btnMora.textContent='MORA'; el.btnMora.classList.remove('on');}
+  else{live.paused=true; ctx.suspend();
+    el.btnMora.textContent='PERGE'; el.btnMora.classList.add('on');}
+  updateHint();
+}
 
 /* ------------------------------ SECO · WAV ------------------------------ */
 function seco(){
@@ -1234,7 +1252,7 @@ function __apply(h){
 /* ------------------------------ controls --------------------------------- */
 var el={};
 function grabEls(){
-  ['btnSona','btnAliud','btnSeco','selPumpa','selGenus','inpPassus','inpTempus',
+  ['btnSona','btnMora','btnAliud','btnSeco','selPumpa','selGenus','inpPassus','inpTempus',
    'btnDir','btnSept','regFund','regHarm','regCymb','regPuls','hintSusp',
    'lblPassus','lblTempus','ledMat','ledPum','ledHia','ledMon','ledLap',
    'ledSem','ledCir','ledTot','ledTmp']
@@ -1269,6 +1287,7 @@ function dimAlea(){
 }
 function wire(){
   el.btnSona.addEventListener('click',togglePlay);
+  el.btnMora.addEventListener('click',togglePause);
   el.btnAliud.addEventListener('click',function(){regen({newSeed:true})});
   el.btnSeco.addEventListener('click',seco);
   el.selPumpa.addEventListener('change',function(){P.pump=el.selPumpa.value;regen({})});
@@ -1297,6 +1316,7 @@ function wire(){
     if(t&&t.matches&&t.matches('input,textarea,select'))return;
     if(e.metaKey||e.ctrlKey||e.altKey)return;
     if(e.code==='Space'||e.key===' '){e.preventDefault();togglePlay()}
+    else if(e.key==='p'||e.key==='P'){togglePause()}
     else if(e.key==='r'||e.key==='R'){regen({newSeed:true})}
     else if(e.key==='c'||e.key==='C'){seco()}
   });
@@ -1309,12 +1329,13 @@ function wire(){
 /* --------------------------- __iosAudio unlock --------------------------- */
 function updateHint(){
   if(!el.hintSusp)return;
-  el.hintSusp.style.display=(live.playing&&ctx&&ctx.state!=='running')?'block':'none';
+  el.hintSusp.style.display=(live.playing&&!live.paused&&ctx&&ctx.state!=='running')?'block':'none';
 }
 (function __iosAudio(){
   try{if('audioSession' in navigator)navigator.audioSession.type='playback'}catch(e){}
   function kick(){
     if(!ctx){updateHint();return}
+    if(live.paused){updateHint();return}       // don't revive a context paused on purpose
     if(ctx.state!=='running'){
       try{
         ctx.resume().then(function(){

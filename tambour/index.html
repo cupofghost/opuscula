@@ -9,6 +9,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>TAMBOUR — French military field drum</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -93,6 +97,7 @@ button,canvas{-webkit-user-select:none;user-select:none}
   font-size:1.25rem;letter-spacing:.3em;text-transform:uppercase;border-width:1.5px;
   border-color:var(--iron);transition:background .15s,color .15s,border-color .15s}
 .pick.on{background:var(--rust);border-color:var(--rust);color:#fff}
+.pick:disabled{opacity:.4;cursor:default}
 
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chips button{padding:8px 11px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--dim);letter-spacing:.04em}
@@ -166,7 +171,10 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
 
   <div class="controls">
 
-    <button class="pick" id="pick">Play</button>
+    <div style="display:flex;gap:10px">
+      <button class="pick" id="pick" style="flex:1">Play</button>
+      <button class="pick" id="pause" style="flex:0 0 34%" disabled>Pause</button>
+    </div>
 
     <div class="fld">
       <div class="lab">Call <span class="rd" id="callrd">La Marche · the ordinary march</span></div>
@@ -231,7 +239,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
   </details>
 
   <div class="foot">
-    op. XIII · <a href="../">opvscvla</a> · keys: space=play · r=another · c=cut
+    op. XIII · <a href="../">opvscvla</a> · keys: space=play · p=pause · r=another · c=cut
   </div>
 </div>
 
@@ -278,7 +286,7 @@ input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;bac
    live loop) and restarts playback.
 
    KEYS (wired near the bottom, same in every work):
-       space = play/stop   ·   r = another march   ·   c = cut a WAV
+       space = play/stop   ·   p = pause/resume   ·   r = another march   ·   c = cut a WAV
 
    THIS FILE: ENGINE (rng → parse → assemble events) → state → audio
    (membrane/snare/cymbal/bugle/anvil synth, drive, mix, graph) →
@@ -300,7 +308,7 @@ function __hint(msg){
 }
 function __iosAudio(ac){
   try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
-  const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  const kick=()=>{try{if(!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
   kick();
   try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
   const onVis=()=>{try{
@@ -900,7 +908,8 @@ function play(){
   const G=buildGraph(ctx,M.L,M.R,true);
   RT={ctx,G,t0:ctx.currentTime+0.08,dur:M.dur,cycleDur:M.cycleDur,cycles:M.cycles};
   G.src.start(RT.t0);
-  st.playing=true; $('pick').textContent='Stop'; $('pick').classList.add('on');
+  st.playing=true; st.paused=false; $('pick').textContent='Stop'; $('pick').classList.add('on');
+  $('pause').disabled=false; $('pause').textContent='Pause'; $('pause').classList.remove('on');
   invalidate();
 }
 function stop(){
@@ -908,7 +917,8 @@ function stop(){
   const g=RT.G.master.gain,ct=RT.ctx.currentTime;
   try{g.cancelScheduledValues(ct);g.setValueAtTime(g.value,ct);g.linearRampToValueAtTime(0,ct+0.2);}catch(e){}
   const c=RT.ctx;setTimeout(()=>{try{c.close();}catch(e){}},360);
-  RT=null; st.playing=false; $('pick').textContent='Play'; $('pick').classList.remove('on');
+  RT=null; st.playing=false; st.paused=false; $('pick').textContent='Play'; $('pick').classList.remove('on');
+  $('pause').disabled=true; $('pause').textContent='Pause'; $('pause').classList.remove('on');
   invalidate();
 }
 // through-composed: any change regenerates and (if playing) restarts
@@ -1369,6 +1379,17 @@ $('viewtog').addEventListener('click',()=>{
 });
 
 $('pick').addEventListener('click',()=>st.playing?stop():play());
+/* Pause · Resume: suspend/resume the AudioContext. The march plays from one
+   buffer against ctx.currentTime, frozen while suspended, so the call and both
+   canvas views (tablature and battlefield) hold and resume exactly. */
+function togglePause(){
+  if(!RT||!st.playing)return;
+  if(st.paused){st.paused=false; RT.ctx.resume();
+    $('pause').textContent='Pause'; $('pause').classList.remove('on');}
+  else{st.paused=true; RT.ctx.suspend();
+    $('pause').textContent='Resume'; $('pause').classList.add('on');}
+}
+$('pause').addEventListener('click',togglePause);
 $('cut').addEventListener('click',cut);
 
 /* ---------------------- opuscula shared: hash · keys --------------------- */
@@ -1404,6 +1425,7 @@ function another(){                                // r = a different march
 addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
   if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
   if(e.code==='Space'){e.preventDefault();$('pick').click();}
+  else if(e.key==='p'||e.key==='P')togglePause();
   else if(e.key==='r'||e.key==='R'){e.preventDefault();another();}
   else if(e.key==='c'||e.key==='C')$('cut').click();
 });

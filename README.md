@@ -28,7 +28,7 @@ composes; you set the law it obeys.
 
 ## Shared grammar
 
-- **space** = play/stop · **r** = another (aliud/encore) · **c** = cut 16-bit WAV
+- **space** = play/stop · **p** = pause/resume · **r** = another (aliud/encore) · **c** = cut 16-bit WAV
 - Every work carries an expandable **“on this music”** panel — a short, plain-language
   history of the musical idea it renders.
 - **Change it while it plays.** Where a work runs a groove — Rille and Scala, and

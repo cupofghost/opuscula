@@ -10,6 +10,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="nenia — playground lore as a small musical machine: taunts, counting-out, clapping, skip rope, ball-bounce, hopscotch, ring and arch games. the universal chant of children, synthesized.">
 <title>NENIA — playground chant</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
 <style>
 :root{
   --asphalt:#141317; --asphalt2:#1b1a20; --chalk:#ece7da; --chalkdim:#8f8b80;
@@ -200,6 +204,7 @@ footer{
 
   <div class="btnrow">
     <button class="big" id="playBtn">Play</button>
+    <button id="pauseBtn" disabled>Pause</button>
     <button id="anotherBtn">Another</button>
     <button id="cutBtn">Cut a rhyme · 16-bit WAV</button>
   </div>
@@ -234,7 +239,7 @@ footer{
 
   <footer class="mono">
     <span>op. X · <a href="../">opvscvla</a></span>
-    <span>keys: space=play · r=another · c=cut</span>
+    <span>keys: space=play · p=pause · r=another · c=cut</span>
   </footer>
 </div>
 
@@ -274,7 +279,7 @@ function readHash(){
 /* ---------- UI refs ---------- */
 const $=id=>document.getElementById(id);
 const ui={game:$('game'),kids:$('kids'),key:$('keysel'),scale:$('scalesel'),yard:$('yard'),tempo:$('tempo'),
-  tempoVal:$('tempoVal'),rowdy:$('rowdy'),gig:$('giggles'),play:$('playBtn'),
+  tempoVal:$('tempoVal'),rowdy:$('rowdy'),gig:$('giggles'),play:$('playBtn'),pause:$('pauseBtn'),
   another:$('anotherBtn'),cut:$('cutBtn'),gameName:$('gameName'),status:$('status'),
   matric:$('matric'),rhyme:$('rhyme'),cv:$('cv')};
 
@@ -794,8 +799,8 @@ function buildGraph(ctx,plan,P,t0){
 /* ================= ENGINE-END ================= */
 
 /* ---------- playback ---------- */
-let AC=null, playing=false, playStart=0, plan=null, stopTimer=null;
-window.__iosAudio=function(){if(AC&&AC.state==='suspended')AC.resume()};
+let AC=null, playing=false, paused=false, playStart=0, pausedAt=0, stopAt=0, plan=null, stopTimer=null;
+window.__iosAudio=function(){if(AC&&AC.state==='suspended'&&!paused)AC.resume()};
 document.addEventListener('touchend',window.__iosAudio,{passive:true});
 document.addEventListener('mousedown',window.__iosAudio);
 // stop the yard when the page is backgrounded (locked, app switched or closed),
@@ -804,9 +809,10 @@ document.addEventListener('visibilitychange',function(){if(document.hidden&&play
 window.addEventListener('pagehide',function(){if(playing)stopPlayback()});
 
 function stopPlayback(){
-  playing=false; if(stopTimer)clearTimeout(stopTimer);
+  playing=false; paused=false; if(stopTimer)clearTimeout(stopTimer);
   if(AC){try{AC.close()}catch(e){} AC=null}
   ui.play.textContent='Play'; ui.status.textContent='READY';
+  ui.pause.disabled=true; ui.pause.textContent='Pause';
 }
 function play(){
   if(playing){stopPlayback();return}
@@ -815,10 +821,36 @@ function play(){
   if(AC.state==='suspended')AC.resume();
   const t0=AC.currentTime+0.12;
   buildGraph(AC,plan,P,t0);
-  playing=true; playStart=performance.now()+120;
+  playing=true; paused=false; playStart=performance.now()+120;
   ui.play.textContent='Stop'; ui.status.textContent='PLAYING';
-  stopTimer=setTimeout(stopPlayback,(plan.dur+0.4)*1000);
+  ui.pause.disabled=false; ui.pause.textContent='Pause';
+  const ms=(plan.dur+0.4)*1000;
+  stopAt=performance.now()+ms;
+  stopTimer=setTimeout(stopPlayback,ms);
 }
+/* Pause · Resume: suspend/resume the AudioContext. Nenia's playhead runs on
+   performance.now() (not ctx time), so pausing freezes it and resuming slides
+   the start mark forward by the paused span — the yard holds and picks up on
+   the same beat. The auto-stop timer is cleared and rescheduled for the time
+   that remained. */
+function togglePause(){
+  if(!playing||!AC)return;
+  if(paused){
+    paused=false;
+    playStart+=performance.now()-pausedAt;       // slide the visual clock past the pause
+    AC.resume();
+    const rem=Math.max(0,stopAt-pausedAt);
+    stopAt=performance.now()+rem;
+    stopTimer=setTimeout(stopPlayback,rem);
+    ui.pause.textContent='Pause'; ui.status.textContent='PLAYING';
+  }else{
+    paused=true; pausedAt=performance.now();
+    if(stopTimer){clearTimeout(stopTimer); stopTimer=null;}
+    AC.suspend();
+    ui.pause.textContent='Resume'; ui.status.textContent='PAUSED';
+  }
+}
+ui.pause.addEventListener('click',togglePause);
 
 /* ---------- WAV cut ---------- */
 async function cut(){
@@ -938,7 +970,7 @@ function stateAt(tt){ // fold marks into a visual state
 function draw(now){
   requestAnimationFrame(draw);
   if(now-lastFrame<33)return; lastFrame=now;
-  const tt=playing?(performance.now()-playStart)/1000:-1;
+  const tt=playing?((paused?pausedAt:performance.now())-playStart)/1000:-1;
   const st=stateAt(Math.max(0,tt));
   cx.fillStyle='#1b1a20';cx.fillRect(0,0,W,H);
   // asphalt speckle (static, cheap)
@@ -1064,6 +1096,7 @@ document.addEventListener('keydown',e=>{
   if(e.target.tagName==='SELECT'||e.target.tagName==='INPUT')return;
   if(e.target.tagName==='BUTTON'&&e.code==='Space'){e.preventDefault();e.target.blur();play();return}
   if(e.code==='Space'){e.preventDefault();play()}
+  else if(e.key==='p'||e.key==='P'){togglePause()}
   else if(e.key==='r'||e.key==='R'){stopPlayback();regen(true)}
   else if(e.key==='c'||e.key==='C'){cut()}
 });

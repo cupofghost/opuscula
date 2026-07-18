@@ -59,6 +59,8 @@ Typical machine shape (varies, but the spine is consistent):
 index.html          landing page / catalogue; has the ↓HANDOFF download button
 README.md            public catalogue + shared grammar
 HANDOFF.md           this file (also downloadable from the landing page)
+icon.svg             app icon (master); icon-512/192.png, apple-touch-icon.png,
+                     favicon-32.png rendered from it · site.webmanifest (PWA)
 officina/index.html  OFFICINA — the voicing bench (backstage, NOT an op.)
 pas-sale/index.html  op. I    PAS SALÉ   — zydeco two-step
 scala/index.html     op. II   SCALA      — Shepard–Risset in just intonation
@@ -95,8 +97,8 @@ keep all three (page, README, this file) in sync when adding a machine.
   reproduce the whole file back.
 
 **Repo/product conventions:**
-- Shared keys: **space** = play/stop · **r** = another (aliud/encore) ·
-  **c** = cut 16-bit WAV. Per-machine keys are documented in-page.
+- Shared keys: **space** = play/stop · **p** = pause/resume · **r** = another
+  (aliud/encore) · **c** = cut 16-bit WAV. Per-machine keys are documented in-page.
 - Every machine carries an expandable **"on this music"** panel — plain-language
   history of the idea it renders.
 - `prefers-reduced-motion` respected throughout; render loops sleep when idle;
@@ -423,6 +425,60 @@ rebased past DIAMOND's landing and registered it.
   `'drone'` swell (short offbeat shells / fifth-only respectively) — could use
   their own OFFICINA-exposed envelope shaping if the maintainer wants more
   contrast between sessions on the bench.
+
+### App icon + universal pause button + cohesion (this branch)
+**Branch:** `claude/opuscula-icon-design-1uqyt7` · **Files:** `icon.svg`,
+`icon-512/192.png`, `apple-touch-icon.png`, `favicon-32.png`, `site.webmanifest`
+(new, repo root); every page `<head>` (icon links); all 14 machines that lacked
+one (pause button); `index.html`/`README.md` (shared-keys note + the file
+table/conventions here). **Status:** done, verified headless (Chromium, all 15
+machines PASS, zero pageerrors). Deliberately a **cross-machine sweep** on its
+own branch (per the sweep rule) — no per-machine feature work mixed in.
+
+- **App icon** (`icon.svg`, master; PNGs rendered from it via
+  `scratchpad/render-icon.mjs`, playwright-core + bundled Chromium, scratchpad
+  not committed). The catalogue's one constant graphic device is the **3px
+  DOUBLE rule** (`index.html .rule`, every colophon border); the icon bends it
+  into a ring — reads at once as the **O** of OPVSCVLA, a **pressed record**,
+  and a **bell rim**, on the dark parchment ground (`--ground #14120f`, ivory
+  `--txt`), with the **red "stamp" arc** that already recurs in the SCALA / PEAL
+  / RILLE emblems, and a centre spindle. No text; legible 512→16px (at 16px the
+  double ring merges to one — accepted; the detail is for home-screen/PWA).
+  Wired into all 17 pages with **relative** hrefs (`./` root, `../` machines —
+  this is a project-pages site, NOT domain root; root-relative would break).
+  `site.webmanifest` is one catalogue-level manifest (icon `src` relative to its
+  own root URL, so it's correct from every page that links `../site.webmanifest`).
+- **Pause button on every machine.** RILLE already had one; extended its exact
+  pattern to the other 14. Each: a secondary button beside play, **labelled in
+  the machine's own tongue** (MORA/PERGE Latin · SOS/AR AGHAIDH Irish ·
+  PAUSE/REPRENDS French · PAUSE/WEITER German · Pause/Resume English), disabled
+  until playing, highlighted (`.on`) while held; **`p`** key added to the shared
+  claves (no collisions — `p` was free everywhere). The mechanism is
+  `ctx.suspend()`/`resume()`: every transport and canvas here is keyed off
+  `ctx.currentTime`, which freezes while suspended, so play position and visuals
+  hold and resume exactly. **Two gotchas handled:** (1) the iOS unlock `kick()`
+  auto-resumes any non-running context on gesture/visibility — guarded with the
+  machine's paused-intent flag (`st.paused` / `live.paused` / `paused`) so it
+  can't undo a deliberate pause (COCHLEA/BOLG also bail their `kick`/`updateHint`
+  when paused, so the SUSPENSUM hint doesn't show during a pause). (2) **NENIA**
+  is the exception — its playhead runs on `performance.now()`, not ctx time, and
+  it auto-stops on a wall-clock `setTimeout`; pause freezes the playhead at
+  `pausedAt`, resume slides `playStart` forward by the paused span and reschedules
+  the stop timer for the time that remained.
+- **Cohesion tweaks (small, as invited):** the shared-keys note now lists
+  **p = pause/resume** everywhere it was enumerated — landing `index.html .notes`,
+  `README.md` shared grammar, each machine's in-page keys line + colophon, and
+  the Conventions bullet here. A `button:disabled`/`.pick:disabled`/etc. opacity
+  rule was added where a machine had none, so the disabled pause reads inactive.
+- **Verify:** `scratchpad/verify-pause.mjs` drives every machine play → pause →
+  resume → stop headless, asserting the button is disabled before play, enabled
+  after, shows the resume-word when paused and the pause-word when resumed,
+  disabled again after stop, and **zero pageerrors** (font-CDN-under-proxy noise
+  filtered, per precedent). All 15 PASS.
+- **Pick-ups:** a maskable-icon variant (safe-zone padding) for Android adaptive
+  icons if wanted; per-machine `apple-mobile-web-app-title` so an installed
+  machine names itself; the icon's red arc is nearly invisible at 16px — a
+  bolder favicon-only rendering is possible if the tab-strip mark matters.
 
 ### State of the branch farm — parallel-work snapshot (2026-07-17)
 **Branch:** `claude/handoff-concurrent-changes-9uuwm8` (also added the

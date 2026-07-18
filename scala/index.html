@@ -9,6 +9,10 @@
 <meta name="color-scheme" content="dark">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>SCALA — glissando perpetuum, intonatio iusta</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -95,6 +99,7 @@ button:focus-visible{outline:2px solid var(--trace);outline-offset:2px}
   border-width:2px;text-transform:uppercase;transition:background .15s,color .15s;
 }
 .playbtn.on{background:var(--stamp);border-color:var(--stamp);color:#fff}
+.playbtn:disabled{opacity:.4;cursor:default}
 
 .seg{display:flex;border:1.5px solid var(--line)}
 .seg button{flex:1;border:none;border-right:1.5px solid var(--line);padding:11px 4px;font-size:.72rem;letter-spacing:.16em;color:var(--dim);text-transform:uppercase}
@@ -195,7 +200,10 @@ button,canvas{-webkit-user-select:none;user-select:none}
 
   <div class="controls">
 
-    <button class="playbtn" id="play">SONA</button>
+    <div style="display:flex;gap:10px">
+      <button class="playbtn" id="play" style="flex:1">SONA</button>
+      <button class="playbtn" id="pause" style="flex:0 0 34%" disabled>MORA</button>
+    </div>
 
     <div class="row">
       <div class="fld">
@@ -257,7 +265,7 @@ button,canvas{-webkit-user-select:none;user-select:none}
   </details>
 
   <div style="text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.22em;opacity:.75;margin-top:16px;text-transform:uppercase">
-    op. II · <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:2px">opvscvla</a> · claves: space=sona · r=alia · c=cut
+    op. II · <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:2px">opvscvla</a> · claves: space=sona · p=mora · r=alia · c=cut
   </div>
 </div>
 
@@ -291,7 +299,7 @@ button,canvas{-webkit-user-select:none;user-select:none}
        bar and the exact piece reloads; loading with a hash replays it.
 
    KEYS (wired at the bottom, same in every work):
-       space = play/stop   ·   r = alia (next ratio)   ·   c = cut a WAV
+       space = play/stop   ·   p = mora (pause/resume)   ·   r = alia (next ratio)   ·   c = cut a WAV
 
    THIS FILE: constants → state → audio graph → realtime → loop cutter →
    controls → plate (spiral canvas) → shared claves/permalink.
@@ -311,7 +319,7 @@ function __hint(msg){
 }
 function __iosAudio(ac){
   try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
-  const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  const kick=()=>{try{if(!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
   kick();
   try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
   // stop the sound when the page is backgrounded (phone locked, app switched
@@ -600,8 +608,9 @@ function start(){
       RT.schedUntil=horizon;
     }
   },80)};
-  st.playing=true;
+  st.playing=true; st.paused=false;
   $('play').textContent='TACE'; $('play').classList.add('on');
+  $('pause').disabled=false; $('pause').textContent='MORA'; $('pause').classList.remove('on');
 }
 function stop(){
   if(!RT)return;
@@ -609,10 +618,22 @@ function stop(){
   const g=RT.G.master.gain,ct=RT.ctx.currentTime;
   g.cancelScheduledValues(ct);g.setValueAtTime(g.value,ct);g.linearRampToValueAtTime(0,ct+0.1);
   const c=RT.ctx; setTimeout(()=>c.close(),200);
-  RT=null; st.playing=false;
+  RT=null; st.playing=false; st.paused=false;
   $('play').textContent='SONA'; $('play').classList.remove('on');
+  $('pause').disabled=true; $('pause').textContent='MORA'; $('pause').classList.remove('on');
 }
 $('play').addEventListener('click',()=>st.playing?stop():start());
+/* MORA · PERGE: suspend/resume the AudioContext. All scheduling is keyed off
+   ctx.currentTime, which freezes while suspended, so transport and canvas hold
+   and pick up exactly where they paused. The lap simply stands still. */
+function togglePause(){
+  if(!RT||!st.playing)return;
+  if(st.paused){st.paused=false;RT.ctx.resume();
+    $('pause').textContent='MORA';$('pause').classList.remove('on');}
+  else{st.paused=true;RT.ctx.suspend();
+    $('pause').textContent='PERGE';$('pause').classList.add('on');}
+}
+$('pause').addEventListener('click',togglePause);
 
 /* OFFICINA live hook: partial gains re-ramp within ~0.3 s via scheduleSpan
    (aOf reads TP), so only the standing buses need pushes. */
@@ -851,6 +872,7 @@ document.addEventListener('change',()=>setTimeout(__hashWrite,120),true);
 addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
   if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
   if(e.code==='Space'){e.preventDefault();$('play').click();}
+  else if(e.key==='p'||e.key==='P')togglePause();
   else if(e.key==='r'||e.key==='R'){const n=($('chips').children.length);
     const c=$('chips').children[(st.preset+1)%n];c&&c.click();}
   else if(e.key==='c'||e.key==='C')$('cut').click();});

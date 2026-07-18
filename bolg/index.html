@@ -10,6 +10,10 @@
 <meta name="apple-mobile-web-app-title" content="BOLG">
 <meta name="description" content="BOLG — píobaire ginideach. The uilleann chanter in just intonation over three standing drones; cuts, rolls, crans and the regulators vamping. op. VI of the opuscula.">
 <title>BOLG · op. VI · opvscvla</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -167,6 +171,7 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:190px;ba
 <section class="ctls">
   <div class="row">
     <button id="btnSona" class="btn big">SEINN</button>
+    <button id="btnSos" class="btn" disabled>SOS</button>
     <button id="btnAliud" class="btn">CEANN EILE</button>
     <button id="btnSeco" class="btn">GEARR &middot; WAV</button>
     <div id="hintSusp" class="hint" role="status">FUAIM AR FIONRA&Iacute; &mdash; BR&Uacute;IGH AR&Iacute;S</div>
@@ -246,7 +251,7 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:190px;ba
 </details>
 
 <footer class="colophon">
-  op. VI · <a href="../">opvscvla</a> · eochracha: spás=seinn · r=ceann eile · c=gearr<br>
+  op. VI · <a href="../">opvscvla</a> · eochracha: spás=seinn · p=sos · r=ceann eile · c=gearr<br>
   <span class="fine">craiceann Chicago 1903 — i gcuimhne Francis O'Neill · éabann is airgead, Uncial/Courier · 2026</span>
 </footer>
 
@@ -285,7 +290,7 @@ input[type=range]{accent-color:var(--brass);padding:0;height:34px;width:190px;ba
        location.hash, so THE URL IS THE PRESSING — copy it to replay exactly.
 
    KEYS (wired near the bottom, same in every work):
-       space = play/stop   ·   r = another tune   ·   c = cut a WAV
+       space = play/stop   ·   p = sos (pause/resume)   ·   r = another tune   ·   c = cut a WAV
 
    THIS FILE: ENGINE (grammar → ornaments → tuning → WAV) → state →
    audio → GEARR/WAV → regen → ledger → canvas → hash permalinks →
@@ -760,7 +765,7 @@ try{RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').
 
 /* ------------------------------- audio ---------------------------------- */
 var ctx=null, graph=null, rendering=false;
-var live={playing:false,iter:null,next:null,timer:null,active:[],uiQ:[],
+var live={playing:false,paused:false,iter:null,next:null,timer:null,active:[],uiQ:[],
           drones:[],state:{r:0,s:0,b:0}};
 
 /* bor (drones) lifted 0.5→0.66: the uilleann drone is a constant, present
@@ -1056,9 +1061,10 @@ function start(){
                      {r:live.state.r,s:live.state.s,b:live.state.b,t:t0});
   live.next=live.iter.next().value;
   live.drones=buildDrones(ctx,graph,ctx.currentTime,null);
-  live.playing=true;
+  live.playing=true; live.paused=false;
   live.timer=setInterval(tickSched,45);
   el.btnSona.textContent='STAD';
+  el.btnSos.disabled=false; el.btnSos.textContent='SOS'; el.btnSos.classList.remove('on');
   updateHint(); needsDraw=true; startRaf();
 }
 function stop(){
@@ -1075,10 +1081,23 @@ function stop(){
     for(var d=0;d<live.drones.length;d++){try{live.drones[d].stop(now+0.15)}catch(e){}}
   }
   live.active=[]; live.uiQ=[]; live.drones=[];
+  live.paused=false;
   el.btnSona.textContent='SEINN';
+  el.btnSos.disabled=true; el.btnSos.textContent='SOS'; el.btnSos.classList.remove('on');
   updateHint(); needsDraw=true; startRaf();
 }
 function togglePlay(){ if(live.playing)stop(); else start(); }
+/* SOS · AR AGHAIDH: suspend/resume the shared AudioContext. The chanter and the
+   drones are scheduled against ctx.currentTime, which freezes while suspended,
+   so the set and the regulators hold and pick up exactly where they paused. */
+function togglePause(){
+  if(!live.playing||!ctx)return;
+  if(live.paused){live.paused=false; ctx.resume();
+    el.btnSos.textContent='SOS'; el.btnSos.classList.remove('on');}
+  else{live.paused=true; ctx.suspend();
+    el.btnSos.textContent='AR AGHAIDH'; el.btnSos.classList.add('on');}
+  updateHint();
+}
 
 /* ------------------------------ GEARR · WAV ------------------------------ */
 function seco(){
@@ -1438,7 +1457,7 @@ function __apply(h){
 /* ------------------------------ controls --------------------------------- */
 var el={};
 function grabEls(){
-  ['btnSona','btnAliud','btnSeco','selForma','selModus','selStilus','inpTempus',
+  ['btnSona','btnSos','btnAliud','btnSeco','selForma','selModus','selStilus','inpTempus',
    'lblTempus','stopCal','stopBor','stopRgl','hintSusp',
    'ledMat','ledFor','ledMod','ledGam','ledSti','ledOrn','ledIns','ledRot']
   .forEach(function(id){el[id]=document.getElementById(id)});
@@ -1459,6 +1478,7 @@ function stopBtn(id,k){
 }
 function wire(){
   el.btnSona.addEventListener('click',togglePlay);
+  el.btnSos.addEventListener('click',togglePause);
   el.btnAliud.addEventListener('click',function(){regen({newSeed:true})});
   el.btnSeco.addEventListener('click',seco);
   el.selForma.addEventListener('change',function(){
@@ -1485,6 +1505,7 @@ function wire(){
     if(t&&t.matches&&t.matches('input,textarea,select'))return;
     if(e.metaKey||e.ctrlKey||e.altKey)return;
     if(e.code==='Space'||e.key===' '){e.preventDefault();togglePlay()}
+    else if(e.key==='p'||e.key==='P'){togglePause()}
     else if(e.key==='r'||e.key==='R'){regen({newSeed:true})}
     else if(e.key==='c'||e.key==='C'){seco()}
   });
@@ -1497,12 +1518,13 @@ function wire(){
 /* --------------------------- __iosAudio unlock --------------------------- */
 function updateHint(){
   if(!el.hintSusp)return;
-  el.hintSusp.style.display=(live.playing&&ctx&&ctx.state!=='running')?'block':'none';
+  el.hintSusp.style.display=(live.playing&&!live.paused&&ctx&&ctx.state!=='running')?'block':'none';
 }
 (function __iosAudio(){
   try{if('audioSession' in navigator)navigator.audioSession.type='playback'}catch(e){}
   function kick(){
     if(!ctx){updateHint();return}
+    if(live.paused){updateHint();return}       // don't revive a context paused on purpose
     if(ctx.state!=='running'){
       try{
         ctx.resume().then(function(){

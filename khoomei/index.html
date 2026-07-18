@@ -10,6 +10,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="khöömei — Mongolian throat singing as a small musical machine: one synthesized voice holds a low drone while a razor-narrow resonance sings a melody out of the harmonic series. khöömei, sygyt, kargyraa. op. XI of the opuscula.">
 <title>KHÖÖMEI — overtone singing</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -144,6 +148,7 @@ footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 
   <div class="btnrow">
     <button class="act big" id="play">Sing</button>
+    <button class="act" id="pause" title="pause/resume (p)" disabled>Pause</button>
     <button class="act" id="another" title="another (r)">Another</button>
     <button class="act" id="cut" title="cut a WAV (c)">Cut · WAV</button>
   </div>
@@ -167,7 +172,7 @@ footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 
   <footer>
     <span>op. XI · <a href="../">opvscvla</a></span>
-    <span>space=sing · r=another · c=cut</span>
+    <span>space=sing · p=pause · r=another · c=cut</span>
   </footer>
 </div>
 
@@ -210,7 +215,7 @@ function __hint(msg){
 }
 function __iosAudio(ac){
   try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
-  const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  const kick=()=>{try{if(!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
   kick();
   try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
   const onVis=()=>{try{
@@ -528,7 +533,8 @@ function play(){
   RT={ctx,G,style,f0,beat:60/st.pace,phrase:makePhrase(style,st.seed),pi:0,nextT:ctx.currentTime+0.14,cur:{harm:0,lvl:0},timer:0};
   applyGround();
   RT.timer=setInterval(sched,55);
-  st.playing=true; $('play').textContent='Stop'; $('play').classList.add('on'); $('status').textContent='SINGING';
+  st.playing=true; st.paused=false; $('play').textContent='Stop'; $('play').classList.add('on'); $('status').textContent='SINGING';
+  $('pause').disabled=false; $('pause').textContent='Pause'; $('pause').classList.remove('on');
 }
 function sched(){
   if(!RT)return;
@@ -548,7 +554,8 @@ function stop(){
   try{g.cancelScheduledValues(ct);g.setValueAtTime(g.value,ct);g.linearRampToValueAtTime(0.0001,ct+0.25);}catch(e){}
   clearInterval(RT.timer);
   const c=RT.ctx; setTimeout(()=>{try{c.close();}catch(e){}},340);
-  RT=null; st.playing=false; $('play').textContent='Sing'; $('play').classList.remove('on'); $('status').textContent='READY';
+  RT=null; st.playing=false; st.paused=false; $('play').textContent='Sing'; $('play').classList.remove('on'); $('status').textContent='READY';
+  $('pause').disabled=true; $('pause').textContent='Pause'; $('pause').classList.remove('on');
 }
 // through the drone, re-vibe live on any control change (no restart).
 function reVibe(){
@@ -678,6 +685,17 @@ $('breath').addEventListener('input',e=>{st.breath=+e.target.value;$('breathRd')
 $('breath').addEventListener('change',()=>writeHash());
 $('ground').addEventListener('change',e=>{st.ground=e.target.checked;applyGround();writeHash();});
 $('play').addEventListener('click',play);
+/* Pause · Resume: suspend/resume the AudioContext. The phrase is scheduled off
+   ctx.currentTime, frozen while suspended, so the drone and the overtone ladder
+   hold and pick up exactly where they paused. */
+function togglePause(){
+  if(!RT||!st.playing)return;
+  if(st.paused){st.paused=false; RT.ctx.resume();
+    $('pause').textContent='Pause'; $('pause').classList.remove('on'); $('status').textContent='SINGING';}
+  else{st.paused=true; RT.ctx.suspend();
+    $('pause').textContent='Resume'; $('pause').classList.add('on'); $('status').textContent='PAUSED';}
+}
+$('pause').addEventListener('click',togglePause);
 $('another').addEventListener('click',()=>{st.seed=(Math.random()*0x7fffffff)|0;reVibe();});
 $('cut').addEventListener('click',cut);
 
@@ -769,6 +787,7 @@ function writeHash(){if(__applying)return;
 addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
   if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
   if(e.code==='Space'){e.preventDefault();$('play').click();}
+  else if(e.key==='p'||e.key==='P')togglePause();
   else if(e.key==='r'||e.key==='R'){$('another').click();}
   else if(e.key==='c'||e.key==='C'){$('cut').click();}
 });

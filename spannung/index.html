@@ -10,6 +10,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="description" content="spannung — a modular synthesizer as a small musical machine: a rack of voltage-controlled oscillators, filters, envelopes and sequencers, patched into one another until the system plays itself. subtractive synthesis, control voltage, a four-bar loop. op. XII of the opuscula.">
 <title>SPANNUNG — voltage-controlled system</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -139,6 +143,7 @@ footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 
   <div class="btnrow">
     <button class="act big" id="play">Patch in</button>
+    <button class="act" id="pause" title="pause/resume (p)" disabled>Pause</button>
     <button class="act" id="another" title="re-patch (r)">Re-patch</button>
     <button class="act" id="cut" title="cut a WAV (c)">Cut · WAV</button>
   </div>
@@ -162,7 +167,7 @@ footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 
   <footer>
     <span>op. XII · <a href="../">opvscvla</a></span>
-    <span>space=run · r=re-patch · c=cut</span>
+    <span>space=run · p=pause · r=re-patch · c=cut</span>
   </footer>
 </div>
 
@@ -201,7 +206,7 @@ function __hint(msg){
 }
 function __iosAudio(ac){
   try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
-  const kick=()=>{try{if(ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  const kick=()=>{try{if(!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
   kick();
   try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
   const onVis=()=>{try{
@@ -465,7 +470,8 @@ function play(){
   RT={ctx,G,patch:makePatch(st.seed),step:0,nextT:ctx.currentTime+0.12,fires:{},lastStepT:ctx.currentTime};
   setDelayTime(G,st.tempo); applySends(G,macro());
   RT.timer=setInterval(sched,25);
-  st.playing=true; $('play').textContent='Stop'; $('play').classList.add('on'); $('status').textContent='RUNNING';
+  st.playing=true; st.paused=false; $('play').textContent='Stop'; $('play').classList.add('on'); $('status').textContent='RUNNING';
+  $('pause').disabled=false; $('pause').textContent='Pause'; $('pause').classList.remove('on');
 }
 function stepDur(){ return (60/st.tempo)/4; }
 function sched(){
@@ -493,7 +499,8 @@ function stop(){
   try{g.cancelScheduledValues(ct);g.setValueAtTime(g.value,ct);g.linearRampToValueAtTime(0.0001,ct+0.15);}catch(e){}
   clearInterval(RT.timer);
   const c=RT.ctx; setTimeout(()=>{try{c.close();}catch(e){}},260);
-  RT=null; st.playing=false; $('play').textContent='Patch in'; $('play').classList.remove('on'); $('status').textContent='PATCHED';
+  RT=null; st.playing=false; st.paused=false; $('play').textContent='Patch in'; $('play').classList.remove('on'); $('status').textContent='PATCHED';
+  $('pause').disabled=true; $('pause').textContent='Pause'; $('pause').classList.remove('on');
 }
 // live re-vibe: sends/tempo update immediately; cutoff/res/drift take on the next step.
 function reVibe(fromSeed){
@@ -586,6 +593,17 @@ slider('space','spaceRd','space',null,()=>{if(RT)applySends(RT.G,macro());});
 slider('dens','densRd','dens');
 slider('drift','driftRd','drift');
 $('play').addEventListener('click',play);
+/* Pause · Resume: suspend/resume the AudioContext. The sequencer clocks off
+   ctx.currentTime, frozen while suspended, so the patch and the rack hold and
+   resume exactly on the same step. */
+function togglePause(){
+  if(!RT||!st.playing)return;
+  if(st.paused){st.paused=false; RT.ctx.resume();
+    $('pause').textContent='Pause'; $('pause').classList.remove('on'); $('status').textContent='RUNNING';}
+  else{st.paused=true; RT.ctx.suspend();
+    $('pause').textContent='Resume'; $('pause').classList.add('on'); $('status').textContent='PAUSED';}
+}
+$('pause').addEventListener('click',togglePause);
 $('another').addEventListener('click',()=>{st.seed=(Math.random()*0x7fffffff)|0; reVibe(true);});
 $('cut').addEventListener('click',cut);
 
@@ -721,6 +739,7 @@ function writeHash(){if(__applying)return;
 addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
   if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
   if(e.code==='Space'){e.preventDefault();$('play').click();}
+  else if(e.key==='p'||e.key==='P')togglePause();
   else if(e.key==='r'||e.key==='R'){$('another').click();}
   else if(e.key==='c'||e.key==='C'){$('cut').click();}
 });
