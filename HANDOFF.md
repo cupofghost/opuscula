@@ -358,6 +358,39 @@ op., no registry changes. Two asks from the maintainer, both landed:
   wrist chord), not per-note — per-pipe by pitch is possible if the maintainer
   wants each reg to speak its own note.
 
+### VYVID — new machine SCAFFOLDED, provisional op. XVIII (steppe women's quartet)
+**Branch:** `claude/crimean-womens-quartet-scaffold-9f1eq0` · **Files:**
+`vyvid/VOCES.md` (the design brief — **the spec, read it first**),
+`vyvid/index.html` (scaffold) · **Status:** scaffold done, verified headless
+(Chromium, 20 checks, zero pageerrors); **the ENGINE is a stub** — a
+follow-up session implements it against VOCES.md. Two-session build, SUBLOW
+precedent: this session did the research, musical law, sound design, UI and
+page scaffold; the next does genAll/buildGraph/scheduler/cut/canvas-live,
+verifies (VOCES.md §12), registers the machine (registry rows are deliberately
+NOT added yet — briefs claim the concept and directory, not the number), and
+deletes the brief, folding the outcome into this entry.
+
+The machine: four synthesized women's voices singing the village polyphony of
+Crimea's Ukrainian/Russian steppe settlements (підголоскова / подголосочная
+polyphony — southern-steppe continuum; the reader notes are written and
+carefully acknowledge that Crimean Tatar music is a separate tradition not
+attempted). Zaspivuvachka opens each verse alone, druha weaves at
+unison/third, basok anchors, vyvid — the machine's namesake descant — crowns
+the cadence with the octave. **The law is the tuning:** zero ET (one Hz
+literal, 220), pure 3-limit frame, the third chosen by STRIY — neutral 11/9
+(STEPOM, default) or 6/5 (CHYSTO) — and a **convergence law**: per-singer
+seeded detune walks (wide beating unisons mid-phrase) that ramp to a locked
+unison at every line-final. Controls: PISNYA (protyazhna/vesnianka/kolyskova)
+· LAD (zhurba/step/obryad, genre-defaulted, override sticks) · STRIY · VYSOTA
+(×8/9, 1, ×9/8) · PROTYAH stretch · four per-voice mute chips. Already
+working in the scaffold: full page grammar (rushnyk palette), controls, hash
+(`p l s v t m sd`), keys, pause wiring, iOS unlock, saveWav/encodeWav
+(verbatim — the repeat gotcha is pre-handled), TIMBRE (9 groups, 40 params,
+documented) + OFFICINA bridge verbatim (bench round-trip verified; add the
+officina chip only at landing), exact LADY/STRIYI ratio tables in code, and a
+canvas that stitches the current mode's degrees at their exact cents on a
+linen band. Stubs are marked `TO BUILD (VOCES.md §n)` in place.
+
 ### TESSERA — new machine, op. XVII (a self-predicting language model)
 **Branch:** `claude/llm-machine-architecture-5ji49g` · **File:**
 `tessera/index.html` · **Status:** done, verified headless (Chromium). New

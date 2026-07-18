@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#171019">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="vyvid — four women of a steppe-Crimean village sing in the old tuning: pure fifths, a third between the keys, every line converging to a single unison. protyazhna, vesnianka, kolyskova. op. XVIII of the opuscula.">
+<title>VYVID — steppe women's quartet</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#171019; --night2:#1f1520; --panel:#241723;
+  --txt:#ece1cc; --dim:rgba(236,225,204,.6); --line:rgba(236,225,204,.16);
+  --red:#c74a3a; --gold:#d9a441; --linen:#e7dcc4; --thread:#2b2320;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--night);-webkit-text-size-adjust:100%}
+body{background:
+    radial-gradient(120% 70% at 50% -8%, rgba(217,164,65,.06), transparent 55%),
+    radial-gradient(90% 60% at 82% 112%, rgba(199,74,58,.06), transparent 60%),
+    var(--night);
+  color:var(--txt);font-family:'EB Garamond',Georgia,serif;font-size:16px;line-height:1.55;
+  min-height:100vh;display:flex;justify-content:center;
+  padding:max(14px,env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom));}
+.board{width:100%;max-width:600px;display:flex;flex-direction:column}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+/* exit to opuscula (shared) */
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:0 0 12px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#ece1cc;background:rgba(16,10,18,.55);border:1px solid rgba(236,225,204,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(236,225,204,.7);background:rgba(16,10,18,.85);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
+h1{font-size:2.9rem;font-weight:400;letter-spacing:.02em;line-height:1.02;margin:.1rem 0 .5rem;
+  text-shadow:0 0 26px rgba(217,164,65,.16)}
+.sub{font-style:italic;font-size:1.02rem;margin-bottom:.3rem}
+.sub b{font-weight:700}
+.tagline{font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase;margin-bottom:1rem}
+
+.plate{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;
+  background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(0,0,0,.22)), var(--night2);margin-bottom:.7rem}
+canvas{display:block;width:100%;height:auto}
+.readout{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  padding:.45rem .75rem;border-top:1px solid var(--line);color:var(--dim);
+  font-family:'IBM Plex Mono',monospace;font-size:.66rem;letter-spacing:.08em}
+.readout .live{color:var(--gold)}
+
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:.7rem .9rem;margin-bottom:.8rem}
+@media(max-width:520px){.controls{grid-template-columns:1fr}}
+.fld{display:flex;flex-direction:column;gap:.3rem}
+.lab{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.24em;color:var(--dim);text-transform:uppercase;display:flex;justify-content:space-between}
+.lab .rd{color:var(--txt);letter-spacing:.1em}
+.chips{display:flex;gap:.4rem;flex-wrap:wrap}
+.chips button{flex:1;min-width:0;padding:.5rem .3rem;font-family:'IBM Plex Mono',monospace;font-size:.66rem;
+  letter-spacing:.06em;color:var(--dim);background:var(--panel);border:1px solid var(--line);border-radius:5px;cursor:pointer;
+  transition:all .15s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chips button:hover{color:var(--txt);border-color:rgba(236,225,204,.4)}
+.chips button.on{color:var(--night);background:var(--gold);border-color:var(--gold);font-weight:500}
+.chips.voices button.on{color:var(--linen);background:var(--red);border-color:var(--red)}
+input[type=range]{width:100%;height:1.5rem;accent-color:var(--gold);background:transparent}
+
+.btnrow{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.35rem}
+button.act{font-family:'IBM Plex Mono',monospace;font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;
+  background:transparent;color:var(--txt);border:1px solid var(--dim);border-radius:999px;padding:.55rem 1.5rem;cursor:pointer;transition:all .15s}
+button.act:hover{border-color:var(--txt);box-shadow:0 0 14px rgba(217,164,65,.12)}
+button.act.big{border-color:var(--gold);color:var(--gold)}
+button.act.big.on{background:var(--gold);color:var(--night)}
+button.act:disabled{opacity:.4;cursor:default;box-shadow:none}
+.cutnote{font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--dim);font-style:normal;letter-spacing:.05em;min-height:1.2em;margin-bottom:1.4rem}
+
+/* on this music: expandable reader notes (shared across the opuscula) */
+.reader{margin:8px auto 4px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid var(--line);border-radius:999px;color:var(--dim);
+  -webkit-user-select:none;user-select:none;transition:color .15s,border-color .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{color:var(--txt);border-color:rgba(236,225,204,.4);outline:none}
+.reader[open]>summary{color:var(--txt);margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;color:#d9d0bc}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--dim);margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic;color:var(--txt)}
+footer{margin-top:1.6rem;padding-top:1rem;border-top:1px solid var(--line);
+  font-family:'IBM Plex Mono',monospace;font-size:.64rem;letter-spacing:.12em;color:var(--dim);
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem;text-transform:uppercase}
+footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="board">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+
+  <div class="eyebrow">op. XVIII · вивід</div>
+  <h1>Vyvid</h1>
+  <p class="sub"><b>Four women, one breath.</b> A village quartet of the Crimean steppe: one voice leads out alone, the others catch it up and weave close around it, and above them a single descant floats — until every line of verse collapses into one unison, holds, breathes, begins again.</p>
+  <p class="tagline">protyazhna · vesnianka · kolyskova — after the singers of the steppe villages</p>
+
+  <div class="plate">
+    <canvas id="cv" width="1200" height="720" aria-label="A linen band embroidered with the mode's tuning: each scale degree stitched at its exact ratio, the four singers' threads beneath"></canvas>
+    <div class="readout mono">
+      <span id="pisnyaName">—</span>
+      <span id="status">SCAFFOLD</span>
+      <span>ТЕРЦІЯ · <span id="thirdRd" class="live">—</span></span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div class="fld" style="grid-column:1/-1">
+      <div class="lab">Пісня · the song <span class="rd" id="pisnyaRd">—</span></div>
+      <div class="chips" id="pisnyaChips"></div>
+    </div>
+    <div class="fld">
+      <div class="lab">Лад · mode <span class="rd" id="ladRd">—</span></div>
+      <div class="chips" id="ladChips"></div>
+    </div>
+    <div class="fld">
+      <div class="lab">Стрій · tuning <span class="rd" id="striyRd">—</span></div>
+      <div class="chips" id="striyChips"></div>
+    </div>
+    <div class="fld">
+      <div class="lab">Висота · pitch <span class="rd" id="vysRd">—</span></div>
+      <div class="chips" id="vysChips"></div>
+    </div>
+    <div class="fld">
+      <div class="lab">Протяг · stretch <span class="rd" id="protyahRd">1.00</span></div>
+      <input type="range" id="protyah" min="75" max="140" value="100" aria-label="Time stretch">
+    </div>
+    <div class="fld" style="grid-column:1/-1">
+      <div class="lab">Голоси · the voices <span class="rd" id="holosyRd">4</span></div>
+      <div class="chips voices" id="holosyChips"></div>
+    </div>
+  </div>
+
+  <div class="btnrow">
+    <button class="act big" id="play">Sing</button>
+    <button class="act" id="pause" title="pause/resume (p)" disabled>Pause</button>
+    <button class="act" id="another" title="another (r)">Another</button>
+    <button class="act" id="cut" title="cut a WAV (c)">Cut · WAV</button>
+  </div>
+  <div class="cutnote" id="cutnote"></div>
+
+  <details class="reader">
+    <summary>On this music · vyvid</summary>
+    <div class="rbody">
+      <h4>What you're hearing</h4>
+      <p>Village singing from the southern steppe is polyphony without a score. One woman — the <em>zaspivuvachka</em> — opens each verse alone, the solo intonation called the <em>zaspiv</em>; the others catch the line mid-phrase and weave around her melody in close heterophony, each singing her own slightly different version of the same tune. One low voice anchors. And above the weave a single high voice — the <em>вивід</em> (vyvid, "the leading-out") — floats a descant that is less a harmony part than a second melody in the sky. Ethnomusicology calls the texture <em>undervoice polyphony</em>; the villages just call it singing together.</p>
+      <h4>The tuning has no keyboard</h4>
+      <p>No instrument sets the pitch — the ensemble tunes to itself. The unison is the anchor; fourths, fifths and octaves are pure; and the third is not a point but a <em>zone</em>, sitting between the piano's keys, which is why field transcribers mark it with little arrows. The intonation is social too: through a phrase four throats are four individuals, their unisons wide and gently beating — and at every line's cadence they converge and lock into one tone. This machine renders all of it exactly: pure ratios for the frame, a rational neutral third for the steppe manner, and a convergence law for the cadences. Nothing in it is equal-tempered.</p>
+      <h4>The four voices</h4>
+      <p>The voice itself is the open-throated chest voice sometimes called <em>white voice</em> — loud, straight, forward, made for open air, its brightness sitting in the harmonics rather than in breathiness. Vibrato, when it comes at all, arrives late and small on the long-held tones. Between lines the whole quartet breathes together; the silence is part of the song.</p>
+      <h4>The steppe and the peninsula</h4>
+      <p>Crimea's Slavic villages were settled from the late eighteenth century onward, from Ukrainian and Russian lands alike — often into the same village, the same street, the same family — and they sang from one shared repertoire pool in both languages: the drawn-out lyric <em>protyazhna</em>, the spring call <em>vesnianka</em>, the lullaby <em>kolyskova</em>. The style belongs to the broad southern-steppe continuum that runs through Tavria and Kherson to the Kuban. The peninsula's oldest musics — those of the Crimean Tatars — are another tradition entirely, with their own modes and masters, and are not attempted here.</p>
+      <h4>The name</h4>
+      <p>Ukrainian <em>вивід</em> — the leading-out — names the solo descant that crowns the texture. Op. XVIII is named for its highest voice, as the khöömei machine is named for the throat.</p>
+    </div>
+  </details>
+
+  <footer>
+    <span>op. XVIII · <a href="../">opvscvla</a></span>
+    <span>space=sing · p=pause · r=another · c=cut</span>
+  </footer>
+</div>
+
+<script>
+'use strict';
+/* ===================================================================
+   VYVID — steppe women's quartet · op. XVIII · single-file web audio
+   -------------------------------------------------------------------
+   ******************* SCAFFOLD — ENGINE NOT YET BUILT *******************
+   This file is the scaffold produced by the design session. The page
+   grammar, controls, hash permalink, keys, TIMBRE + OFFICINA bridge,
+   saveWav/encodeWav, iOS unlock and the tuning-law tables below are DONE
+   and working; the generator, audio graph, scheduler, offline cut and the
+   live canvas pass are STUBS marked "TO BUILD", each pointing at the
+   section of vyvid/VOCES.md (the design brief in this directory) that
+   specifies it. Build the engine against that brief, verify headless,
+   register the machine, delete VOCES.md.
+   -------------------------------------------------------------------
+   Four synthesized women's voices in подголосочная / підголоскова
+   polyphony: zaspivuvachka (leader, opens each verse alone), druha
+   (weaves at unison/third), basok (anchor tones), vyvid (solo descant,
+   octave at the cadence). All pitch = 220 Hz × vysota × ratio × detune-
+   cents — zero ET, no mtof; the third is 11/9 (steppe) or 6/5 (pure);
+   per-singer detune walks converge to a locked unison at every line-final
+   (the convergence law, VOCES.md §3.3). Shared series conventions: sticky
+   .exit, <details> reader, __iosAudio unlock + suspend-on-hidden,
+   saveWav pill, hash permalink, space/p/r/c.
+   =================================================================== */
+
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>x<a?a:x>b?b:x;
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const pick=(rng,arr)=>arr[(rng()*arr.length)|0];
+
+/* ---- iOS audio unlock: playback session, gesture resume, suspend on hidden ---- */
+function __hint(msg){
+  try{
+    const p=$('play')||document.querySelector('button');
+    if(!p||!p.insertAdjacentElement)return;
+    let h=$('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin:6px 0 0;font-style:italic;letter-spacing:.04em';
+      p.parentElement.insertAdjacentElement('afterend',h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{
+    if(document.visibilityState==='visible')kick();
+    else if(ac.state==='running')ac.suspend().catch(()=>{});
+  }catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else if(document.visibilityState==='visible')setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('audio suspended — tap Sing again · if still silent, check the ring/silent switch');}catch(e){}},450);
+}
+
+/* ------------------------- the law: tuning tables ------------------------
+   These tables ARE the machine (VOCES.md §2–5). Ratios stay integer
+   [num,den] pairs; the ONLY Hz literal in the pitched path is TONIC.
+   Never move any of this into TIMBRE. */
+const SR=44100;
+const TONIC=220;                                  // the one Hz literal (alto A)
+const VYSOTY=[                                    // pitch chips: ratio off TONIC
+  {id:'nyzko',   label:'Нижче',  r:[8,9]},
+  {id:'seredno', label:'Середньо',r:[1,1]},
+  {id:'vysoko',  label:'Вище',   r:[9,8]},
+];
+// the striy chooses the THIRD only (VOCES.md §3.2). stepom = the neutral
+// third of the village manner, rendered exactly as 11/9; chysto = 6/5.
+const STRIYI={
+  stepom:{label:'Степом', third:[11,9]},
+  chysto:{label:'Чисто',  third:[6,5]},
+};
+const STRIY_ORDER=['stepom','chysto'];
+// modes: degrees over the final. 'T' = the striy's third. Subtonic 8/9
+// below the final always present; upper compounds ×2 as ranges need.
+// OBRYAD is the narrow ritual mode — [3,2] there is the vyvid's call only.
+const LADY={
+  zhurba:{label:'Журба', degs:[[8,9],[1,1],[9,8],'T',[4,3],[3,2],[8,5],[16,9],[2,1],[9,4],'2T']},
+  step:  {label:'Степ',  degs:[[8,9],[1,1],[9,8],'T',[4,3],[3,2],[5,3],[16,9],[2,1],[9,4],'2T']},
+  obryad:{label:'Обряд', degs:[[8,9],[1,1],[9,8],'T',[4,3],[3,2]], vyvidOnly:[[3,2]]},
+};
+const LAD_ORDER=['zhurba','step','obryad'];
+function scaleOf(ladId,striyId){                  // resolve 'T' → exact pairs
+  const T=STRIYI[striyId].third;
+  return LADY[ladId].degs.map(d=>d==='T'?T:(d==='2T'?[T[0]*2,T[1]]:d));
+}
+const ratHz=(pair)=>TONIC*(VYSOTY[st.vys].r[0]/VYSOTY[st.vys].r[1])*(pair[0]/pair[1]);
+const cents=(pair)=>1200*Math.log2(pair[0]/pair[1]);   // display/verify math only
+
+// genres (VOCES.md §6). ladDefault applies on genre pick unless the user
+// has overridden the lad since (RILLE Lösung precedent).
+const PISNI={
+  protyazhna:{label:'Протяжна', ladDefault:'zhurba', lines:2, verses:4, syl:[4,3],   beat:72,  trio:false},
+  vesnianka: {label:'Веснянка', ladDefault:'obryad', lines:4, verses:5, syl:[4,4,6], beat:132, trio:false},
+  kolyskova: {label:'Колискова',ladDefault:'step',   lines:4, verses:4, syl:[6],    beat:96,  trio:true},
+};
+const PISNYA_ORDER=['protyazhna','vesnianka','kolyskova'];
+
+// the four singers: roles/bands are LAW (VOCES.md §5); their voices are TIMBRE.
+const SINGERS=[
+  {id:'zaspiv',label:'Заспівувачка', band:[[8,9],[16,9]]},   // the leader — skeleton, opens each verse alone
+  {id:'druha', label:'Друга',        band:[[8,9],[3,2]]},    // unison/third weave, rejoins unison at line-finals
+  {id:'basok', label:'Басок',        band:[[2,3],[9,8]]},    // anchors {1/1, 8/9, 3/4}; tacet in kolyskova
+  {id:'vyvid', label:'Вивід',        band:[[3,2],[9,4]]},    // the descant — silent in zaspiv, octave at the crown
+];
+
+// vowel formant targets, female open-throat (VOCES.md §8). Vowels come from
+// the pseudo-lyric syllable stream; y = Ukrainian и.
+const VOWELS={
+  a:[800,1250,2900,3900], e:[620,1900,2900,4000], y:[480,1650,2700,3900],
+  i:[350,2300,3000,4100], o:[520,950,2850,3900],  u:[380,800,2700,3800],
+};
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice.
+   Open ../officina/ — the voicing bench — to edit these live inside the
+   running mix, save named presets, and export them. A preset saved there
+   applies even when this file is opened directly (localStorage); add
+   ?factory to the URL to hear the shipped voice. */
+const TIMBRE={
+  id:'vyvid', title:'VYVID · op. XVIII',
+  doc:'Four synthesized women’s throats. Each voice is one glottal buzz — 36 sine partials rolled off by 1/n^tilt, bright because the open-throat "white voice" is loud harmonics, not breath — run through four PARALLEL formant bandpasses whose frequencies follow the vowel of the pseudo-lyric syllable being sung, plus a small direct lowpassed path so the chest never disappears. Intonation is the machine’s signature: each singer carries a bounded random-walk detune (wide, beating unisons mid-phrase) that ramps to a locked unison at every line-final — the widths and ramps are voiced in the striy group here, but the convergence RULE, the ratio tables, the modes and the singers’ roles are law and live in the code. Everything meets sum → warmth shaper → glue comp → brick-wall limiter (−1.5 dB, 20:1) → out, with a seeded village-room send.',
+  groups:{
+    master:{label:'master & room',doc:'The output stage and the village room.',params:{
+      gain:{v:.80,min:.3,max:1.2,step:.01,label:'master gain',doc:'overall level before the limiter; the offline WAV peak-normalises regardless'},
+      wet:{v:.12,min:0,max:.5,step:.01,label:'room send',doc:'how much of the quartet reaches the convolved village room (seeded IR, so the WAV stays deterministic)'},
+      drive:{v:.06,min:0,max:.3,step:.01,label:'shaper drive',doc:'warmth only — the DIAMOND lesson: past ~0.1 the voices fuzz'},
+    }},
+    throat:{label:'throat',doc:'The glottal source shared by all four singers (each offsets it slightly): 36 harmonics at 1/n^tilt, and the late village vibrato.',params:{
+      tilt:{v:.60,min:.35,max:1.1,step:.01,label:'spectral tilt',doc:'roll-off exponent of the buzz (1/n^tilt): lower = brighter, more of the white-voice ring'},
+      vibRate:{v:5.2,min:3,max:8,step:.1,unit:'Hz',label:'vibrato rate',doc:'speed of the late vibrato on long holds'},
+      vibDepth:{v:9,min:0,max:25,step:.5,unit:'¢',label:'vibrato depth',doc:'width of the late vibrato; village voice stays under ~12'},
+      vibDelay:{v:1.1,min:.3,max:3,step:.05,unit:'s',label:'vibrato delay',doc:'a held tone stays straight this long before the vibrato fades in'},
+    }},
+    vowels:{label:'vowel bank',doc:'Four parallel formant bandpasses per voice, tuned by the syllable’s vowel (the table is law). These params shape how the bank reads.',params:{
+      openness:{v:.15,min:0,max:.25,step:.01,label:'openness',doc:'scales F1 upward — the throat opened wide; the open-air carry of the style'},
+      q1:{v:9,min:3,max:18,step:.5,label:'F1 Q',doc:'narrowness of the first formant band'},
+      q2:{v:11,min:3,max:20,step:.5,label:'F2 Q',doc:'narrowness of the second formant band'},
+      q34:{v:13,min:4,max:24,step:.5,label:'F3/F4 Q',doc:'narrowness of the upper two bands — the presence and ring'},
+      g2:{v:-5,min:-18,max:0,step:.5,unit:'dB',label:'F2 gain',doc:'second formant level under F1'},
+      g3:{v:-9,min:-24,max:0,step:.5,unit:'dB',label:'F3 gain',doc:'third formant level'},
+      g4:{v:-14,min:-30,max:0,step:.5,unit:'dB',label:'F4 gain',doc:'fourth formant level'},
+      direct:{v:.06,min:0,max:.25,step:.01,label:'direct path',doc:'small lowpassed bypass of the bank so the chest fundamental always carries'},
+    }},
+    striy:{label:'striy · intonation widths',doc:'The VOICING of the tuning — how wide the village paints. The rules (walk per syllable, converge and lock at every line-final, scoop from below, release fall) are law; these are their sizes. Kolyskova halves width and scoop by law.',params:{
+      width:{v:7,min:0,max:18,step:.5,unit:'¢',label:'unison width',doc:'bounds of each singer’s random-walk detune mid-phrase — the beating of four individuals'},
+      walkStep:{v:2.5,min:0,max:6,step:.1,unit:'¢',label:'walk step',doc:'largest per-syllable move of the detune walk'},
+      lockCents:{v:1.5,min:0,max:5,step:.1,unit:'¢',label:'cadence lock',doc:'how tight the line-final unison locks after convergence'},
+      scoopCents:{v:60,min:0,max:140,step:2,unit:'¢',label:'scoop depth',doc:'phrase-initial notes are approached from this far below'},
+      scoopMs:{v:110,min:40,max:250,step:5,unit:'ms',label:'scoop time',doc:'duration of the onset scoop'},
+      portaMs:{v:80,min:20,max:200,step:5,unit:'ms',label:'portamento',doc:'slide time between slurred steps'},
+      fallCents:{v:45,min:0,max:120,step:2,unit:'¢',label:'release fall',doc:'the sighing downward let-go on every line-final release'},
+    }},
+    breath:{label:'breath & consonants',doc:'The air of the room: the shared inhale between lines, and the small noise onsets that make syllables read as speech.',params:{
+      inhale:{v:.35,min:0,max:1,step:.02,label:'inhale level',doc:'the quartet’s audible breath between lines — structural, not decoration'},
+      consonant:{v:.30,min:0,max:1,step:.02,label:'consonant level',doc:'syllable-onset noise bursts (s/sh bands, stop clicks)'},
+    }},
+    zaspiv:{label:'singer · zaspivuvachka',doc:'The leader. Sings the skeleton; opens every verse alone.',params:{
+      level:{v:.90,min:0,max:1.2,step:.01,label:'level',doc:'her place in the blend — first among equals'},
+      formantScale:{v:1.00,min:.85,max:1.15,step:.005,label:'formant scale',doc:'scales all four formants — the size of the frame that sings'},
+      tiltOff:{v:0,min:-.2,max:.3,step:.01,label:'tilt offset',doc:'her brightness relative to the shared throat tilt'},
+      pan:{v:-.10,min:-1,max:1,step:.02,label:'pan',doc:'where she stands — a semicircle in a room, not a mix'},
+    }},
+    druha:{label:'singer · druha',doc:'The second — the weave at unison and third.',params:{
+      level:{v:.80,min:0,max:1.2,step:.01,label:'level',doc:'her place in the blend'},
+      formantScale:{v:1.03,min:.85,max:1.15,step:.005,label:'formant scale',doc:'slightly bigger frame than the leader'},
+      tiltOff:{v:.05,min:-.2,max:.3,step:.01,label:'tilt offset',doc:'a touch darker than the leader'},
+      pan:{v:.10,min:-1,max:1,step:.02,label:'pan',doc:'where she stands'},
+    }},
+    basok:{label:'singer · basok',doc:'The low anchor — a woman’s low chest voice, not a man’s bass.',params:{
+      level:{v:.85,min:0,max:1.2,step:.01,label:'level',doc:'her place in the blend'},
+      formantScale:{v:1.06,min:.85,max:1.15,step:.005,label:'formant scale',doc:'the biggest frame of the four'},
+      tiltOff:{v:.10,min:-.2,max:.3,step:.01,label:'tilt offset',doc:'darkest of the four'},
+      pan:{v:.20,min:-1,max:1,step:.02,label:'pan',doc:'where she stands'},
+    }},
+    vyvid:{label:'singer · vyvid',doc:'The descant — thinner, brighter, above the weave.',params:{
+      level:{v:.75,min:0,max:1.2,step:.01,label:'level',doc:'her place in the blend — she carries by register, not level'},
+      formantScale:{v:.94,min:.85,max:1.15,step:.005,label:'formant scale',doc:'the smallest, brightest frame'},
+      tiltOff:{v:-.05,min:-.2,max:.3,step:.01,label:'tilt offset',doc:'brightest of the four'},
+      pan:{v:-.22,min:-1,max:1,step:.02,label:'pan',doc:'where she stands'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+/* ------------------------------- state ---------------------------------- */
+const st={ pisnya:'protyazhna', lad:'zhurba', ladOverride:false, striy:'stepom',
+  vys:1, protyah:1.00, mute:{zaspiv:false,druha:false,basok:false,vyvid:false},
+  seed:1, playing:false, paused:false };
+
+/* ====================== TO BUILD (VOCES.md §5–§7) ========================
+   genAll(st): seed → the whole song, deterministic.
+     1. skeleton tune for the leader (per lad/genre; range ≤ 16/9; line-
+        finals on 1/1; verse 1 line 1 opens "oi");
+     2. pseudo-lyric syllable stream (meters per PISNI[].syl, vowels from
+        the weighted table in §7);
+     3. per-verse realization for all four singers under the sonority law
+        (§5): zaspiv solo half-line, druha unison/third weave, basok
+        anchors, vyvid descant with the octave crown;
+     4. per-singer per-verse detune walks + the convergence ramps (§3.3);
+     5. the time law (§6): syllable durations, melismas, line-final
+        stretch, breaths. Returns the event list the scheduler and the
+        offline cut both walk — one code path, so the WAV is faithful.
+   Realtime loops verses endlessly, re-realizing each lap (lap n seeded
+   from (seed, n) — deterministic too). ====================================*/
+function genAll(){ return null; /* TO BUILD */ }
+
+/* ====================== TO BUILD (VOCES.md §8) ===========================
+   buildGraph(ctx): 4 voices — glottal PeriodicWave (36 harms, 1/n^
+   (throat.tilt+singer.tiltOff)) → 4 parallel formant bandpasses (vowel
+   targets × singer.formantScale; openness lifts F1) + direct lowpassed
+   path → per-syllable env → StereoPanner(singer.pan) → voice gain →
+   sum → shaper(drive) → comp 2.4:1 → limiter −1.5 dB/20:1 → out trim;
+   seeded village-room IR on a send (wet). Shared noise buffer for the
+   inhale (KHÖÖMEI's pattern) and consonant bursts. Identical graph for
+   OfflineAudioContext. schedTick: RILLE-family, ~40 ms timer, ~0.3 s
+   lookahead off ac.currentTime; detunes via osc.detune (cents = pure
+   ratio math). =========================================================*/
+function buildGraph(ctx){ return null; /* TO BUILD */ }
+
+/* -------------------------- realtime transport ---------------------------
+   TO BUILD (VOCES.md §8–§9): real play/stop on the pattern below; pause is
+   already wired (ctx.suspend/resume with the st.paused guard the unlock
+   respects). Until the engine exists, play explains itself. */
+let RT=null;
+function play(){
+  if(RT){stop();return;}
+  $('cutnote').textContent='the engine is not built yet — this page is the scaffold; the spec is vyvid/VOCES.md';
+}
+function stop(){
+  if(!RT)return;
+  clearInterval(RT.timer);
+  const c=RT.ctx; setTimeout(()=>{try{c.close();}catch(e){}},340);
+  RT=null; st.playing=false; st.paused=false;
+  $('play').textContent='Sing'; $('play').classList.remove('on'); $('status').textContent='SCAFFOLD';
+  $('pause').disabled=true; $('pause').textContent='Pause'; $('pause').classList.remove('on');
+}
+function togglePause(){
+  if(!RT||!st.playing)return;
+  if(st.paused){st.paused=false; RT.ctx.resume();
+    $('pause').textContent='Pause'; $('pause').classList.remove('on'); $('status').textContent='SINGING';}
+  else{st.paused=true; RT.ctx.suspend();
+    $('pause').textContent='Resume'; $('pause').classList.add('on'); $('status').textContent='PAUSED';}
+}
+// regenerate + hand to a running transport (convention: no restart)
+function reVibe(){
+  writeHash(); draw();
+  $('pisnyaName').textContent=PISNI[st.pisnya].label.toUpperCase();
+  const T=STRIYI[st.striy].third;
+  $('thirdRd').textContent=T[0]+'/'+T[1]+' ≈ '+Math.round(cents(T))+'¢';
+  if(!RT)return;
+  /* TO BUILD: RT.g = genAll(); scheduler picks the new score up at the
+     next line boundary (change-while-playing convention). */
+}
+
+/* ------------------------------ cut · WAV -------------------------------- */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(14,14,16,.92);color:#e9e2d2;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#e9e2d2;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
+function encodeWav(L,R,sr){
+  const n=L.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');d.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  ws(36,'data');d.setUint32(40,n*4,true);
+  let o=44;for(let i=0;i<n;i++){d.setInt16(o,clamp(L[i],-1,1)*32767,true);o+=2;d.setInt16(o,clamp(R[i],-1,1)*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+async function cut(){
+  /* TO BUILD (VOCES.md §8, §12): render ONE whole song (all verses) into an
+     OfflineAudioContext through the identical graph, peak-normalise to 0.9,
+     saveWav(encodeWav(L,R,SR), `vyvid_${st.pisnya}_${st.lad}.wav`). */
+  $('cutnote').textContent='the engine is not built yet — this page is the scaffold; the spec is vyvid/VOCES.md';
+}
+
+/* ------------------------------ controls -------------------------------- */
+function chipRow(host, items, current, onPick){
+  host.innerHTML='';
+  items.forEach(([val,label])=>{
+    const b=document.createElement('button'); b.textContent=label; b.dataset.v=val;
+    if(val===current)b.classList.add('on');
+    b.addEventListener('click',()=>{
+      [...host.children].forEach(c=>c.classList.remove('on')); b.classList.add('on'); onPick(val);
+    });
+    host.appendChild(b);
+  });
+}
+function setLadUI(v){ st.lad=v; $('ladRd').textContent=LADY[v].label;
+  [...$('ladChips').children].forEach(c=>c.classList.toggle('on',c.dataset.v===v)); }
+chipRow($('pisnyaChips'), PISNYA_ORDER.map(k=>[k,PISNI[k].label]), st.pisnya, v=>{
+  st.pisnya=v; $('pisnyaRd').textContent=PISNI[v].label;
+  if(!st.ladOverride) setLadUI(PISNI[v].ladDefault);
+  st.ladOverride=false; reVibe();
+});
+chipRow($('ladChips'), LAD_ORDER.map(k=>[k,LADY[k].label]), st.lad, v=>{
+  st.lad=v; st.ladOverride=true; $('ladRd').textContent=LADY[v].label; reVibe();
+});
+chipRow($('striyChips'), STRIY_ORDER.map(k=>[k,STRIYI[k].label]), st.striy, v=>{
+  st.striy=v; $('striyRd').textContent=STRIYI[v].label; reVibe();
+});
+chipRow($('vysChips'), VYSOTY.map((k,i)=>[String(i),k.label]), String(st.vys), v=>{
+  st.vys=+v; $('vysRd').textContent=VYSOTY[st.vys].label; reVibe();
+});
+// the four voices: multi-on toggles (silencing a singer, not soloing)
+(function(){
+  const host=$('holosyChips');
+  SINGERS.forEach(s=>{
+    const b=document.createElement('button'); b.textContent=s.label; b.dataset.v=s.id;
+    if(!st.mute[s.id])b.classList.add('on');
+    b.addEventListener('click',()=>{
+      st.mute[s.id]=!st.mute[s.id]; b.classList.toggle('on',!st.mute[s.id]);
+      $('holosyRd').textContent=SINGERS.filter(x=>!st.mute[x.id]).length;
+      writeHash();
+      /* TO BUILD: ramp the singer's voice gain in a running graph */
+    });
+    host.appendChild(b);
+  });
+})();
+$('protyah').addEventListener('input',e=>{st.protyah=+e.target.value/100;$('protyahRd').textContent=st.protyah.toFixed(2);
+  /* TO BUILD: the scheduler reads st.protyah live — stretch, no regeneration */});
+$('protyah').addEventListener('change',()=>writeHash());
+$('play').addEventListener('click',play);
+$('pause').addEventListener('click',togglePause);
+$('another').addEventListener('click',()=>{st.seed=(Math.random()*0x7fffffff)|0;reVibe();});
+$('cut').addEventListener('click',cut);
+
+/* ------------------------------ canvas -----------------------------------
+   SCAFFOLD RENDER (working): the linen band embroidered with the current
+   lad × striy — every degree stitched at its exact cents position, ratio
+   above, cents below; the four singers' threads beneath with their bands.
+   TO BUILD (VOCES.md §10): the rushnyk proper — the realized song as
+   cross-stitch across time, cadence convergences as eight-point stars,
+   the lyric line under the band, a needle playhead; static layer cached;
+   prefers-reduced-motion → needle only. The ladder below should survive
+   as the READY state or fold into the band's left margin. */
+const cv=$('cv'), cx=cv.getContext('2d'), CW=cv.width, CH=cv.height;
+const SINGER_COL={zaspiv:'#c74a3a', druha:'#2b2320', basok:'#7a3328', vyvid:'#d9a441'};
+function stitchX(cx2,x,y,s,col){ // one cross-stitch
+  cx2.strokeStyle=col; cx2.lineWidth=Math.max(2,s*0.22); cx2.lineCap='round';
+  cx2.beginPath(); cx2.moveTo(x-s,y-s); cx2.lineTo(x+s,y+s);
+  cx2.moveTo(x+s,y-s); cx2.lineTo(x-s,y+s); cx2.stroke();
+}
+function draw(){
+  cx.clearRect(0,0,CW,CH);
+  cx.fillStyle='#171019'; cx.fillRect(0,0,CW,CH);
+  const scale=scaleOf(st.lad,st.striy);
+  const cs=scale.map(cents), lo=Math.min(...cs), hi=Math.max(...cs);
+  const bx0=100, bx1=CW-100, by=CH*0.40, bh=150;
+  // the linen band
+  cx.fillStyle='#e7dcc4'; cx.fillRect(bx0-18,by-bh/2-14,(bx1-bx0)+36,bh+28);
+  cx.strokeStyle='#c74a3a'; cx.lineWidth=3;
+  cx.strokeRect(bx0-18,by-bh/2-14,(bx1-bx0)+36,bh+28);
+  cx.strokeStyle='rgba(43,35,32,.5)'; cx.lineWidth=1;
+  cx.strokeRect(bx0-12,by-bh/2-8,(bx1-bx0)+24,bh+16);
+  // header
+  cx.fillStyle='rgba(236,225,204,.7)'; cx.textAlign='left'; cx.textBaseline='middle';
+  cx.font='500 24px "IBM Plex Mono",monospace';
+  cx.fillText(LADY[st.lad].label+' · '+STRIYI[st.striy].label+' · '
+    +Math.round(TONIC*(VYSOTY[st.vys].r[0]/VYSOTY[st.vys].r[1]))+' Hz', bx0-18, 46);
+  cx.fillStyle='rgba(236,225,204,.35)'; cx.font='400 18px "IBM Plex Mono",monospace';
+  cx.fillText('the mode, stitched at its exact ratios', bx0-18, 76);
+  // degrees as stitches at exact cents positions
+  const T=STRIYI[st.striy].third, vo=(LADY[st.lad].vyvidOnly||[]).map(p=>p.join('/'));
+  scale.forEach((p,i)=>{
+    const x=bx0+(cs[i]-lo)/(hi-lo)*(bx1-bx0);
+    const isT=(p[0]===T[0]&&p[1]===T[1])||(p[0]===T[0]*2&&p[1]===T[1]);
+    const isV=vo.indexOf(p.join('/'))>=0;
+    const col=isT?'#c74a3a':(isV?'#d9a441':'#2b2320');
+    stitchX(cx,x,by,isT?13:10,col);
+    if(isT){stitchX(cx,x,by-26,7,col);stitchX(cx,x,by+26,7,col);} // the third gets a column — the zone
+    cx.fillStyle='#2b2320'; cx.textAlign='center';
+    cx.font='500 21px "IBM Plex Mono",monospace';
+    cx.fillText(p[0]+'/'+p[1], x, by-bh/2+16);
+    cx.fillStyle='rgba(43,35,32,.55)'; cx.font='400 16px "IBM Plex Mono",monospace';
+    cx.fillText(Math.round(cs[i])+'¢', x, by+bh/2-14);
+  });
+  // the four singers' threads with their bands (law: SINGERS[].band)
+  const ty0=by+bh/2+70, tgap=54;
+  cx.textBaseline='middle';
+  SINGERS.forEach((s,i)=>{
+    const y=ty0+i*tgap, mut=st.mute[s.id];
+    const x0=bx0+((cents(s.band[0])-(-702))/(1404-(-702)))*(bx1-bx0)*0.9;
+    const x1=bx0+((cents(s.band[1])-(-702))/(1404-(-702)))*(bx1-bx0)*0.9;
+    cx.strokeStyle=mut?'rgba(236,225,204,.12)':SINGER_COL[s.id];
+    cx.lineWidth=i===3?3:4; cx.globalAlpha=mut?.5:(i===1?.85:1);
+    cx.beginPath(); cx.moveTo(x0,y); cx.lineTo(x1,y); cx.stroke(); cx.globalAlpha=1;
+    cx.fillStyle=mut?'rgba(236,225,204,.25)':'rgba(236,225,204,.75)';
+    cx.textAlign='left'; cx.font='400 19px "IBM Plex Mono",monospace';
+    cx.fillText(s.label+(mut?' · мовчить':''), x1+18, y);
+  });
+  cx.fillStyle='rgba(236,225,204,.30)'; cx.textAlign='left';
+  cx.font='400 17px "IBM Plex Mono",monospace';
+  cx.fillText('scaffold — the engine is to build · vyvid/VOCES.md', bx0-18, CH-24);
+}
+
+/* ----------------------------- permalink -------------------------------- */
+function __state(){const m=(st.mute.zaspiv?1:0)|(st.mute.druha?2:0)|(st.mute.basok?4:0)|(st.mute.vyvid?8:0);
+  return {p:st.pisnya,l:st.lad,s:st.striy,v:st.vys,t:Math.round(st.protyah*100),m,sd:st.seed};}
+let __applying=false;
+function applyHash(o){
+  if(o.p&&PISNI[o.p]){st.pisnya=o.p;$('pisnyaRd').textContent=PISNI[o.p].label;
+    [...$('pisnyaChips').children].forEach(c=>c.classList.toggle('on',c.dataset.v===o.p));}
+  if(o.l&&LADY[o.l]){setLadUI(o.l); st.ladOverride=(o.l!==PISNI[st.pisnya].ladDefault);}
+  if(o.s&&STRIYI[o.s]){st.striy=o.s;$('striyRd').textContent=STRIYI[o.s].label;
+    [...$('striyChips').children].forEach(c=>c.classList.toggle('on',c.dataset.v===o.s));}
+  if(o.v!==undefined){st.vys=clamp(+o.v|0,0,VYSOTY.length-1);$('vysRd').textContent=VYSOTY[st.vys].label;
+    [...$('vysChips').children].forEach(c=>c.classList.toggle('on',+c.dataset.v===st.vys));}
+  if(o.t!==undefined){st.protyah=clamp(+o.t,75,140)/100;$('protyah').value=Math.round(st.protyah*100);$('protyahRd').textContent=st.protyah.toFixed(2);}
+  if(o.m!==undefined){const m=+o.m|0;
+    st.mute={zaspiv:!!(m&1),druha:!!(m&2),basok:!!(m&4),vyvid:!!(m&8)};
+    [...$('holosyChips').children].forEach(c=>c.classList.toggle('on',!st.mute[c.dataset.v]));
+    $('holosyRd').textContent=SINGERS.filter(x=>!st.mute[x.id]).length;}
+  if(o.sd!==undefined){st.seed=(+o.sd|0)||1;}
+}
+function readHash(){const h=location.hash.slice(1);if(!h)return null;const o={};
+  for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}
+function writeHash(){if(__applying)return;
+  try{const o=__state();history.replaceState(null,'','#'+Object.entries(o).map(([k,v])=>k+'='+v).join('&'));}catch(e){}}
+
+/* ------------------------------- keys ----------------------------------- */
+addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
+  if(e.code==='Space'){e.preventDefault();$('play').click();}
+  else if(e.key==='p'||e.key==='P')togglePause();
+  else if(e.key==='r'||e.key==='R'){$('another').click();}
+  else if(e.key==='c'||e.key==='C'){$('cut').click();}
+});
+
+/* ------------------------------- init ----------------------------------- */
+(function(){const o=readHash(); if(o){__applying=true;try{applyHash(o);}catch(e){}__applying=false;}
+  $('pisnyaRd').textContent=PISNI[st.pisnya].label;
+  $('ladRd').textContent=LADY[st.lad].label;
+  $('striyRd').textContent=STRIYI[st.striy].label;
+  $('vysRd').textContent=VYSOTY[st.vys].label;
+  reVibe();
+})();
+
+/* OFFICINA hooks. TO BUILD: touch should ramp master/room/voice params into
+   a running graph (continuous-machine convention); demo starts the
+   transport. Until then they are safe no-ops beyond a redraw. */
+TIMBRE.touch=()=>{ reVibe(); };
+TIMBRE.demo=()=>{ if(!RT)play(); };
+</script>
+</body>
+</html>
