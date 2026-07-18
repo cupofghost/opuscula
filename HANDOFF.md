@@ -467,41 +467,84 @@ the subharmonic mirror no existing machine touches.
   flavors if the single meter reads flat. Kepler's *Harmonices Mundi* was
   the strongest rejected alternative — a candidate for a future op.
 
-### RILLE — tonal recomposition DESIGNED, awaiting implementation → `rille/HARMONIA.md`
-**Branch:** `claude/rille-tonal-composition-n8zfie` · **Files:** `rille/HARMONIA.md`
-(the brief), later `rille/index.html` · **Status:** design done, pushed;
-**implementation NOT started** — the next session implements from the brief.
+### RILLE — tonal recomposition IMPLEMENTED (from `rille/HARMONIA.md`, now deleted)
+**Branch:** `claude/harmonia-handoff-tlncw8` · **File:** `rille/index.html` ·
+**Status:** done, verified (Node structural sweep + headless Chromium smoke);
+pushed. The self-contained brief `rille/HARMONIA.md` was the spec; it's deleted
+now that the work is in — the reasoning survives here and in the commit message.
 
-Maintainer: still unhappy with RILLE's tonal composition. Mandate: **no major
-moods or vibes** (major only ever to resolve minor progress, occasionally),
-no goofy-sounding songs, simplify the input layout, and — repo-wide intent
-stated in the same session — **just intonation as far as possible, temper only
-where absolutely needed.** No code was written; the deliverable is
-`rille/HARMONIA.md`, a self-contained implementation brief. Headlines:
+Reworked RILLE's whole tonal path per the maintainer's mandate: **no major
+moods or vibes** (major only ever to resolve minor progress), no goofy plinks,
+simplified input, and **just intonation end to end**. What shipped:
 
-- **Majors abolished from hover:** kind `'maj'`, `MAJ_SHAPE` and the ascending
-  glint die. Major-quality degrees (♭VI/♭VII/♭II) survive as bass roots voiced
-  **thirdless** (`quint` = 1/1·3/2·9/4). The **only 5/4 in the machine** is the
-  raised leading tone inside V on one bar of a cadence — checkable law.
-- **Cadence = lament tetrachord:** i→♭VII→♭VI→V⁷sus→V⁷→i bass descent (last 8
-  bars of a `cad` span), 4–3 suspension across the two dom bars. `half` dies —
-  non-landing moods get `cad:0` (no dominant at all) instead.
-- **Dorian abolished:** DÄMMERUNG and SOG go äolisch; SOG's warmth rebuilt
-  from thirdless sus9, not the natural 6th. Roots/BPM untouched → Camelot
-  table intact.
-- **Tuning:** two-level fixed lattice, `f = tonicHz × DEG[deg] × SHAPE[k] ×
-  2^n`; the only ET left is `tonicHz = mtof(root)` and the AUTO-SET seam.
-  `vBass` goes MIDI→Hz (41 Hz floor preserved in Hz). `JI[]`/`jf()` replaced.
-- **Cantus (TRÄNEN):** seeded descending "sigh" cell + fading echo,
-  chord-tone-locked at cell edges, no octave pops; one sanctioned ti(15/8)→do
-  figure on the cadence.
-- **Input simplified:** the 8-chip PROGS row and the bassmode row die; one
-  3-chip **LÖSUNG** row (NIE/SELTEN/OFT = cad 0/64/32) replaces them. Hash `l`
-  replaces `p`; legacy `p` mapped tolerantly, permalinks re-voice (precedented).
-- The brief carries a full mood table, exact ratio tables, rejected
-  alternatives (Picardy, half-cad, chained JI…) and a 14-point verify gauntlet
-  (Node sweep + Chromium). **Implementer: delete HARMONIA.md when done** and
-  fold the result into this thread.
+- **Majors abolished from hover.** Kind `'maj'`, `MAJ_SHAPE`, the ascending
+  glint, kind `'pre'`, `PROGS`, `harmRecipe(M,P)` and `voiceAt` are gone.
+  Major-quality hover degrees (♭VI/♭VII/♭II) are now voiced **thirdless**
+  (`quint` = 1/1·3/2·9/4) — 1–2 bars, passing colour, dark. The **only 5/4 in
+  the machine** is the raised leading tone (`dom7` shape) on one cadence bar,
+  which is 15/8 over the tonic — the just leading tone. Both are mechanized in
+  the verify's "5/4 audit".
+- **Cadence = lament tetrachord.** Last 8 bars of a `cad` span: bass walks
+  1→♭7→♭6→5→1 (`desc`·16/9 ×2 → `desc`·8/5 ×2 → `dom7sus` → `dom7` → `bloom`
+  ×2), the 4-3 suspension resolving across the two dom bars, the leading tone
+  raised for exactly one bar. The 2 hover bars before each window are forced to
+  degree 0 (the "8" the tetrachord descends from); the 8 bars before lean off
+  the tonic (weights ×1.5). `half` deleted — non-landing moods get `loesung:0`
+  (NIE, cad 0, no dominant ever).
+- **Two-level JI lattice, no comma drift.** Every tonal freq is
+  `f = tonicHz × DEG[deg] × SHAPE[k] × 2^n`, `tonicHz = mtof(g.root)` the ONLY
+  `mtof` in the tonal path (verified: exactly one call site). `DEG` (degree
+  roots over tonic), `SHAPES` (voice shapes over the bar root), `MODE_JI`
+  (scale ratios for cantus passing tones) replace `JI[]`/`jf()`/`HOVER_SHAPE`.
+  Roots re-anchor to the tonic each bar (fixed-lattice, not chained — COCHLEA
+  owns comma drift). `vBass` now takes **Hz** (41 Hz floor preserved in Hz);
+  bass pattern offsets became ratios (0→1/1, −12→1/2, −5→3/4, −2→8/9). Swell
+  dyads: dom-sus [4/3,7/4], dom-raised [5/4,7/4], tonic [6/5,3/2], desc
+  [3/2,9/4], pad hover [3/2]. AUTO-SET seam stays ET (Camelot labels stay true).
+- **Dorian abolished.** DÄMMERUNG and SOG → äolisch (`mode` and `modeName`);
+  SOG's warmth is the thirdless sus9 voicing, not the natural 6th. Roots/BPM
+  untouched → Camelot table intact (FINSTERNIS 4A, SCHATTEN 1A, TRÄNEN 8A,
+  EISEN 9A, DÄMMERUNG 7A, LEERE 5A, SOG 6A, asserted in verify).
+- **Arp** resolves ratio shapes (`barRootHz × SHAPE[idx%len] × 2^oct`); the
+  octave "reach" is TRÄNEN-only (`arp.reach:.15`, was a semitone `+12` on any
+  mood at .30). `quint` bars roll root-fifth-ninth by construction.
+- **Cantus (TRÄNEN).** Pentatonic random walk replaced by a seeded descending
+  "sigh" cell (`[♭6,5,4]` weighted ×2) + fading echo over 8 bars; first/last
+  notes chord-tone-locked to the bar (step the cell down the fixed order and
+  retry; a bar that locks no cell falls silent). Melody band [4t, 4t·8/5], no
+  octave pops. One sanctioned ti(15/8)→do figure, seeded p=.5 on the raised-dom
+  cadence bar.
+- **Input simplified.** The 8-chip PROGS block and the bassmode row are gone;
+  one 3-chip **LÖSUNG** row (NIE/SELTEN/OFT = cad 0/64/32) replaces them, mood
+  default pre-selected, override sticks until mood change. `follow` is a mood
+  constant now (no UI). Ledger HARMONIK shows the pool in ♭-aware romans with a
+  superscript 5 on thirdless degrees. Hash key `l` replaces `p`/`f`; legacy `p`
+  maps tolerantly (0→default, 1–2→NIE, 3–4→SELTEN, 5–7→OFT), old `f` ignored,
+  permalinks re-voice (precedented). No hash version bump.
+- **Copy:** reader notes ("Longing and release", "Affect and law") rewritten
+  for the lament-bass/thirdless/one-leading-tone story with the Dido/chaconne
+  reference; all dorian mentions swept from `rille/index.html`.
+- **Verified** (`scratchpad/verify-rille-tonal.mjs`, Node sweep + Chromium;
+  quick Chromium runner `verify-rille-chromium-quick.mjs` alongside): 25/25
+  Node checks (bar-kind law, 5/4 audit, cadence-window shape, forced-i bars,
+  cad:0 emptiness, bass-root walk 16/9→8/5→3/2→1/1, JI purity over the closed
+  ratio set, single `mtof`, cantus band + chord-tone lock + ≤3 notes/2 bars,
+  no major-6th anywhere, arp directions/reach, quint-bar arp tones, Camelot
+  table, legacy-`p` mapping). Chromium: all 7 moods × 3 Lösungen render
+  NaN-free with audio; AUTO-SET blend runs both decks then settles; ledger
+  HARMONIK + Lösung re-default + OFFICINA bench round-trip pass. Only console
+  noise is the shared Google-Fonts CDN block (environmental, filtered).
+- **Pick-ups / rejected (do not "improve" back in):** half-cadences, Picardy
+  third (only if the maintainer asks by name), chained-root JI (COCHLEA's
+  territory), pure-3/2 Camelot hops, keeping dorian. EISEN's 45/32 cluster is
+  deliberately harsh — 7/5 is the softer option only if the maintainer flags
+  it. Cadence phrase length (8 bars), the swell dyads and shapes live in
+  `buildHarm`/`SHAPES`/`scheduleBar`; the sigh cells + lock in `genAll`.
+- **Ears check (state for the maintainer):** render TRÄNEN·OFT and SOG·SELTEN
+  — the writing hovers in pure minor, thirdless where colour passes, the one
+  leading tone lands at 15/8, and it tunes beatlessly off one tonic. No bright
+  plinks, no noodling. (Headless verify confirms the structure and clean
+  runtime; the subjective listen is the maintainer's to make.)
 
 ### GONGAN — new machine, op. XIV (Central Javanese court gamelan)
 **Branch:** `claude/new-machine-design-y66pvl` · **File:** `gongan/index.html` ·
