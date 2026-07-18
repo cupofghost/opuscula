@@ -221,7 +221,7 @@ button,canvas,.centerlabel{-webkit-user-select:none;user-select:none}
         <h4>Affect and law</h4>
         <p>Seven <em>Affekte</em> — moods — set the key, tempo, palette, spread and density; a harmonic-narrative engine writes a long arc of longing and rare release (see below) while the arrangement writes itself. Six lean dark or industrial; the seventh, <em>SOG</em>, is the warm, rolling, stripped-back pocket of <em>minimal deep tech</em> — slower, sparser, more space between the hits. A “dubplate”, or white label, is the one-off acetate a DJ cuts to road-test a track before anyone else can get a copy.</p>
         <h4>Longing and release</h4>
-        <p>The harmony is written to ache, and it is not a loop — it is a sixty-four-bar story. Most of that story <em>hovers</em>, entirely in the minor: chords drifting among <em>i</em>, <em>iv</em> and the mood's darker neighbours, held for bars at a time, going nowhere on purpose — and never sounded whole. Each chord is <em>broken open</em> into an arpeggio, one soft tone at a time, always reaching for a shape it never states at once; each mood rolls its own way (rising, falling, rocking). No major chord ever sounds: when a <em>♭VI</em>, <em>♭VII</em> or Neapolitan <em>♭II</em> passes through as colour, it's voiced <em>thirdless</em> — a bare fifth and ninth, brightness from openness, not from a major third. Release, when a phrase has earned it, comes the old way: the bass walks stepwise down from home to the dominant — 1, ♭7, ♭6, 5 — the oldest emblem of grief in Western music, the ground beneath Dido's Lament and the chaconne. The mode's own <em>v</em> is minor and cannot pull home, so for exactly one bar its third is raised to a leading tone, tuned a pure <em>15/8</em> above the tonic — the only major third in the whole machine — while the music strips to its barest: the bass and a single held interval above it, a suspension resolving across the two dominant bars before the bass climbs home and the chord blooms open onto <em>i</em>. And every one of these tones — bass, chords, arpeggio, melody — is tuned in <em>just intonation</em>: exact whole-number ratios from one tempered tonic, not equal temperament, so the whole machine locks beat-free against itself. Some moods never grant the release at all — they simply hover, unresolved, for as long as the record plays.</p>
+        <p>The harmony is written to ache, and it is not a loop — it is a sixty-four-bar story. Most of that story <em>hovers</em>, entirely in the minor: chords drifting among <em>i</em>, <em>iv</em> and the mood's darker neighbours, held for bars at a time, going nowhere on purpose. Each is a <em>stab</em> — a single dark chord struck on the offbeat and left to ring into the echo, one to a bar, with space around it — the way dub techno holds a chord: no melody, no running figure, the rhythm and the filter doing the moving. No major chord ever sounds: when a <em>♭VI</em>, <em>♭VII</em> or Neapolitan <em>♭II</em> passes through as colour, it's voiced <em>thirdless</em> — a bare fifth and ninth, brightness from openness, not from a major third. Release, when a phrase has earned it, comes the old way: the bass walks stepwise down from home to the dominant — 1, ♭7, ♭6, 5 — the oldest emblem of grief in Western music, the ground beneath Dido's Lament and the chaconne. The mode's own <em>v</em> is minor and cannot pull home, so for exactly one bar its third is raised to a leading tone, tuned a pure <em>15/8</em> above the tonic — the only major third in the whole machine — while the music strips to its barest: the bass and a single held interval above it, a suspension resolving across the two dominant bars before the bass climbs home and the chord blooms open onto <em>i</em>. And every one of these tones — bass, stabs, melody — is tuned in <em>just intonation</em>: exact whole-number ratios from one tempered tonic, not equal temperament, so the whole machine locks beat-free against itself. Some moods never grant the release at all — they simply hover, unresolved, for as long as the record plays.</p>
         <h4>Mixing in key</h4>
         <p>Turn on <em>AUTO-SET</em> and RILLE stops being one track and becomes a set: it beatmatches and blends into a fresh generated track every so often, the way a DJ threads a night together. It chooses the next key by the <em>Camelot wheel</em>, the harmonic-mixing system where adjacent numbers are a perfect fifth apart — so the move is a fifth up or down, the same key, or now and then a semitone/whole-tone <em>energy</em> lift. Each blend is a long, phrase-aligned crossfade with a <em>bass swap</em>: the incoming record's tops come up first while its low end is held back, then kick and bass are handed over cleanly at the bar so two basslines never fight. <em>JETZT →</em> triggers the next blend by hand. Every transition stays in key.</p>
         <h4>The name</h4>
@@ -375,21 +375,21 @@ const PARTLABEL={fundus:'KICK',bassus:'BASS',crepitus:'HATS',manus:'CLAP',chorda
 const MOODS=[
  {id:'tenebrae',gloss:'dunkel',name:'FINSTERNIS',hue:'#2c3438',ink:'#22303a',
   bpm:130,root:41,mode:[0,1,3,5,7,8,10],modeName:'phrygisch',
-  harm:{pool:[[0,3],[1,1],[3,1.5]],loesung:0},arp:{rate:8,dens:.5,dir:'dn'},vstyle:'shell9',follow:false,stab:{bp:520,q:1.6,dec:.5,pad:false},
+  harm:{pool:[[0,3],[1,1],[3,1.5]],loesung:0},arp:{dens:.5},vstyle:'shell9',follow:false,stab:{bp:520,q:1.6,dec:.5,pad:false},
   hat16:.18,openPat:'ten',bass:'offbeat',clap:'rim',
   kick:{drive:2.6,dec:.32,pitch:120},swing:.02,dust:.5,
   verb:{sec:1.6,mix:.16},dly:{fb:.42,mix:.2},cantus:false,duck:.5,
   order:['bassus','crepitus','chordae','manus']},
  {id:'umbra',gloss:'düster',name:'SCHATTEN',hue:'#26424a',ink:'#1e3d46',
   bpm:126,root:44,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
-  harm:{pool:[[0,3],[3,1.5],[5,1],[6,1]],loesung:1},arp:{rate:16,dens:.45,dir:'ud'},vstyle:'shell9',follow:false,stab:{bp:760,q:1.3,dec:.7,pad:false},
+  harm:{pool:[[0,3],[3,1.5],[5,1],[6,1]],loesung:1},arp:{dens:.45},vstyle:'shell9',follow:false,stab:{bp:760,q:1.3,dec:.7,pad:false},
   hat16:.3,openPat:'one',bass:'offbeat',clap:'clap',
   kick:{drive:1.9,dec:.36,pitch:110},swing:.05,dust:.65,
   verb:{sec:2.6,mix:.24},dly:{fb:.55,mix:.32},cantus:false,duck:.45,
   order:['bassus','chordae','crepitus','manus']},
  {id:'lacrimae',gloss:'ergreifend',name:'TRÄNEN',hue:'#4a2c3c',ink:'#4a2338',
   bpm:123,root:45,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
-  harm:{pool:[[0,3],[3,1.5],[4,.8],[5,1]],loesung:2},arp:{rate:8,dens:.6,dir:'up',reach:.15},vstyle:'stack9',follow:true,
+  harm:{pool:[[0,3],[3,1.5],[4,.8],[5,1]],loesung:2},arp:{dens:.6},vstyle:'stack9',follow:true,
   stab:{bp:900,q:.9,dec:1.6,pad:true},
   hat16:.22,openPat:'two',bass:'roll',clap:'clap',
   kick:{drive:1.6,dec:.4,pitch:105},swing:.06,dust:.4,
@@ -397,21 +397,21 @@ const MOODS=[
   order:['chordae','bassus','crepitus','manus','cantus']},
  {id:'ferrum',gloss:'industriell',name:'EISEN',hue:'#4a2a22',ink:'#57281c',
   bpm:136,root:40,mode:[0,1,3,5,7,8,10],modeName:'phrygisch',
-  harm:{pool:[[0,1]],loesung:0},arp:{rate:16,dens:.8,dir:'rnd'},vstyle:'cluster',follow:false,stab:{bp:1400,q:2.2,dec:.22,pad:false},
+  harm:{pool:[[0,1]],loesung:0},arp:{dens:.8},vstyle:'cluster',follow:false,stab:{bp:1400,q:2.2,dec:.22,pad:false},
   hat16:.85,openPat:'ten',bass:'roll',clap:'clapnoise',
   kick:{drive:4.2,dec:.3,pitch:150},swing:0,dust:.3,
   verb:{sec:1.1,mix:.12},dly:{fb:.3,mix:.12},cantus:false,duck:.55,
   order:['crepitus','bassus','manus','chordae']},
  {id:'aurora',gloss:'warm',name:'DÄMMERUNG',hue:'#4a3c22',ink:'#4d3a17',
   bpm:125,root:38,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
-  harm:{pool:[[0,3],[3,1],[6,1]],loesung:2},arp:{rate:16,dens:.5,dir:'ud'},vstyle:'sus9',follow:true,stab:{bp:1050,q:.8,dec:1.0,pad:false},
+  harm:{pool:[[0,3],[3,1],[6,1]],loesung:2},arp:{dens:.5},vstyle:'sus9',follow:true,stab:{bp:1050,q:.8,dec:1.0,pad:false},
   hat16:.4,openPat:'all',bass:'offbeat',clap:'clap',
   kick:{drive:1.5,dec:.38,pitch:100},swing:.08,dust:.55,
   verb:{sec:2.2,mix:.2},dly:{fb:.45,mix:.22},cantus:false,duck:.4,
   order:['crepitus','bassus','chordae','manus']},
  {id:'vacuum',gloss:'tief',name:'LEERE',hue:'#222c42',ink:'#1e2a48',
   bpm:120,root:36,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
-  harm:{pool:[[0,4],[3,1]],loesung:0},arp:{rate:8,dens:.3,dir:'dn'},vstyle:'stack9',follow:false,stab:{bp:600,q:.7,dec:2.4,pad:true},
+  harm:{pool:[[0,4],[3,1]],loesung:0},arp:{dens:.3},vstyle:'stack9',follow:false,stab:{bp:600,q:.7,dec:2.4,pad:true},
   hat16:.08,openPat:'none',bass:'drone',clap:'rim',
   kick:{drive:1.2,dec:.5,pitch:90},swing:.03,dust:.8,
   verb:{sec:4.5,mix:.38},dly:{fb:.6,mix:.3},cantus:false,duck:.35,
@@ -424,7 +424,7 @@ const MOODS=[
  // moods; a moderate sidechain roll. 6A on the wheel.
  {id:'gurges',gloss:'hypnotisch',name:'SOG',hue:'#33344a',ink:'#2b2a44',
   bpm:123,root:43,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
-  harm:{pool:[[0,3],[3,1.5],[6,1]],loesung:1},arp:{rate:16,dens:.55,dir:'up'},vstyle:'sus9',follow:false,stab:{bp:680,q:.7,dec:.8,pad:false},
+  harm:{pool:[[0,3],[3,1.5],[6,1]],loesung:1},arp:{dens:.55},vstyle:'sus9',follow:false,stab:{bp:680,q:.7,dec:.8,pad:false},
   hat16:.28,openPat:'two',bass:'roll',clap:'clap',
   kick:{drive:1.7,dec:.34,pitch:100},swing:.07,dust:.6,
   verb:{sec:2.4,mix:.2},dly:{fb:.48,mix:.24},cantus:false,duck:.42,
@@ -624,34 +624,27 @@ function genAll(seed,mi,bpm,loesungIdx,rootOverride){
     g.bass.push({s:0,r:R12,len:16,vel:.8});
   }
 
-  // arpeggio: the hover chord broken open instead of stabbed — the chord never
-  // sounds all at once, it is always reaching. A seeded 32-step (2-bar) walk of
-  // chord-tone INDICES (notes resolve at schedule time against the current bar
-  // of the narrative: barRootHz × SHAPE[idx % len] × 2^oct). Per-mood character:
-  // rate (8ths or 16ths), density, direction (up = yearning rise, dn = falling
-  // dark, ud = rocking, rnd = broken — EISEN only). On `quint` bars this rolls
-  // root–fifth–ninth automatically, by construction (no third to reach for).
-  g.arpSeq=[];                                          // {s(0..31), idx, oct, vel}
+  // chord STABS (was a running arpeggio — killed for sounding like a cheesy
+  // trance arp; the maintainer's verdict was "still doofy", all moods). The
+  // hover chord is now a sparse, filtered stab of the bar's open shell, placed
+  // on the OFFBEATS — the classic dub-techno chord: no melodic contour, no
+  // running line, lots of space, hypnotic rather than tuneful. A seeded 32-step
+  // (2-bar) set of stab positions; the chord is voiced at schedule time from
+  // the current bar's shape (barRootHz × shell ratios, register-lifted).
+  g.arpSeq=[];                                          // {s(0..31), vel} — stab positions
   {
-    const A=M.arp||{rate:16,dens:.5,dir:'up'};
-    const inc=A.rate===8?2:1;
-    const reachP=A.reach||0;                            // the octave "reach": TRÄNEN only
-    let k=A.dir==='dn'?3:0;
-    for(let s=0;s<32;s+=inc){
-      // breathe: skip some downbeats (space is an instrument), thin by density
-      if(s%16===0&&rng()<.35)continue;
-      if(rng()>A.dens)continue;
-      let idx;
-      if(A.dir==='up')idx=k++%4;
-      else if(A.dir==='dn')idx=3-(k++%4);
-      else if(A.dir==='ud'){const m=k++%6;idx=m<4?m:6-m;}
-      else idx=(rng()*4)|0;
-      // occasionally lift the top tone an octave — the reach
-      const oct=(idx===3&&rng()<reachP)?1:0;
-      const vel=.5+rng()*.25+((s%4===2)?.15:0);         // offbeat accent
-      g.arpSeq.push({s,idx,oct,vel});
+    const A=M.arp||{dens:.5};
+    // the "&" of each beat across the 2 bars — where a dub stab sits. EISEN
+    // (the industrial cluster) also gets the on-beats, for a denser wall.
+    const cand=(M.id==='ferrum')
+      ? Array.from({length:16},(_,i)=>i*2)               // every 8th, both bars
+      : [2,6,10,14,18,22,26,30];                         // offbeat 8ths only
+    for(const s of cand){
+      if(rng()>A.dens*.7)continue;                      // thin hard — space is the instrument
+      g.arpSeq.push({s,vel:.55+rng()*.3});
     }
-    if(!g.arpSeq.length)g.arpSeq.push({s:2,idx:0,oct:0,vel:.6});
+    // never leave the hover silent: at least two stabs, on the back offbeats
+    if(g.arpSeq.length<2)g.arpSeq=[{s:6,vel:.62},{s:22,vel:.58}];
   }
 
   // cantus (TRÄNEN only) — a seeded descending "sigh" cell, stated then echoed
@@ -872,7 +865,7 @@ function makeCrackle(ac){const b=ac.createBuffer(1,ac.sampleRate*4,ac.sampleRate
    when this file is opened directly (localStorage); ?factory bypasses. */
 const TIMBRE={
   id:'rille', title:'RILLE \u00b7 op. IV',
-  doc:'A dual-deck techno mixer. Both decks feed one master: pre-gain \u2192 tanh shaper (the vinyl warmth) \u2192 5:1 compressor \u2192 output trim (real headroom \u2014 the WAV must never clip), with one shared reverb + filtered feedback delay as send FX. Voices per deck: KICK \u2014 sine dropping to a floor with a triangle click, driving a per-mood waveshaper, and sidechain-ducking the musical parts; HATS \u2014 highpassed noise, closed chokes open; CLAP \u2014 3\u20134 bandpassed noise bursts (and a sine rim); BASS \u2014 triangle + optional sub-octave sine through a 340 Hz lowpass (fundamentals floored at 41 Hz \u2014 the rumble law, not a knob); CHORDS/ARPS \u2014 detuned saw pairs through a warmth lowpass into the mood\u2019s stab filter, riding the duck bus; CANTUS \u2014 sine + faint octave triangle; DUST \u2014 the record surface, crackle on the part bus, hiss post-comp so it never pumps.',
+  doc:'A dual-deck techno mixer. Both decks feed one master: pre-gain \u2192 tanh shaper (the vinyl warmth) \u2192 5:1 compressor \u2192 output trim (real headroom \u2014 the WAV must never clip), with one shared reverb + filtered feedback delay as send FX. Voices per deck: KICK \u2014 sine dropping to a floor with a triangle click, driving a per-mood waveshaper, and sidechain-ducking the musical parts; HATS \u2014 highpassed noise, closed chokes open; CLAP \u2014 3\u20134 bandpassed noise bursts (and a sine rim); BASS \u2014 triangle + optional sub-octave sine through a 340 Hz lowpass (fundamentals floored at 41 Hz \u2014 the rumble law, not a knob); CHORDS \u2014 detuned saw pairs through a warmth lowpass into the mood\u2019s stab filter, riding the duck bus (sparse offbeat stabs while hovering, sustained swells at the cadence); CANTUS \u2014 sine + faint octave triangle; DUST \u2014 the record surface, crackle on the part bus, hiss post-comp so it never pumps.',
   groups:{
     master:{label:'master chain',doc:'Shared by both decks, applied before the mood\u2019s own FX mixes.',params:{
       pre:{v:.9,min:.3,max:1.3,step:.01,label:'pre gain',doc:'level into the shaper \u2014 more = warmer/dirtier'},
@@ -907,18 +900,13 @@ const TIMBRE={
       subMix:{v:.6,min:0,max:1,step:.02,label:'sub mix',doc:'the octave-below sine under the triangle'},
       tone:{v:340,min:120,max:900,step:10,unit:'Hz',label:'tone',doc:'lowpass over the bass voice'},
     }},
-    chords:{label:'chords & swells',doc:'Detuned saw pairs \u2192 warmth lowpass \u2192 the mood\u2019s stab filter \u2192 the duck bus.',params:{
-      stabLvl:{v:.28,min:.05,max:.6,step:.01,label:'stab level',doc:'short-chord peak'},
+    chords:{label:'chords & stabs',doc:'Detuned saw pairs \u2192 warmth lowpass \u2192 the mood\u2019s stab filter \u2192 the duck bus. Serves both the sparse hover STABS and the sustained cadence SWELLS.',params:{
+      stabLvl:{v:.28,min:.05,max:.6,step:.01,label:'stab level',doc:'hover-stab peak'},
       padLvl:{v:.16,min:.05,max:.5,step:.01,label:'swell level',doc:'sustained cadence-swell peak'},
       stabWarm:{v:2900,min:1200,max:6000,step:50,unit:'Hz',label:'stab warmth',doc:'lowpass on stabs \u2014 lower rounds the bite'},
       padWarm:{v:2200,min:1200,max:6000,step:50,unit:'Hz',label:'swell warmth',doc:'lowpass on swells'},
       detune:{v:5,min:0,max:15,step:.5,unit:'\u00a2',label:'detune',doc:'\u00b1cents between the saw pair \u2014 width/wobble'},
       attack:{v:.022,min:.004,max:.08,step:.002,unit:'s',label:'stab attack',doc:'stab swell-in; shorter clicks, longer breathes'},
-    }},
-    arp:{label:'arpeggio',doc:'The broken-chord pluck on the same filters, pumping with the kick.',params:{
-      lvl:{v:.24,min:.05,max:.5,step:.01,label:'level',doc:'pluck peak (\u00d7 velocity)'},
-      warm:{v:2700,min:1200,max:6000,step:50,unit:'Hz',label:'warmth',doc:'lowpass on the pluck'},
-      detune:{v:4,min:0,max:15,step:.5,unit:'\u00a2',label:'detune',doc:'\u00b1cents of the pluck pair'},
     }},
     cantus:{label:'cantus',doc:'The melody voice.',params:{
       lvl:{v:.34,min:.05,max:.7,step:.01,label:'level',doc:'note peak (\u00d7 velocity)'},
@@ -1131,7 +1119,7 @@ function vBass(G,t,f,len,vel){                            // f in Hz (JI lattice
   lp.connect(hp).connect(gn).connect(G.part.bassus);
   o.start(t);o.stop(t+len+.2);
 }
-function vChord(G,t,freqs,len,pad){                      // freqs in Hz (JI-tuned upstream)
+function vChord(G,t,freqs,len,pad,velMul){               // freqs in Hz (JI-tuned upstream)
   const ac=G.ac;
   const gn=ac.createGain();
   // Smoother, less-harsh stabs. Two things made the raw chord bite: the detuned
@@ -1143,7 +1131,7 @@ function vChord(G,t,freqs,len,pad){                      // freqs in Hz (JI-tune
   const warm=ac.createBiquadFilter();warm.type='lowpass';
   warm.frequency.value=pad?TP.chords.padWarm:TP.chords.stabWarm;warm.Q.value=.4;
   const a=pad?len*.35:TP.chords.attack,rel=pad?len*.4:len*.55;
-  const cl=pad?TP.chords.padLvl:TP.chords.stabLvl;
+  const cl=(pad?TP.chords.padLvl:TP.chords.stabLvl)*(velMul==null?1:velMul);
   gn.gain.setValueAtTime(0,t);
   gn.gain.linearRampToValueAtTime(cl,t+a);
   gn.gain.setValueAtTime(cl,t+Math.max(a,len-rel));
@@ -1155,23 +1143,10 @@ function vChord(G,t,freqs,len,pad){                      // freqs in Hz (JI-tune
     o.connect(gn);o.start(t);o.stop(t+len+.15);
   }
 }
-// one arpeggio tone: a soft pluck through the same warmth+stab filters the
-// chords use, so the broken chord keeps the mood's colour. Short attack, notes
-// overlap slightly (legato shimmer). Routes into chordae → the duck bus, so the
-// line pumps with the kick.
-function vArpN(G,t,freq,vel,len){                        // freq in Hz (JI-tuned upstream)
-  const ac=G.ac,gn=ac.createGain();
-  const warm=ac.createBiquadFilter();warm.type='lowpass';warm.frequency.value=TP.arp.warm;warm.Q.value=.4;
-  gn.gain.setValueAtTime(0,t);
-  gn.gain.linearRampToValueAtTime(TP.arp.lvl*vel,t+.006);
-  gn.gain.exponentialRampToValueAtTime(.001,t+len);
-  gn.connect(warm).connect(G.stabBP);
-  for(const det of [-TP.arp.detune,TP.arp.detune]){
-    const o=ac.createOscillator();o.type='sawtooth';
-    o.frequency.value=freq;o.detune.value=det;
-    o.connect(gn);o.start(t);o.stop(t+len+.05);
-  }
-}
+// (the running arpeggio and its own voice `vArpN` were removed here — a
+// metronomic broken chord cycling root-♭3-5-9 read as a cheesy trance arp
+// (maintainer: "still doofy"). The hover chord is now a sparse, filtered
+// STAB voiced by vChord — see the STAB block in scheduleBar.)
 function vCantus(G,t,f,len,vel){                         // f in Hz (JI-tuned upstream)
   const ac=G.ac;
   const o=ac.createOscillator(),o2=ac.createOscillator(),gn=ac.createGain();
@@ -1284,18 +1259,23 @@ function scheduleBar(G,arr,g,bar,t0,stepDur,rng){
         vChord(G,t0,dyad.map(r=>fB*r*2),H.span*16*stepDur*.94,true);
       }
     }else{
-      // hover: the chord broken open — an arpeggio of just ratios over the bar
-      // root, always reaching, never landing all at once. Quint bars (the
-      // thirdless major-quality passing colour) automatically roll
-      // root-fifth-ninth, by construction — no third to reach for.
+      // hover: sparse chord STABS — the bar's open shell, hit on the offbeats
+      // and lifted out of the bass into the stab register, filtered and
+      // pumping with the kick. No melodic contour, no running arpeggio: the
+      // pitches don't move as a line, the RHYTHM and the filter carry it (the
+      // dub-techno chord). The shell drops the shape's top 9th (the brightest,
+      // plinkiest tone) so the stab stays dark and grounded; quint bars stab a
+      // bare open fifth. The old "reach" octave-pop is gone entirely.
+      const stabBase=foldSwellHz(barRootHz,g.tonicHz)*2;   // mid/stab register
+      const shell=shape.filter(r=>r<2.2);                  // drop the 9/4 top
+      const freqs=shell.map(r=>stabBase*r);
       for(const a of g.arpSeq){
         if(Math.floor(a.s/16)!==(bar%2))continue;
         const s=a.s%16;
-        const ratio=shape[a.idx%shape.length]*Math.pow(2,a.oct);
-        vArpN(G,t0+s*stepDur+sw(s),barRootHz*ratio,a.vel,stepDur*2.4);
+        vChord(G,t0+s*stepDur+sw(s),freqs,stepDur*2.6,false,a.vel);
       }
-      // pad moods keep a quiet interval UNDER the line — a bare just fifth,
-      // grounding; the arp supplies the colour above it
+      // pad moods keep a quiet interval UNDER the stabs — a bare just fifth,
+      // grounding; the stabs supply the colour above it
       if(M.stab.pad&&H.first){
         const fB=foldSwellHz(barRootHz,g.tonicHz);
         vChord(G,t0,[fB*3/2],H.span*16*stepDur*.94,true);
@@ -1532,7 +1512,7 @@ function drawDisc(bar,step,arr){
       if(p==='bassus')v=g.bass.some(b=>b.s===s)?.9:0;
       if(p==='crepitus')v=Math.max(g.hatC[s],g.hatO[s]);
       if(p==='manus')v=g.clap[s];
-      if(p==='chordae')v=g.arpSeq.some(a=>a.s%16===s)?.9:0;   // the arp's step mask
+      if(p==='chordae')v=g.arpSeq.some(a=>a.s%16===s)?.9:0;   // the stab step mask
       if(v<=0)continue;
       const a=s/16*Math.PI*2,a2=a+Math.PI*2/16*.55;
       ctx.beginPath();ctx.arc(0,0,rr,a,a2);

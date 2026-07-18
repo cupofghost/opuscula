@@ -473,6 +473,37 @@ the subharmonic mirror no existing machine touches.
 pushed. The self-contained brief `rille/HARMONIA.md` was the spec; it's deleted
 now that the work is in — the reasoning survives here and in the commit message.
 
+**Follow-up (maintainer ear-check: "still sounds doofy — the arpeggio, all
+moods"):** the running broken-chord arpeggio was the culprit — a metronomic
+index-walk cycling root-♭3-5-9 (up/dn/ud/rnd per mood) read as a cheesy
+trance/eurodance arp, plus a low/muddy register and the TRÄNEN octave "reach"
+plink. **Replaced the arpeggio with sparse dub-techno chord STABS:** the
+hover chord is now struck as an open shell of the bar's shape (the shape minus
+its top 9/4, so it stays dark/grounded; `quint` bars stab a bare fifth) on the
+OFFBEAT 8ths only (EISEN also takes the on-beats for its industrial cluster),
+one-ish to a bar with space around it, lifted into the stab register
+(`foldSwellHz(barRootHz)×2`) via `vChord` — no melodic contour, no running
+line, no octave pop. `g.arpSeq` is now `{s,vel}` stab positions (was
+`{s,idx,oct,vel}`); the canvas step-mask still reads it unchanged. Deleted:
+the `vArpN` pluck voice, the `arp` TIMBRE group (43→**40 params**), and the
+dead `rate`/`dir`/`reach` mood fields (`arp:{}` now just `{dens}`). `vChord`
+gained an optional `velMul`. Reader-notes + TIMBRE doc updated (stabs, not
+arps). The tuning/harmony/cantus/cadence laws are untouched — only the hover
+*voicing* changed. **Verified:** Node structural sweep 25/25 (item 8 rewritten:
+stab events carry no melodic-walk fields, sit only on offbeats, counts stay
+sparse — never a running arp) + a headless-free **runtime mock**
+(`scratchpad/verify-rille-runtime.mjs`, minimal Web-Audio stub) drives the real
+`buildGraph`/`makeDeck`/`scheduleBar` across all 7 moods × 3 Lösungen over 64
+bars: no exceptions, zero NaN/Inf to any oscillator or param, 25k+ oscillators
+live. **ENV NOTE for the next session:** Playwright's default `headless_shell`
+Chromium is currently crashing the node process on `.launch()` in this sandbox
+(silent, no output) — the full `chrome` binary at
+`/opt/pw-browsers/chromium-1194/chrome-linux/chrome` launches fine, so pass
+`executablePath` to it (the verify scripts already do); and the audio-graph
+runtime is better checked with the Web-Audio-mock runner than a live render
+anyway. Still worth a maintainer ear-check that the stabs read as dub-techno,
+not the old arp.
+
 Reworked RILLE's whole tonal path per the maintainer's mandate: **no major
 moods or vibes** (major only ever to resolve minor progress), no goofy plinks,
 simplified input, and **just intonation end to end**. What shipped:
