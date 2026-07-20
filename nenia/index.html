@@ -37,6 +37,11 @@ a:hover{color:var(--chalk)}
 .mono{font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace; font-size:.78rem; letter-spacing:.06em}
 /* exit to opuscula (shared across the opuscula) */
 .exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:14px 0 0 14px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+/* direct link to officina — the voicing bench (added) */
+.bench{position:fixed;top:max(6px,env(safe-area-inset-top));right:max(6px,env(safe-area-inset-right));z-index:100;display:flex;width:-moz-fit-content;width:fit-content;align-items:center;gap:.55em;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench:hover,.bench:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.bench:active{transform:translateY(1px)}
+@media(prefers-reduced-motion:reduce){.bench{transition:none}}
 .exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
 .exit:active{transform:translateY(1px)}
 .exit .x{font-size:15px;line-height:1;letter-spacing:0}
@@ -130,6 +135,7 @@ footer{
 <body>
 <div class="wrap">
   <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+  <a class="bench" href="../officina/#m=nenia" aria-label="Open in officina — the voicing bench" title="officina">officina</a>
   <div class="opline">op. X · playground lore</div>
   <h1>Nenia<span class="dot">.</span></h1>
   <p class="thesis"><b>The oldest song anyone learns.</b> Two notes and a taunt, passed child to child with no adult in the chain — this machine makes up rhymes nobody wrote and plays the games everybody knows.</p>

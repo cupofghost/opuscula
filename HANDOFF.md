@@ -7,7 +7,7 @@ start of a session — it's meant to be enough to work without re-explaining.
 
 ## Architecture
 
-**OPVSCVLA is eighteen independent single-file Web Audio machines** plus a static
+**OPVSCVLA is nineteen independent single-file Web Audio machines** plus a static
 landing page. There is **no build step, no bundler, no dependencies, no npm, no
 samples, no server-side anything.** Each `op.` is one self-contained
 `index.html` — inline `<style>`, inline `<script>`, all synthesis in the
@@ -171,7 +171,7 @@ here, and `officina`'s `MACHINES` chips:
   rebase-before-push is where you re-sync them against what landed under you.
 
 **Cross-machine sweeps** — bridge changes, a convention applied everywhere:
-- The OFFICINA bridge is duplicated verbatim in all fourteen machines, so
+- The OFFICINA bridge is duplicated verbatim in all nineteen machines, so
   editing it touches every file and conflicts with every live branch. A
   sweep gets its **own dedicated branch**, mixes in no per-machine feature
   work, lands fast, and announces itself in Open threads so per-machine
@@ -242,6 +242,28 @@ Conventions when touching this layer:
 ## Open threads
 
 Newest first.
+
+### Direct officina link on every machine — cross-machine sweep
+**Branch:** `copilot/cleanup-general-bugs-issues` · **Files:** all nineteen
+`*/index.html` · **Status:** done, verified headless (Chromium, all 19 pass:
+link present, correct `href`, zero pageerrors). Maintainer's brief: officina
+was only reachable from the landing-page colophon, "not very handy" when
+already inside a machine.
+
+Added a fixed top-right pill `<a class="bench" href="../officina/#m=<dir>">
+officina</a>` to every machine page, sitting alongside the existing top-left
+`.exit` pill (independent `position:fixed`, doesn't interact with `.exit`'s
+`position:sticky`). Reuses each machine's own `.exit` color/background/border
+values so the pill matches the page's palette instead of a generic default.
+`officina/index.html` already parses `#m=<id>` on load (`pick(id)` at the
+bottom of its script) and auto-selects that machine's chip, so no officina-side
+change was needed — this was a pure "expose the existing deep link" sweep.
+This is the OFFICINA-bridge-style duplicated-verbatim exception to "no shared
+code": the CSS block and anchor are near-identical in all 19 files (only the
+per-machine color values and `#m=` slug differ), added mechanically rather
+than hand-edited to keep them consistent. Any future *change* to this pill
+(copy, position, behavior) is another cross-machine sweep, same discipline as
+the OFFICINA bridge itself.
 
 ### TRITAVA — new machine, op. XIX (the Bohlen–Pierce scale — a music with no octave)
 **Branch:** `claude/session-vfb3ko` · **File:** `tritava/index.html` · **Status:**
