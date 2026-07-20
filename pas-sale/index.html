@@ -206,10 +206,10 @@ button,.man,canvas{-webkit-user-select:none;user-select:none}
   <div class="marquee" id="marquee"></div>
 
   <div class="transport">
-    <button id="playBtn" style="flex:2">ROULEZ</button>
+    <button id="playBtn" style="flex:2">PLAY</button>
     <button id="pauseBtn" style="flex:1" disabled>PAUSE</button>
     <button id="waxBtn" class="small">CUT A SIDE<br>16-bit WAV</button>
-    <button id="encoreBtn" class="small">ENCORE !<br>autre version</button>
+    <button id="encoreBtn" class="small">ANOTHER<br>encore !</button>
   </div>
 
   <div class="tempo">
@@ -239,7 +239,7 @@ button,.man,canvas{-webkit-user-select:none;user-select:none}
 
   <p class="foot">« les haricots sont pas salés » — after Amédé Ardoin<br>
   <span class="fr">synthesized end-to-end · no samples · pure Web Audio</span><br>
-  <span class="fr">matrice n° <span id="matrice"></span> · op. I · <a href="../">opvscvla</a> · touches : espace = roulez · r = encore · c = cut</span></p>
+  <span class="fr">matrix no. <span id="matrice"></span> · op. I · <a href="../">opvscvla</a> · keys: space = play · r = another · c = cut</span></p>
 
 </div></div>
 
@@ -823,7 +823,7 @@ async function start(){
   LIVE=makeBuses(ctx);
   song=compile(bpm);
   ptr=0; t0=ctx.currentTime+.12; playing=true; paused=false;
-  playBtn.textContent='ARRÊTE'; playBtn.classList.add('playing');
+  playBtn.textContent='STOP'; playBtn.classList.add('playing');
   pauseBtn.disabled=false; pauseBtn.textContent='PAUSE'; pauseBtn.classList.remove('playing');
   tempoR.disabled=true;
   timer=setInterval(()=>{
@@ -841,7 +841,7 @@ function stop(){
   if(timer){clearInterval(timer); timer=null;}
   if(rafId){cancelAnimationFrame(rafId); rafId=null;}
   if(ctx){ try{ctx.close();}catch(e){} ctx=null; LIVE=null; }
-  playBtn.textContent='ROULEZ'; playBtn.classList.remove('playing');
+  playBtn.textContent='PLAY'; playBtn.classList.remove('playing');
   pauseBtn.disabled=true; pauseBtn.textContent='PAUSE'; pauseBtn.classList.remove('playing');
   tempoR.disabled=false;
   counter.textContent='tape stopped';
@@ -849,7 +849,7 @@ function stop(){
   dots.forEach(d=>d.classList.remove('on'));
 }
 playBtn.addEventListener('click', ()=> playing?stop():start());
-/* PAUSE · REPRENDS: suspend/resume the AudioContext. Every event is scheduled
+/* PAUSE · RESUME: suspend/resume the AudioContext. Every event is scheduled
    against ctx.currentTime, which freezes while suspended, so the two-step and
    the marquee hold and pick up exactly where they stopped — the tape parked. */
 function togglePause(){
@@ -857,7 +857,7 @@ function togglePause(){
   if(paused){paused=false; ctx.resume();
     pauseBtn.textContent='PAUSE'; pauseBtn.classList.remove('playing');}
   else{paused=true; ctx.suspend();
-    pauseBtn.textContent='REPRENDS'; pauseBtn.classList.add('playing');}
+    pauseBtn.textContent='RESUME'; pauseBtn.classList.add('playing');}
 }
 pauseBtn.addEventListener('click', togglePause);
 
@@ -959,7 +959,7 @@ function uiTick(){
 const encoreBtn=document.getElementById('encoreBtn'),matriceEl=document.getElementById('matrice');
 function updMatrice(){if(matriceEl)matriceEl.textContent=songSeed.toString(16).toUpperCase();}
 function encore(){if(playing)stop();songSeed=(Math.random()*0x7fffffff)|0;updMatrice();
-  counter.textContent='autre version pressée — ROULEZ';__hashWrite();}
+  counter.textContent='another version pressed — PLAY';__hashWrite();}
 encoreBtn&&encoreBtn.addEventListener('click',encore);
 updMatrice();
 
