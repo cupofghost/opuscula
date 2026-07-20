@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0e0d16">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="TRITAVA">
+<title>TRITAVA — a music with no octave (the Bohlen–Pierce scale)</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   TRITAVA — the Bohlen–Pierce scale, a music with no octave.
+   Ink indigo #0e0d16 · glass cyan #7fd4d0 · violet #9a8cff · gold #d9b44a
+   (the tonic / the tritave) · bone #e9e4f2. The look is a cold-glass
+   observatory: a 13-spoke wheel that shuts not at the octave but at the
+   tritave (3:1). Named in Latin — tri- + the -tave of "octave" — because
+   this is tuning theory, the collection's Latin tongue (SCALA, GRADUS,
+   COCHLEA, NENIA, TESSERA).
+   ===================================================================== */
+:root{
+  color-scheme:dark;
+  --ground:#0e0d16; --panel:#0a0910; --bone:#e9e4f2;
+  --glass:#7fd4d0; --violet:#9a8cff; --gold:#d9b44a;
+  --txt:#e9e4f2; --dim:#9990b0; --hair:rgba(154,140,255,.20); --hair2:rgba(154,140,255,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;background:var(--ground)}
+body{
+  background:var(--ground);
+  background-image:radial-gradient(120% 80% at 50% -8%, rgba(154,140,255,.07), transparent 55%),
+                   radial-gradient(90% 60% at 50% 110%, rgba(127,212,208,.06), transparent 60%);
+  color:var(--txt);font-family:'EB Garamond',Georgia,serif;
+  min-height:100vh;display:flex;justify-content:center;
+  padding:max(14px,env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom));
+}
+.pit{
+  width:100%;max-width:600px;background:var(--panel);
+  border:1.5px solid var(--violet);
+  box-shadow:0 0 0 5px var(--ground),0 0 0 6.5px var(--hair),inset 0 0 70px rgba(0,0,0,.6);
+  display:flex;flex-direction:column;padding:0 0 18px;
+}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:14px 0 0 14px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e4f2;background:rgba(10,9,16,.5);border:1px solid rgba(233,228,242,.24);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,228,242,.7);background:rgba(10,9,16,.82);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+
+header{padding:14px 20px 12px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.3em;color:var(--glass);text-transform:uppercase}
+h1{font-family:'Cormorant SC',serif;font-weight:700;font-size:clamp(2.8rem,14vw,4.4rem);
+  letter-spacing:.14em;line-height:1;color:var(--txt);margin:6px 0 8px;text-indent:.14em;
+  text-shadow:0 1px 0 rgba(154,140,255,.22)}
+.sub{font-style:italic;font-size:1rem;color:var(--txt);line-height:1.45}
+.sub b{font-style:normal;color:var(--glass)}
+.credit{font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--dim);letter-spacing:.06em;margin-top:9px;text-transform:uppercase}
+
+.plate{position:relative;margin:2px 14px 0;border:1px solid var(--hair);background:var(--ground)}
+.plate canvas{display:block;width:100%;height:auto}
+.plate .tag{position:absolute;top:7px;left:10px;font-family:'IBM Plex Mono',monospace;font-size:.56rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.plate .tagr{left:auto;right:10px;text-align:right}
+.plate .tag b{color:var(--glass)}
+
+.controls{padding:14px 20px 0;display:flex;flex-direction:column;gap:14px}
+.lab{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.26em;color:var(--glass);text-transform:uppercase;margin-bottom:7px;display:flex;justify-content:space-between}
+.lab .rd{color:var(--txt);letter-spacing:.05em}
+
+button{font-family:'EB Garamond',serif;color:var(--txt);background:transparent;
+  border:1px solid var(--hair);cursor:pointer;touch-action:manipulation;letter-spacing:.05em}
+button:focus-visible{outline:2px solid var(--glass);outline-offset:2px}
+button:active{transform:translateY(1px)}
+button,canvas{-webkit-user-select:none;user-select:none}
+
+.pick{width:100%;padding:16px;font-family:'Cormorant SC',serif;font-weight:600;
+  font-size:1.25rem;letter-spacing:.3em;text-transform:uppercase;border-width:1.5px;
+  border-color:var(--violet);transition:background .15s,color .15s,border-color .15s}
+.pick.on{background:var(--glass);border-color:var(--glass);color:#062018}
+.pick:disabled{opacity:.4;cursor:default}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chips button{padding:8px 11px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--dim);letter-spacing:.04em}
+.chips button.on{background:var(--violet);color:#0b0819;border-color:var(--violet)}
+.chips button small{display:block;font-size:.82em;opacity:.7;letter-spacing:0;text-transform:none}
+.chips button.on small{opacity:.85}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--hair)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;margin-top:-9px;border-radius:50%;background:var(--panel);border:2px solid var(--glass);box-shadow:0 0 7px rgba(127,212,208,.4)}
+input[type=range]::-moz-range-track{height:2px;background:var(--hair)}
+input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--panel);border:2px solid var(--glass)}
+
+.cut{width:100%;padding:13px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;border-style:dashed;border-color:var(--hair)}
+.cut:disabled{opacity:.45;cursor:default}
+.cutnote{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim);text-align:center;margin-top:7px;min-height:1em;letter-spacing:.05em}
+
+.foot{margin:16px 20px 0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;
+  letter-spacing:.2em;color:var(--dim);text-transform:uppercase;line-height:1.9;border-top:1px solid var(--hair2);padding-top:12px}
+.foot a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
+</style>
+</head>
+<body>
+<div class="pit">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+
+  <header>
+    <div class="eyebrow">op. XIX · the Bohlen–Pierce scale</div>
+    <h1>Tritava</h1>
+    <div class="sub"><b>A music with no octave.</b> Almost every scale on earth repeats when a frequency doubles — the octave, 2:1. This one doesn't. It repeats at the <em>tritave</em> — a perfect twelfth, 3:1 — and builds its thirteen just-tuned steps from the odd harmonics 3, 5, 7. Its chords ring consonant only on tones made of odd harmonics, so the whole machine is voiced on reeds and stopped pipes. You set the mode, the motion, and the meter; the machine composes inside a harmony that has never once heard an octave.</div>
+    <div class="credit">a drone · glass bells · a reed · a soft tick — all odd-harmonic, all synthesized, no samples · tuned from 220 Hz · every interval a small ratio of 3·5·7 · zero equal temperament, and no octave anywhere</div>
+  </header>
+
+  <div class="plate">
+    <canvas id="cv" width="920" height="560" aria-label="A thirteen-spoke wheel — the Bohlen–Pierce scale — that closes at the tritave rather than the octave; the sounding chord drawn as a triangle across it, the melody sweeping the rim; beside it the chord's ratios and the bar-by-bar progression"></canvas>
+    <div class="tag">STEP · <b id="stepTag">1/1</b></div>
+    <div class="tag tagr"><span id="cycTag">Lambda</span></div>
+  </div>
+
+  <div class="controls">
+
+    <div style="display:flex;gap:10px">
+      <button class="pick" id="pick" style="flex:1">Play</button>
+      <button class="pick" id="pause" style="flex:0 0 34%" disabled>Pause</button>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Mode <span class="rd" id="moderd">Lambda · the primary diatonic</span></div>
+      <div class="chips" id="mode"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Motion <span class="rd" id="motionrd">Flow · a steady pace</span></div>
+      <div class="chips" id="motion"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Meter <span class="rd" id="meterrd">5 · 2+3</span></div>
+      <div class="chips" id="meter"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Tempo <span class="rd" id="tempord">300 eighths/min</span></div>
+      <input type="range" id="tempo" min="180" max="420" value="300" aria-label="Eighth notes per minute">
+    </div>
+
+    <div class="fld">
+      <button class="cut" id="cut">Cut the loop · 16-bit WAV</button>
+      <div class="cutnote" id="cutnote">renders one whole lap, seamlessly</div>
+    </div>
+  </div>
+
+  <details class="reader">
+    <summary>On this music · the scale with no octave</summary>
+    <div class="rbody">
+      <h4>What you're hearing</h4>
+      <p>A generative piece composed entirely inside the <b>Bohlen–Pierce scale</b> — a tuning that abandons the octave. A soft reed drone holds the ground; glass bells arpeggiate a progression of Bohlen–Pierce chords; a clarinet-voiced line threads a melody through the chosen mode; a low tick keeps the meter. Every pitch is an exact whole-number ratio; nothing here is equal-tempered, and — this is the strange part — no two notes anywhere are an octave apart on purpose. The loop is composed once from the seed and played seamlessly; the WAV you cut is exactly what you hear.</p>
+      <h4>The octave, and then not the octave</h4>
+      <p>Double any frequency and the ear calls it "the same note, higher" — that is the octave, the ratio 2:1, and nearly every scale ever built repeats itself at it. Bohlen and Pierce asked a heretical question: what if a scale repeated at the <em>tritave</em> instead — the ratio 3:1, an octave-plus-a-fifth, what musicians call a perfect twelfth? Divide that wider space into thirteen steps and you get a complete harmonic language that is genuinely alien and genuinely consonant — but one in which the octave, the most basic interval in all other music, simply does not occur.</p>
+      <h4>Where it came from</h4>
+      <p>Heinz Bohlen, a German microwave-electronics engineer and amateur trumpeter, derived the scale around 1972 from the way combination tones behave, taking as his law that a chord sounds consonant when its tones fall in the ratio 3:5:7. Kees van Prooijen reached the same scale independently a few years later. Then <b>John R. Pierce</b> — the Bell Labs engineer who named the transistor and launched the first communications satellite — rediscovered it in the 1980s with <b>Max Mathews</b>, the father of computer music. Their crucial contribution was acoustic, not mathematical: using synthesized tones, they showed that the scale's chords only lock into consonance when the timbre is built from <em>odd harmonics</em> — the spectrum of a clarinet, or a pipe stopped at one end. On ordinary bright, even-harmonic tones the same chords sound sour.</p>
+      <h4>Why everything here is a reed or a stopped pipe</h4>
+      <p>That acoustic fact is this machine's design. Every pitched voice — the drone, the bells, the melody, the tick — is synthesized from odd harmonics only (1, 3, 5, 7, 9…), the square-ish, hollow, woody spectrum in which Bohlen–Pierce harmony actually rings true. The tuning dictates the timbre; you are not hearing a synth pad decorated with an exotic scale, you are hearing the only kind of tone in which this scale means anything.</p>
+      <h4>The just scale — thirteen steps, no tempering</h4>
+      <p>There is an equal-tempered Bohlen–Pierce (thirteen equal divisions of the tritave, each the thirteenth root of 3). This machine does not use it. It uses the <em>just</em> Bohlen–Pierce scale: thirteen exact ratios whose only prime factors are 3, 5 and 7 — 1/1, 27/25, 25/21, 9/7, 7/5, 75/49, 5/3, 9/5, 49/25, 15/7, 7/3, 63/25, 25/9, and home again at 3/1. Where every other machine in this collection that touches tuning insists on exact ratios, so does this one: there is no equal temperament anywhere in the signal path.</p>
+      <h4>The modes</h4>
+      <p><b>Lambda</b> is the scale's home mode — a nine-note diatonic subset (a "whole tone" of 25/21 to open, a lead-tone semitone to close, never two whole tones in a row) and the mode in which the scale was first derived; it is the friendliest doorway in. <b>Gamma</b> is another of its diatonic modes, two five-note runs bridged by a step, more restless. <b>Harmonia</b> is a six-note distillation to the very simplest consonances the scale owns — 1/1, 9/7, 7/5, 5/3, 9/5, 7/3. And <b>Chromatic</b> opens all thirteen steps at once, the full alien gamut.</p>
+      <h4>The chords</h4>
+      <p>Bohlen–Pierce's answer to the major chord is the ratio <b>3:5:7</b> — three tones drawn straight from the odd overtones, bright and outward, the sonority the whole scale was reasoned backward from. Its cooler shade here is <b>5:7:9</b>. The machine walks a seeded progression of these chords over the degrees of the chosen mode, resolving home to the 3:5:7 on the tonic at every phrase. The wheel on the plate draws each chord as a triangle stretched across the thirteen spokes; because the spokes are spaced by their true ratios and the ring closes at the tritave, the whole geometry is a picture of a scale that never returns to an octave.</p>
+      <h4>The name</h4>
+      <p>op. XIX is named in Latin, the collection's tongue for tuning theory: <em>tritava</em> — the tri- of "three" fused to the -tave of "octave," the coined English word <em>tritave</em> Latinised. It names the one interval this music repeats at, and quietly, the one interval it repeats at <em>instead</em>.</p>
+    </div>
+  </details>
+
+  <div class="foot">
+    op. XIX · <a href="../">opvscvla</a> · keys: space=play · p=pause · r=another · c=cut
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* =====================================================================
+   READER'S GUIDE — TRITAVA (op. XIX)
+   ---------------------------------------------------------------------
+   The Bohlen–Pierce scale as a generative loop. BP repeats at the TRITAVE
+   (3:1), not the octave (2:1), and its thirteen chromatic steps are exact
+   just ratios of 3·5·7. A MODE fixes the pitch alphabet (Lambda / Gamma /
+   Harmonia / Chromatic); a seeded progression of BP chords (3:5:7 and
+   5:7:9) walks the mode's degrees and cadences home; a melody threads the
+   mode; a reed drone holds tonic·fifth·tritave. Every voice is built from
+   ODD HARMONICS ONLY — the spectrum in which BP harmony rings consonant.
+
+   Zero equal temperament, and — by construction — no octave anywhere:
+   pitches fold between voices by TRITAVES (×3 / ÷3), never by octaves.
+   Ratios stay integer [num,den] until the final Hz (ratioToHz).
+
+   THIS FILE: math (fold-by-tritave / chord tones) → tables (BP / MODES /
+   CHORDS / METERS) → genAll (the progression) → assemble (score → events)
+   → state → TIMBRE / bridge → synthesis (odd-harmonic voices) → bakeKit /
+   renderMaster (continuous drone + baked hits, seam-crossfaded loop) →
+   realtime transport → WAV cut → canvas (tritave wheel + progression) →
+   controls → hash / keys → init.
+
+   KEYS: space = play/stop · p = pause/resume · r = another loop · c = cut a WAV
+   ===================================================================== */
+
+/* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
+function __hint(msg){
+  try{
+    const p=document.getElementById('pick')||document.querySelector('button');
+    if(!p||!p.insertAdjacentElement)return;
+    let h=document.getElementById('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin:8px 20px 0;font-style:italic;letter-spacing:.04em';
+      p.parentNode.appendChild(h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{
+    if(document.visibilityState==='visible')kick();
+    else if(ac.state==='running')ac.suspend().catch(()=>{});
+  }catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else if(document.visibilityState==='visible')setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('AUDIO SUSPENDED — tap Play again · if still silent, check the ring/silent switch');}catch(e){}},450);
+}
+
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+/* ============================ ENGINE-BEGIN ============================
+   Pure, DOM-free. The Bohlen–Pierce law and the progression. */
+
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=b;b=a%b;a=t;}return a||1;}
+function reduceFrac(n,d){const g=gcd(n,d);return [n/g,d/g];}
+// fold a ratio into one tritave [1,3) — the BP analogue of octave-reduction.
+function foldTri(n,d){let [a,b]=reduceFrac(n,d);while(a/b>=3)b*=3;while(a/b<1)a*=3;return reduceFrac(a,b);}
+function centsOf(r){return 1200*Math.log2(r[0]/r[1]);}
+
+// the just Bohlen–Pierce chromatic scale: 13 steps, exact ratios of 3·5·7,
+// step 13 = the tritave 3/1 (= step 0 of the next tritave).
+const BP=[[1,1],[27,25],[25,21],[9,7],[7,5],[75,49],[5,3],[9,5],[49,25],[15,7],[7,3],[63,25],[25,9]];
+const TRITAVE=[3,1];
+
+// MODES — which chromatic steps form the pitch alphabet. Lambda is the
+// canonical BP diatonic (whole tone 25/21 to open, semitone to close,
+// never two whole tones running); Gamma is another diatonic mode (two
+// pentachords bridged by a step); Harmonia is the six lowest-complexity
+// consonances; Chromatic is all thirteen.
+const MODES={
+  lambda:   {deg:[0,2,3,4,6,7,9,10,12], label:'Lambda',    sub:'9 · the primary diatonic'},
+  gamma:    {deg:[0,1,3,4,6,7,8,10,12], label:'Gamma',     sub:'9 · two pentachords'},
+  harmonia: {deg:[0,3,4,6,7,10],        label:'Harmonia',  sub:'6 · simplest consonances'},
+  chromatic:{deg:[0,1,2,3,4,5,6,7,8,9,10,11,12], label:'Chromatic', sub:'13 · every step'},
+};
+// chord factors over the root, as exact ratios (folded into a tritave when
+// voiced). CLARUS = 3:5:7 (root, +5/3, +7/3) — the bright BP triad, its
+// tones landing on chromatic steps {root,+6,+10}. OBSCURUS = 5:7:9
+// (root, +7/5, +9/5) — steps {root,+4,+7}, the cooler shade.
+const CHORDS={
+  clarus:  {mul:[[1,1],[5,3],[7,3]], label:'clarus',   sig:'3:5:7'},
+  obscurus:{mul:[[1,1],[7,5],[9,5]], label:'obscurus', sig:'5:7:9'},
+};
+const METERS={4:[2,2],5:[2,3],7:[2,2,3]};
+
+function chordTones(root,quality){
+  return CHORDS[quality].mul.map(f=>foldTri(root[0]*f[0],root[1]*f[1]));
+}
+// nearest chromatic step index (0..12) for a ratio — used by the canvas.
+function stepOfRatio(r){
+  const c=centsOf(foldTri(r[0],r[1]));let best=0,bd=1e9;
+  for(let s=0;s<13;s++){const d=Math.abs(centsOf(BP[s])-c);if(d<bd){bd=d;best=s;}}
+  return best;
+}
+
+// ---- the progression: a seeded chord walk over the mode's degrees --------
+// 32 bars in four 8-bar phrases. Each phrase opens on the tonic 3:5:7 and
+// returns to it; between, the root walks by small steps through the mode
+// (mostly ±1, sometimes ±2), and off-tonic bars take a 5:7:9 about a
+// quarter of the time. Harmonic rhythm slows to every two bars in STILL.
+function genAll(st){
+  const mode=MODES[st.mode], deg=mode.deg, nd=deg.length;
+  const rng=mulberry32(((st.seed>>>0)^0x7717A7A)>>>0);
+  const bars=32, ppb=8;
+  const changeEvery=st.motion==='still'?2:1;
+  const rootIdx=new Array(bars), qual=new Array(bars);
+  let cur=0;
+  for(let b=0;b<bars;b++){
+    if(b%ppb===0) cur=0;                                  // phrase head → tonic
+    else if(b%changeEvery===0){
+      const step=rng()<0.72?(rng()<0.5?1:-1):(rng()<0.5?2:-2);
+      cur=((cur+step)%nd+nd)%nd;
+    }
+    rootIdx[b]=cur;
+    qual[b]=(cur===0||b%ppb===ppb-1)?'clarus':(rng()<0.25?'obscurus':'clarus');
+  }
+  return {mode,deg,nd,bars,ppb,rootIdx,qual};
+}
+/* ============================ ENGINE-END (genAll) ====================== */
+
+/* ============================ ENGINE-BEGIN (assemble) ==================
+   Progression → events. One bar = one meter cycle of eighths (group-heads
+   are the strong beats). Per bar, seeded per-voice behaviour:
+     pulsus  — a soft tick on every group-head (accent on the downbeat).
+     campana — glass bells: the chord's root on the downbeat, chord tones
+               on the other heads, and off-beat chord-tone sparkles whose
+               density follows MOTION.
+     cantus  — the reed melody: a stepwise walk through the mode, re-anchored
+               to the chord root at each phrase head, landing on heads and
+               filling between them by MOTION; register a tritave above the
+               bells. The drone (tonic·fifth·tritave) is continuous and is
+               rendered in renderMaster, not scheduled as events.
+   ========================================================================= */
+function assemble(st){
+  const G=genAll(st);
+  const {deg,nd,bars,ppb,rootIdx,qual,mode}=G;
+  const PB=METERS[st.meter];
+  const eighths=PB.reduce((a,b)=>a+b,0);
+  const heads=[];{let c=0;for(const g of PB){heads.push(c);c+=g;}}
+  const eD=60/st.tempo, barDur=eighths*eD;
+  const ev=[], chords=[];
+  const arpDens=st.motion==='sparkle'?0.85:(st.motion==='flow'?0.55:0.28);
+  const melDens=st.motion==='sparkle'?0.7:(st.motion==='flow'?0.42:0.22);
+  let m=0;                                                  // melody index into deg
+  for(let b=0;b<bars;b++){
+    const t0=b*barDur;
+    const root=BP[deg[rootIdx[b]]];
+    const ct=chordTones(root,qual[b]);
+    chords.push({tones:ct,root,quality:qual[b],rootIdx:rootIdx[b]});
+    const rng=mulberry32((((st.seed>>>0)^0x7717A7A)+(b+1)*2654435761)>>>0);
+
+    // pulsus — group-head tick (always tonic pitch-class)
+    for(const h of heads) ev.push({voice:'pulsus',t:t0+h*eD,ratio:[1,1],vel:h===0?1:.55});
+
+    // campana — bells arpeggiate the chord
+    for(let e=0;e<eighths;e++){
+      const isHead=heads.indexOf(e)>=0;
+      if(isHead){
+        const tone=e===0?ct[0]:ct[(heads.indexOf(e))%3];
+        ev.push({voice:'campana',t:t0+e*eD,ratio:tone,vel:e===0?1:.78});
+      }else if(rng()<arpDens){
+        ev.push({voice:'campana',t:t0+e*eD,ratio:ct[(rng()*3)|0],vel:.5});
+      }
+    }
+
+    // cantus — reed melody through the mode
+    if(b%ppb===0) m=rootIdx[b];                             // re-anchor each phrase
+    for(let e=0;e<eighths;e++){
+      const isHead=heads.indexOf(e)>=0;
+      let play=(e===0)||(isHead?rng()<melDens+0.32:rng()<melDens);
+      if(!play) continue;
+      if(e!==0){
+        const stp=rng()<0.74?(rng()<0.5?1:-1):(rng()<0.5?2:-2);
+        m=clamp(m+stp,0,nd-1);
+      }
+      ev.push({voice:'cantus',t:t0+e*eD,ratio:BP[deg[m]],vel:isHead?.82:.6});
+    }
+  }
+  return {ev,dur:bars*barDur,bars,ppb,barDur,eighths,heads,PB,rootIdx,qual,mode,deg,chords};
+}
+/* ============================ ENGINE-END (assemble) ===================== */
+
+/* ------------------------------- state ---------------------------------- */
+const st={mode:'lambda',motion:'flow',meter:5,tempo:300,seed:1,playing:false,paused:false};
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice. Open
+   ../officina/ — the voicing bench — to edit these live inside the running
+   mix, save named presets, and export them. A preset saved there applies
+   even when this file is opened directly (localStorage); add ?factory to
+   the URL to hear the shipped voice. The scale, modes, chords and the
+   progression are NOT here: that is the law, and it lives in the engine
+   above. Every voice is built from ODD harmonics only — that is Bohlen–
+   Pierce's own condition for consonance, not a stylistic choice. */
+const TIMBRE={
+  id:'tritava', title:'TRITAVA · op. XIX',
+  doc:'The Bohlen–Pierce scale, voiced the only way its harmony rings true: every pitched voice is built from ODD harmonics (1,3,5,7,9…), the hollow spectrum of a clarinet or a stopped pipe. GROUND is a slow reed drone on tonic·fifth·tritave, rendered continuously and looped by a seam crossfade. CAMPANA are struck glass bells (an odd-harmonic tone with a bell decay and a faint shimmer). CANTUS is the blown reed melody a tritave above. PULSUS is a soft odd-harmonic tick on the meter. MASTER gain and room WET ride live; edits to a voice re-render the loop (a brief rebake) — ► HEAR auditions a voice instantly.',
+  groups:{
+    master:{label:'master chain',doc:'A gentle shaper into a glue compressor, then a brick-wall limiter, then an output trim, plus a glassy room send. The limiter, not the shaper, holds the ceiling, so the bells ring clean.',params:{
+      drive:{v:.06,min:0,max:1,step:.01,label:'drive',doc:'waveshaper warmth only — kept low; the limiter does the loudness'},
+      compThresh:{v:-16,min:-36,max:-4,step:.5,unit:'dB',label:'comp threshold',doc:'the glue compressor'},
+      compRatio:{v:2.4,min:1,max:8,step:.1,label:'comp ratio'},
+      limThresh:{v:-1.5,min:-8,max:0,step:.1,unit:'dB',label:'limiter ceiling',doc:'the brick wall — nothing passes above this (knee 0, ratio 20)'},
+      outTrim:{v:.88,min:.4,max:1.1,step:.01,label:'out trim',doc:'post-limiter headroom'},
+      wet:{v:.17,min:0,max:.5,step:.01,label:'room return',doc:'a cold, glassy hall — more than the drier machines'},
+    }},
+    room:{label:'room',doc:'The impulse response for the room send.',params:{
+      size:{v:1.7,min:.2,max:3,step:.05,unit:'s',label:'room size'},
+      decay:{v:2.4,min:1,max:5,step:.1,label:'room decay curve'},
+    }},
+    ground:{label:'ground drone',doc:'The reed drone that anchors the alien tuning — tonic, the BP fifth (5/3), and the tritave (3/1), each a slightly detuned pair for shimmer, breathing slowly. Odd harmonics only.',params:{
+      partials:{v:5,min:1,max:12,step:1,label:'odd partials',doc:'how many odd harmonics (1,3,5,7…) build the tone'},
+      rolloff:{v:1.3,min:.5,max:2.4,step:.05,label:'harmonic rolloff',doc:'amplitude falls as 1/h^rolloff — higher is rounder/darker'},
+      detune:{v:4,min:0,max:16,step:.5,unit:'¢',label:'pair detune',doc:'the two oscillators per note beat this far apart'},
+      breath:{v:.09,min:0,max:.4,step:.01,unit:'Hz',label:'breath rate'},
+      breathDepth:{v:.16,min:0,max:.6,step:.02,label:'breath depth'},
+      level:{v:.5,min:0,max:1.4,step:.01,label:'level'},
+    }},
+    campana:{label:'glass bells',doc:'The chord voice — an odd-harmonic strike with a bell decay and a faint detuned shimmer, plus a tiny mallet transient. Arpeggiates the current chord.',params:{
+      partials:{v:6,min:1,max:14,step:1,label:'odd partials'},
+      rolloff:{v:1.15,min:.5,max:2.4,step:.05,label:'harmonic rolloff'},
+      decay:{v:.9,min:.2,max:3,step:.05,unit:'s',label:'ring'},
+      shimmer:{v:5,min:0,max:20,step:.5,unit:'¢',label:'shimmer',doc:'a second detuned copy, for glassy beating'},
+      strike:{v:.12,min:0,max:.6,step:.01,label:'mallet strike'},
+      level:{v:.92,min:0,max:1.6,step:.01,label:'level'},
+    }},
+    cantus:{label:'reed melody',doc:'The clarinet-voiced line — a blown odd-harmonic tone with a soft tongue, a gentle body decay, and a late vibrato. A tritave above the bells.',params:{
+      partials:{v:7,min:1,max:14,step:1,label:'odd partials'},
+      rolloff:{v:1.1,min:.5,max:2.4,step:.05,label:'harmonic rolloff'},
+      attack:{v:.03,min:.005,max:.15,step:.005,unit:'s',label:'tongue',doc:'attack time'},
+      decay:{v:.7,min:.2,max:2,step:.05,unit:'s',label:'body decay'},
+      vibrato:{v:5.2,min:0,max:8,step:.1,unit:'Hz',label:'vibrato rate'},
+      vibDepth:{v:8,min:0,max:30,step:.5,unit:'¢',label:'vibrato depth'},
+      level:{v:.72,min:0,max:1.5,step:.01,label:'level'},
+    }},
+    pulsus:{label:'meter tick',doc:'The tactus — a short, soft odd-harmonic click on each group-head, accented on the downbeat.',params:{
+      partials:{v:3,min:1,max:8,step:1,label:'odd partials'},
+      rolloff:{v:1.4,min:.5,max:2.4,step:.05,label:'harmonic rolloff'},
+      decay:{v:.09,min:.02,max:.3,step:.005,unit:'s',label:'ring'},
+      level:{v:.4,min:0,max:1.2,step:.01,label:'level'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------
+   Builds TP (the runtime values the code reads) from TIMBRE defaults,
+   overlays the preset saved on this device, and — when embedded by
+   ../officina/?bench — serves the schema and accepts live edits over
+   postMessage. TIMBRE.touch, set later, pushes edits into a running graph. */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+/* ------------------------------- audio ---------------------------------- */
+const SR=44100;
+const BASE=220;                          // the reference Hz — nothing else is a literal
+// register bands per voice (Hz). Everything folds between bands by TRITAVES
+// (×3 / ÷3), never octaves — so no octave is ever introduced by voicing.
+// The drone spans one tritave [BASE/3, BASE]; bells sit [BASE, 3·BASE];
+// the reed a tritave above [3·BASE, 9·BASE]; the tick at the tonic.
+const REGBAND={pulsus:[BASE,BASE*3],campana:[BASE,BASE*3],cantus:[BASE*3,BASE*9]};
+function ratioToHz(ratio,voice){
+  const [lo,hi]=REGBAND[voice];
+  let hz=BASE*ratio[0]/ratio[1];
+  while(hz<lo)hz*=3;
+  while(hz>=hi)hz/=3;
+  return hz;
+}
+
+// an odd-harmonic additive tone into a fresh buffer of length n, shaped by
+// envFn(i). Partials are 1,3,5,7… with amplitude 1/h^rolloff; harmonics
+// above Nyquist are dropped. Phase accumulators keep it deterministic.
+function oddTone(f0,n,P,rolloff,envFn){
+  const amps=[],w=[],ph=[];const nyq=SR*0.45;
+  for(let k=0;k<P;k++){const h=2*k+1,f=f0*h;if(f>nyq)break;amps.push(Math.pow(h,-rolloff));w.push(2*Math.PI*f/SR);ph.push(0);}
+  const K=amps.length, o=new Float32Array(n);
+  for(let i=0;i<n;i++){let s=0;for(let k=0;k<K;k++){s+=Math.sin(ph[k])*amps[k];ph[k]+=w[k];}o[i]=s*envFn(i);}
+  return o;
+}
+
+// CAMPANA — a struck glass bell (odd-harmonic tone + shimmer + mallet tick).
+function synCampana(f0,rng){
+  const C=TP.campana, dec=C.decay, atkN=Math.floor(0.003*SR);
+  const dur=Math.max(.4,dec*2.8), n=Math.floor(dur*SR);
+  const env=i=>{const t=i/SR, a=i<atkN?i/atkN:1;return a*Math.exp(-t/dec);};
+  const P=Math.max(1,Math.round(C.partials));
+  const sh=Math.pow(2,C.shimmer/1200);
+  const a=oddTone(f0,n,P,C.rolloff,env), b=oddTone(f0*sh,n,P,C.rolloff,env), o=new Float32Array(n);
+  for(let i=0;i<n;i++)o[i]=a[i]*0.6+b[i]*0.4;
+  const cn=Math.floor(.004*SR);
+  for(let i=0;i<cn;i++)o[i]+=(rng()*2-1)*C.strike*Math.exp(-i/(.0015*SR));
+  return o;
+}
+// CANTUS — a blown reed with soft tongue, body decay and late vibrato.
+function synCantus(f0,rng){
+  const C=TP.cantus, atkN=Math.max(1,Math.floor(C.attack*SR));
+  const dur=Math.max(.4,C.attack+C.decay+0.28), n=Math.floor(dur*SR);
+  const relN=Math.floor(0.18*SR), relStart=n-relN;
+  const env=i=>{const t=i/SR;
+    const a=i<atkN?i/atkN:1;
+    const d=Math.exp(-Math.max(0,t-C.attack)/(C.decay*3));
+    const r=i>relStart?(n-i)/relN:1;
+    return a*d*r;};
+  const P=Math.max(1,Math.round(C.partials)), nyq=SR*0.45;
+  const amps=[],w=[],ph=[];
+  for(let k=0;k<P;k++){const h=2*k+1,f=f0*h;if(f>nyq)break;amps.push(Math.pow(h,-C.rolloff));w.push(2*Math.PI*f/SR);ph.push(0);}
+  const K=amps.length, o=new Float32Array(n);
+  const vd=Math.pow(2,C.vibDepth/1200)-1, vibW=2*Math.PI*C.vibrato/SR; let vph=0;
+  for(let i=0;i<n;i++){
+    const t=i/SR;
+    const vAmt=t>C.attack+0.05?Math.min(1,(t-C.attack-0.05)/0.25):0;
+    const vfac=1+vd*Math.sin(vph)*vAmt; vph+=vibW;
+    let s=0;for(let k=0;k<K;k++){s+=Math.sin(ph[k])*amps[k];ph[k]+=w[k]*vfac;}
+    o[i]=s*env(i);
+  }
+  return o;
+}
+// PULSUS — a short soft odd-harmonic tick.
+function synPulsus(f0,rng){
+  const Pp=TP.pulsus, dec=Pp.decay;
+  const dur=Math.max(.06,dec*4), n=Math.floor(dur*SR);
+  const env=i=>Math.exp(-(i/SR)/dec);
+  return oddTone(f0,n,Math.max(1,Math.round(Pp.partials)),Pp.rolloff,env);
+}
+const SYN_FN={campana:synCampana,cantus:synCantus,pulsus:synPulsus};
+const VOICE_PAN={campana:-0.10,cantus:0.12,pulsus:0.0};
+
+// GROUND — the continuous reed drone, summed straight into L/R over the
+// whole render (it is the one voice that never restarts, so it can't be a
+// baked hit). Deterministic: phases start at 0, no randomness.
+function addGround(L,R,n){
+  const Gp=TP.ground;
+  const notes=[[1,1],[5,3],[3,1]];       // tonic · BP fifth · tritave
+  const pans=[-0.15,0.12,-0.05], noteG=[1,0.9,0.62];
+  const gBase=BASE/3;                     // drone spans [BASE/3, BASE]
+  const detu=Math.pow(2,Gp.detune/1200);
+  const P=Math.max(1,Math.round(Gp.partials)), nyq=SR*0.45;
+  const bw=2*Math.PI*Gp.breath/SR, bd=Gp.breathDepth;
+  for(let ni=0;ni<notes.length;ni++){
+    const hz=gBase*notes[ni][0]/notes[ni][1];
+    const a=(pans[ni]+1)*Math.PI/4, gcL=Math.cos(a), gcR=Math.sin(a);
+    const amps=[],w1=[],w2=[],ph1=[],ph2=[];
+    for(let k=0;k<P;k++){const h=2*k+1,f=hz*h;if(f>nyq)break;
+      amps.push(Math.pow(h,-Gp.rolloff));w1.push(2*Math.PI*f/SR);w2.push(2*Math.PI*hz*detu*h/SR);ph1.push(0);ph2.push(0);}
+    const K=amps.length, g0=noteG[ni]*Gp.level*0.5; let bph=ni*1.9;
+    for(let i=0;i<n;i++){
+      const br=1+bd*Math.sin(bph); bph+=bw;
+      let s=0;for(let k=0;k<K;k++){s+=(Math.sin(ph1[k])+Math.sin(ph2[k]))*amps[k];ph1[k]+=w1[k];ph2[k]+=w2[k];}
+      s*=g0*br;
+      L[i]+=s*gcL;R[i]+=s*gcR;
+    }
+  }
+}
+
+// equal-power pan mix of a unit stroke into L/R.
+function mixHit(L,R,off,mono,pan,gain){
+  const a=(pan+1)*Math.PI/4, gL=Math.cos(a)*gain, gR=Math.sin(a)*gain;
+  const end=Math.min(L.length,off+mono.length);
+  for(let i=off<0?0:off,j=off<0?-off:0;i<end;i++,j++){const s=mono[j];L[i]+=s*gL;R[i]+=s*gR;}
+}
+// bake one buffer per (voice,ratio) that actually sounds — two variants so
+// repeated notes don't machine-gun. (Ground is not baked; it's continuous.)
+function bakeKit(events){
+  const rng=mulberry32(0x6a09e667), kit={};
+  for(const e of events){
+    const fn=SYN_FN[e.voice]; if(!fn) continue;
+    const key=e.voice+'.'+e.ratio[0]+'/'+e.ratio[1];
+    if(kit[key]) continue;
+    const hz=ratioToHz(e.ratio,e.voice);
+    kit[key]=[fn(hz,rng),fn(hz,rng)];
+  }
+  return kit;
+}
+// render the whole loop ONCE (deterministic in the seed). The continuous
+// drone is rendered over an extra crossfade tail and its seam is equal-power
+// crossfaded so the loop is phase-smooth; the baked bell/reed tails that
+// overhang the loop point are folded back onto the head, so their ring
+// carries across the seam too. Result is a single length-`dur` loop buffer.
+function renderMaster(){
+  const A=assemble(st);
+  const durN=Math.round(A.dur*SR);
+  const XF=Math.min(durN, Math.round(Math.min(1.5,A.dur*0.2)*SR));
+  const tailN=Math.round(Math.max(1.5,TP.campana.decay*2.8+0.4)*SR);
+  // continuous drone, length durN+XF
+  const gN=durN+XF, gL=new Float32Array(gN), gR=new Float32Array(gN);
+  addGround(gL,gR,gN);
+  // baked hits, length durN+tailN
+  const tN=durN+tailN, tL=new Float32Array(tN), tR=new Float32Array(tN);
+  const kit=bakeKit(A.ev), idx={};
+  for(const e of A.ev){
+    const key=e.voice+'.'+e.ratio[0]+'/'+e.ratio[1];
+    const bank=kit[key]; if(!bank) continue;
+    idx[key]=((idx[key]||0)+1)%bank.length;
+    const vg=TP[e.voice]?TP[e.voice].level:0.7;
+    mixHit(tL,tR,Math.floor(e.t*SR),bank[idx[key]],VOICE_PAN[e.voice]||0,(e.vel||.8)*vg);
+  }
+  // combine into the length-durN loop
+  const oL=new Float32Array(durN), oR=new Float32Array(durN);
+  oL.set(tL.subarray(0,durN)); oR.set(tR.subarray(0,durN));
+  for(let i=durN;i<tN;i++){oL[i-durN]+=tL[i];oR[i-durN]+=tR[i];}   // fold bell tails
+  for(let k=0;k<durN;k++){
+    let g=gL[k], gr=gR[k];
+    if(k<XF){const w=k/XF, fin=Math.sin(w*Math.PI/2), fout=Math.cos(w*Math.PI/2);
+      g=gL[k]*fin+gL[durN+k]*fout; gr=gR[k]*fin+gR[durN+k]*fout;}
+    oL[k]+=g; oR[k]+=gr;
+  }
+  let mx=0;for(let i=0;i<durN;i++){const a=Math.abs(oL[i]);if(a>mx)mx=a;const b=Math.abs(oR[i]);if(b>mx)mx=b;}
+  if(mx>0){const k=.92/mx;for(let i=0;i<durN;i++){oL[i]*=k;oR[i]*=k;}}
+  return {L:oL,R:oR,dur:A.dur,A};
+}
+
+function toStereoBuffer(ctx,L,R){const b=ctx.createBuffer(2,L.length,SR);b.getChannelData(0).set(L);b.getChannelData(1).set(R);return b;}
+function makeRoomIR(ctx,sec,exp){
+  const len=Math.max(1,Math.floor(sec*ctx.sampleRate)),b=ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,exp);lp+=0.3*((Math.random()*2-1)-lp);d[i]=lp*e*1.5;}}
+  return b;
+}
+function makeShaperCurve(amount){
+  const n=1024, curve=new Float32Array(n), k=amount*18+0.0001, norm=Math.tanh(k);
+  for(let i=0;i<n;i++){const x=i/(n-1)*2-1;curve[i]=Math.tanh(k*x)/norm;}
+  return curve;
+}
+// the fixed signal path — identical realtime & offline so the WAV is faithful.
+function buildGraph(ctx,L,R,loop){
+  const G={ctx};
+  G.shaper=ctx.createWaveShaper();G.shaper.curve=makeShaperCurve(TP.master.drive);G.shaper.oversample='2x';
+  G.comp=ctx.createDynamicsCompressor();
+  G.comp.threshold.value=TP.master.compThresh;G.comp.ratio.value=TP.master.compRatio;
+  G.comp.knee.value=6;G.comp.attack.value=0.006;G.comp.release.value=0.15;
+  G.master=ctx.createGain();G.master.gain.value=1;
+  G.lim=ctx.createDynamicsCompressor();
+  G.lim.threshold.value=TP.master.limThresh;G.lim.knee.value=0;G.lim.ratio.value=20;
+  G.lim.attack.value=0.002;G.lim.release.value=0.12;
+  G.out=ctx.createGain();G.out.gain.value=TP.master.outTrim;
+  G.shaper.connect(G.comp).connect(G.master);
+  G.master.connect(G.lim).connect(G.out).connect(ctx.destination);
+  G.verb=ctx.createConvolver();G.verb.buffer=makeRoomIR(ctx,TP.room.size,TP.room.decay);
+  G.wet=ctx.createGain();G.wet.gain.value=TP.master.wet;
+  G.verb.connect(G.wet).connect(G.master);
+  G.dry=ctx.createGain();G.dry.gain.value=1;G.dry.connect(G.shaper);
+  G.src=ctx.createBufferSource();G.src.buffer=toStereoBuffer(ctx,L,R);G.src.loop=!!loop;
+  G.src.connect(G.dry);G.src.connect(G.verb);
+  return G;
+}
+
+/* -------------------------- realtime transport --------------------------- */
+let RT=null;
+function play(){
+  const M=renderMaster();
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ctx);
+  const G=buildGraph(ctx,M.L,M.R,true);
+  RT={ctx,G,t0:ctx.currentTime+0.08,dur:M.dur,A:M.A};
+  G.src.start(RT.t0);
+  st.playing=true;st.paused=false;$('pick').textContent='Stop';$('pick').classList.add('on');
+  $('pause').disabled=false;$('pause').textContent='Pause';$('pause').classList.remove('on');
+  invalidate();
+}
+function stop(){
+  if(!RT)return;
+  const g=RT.G.out.gain,ct=RT.ctx.currentTime;
+  try{g.cancelScheduledValues(ct);g.setValueAtTime(g.value,ct);g.linearRampToValueAtTime(0,ct+0.25);}catch(e){}
+  const c=RT.ctx;setTimeout(()=>{try{c.close();}catch(e){}},420);
+  RT=null;st.playing=false;st.paused=false;$('pick').textContent='Play';$('pick').classList.remove('on');
+  $('pause').disabled=true;$('pause').textContent='Pause';$('pause').classList.remove('on');
+  invalidate();
+}
+function regen(){ if(RT){stop();play();} else {invalidate();} }
+
+/* OFFICINA live hook: master/room ride in immediately. Everything baked into
+   the loop applies on the NEXT play (the ► HEAR convention); TIMBRE.demo
+   auditions a voice on demand. */
+let __dmT=0;
+TIMBRE.touch=()=>{
+  if(RT){const ct=RT.ctx.currentTime;
+    RT.G.out.gain.setTargetAtTime(TP.master.outTrim,ct,.06);
+    RT.G.wet.gain.setTargetAtTime(TP.master.wet,ct,.08);
+    RT.G.lim.threshold.setTargetAtTime(TP.master.limThresh,ct,.06);}
+  clearTimeout(__dmT);__dmT=setTimeout(()=>{if(!RT)regen();},300);
+};
+
+/* ------------------------------ cut · WAV -------------------------------- */
+function encodeWav(L,R,sr){
+  const n=L.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');d.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  ws(36,'data');d.setUint32(40,n*4,true);
+  let o=44;for(let i=0;i<n;i++){d.setInt16(o,clamp(L[i],-1,1)*32767,true);o+=2;d.setInt16(o,clamp(R[i],-1,1)*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+async function cut(){
+  const btn=$('cut'),note=$('cutnote');btn.disabled=true;note.textContent='cutting glass…';
+  try{
+    const M=renderMaster();
+    const total=M.L.length/SR;
+    const ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
+    const G=buildGraph(ctx,M.L,M.R,false);
+    G.src.start(0);
+    const rb=await ctx.startRendering();
+    const blob=encodeWav(rb.getChannelData(0),rb.getChannelData(1),SR);
+    saveWav(blob,`tritava_${st.mode}_${st.motion}_${st.meter}.wav`);
+    note.textContent=`cut · ${MODES[st.mode].label} · ${st.motion} · meter ${st.meter} · ${Math.round(M.dur)}s`;
+  }catch(e){note.textContent='render failed — '+e.message;}
+  btn.disabled=false;
+}
+
+/* ------------------------------- canvas ---------------------------------- */
+// Left: the tritave wheel — the 13 chromatic steps placed round a circle by
+// their true cents (so the spacing is the real just intonation, unequal),
+// the ring closing at the tritave where an octave-repeating scale would have
+// closed an octave earlier. Mode degrees are lit dots with ratio labels;
+// the rest are faint ticks. The sounding chord is drawn as a triangle across
+// the three steps it touches; the melody sweeps the rim. Right: the chord's
+// ratios, and the 32-bar progression as a ribbon with the current bar lit.
+// Static layer cached offscreen; rebuilt on mode/meter change. Sleeps idle.
+const cv=$('cv'),cx=cv.getContext('2d');
+const CW=cv.width,CH=cv.height;
+const oc=document.createElement('canvas');oc.width=CW;oc.height=CH;const ox=oc.getContext('2d');
+const WCX=250,WCY=280,WR=205;
+let VIEW=null,viewDirty=true,STEP_POS=[],RIB=null;
+let needsDraw=true;const invalidate=()=>{needsDraw=true;VIEW=null;viewDirty=true;};
+function refreshView(){VIEW=assemble(st);buildStatic();viewDirty=false;}
+
+function stepAngle(s){return -Math.PI/2 + 2*Math.PI*(centsOf(BP[s])/centsOf(TRITAVE));}
+function buildStatic(){
+  ox.clearRect(0,0,CW,CH);
+  ox.fillStyle='#0a0910';ox.fillRect(0,0,CW,CH);
+  const deg=VIEW.deg, inMode=new Set(deg);
+  // the ring
+  ox.strokeStyle='rgba(154,140,255,.28)';ox.lineWidth=1.4;
+  ox.beginPath();ox.arc(WCX,WCY,WR,0,2*Math.PI);ox.stroke();
+  ox.strokeStyle='rgba(127,212,208,.10)';ox.lineWidth=1;
+  ox.beginPath();ox.arc(WCX,WCY,WR*0.62,0,2*Math.PI);ox.stroke();
+  STEP_POS=[];
+  for(let s=0;s<13;s++){
+    const ang=stepAngle(s), x=WCX+Math.cos(ang)*WR, y=WCY+Math.sin(ang)*WR;
+    STEP_POS.push({x,y,ang});
+    const mode=inMode.has(s), tonic=(s===0);
+    // spoke
+    ox.strokeStyle=mode?'rgba(154,140,255,.22)':'rgba(154,140,255,.07)';ox.lineWidth=1;
+    ox.beginPath();ox.moveTo(WCX+Math.cos(ang)*WR*0.62,WCY+Math.sin(ang)*WR*0.62);ox.lineTo(x,y);ox.stroke();
+    // node
+    ox.beginPath();ox.arc(x,y,tonic?6:(mode?4.4:2.4),0,2*Math.PI);
+    ox.fillStyle=tonic?'#d9b44a':(mode?'rgba(127,212,208,.85)':'rgba(153,144,176,.5)');ox.fill();
+    // label just outside the ring
+    if(mode||tonic){
+      const lx=WCX+Math.cos(ang)*(WR+18), ly=WCY+Math.sin(ang)*(WR+18);
+      ox.font='500 10px "IBM Plex Mono",monospace';
+      ox.fillStyle=tonic?'#d9b44a':'rgba(233,228,242,.8)';
+      ox.textAlign='center';ox.textBaseline='middle';
+      ox.fillText(BP[s][0]+'⁄'+BP[s][1],lx,ly);
+    }
+  }
+  // tritave marker (the closing point, same spoke as the tonic, at the top)
+  ox.font='600 11px "Cormorant SC",serif';ox.fillStyle='rgba(217,180,74,.85)';
+  ox.textAlign='center';ox.textBaseline='alphabetic';
+  ox.fillText('· 3⁄1 the tritave — the octave never comes ·',WCX,WCY-WR-34);
+  // right panel scaffold
+  const px=520;
+  ox.font='500 10px "IBM Plex Mono",monospace';ox.fillStyle='rgba(153,144,176,.8)';
+  ox.textAlign='left';ox.textBaseline='alphabetic';
+  ox.fillText('CHORD',px,40);
+  ox.fillText('PROGRESSION',px,290);
+  // ribbon geometry (32 cells, 4 phrases)
+  const rx=px, rw=CW-24-px, cols=8, rows=4, cw=rw/cols, ch=26, gap=6;
+  RIB=[];
+  for(let b=0;b<32;b++){
+    const r=(b/cols)|0, c=b%cols;
+    const x=rx+c*cw, y=308+r*(ch+gap);
+    RIB.push({x,y,w:cw-3,h:ch});
+    ox.fillStyle=(b%8===0)?'rgba(217,180,74,.14)':'rgba(154,140,255,.06)';
+    ox.fillRect(x,y,cw-3,ch);
+    ox.strokeStyle='rgba(154,140,255,.16)';ox.lineWidth=1;ox.strokeRect(x+.5,y+.5,cw-4,ch-1);
+  }
+}
+function draw(){
+  if(viewDirty||!VIEW)refreshView();
+  const V=VIEW, deg=V.deg;
+  let playing=false, el=0, curBar=0, tIn=0;
+  if(RT){playing=true;el=Math.max(0,RT.ctx.currentTime-RT.t0)%V.dur;curBar=Math.min(V.bars-1,(el/V.barDur)|0);tIn=el-curBar*V.barDur;}
+  cx.clearRect(0,0,CW,CH);cx.drawImage(oc,0,0);
+
+  const ch=V.chords[curBar], ct=ch.tones;
+  // chord triangle across the wheel
+  const pts=ct.map(r=>STEP_POS[stepOfRatio(r)]);
+  const pulse=(!RM&&playing)?(0.62+0.38*Math.sin(performance.now()/220)):1;
+  cx.strokeStyle='rgba(127,212,208,'+(0.55*pulse)+')';cx.lineWidth=2.2;cx.lineJoin='round';
+  cx.beginPath();pts.forEach((p,i)=>{if(i===0)cx.moveTo(p.x,p.y);else cx.lineTo(p.x,p.y);});cx.closePath();cx.stroke();
+  cx.fillStyle='rgba(127,212,208,'+(0.09*pulse)+')';cx.fill();
+  pts.forEach((p,i)=>{cx.beginPath();cx.arc(p.x,p.y,i===0?6.5:5,0,2*Math.PI);
+    cx.fillStyle=i===0?'#d9b44a':'#7fd4d0';cx.fill();});
+
+  // melody sweep — the last cantus note sounding at el
+  if(playing){
+    let mr=null;
+    for(const e of V.ev){if(e.voice==='cantus'&&e.t<=el+1e-4){mr=e.ratio;}else if(e.t>el)break;}
+    if(mr){const sp=STEP_POS[stepOfRatio(mr)];
+      const rr=WR*0.62;
+      const mx=WCX+Math.cos(sp.ang)*rr, my=WCY+Math.sin(sp.ang)*rr;
+      cx.strokeStyle='rgba(154,140,255,.5)';cx.lineWidth=1.4;
+      cx.beginPath();cx.moveTo(WCX,WCY);cx.lineTo(mx,my);cx.stroke();
+      cx.beginPath();cx.arc(mx,my,4.5,0,2*Math.PI);cx.fillStyle='#9a8cff';cx.fill();
+    }
+  }
+
+  // right panel — chord ratios
+  const px=520;
+  cx.font='700 30px "Cormorant SC",serif';cx.fillStyle='#e9e4f2';
+  cx.textAlign='left';cx.textBaseline='alphabetic';
+  cx.fillText(CHORDS[ch.quality].sig,px,86);
+  cx.font='italic 15px "EB Garamond",serif';cx.fillStyle='rgba(127,212,208,.85)';
+  cx.fillText(CHORDS[ch.quality].label,px+96,86);
+  cx.font='500 13px "IBM Plex Mono",monospace';cx.fillStyle='rgba(233,228,242,.85)';
+  ct.forEach((r,i)=>cx.fillText((i===0?'▸ ':'  ')+r[0]+'⁄'+r[1],px,118+i*22));
+  cx.font='400 11px "IBM Plex Mono",monospace';cx.fillStyle='rgba(153,144,176,.85)';
+  cx.fillText('root on '+ch.root[0]+'⁄'+ch.root[1]+' · '+V.mode.label+' · meter '+st.meter,px,210);
+
+  // ribbon — current bar
+  if(RIB&&RIB[curBar]){
+    const r=RIB[curBar];
+    cx.fillStyle=(playing?'rgba(127,212,208,.55)':'rgba(127,212,208,.3)');
+    cx.fillRect(r.x,r.y,r.w,r.h);
+    cx.strokeStyle='#e9e4f2';cx.lineWidth=1.4;cx.strokeRect(r.x+.5,r.y+.5,r.w-1,r.h-1);
+    if(playing){const px2=r.x+Math.min(1,tIn/V.barDur)*r.w;
+      cx.strokeStyle='rgba(233,228,242,.9)';cx.lineWidth=1;
+      cx.beginPath();cx.moveTo(px2,r.y);cx.lineTo(px2,r.y+r.h);cx.stroke();}
+  }
+
+  $('stepTag').textContent=ct[0][0]+'/'+ct[0][1];
+  $('cycTag').textContent=playing?(V.mode.label+' · bar '+(curBar+1)+'/'+V.bars):V.mode.label;
+}
+function loop(){
+  const playing=!!RT;
+  if(playing||needsDraw){draw();if(!playing)needsDraw=false;}
+  setTimeout(()=>requestAnimationFrame(loop),playing?(RM?90:45):200);
+}
+requestAnimationFrame(loop);
+
+/* ------------------------------ controls --------------------------------- */
+function chipSel(container,items,current,onPick){
+  container.innerHTML='';
+  items.forEach(([val,label,sub])=>{
+    const b=document.createElement('button');b.dataset.v=String(val);
+    b.innerHTML=sub?(label+'<small>'+sub+'</small>'):label;
+    if(String(val)===String(current))b.classList.add('on');
+    b.onclick=()=>{container.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');onPick(val);};
+    container.appendChild(b);
+  });
+}
+function syncReadouts(){
+  $('moderd').textContent=MODES[st.mode].label+' · '+MODES[st.mode].sub;
+  $('motionrd').textContent={still:'Still · slow, meditative',flow:'Flow · a steady pace',sparkle:'Sparkle · dense, glittering'}[st.motion];
+  $('meterrd').textContent=st.meter+' · '+METERS[st.meter].join('+');
+  $('tempord').textContent=st.tempo+' eighths/min';
+}
+chipSel($('mode'),[['lambda','Lambda','9 · primary'],['gamma','Gamma','9 · pentachords'],['harmonia','Harmonia','6 · consonances'],['chromatic','Chromatic','13 · all']],st.mode,v=>{
+  st.mode=v;syncReadouts();regen();
+});
+chipSel($('motion'),[['still','Still','meditative'],['flow','Flow','steady'],['sparkle','Sparkle','glittering']],st.motion,v=>{
+  st.motion=v;syncReadouts();regen();
+});
+chipSel($('meter'),[[4,'4','2+2'],[5,'5','2+3'],[7,'7','2+2+3']],st.meter,v=>{
+  st.meter=+v;syncReadouts();regen();
+});
+$('tempo').value=st.tempo;
+$('tempo').addEventListener('input',e=>{st.tempo=+e.target.value;$('tempord').textContent=st.tempo+' eighths/min';});
+$('tempo').addEventListener('change',()=>{invalidate();if(RT)regen();});
+syncReadouts();
+
+$('pick').addEventListener('click',()=>st.playing?stop():play());
+/* Pause · Resume: suspend/resume the AudioContext. The loop plays from one
+   buffer against ctx.currentTime, frozen while suspended, so the wheel and
+   the progression hold and resume exactly where they paused. */
+function togglePause(){
+  if(!RT||!st.playing)return;
+  if(st.paused){st.paused=false;RT.ctx.resume();
+    $('pause').textContent='Pause';$('pause').classList.remove('on');}
+  else{st.paused=true;RT.ctx.suspend();
+    $('pause').textContent='Resume';$('pause').classList.add('on');}
+}
+$('pause').addEventListener('click',togglePause);
+$('cut').addEventListener('click',cut);
+
+/* ---------------------- opuscula shared: hash · keys --------------------- */
+let __applying=false;
+function __state(){return {m:st.mode,mo:st.motion,me:st.meter,b:st.tempo,sd:st.seed};}
+function __apply(o){
+  if(o.m&&MODES[o.m]){const b=$('mode').querySelector('[data-v="'+o.m+'"]');b&&b.click();}
+  if(o.mo&&['still','flow','sparkle'].indexOf(o.mo)>=0){const b=$('motion').querySelector('[data-v="'+o.mo+'"]');b&&b.click();}
+  if(o.me!==undefined){const v=+o.me;if(METERS[v]){const b=$('meter').querySelector('[data-v="'+v+'"]');b&&b.click();}}
+  if(o.b){st.tempo=clamp(+o.b|0,180,420);$('tempo').value=st.tempo;$('tempord').textContent=st.tempo+' eighths/min';invalidate();}
+  if(o.sd!==undefined){const sd=+o.sd;if(Number.isFinite(sd)){st.seed=sd>>>0;invalidate();}}
+}
+function __hashRead(){const h=location.hash.slice(1);if(!h)return null;const o={};
+  for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}
+function __hashWrite(){if(__applying)return;
+  try{const o=__state();history.replaceState(null,'','#'+Object.entries(o).map(([k,v])=>k+'='+v).join('&'));}catch(e){}}
+document.addEventListener('click',()=>setTimeout(__hashWrite,120),true);
+document.addEventListener('change',()=>setTimeout(__hashWrite,120),true);
+
+function another(){                                   // r = another loop
+  if(RT)stop();
+  st.seed=1+((Math.random()*1e6)|0);
+  const modes=['lambda','gamma','harmonia','chromatic'],motions=['still','flow','sparkle'],meters=[4,5,7];
+  $('mode').querySelector('[data-v="'+modes[(Math.random()*modes.length)|0]+'"]').click();
+  $('motion').querySelector('[data-v="'+motions[(Math.random()*motions.length)|0]+'"]').click();
+  $('meter').querySelector('[data-v="'+meters[(Math.random()*meters.length)|0]+'"]').click();
+  invalidate();play();
+}
+addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
+  if(e.code==='Space'){e.preventDefault();$('pick').click();}
+  else if(e.key==='p'||e.key==='P')togglePause();
+  else if(e.key==='r'||e.key==='R'){e.preventDefault();another();}
+  else if(e.key==='c'||e.key==='C')$('cut').click();
+});
+
+(function init(){const o=__hashRead();
+  if(o){__applying=true;try{__apply(o);}catch(e){}__applying=false;}
+  syncReadouts();__hashWrite();invalidate();
+})();
+
+/* ---- robust WAV save (shared) ----------------------------------------------
+   Auto-downloads where the browser allows it (desktop Chrome/Firefox/Edge,
+   Android), and ALWAYS shows a tappable "Save WAV" pill — the reliable path
+   on Safari/iOS, where a programmatic download after an async render is
+   blocked but a real tap on the link is a fresh user gesture iOS honours.   */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(10,9,16,.94);color:#e9e4f2;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#e9e4f2;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
+
+/* OFFICINA audition: a few strokes of one voice, freshly baked with the
+   current timbre, through the real graph. Stops the loop first; GROUND
+   auditions the drone itself. */
+let __demoCtx=null;
+TIMBRE.demo=(group)=>{
+  if(RT)stop();
+  const rng=mulberry32(0x713A7A5);
+  const secs=(group==='ground')?3.6:(group==='campana'?3.4:2.8);
+  const n=Math.ceil(secs*SR), L=new Float32Array(n), R=new Float32Array(n);
+  if(group==='ground'){
+    addGround(L,R,n);
+  }else if(group==='master'||group==='room'){
+    const tones=chordTones([1,1],'clarus');
+    tones.forEach((r,i)=>{const hz=ratioToHz(r,'campana');
+      mixHit(L,R,Math.floor((0.05+i*0.16)*SR),synCampana(hz,rng),VOICE_PAN.campana,.85*TP.campana.level);});
+  }else{
+    const fn=SYN_FN[group];
+    const reps={
+      campana:[[1,1],[5,3],[7,3],[9,7],[1,1]],
+      cantus:[[1,1],[9,7],[7,5],[5,3],[9,5]],
+      pulsus:[[1,1],[1,1],[1,1],[1,1],[1,1]],
+    }[group]||[[1,1]];
+    const step=group==='pulsus'?0.5:0.34;
+    reps.forEach((r,i)=>{const hz=ratioToHz(r,group), vg=TP[group]?TP[group].level:.8;
+      mixHit(L,R,Math.floor((0.05+i*step)*SR),fn(hz,rng),VOICE_PAN[group]||0,.85*vg);});
+  }
+  let mx=0;for(let i=0;i<n;i++){const a=Math.abs(L[i]),b=Math.abs(R[i]);if(a>mx)mx=a;if(b>mx)mx=b;}
+  if(mx>0){const k=.9/mx;for(let i=0;i<n;i++){L[i]*=k;R[i]*=k;}}
+  try{if(__demoCtx)__demoCtx.close()}catch(e){}
+  const ac=new (window.AudioContext||window.webkitAudioContext)(); __demoCtx=ac;
+  try{ac.resume()}catch(e){}
+  const G=buildGraph(ac,L,R,false); G.src.start(ac.currentTime+.03);
+  setTimeout(()=>{try{if(__demoCtx===ac){__demoCtx=null;ac.close()}}catch(e){}},Math.ceil(secs*1000)+700);
+};
+</script>
+
+</body>
+</html>

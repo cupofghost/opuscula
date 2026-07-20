@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="OPVSCVLA">
-<meta name="description" content="opuscula — eighteen small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum, javanese gamelan, harry partch's tonality diamond, dubstep, a self-predicting language model, crimean steppe women's polyphony.">
+<meta name="description" content="opuscula — nineteen small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum, javanese gamelan, harry partch's tonality diamond, dubstep, a self-predicting language model, crimean steppe women's polyphony, the bohlen–pierce scale (a music with no octave).">
 <title>OPVSCVLA — small musical machines</title>
 <link rel="icon" href="./favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
@@ -73,13 +73,13 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
      This file is pure HTML + CSS. No JavaScript, no audio: it is just the
      index card wall that links out to the works. Each work lives in
      its own folder as its own index.html; this page never loads them, it
-     only links to them (href="./folder/"). Eighteen works.
+     only links to them (href="./folder/"). Nineteen works.
 
      Anatomy, top to bottom:
        .wrap      the 760px column everything sits in
        .eyebrow   the "catalogvs · mmxxvi" kicker
        h1 / .sub  the title and the one-line manifesto
-       .grid      the card wall — one <a class="card"> per work (eighteen total)
+       .grid      the card wall — one <a class="card"> per work (nineteen total)
        .notes     the shared-keys reminder (space / r / c)
        .foot      the colophon + repo link
 
@@ -102,7 +102,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
 <div class="wrap">
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
-  <div class="sub">eighteen small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="sub">nineteen small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
   <hr class="rule">
 
   <div class="grid">
@@ -571,6 +571,33 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
         <h2>Vyvid</h2>
         <p>Crimean steppe women's polyphony</p>
         <span class="tech">four throats, pure fifths, a neutral third · every line converges to one unison</span>
+      </div>
+    </a>
+
+    <a class="card" href="./tritava/" style="--bg:#171528">
+      <div class="emblem" aria-hidden="true">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- a 13-spoke ring that closes at the tritave, not the octave; a 3:5:7 triangle inscribed -->
+          <circle cx="50" cy="50" r="38" fill="none" stroke="#9a8cff" stroke-width="1.4" opacity="0.55"/>
+          <path d="M50 12 L59.1 86.9 L12.3 45.4 Z" fill="rgba(127,212,208,.10)" stroke="#7fd4d0" stroke-width="1.6" stroke-linejoin="round"/>
+          <g fill="#7fd4d0">
+            <circle cx="67.7" cy="16.4" r="1.6"/><circle cx="81.3" cy="28.4" r="1.6"/>
+            <circle cx="87.7" cy="45.4" r="1.6"/><circle cx="85.5" cy="63.5" r="1.6"/>
+            <circle cx="75.2" cy="78.4" r="1.6"/><circle cx="40.9" cy="86.9" r="1.6"/>
+            <circle cx="24.8" cy="78.4" r="1.6"/><circle cx="14.5" cy="63.5" r="1.6"/>
+            <circle cx="18.7" cy="28.4" r="1.6"/><circle cx="32.3" cy="16.4" r="1.6"/>
+          </g>
+          <g fill="#d9b44a">
+            <circle cx="50" cy="12" r="2.6"/><circle cx="59.1" cy="86.9" r="2.2"/><circle cx="12.3" cy="45.4" r="2.2"/>
+            <circle cx="50" cy="50" r="2"/>
+          </g>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="op">op. XIX · MMXXVI</span>
+        <h2>Tritava</h2>
+        <p>a music with no octave</p>
+        <span class="tech">the Bohlen–Pierce scale · repeats at the tritave (3:1), built on odd harmonics 3·5·7 · zero equal temperament</span>
       </div>
     </a>
 
