@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0e0b16">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="color-scheme" content="dark">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>GERMEN — a machine that grows music from grammar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  --ground:#0d120c; --field:#121a10; --field2:#162114; --ink:#e9f0e2; --dim:#9aab8d;
+  --leaf:#9fd66a; --leaf2:#5f9e3f; --bark:#8a6f4d; --accent:#e8c25a; --line:#26331f;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--ground);color:var(--ink);
+  font-family:'Archivo',system-ui,sans-serif;
+  min-height:100vh;display:flex;justify-content:center;
+  padding:max(14px,env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom));}
+.wrap{width:min(680px,100%);}
+header{margin:18px 0 14px;}
+h1{font-size:clamp(30px,7vw,44px);font-weight:700;letter-spacing:.06em;line-height:1;}
+h1 .op{font-family:'IBM Plex Mono',monospace;font-size:.42em;color:var(--dim);letter-spacing:.12em;vertical-align:middle;margin-left:12px;}
+.tag{color:var(--dim);margin-top:8px;font-size:14px;letter-spacing:.02em;}
+.lawbox{background:var(--field);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:14px 0;}
+.lawbox h2{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;color:var(--leaf);text-transform:uppercase;margin-bottom:10px;font-weight:500;}
+.ctl{display:flex;flex-wrap:wrap;gap:12px 18px;align-items:flex-end;}
+.ctl label{display:block;font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;margin-bottom:5px;}
+.ctl .field{min-width:120px;flex:1 1 130px;}
+select,input[type=range]{width:100%;accent-color:var(--leaf);}
+select{background:var(--field2);color:var(--ink);border:1px solid var(--line);border-radius:8px;
+  font-family:'IBM Plex Mono',monospace;font-size:13px;padding:8px 9px;appearance:none;}
+input[type=range]{height:26px;}
+.val{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--leaf);margin-top:2px;}
+.buttons{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0 6px;}
+button{background:var(--field2);color:var(--ink);border:1px solid var(--line);border-radius:10px;
+  font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.06em;padding:11px 16px;cursor:pointer;}
+button:hover{border-color:var(--leaf2);}
+button.primary{background:var(--leaf2);border-color:var(--leaf2);color:#0d120c;font-weight:500;}
+button.primary:hover{background:var(--leaf);}
+button:active{transform:translateY(1px);}
+.stat{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--dim);margin:8px 0 12px;line-height:1.7;}
+.stat b{color:var(--leaf);font-weight:500;}
+.stat .pend{color:var(--accent);}
+canvas{width:100%;display:block;background:var(--field);border:1px solid var(--line);border-radius:12px;}
+details.reader{margin:16px 0;background:var(--field);border:1px solid var(--line);border-radius:12px;padding:0 16px;}
+details.reader summary{cursor:pointer;padding:13px 0;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.14em;color:var(--leaf);text-transform:uppercase;}
+details.reader p{color:var(--dim);font-size:14px;line-height:1.65;margin:0 0 13px;}
+details.reader b{color:var(--ink);font-weight:500;}
+.keys{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--dim);margin:10px 0 0;}
+.keys span{display:inline-block;margin-right:14px;}
+.keys i{color:var(--leaf);font-style:normal;}
+.colophon{margin:22px 0 10px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.22em;color:#5a6b50;text-transform:uppercase;}
+#savebar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:var(--leaf2);color:#0d120c;
+  border-radius:10px;padding:10px 16px;font-family:'IBM Plex Mono',monospace;font-size:12px;display:none;z-index:9;}
+#savebar a{color:#0d120c;font-weight:700;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>GERMEN<span class="op">op. XX</span></h1>
+    <div class="tag">a machine that grows music from grammar — the plant is the score</div>
+  </header>
+
+  <div class="lawbox">
+    <h2>the law</h2>
+    <div class="ctl">
+      <div class="field"><label>grammar · species</label>
+        <select id="cGrammar"></select></div>
+      <div class="field"><label>growth · iterations</label>
+        <input type="range" id="cIter" min="1" max="7" step="1" value="5">
+        <div class="val" id="vIter"></div></div>
+      <div class="field"><label>mode · soil</label>
+        <select id="cMode"></select></div>
+      <div class="field"><label>tempo · season</label>
+        <input type="range" id="cTempo" min="56" max="140" step="1" value="96">
+        <div class="val" id="vTempo"></div></div>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button id="bPlay" class="primary">▶ CRESCE</button>
+    <button id="bPause">❚❚ MORA</button>
+    <button id="bAnother">⟳ ALIUD</button>
+    <button id="bCut">⬇ RECIDE</button>
+  </div>
+  <div class="stat" id="stat"></div>
+
+  <canvas id="cv" width="680" height="520"></canvas>
+
+  <div class="keys">
+    <span><i>space</i> grow / rest</span><span><i>p</i> pause</span>
+    <span><i>r</i> another seed</span><span><i>c</i> cut WAV</span>
+  </div>
+
+  <details class="reader">
+    <summary>on this music</summary>
+    <p>In 1968 the Hungarian-Dutch biologist <b>Aristid Lindenmayer</b> proposed a formal grammar
+    for the growth of filamentous algae: a string of symbols where every symbol is rewritten at once,
+    every step, by fixed rules. An <b>L-system</b> is just an axiom and a set of parallel productions —
+    <i>A → AB</i>, <i>B → A</i> — and yet the strings that grow out of them carry the same branching
+    self-similarity you see in ferns, willows and romanesco. Prusinkiewicz and Lindenmayer's
+    <i>The Algorithmic Beauty of Plants</i> (1990) showed that reading the string as turtle commands —
+    forward, turn, branch — draws the plant itself.</p>
+    <p>GERMEN performs the string. The grammar is expanded exactly, with no randomness: the same
+    species at the same depth always grows the same string, which you can verify by hand. Then a second
+    turtle walks it as a score: every <b>F</b> strikes a plucked string, <b>+</b> and <b>−</b> raise and
+    lower the scale degree, and brackets <b>[ ]</b> push and pop the state — so a side-branch is a little
+    melody that leaves the main stem untouched, higher and quicker the deeper it nests, exactly as a
+    real branch leaves the trunk where it found it. The drawing and the melody come from the same walk:
+    what you see light up is the note you hear.</p>
+    <p>The result sounds like music because self-similarity is the oldest compositional trick there is —
+    a motive returning at every scale, a theme inside a theme. The <b>seed</b> is the season, not the
+    species: it decides the weather (small ornaments, grace-note doublings, the reverb's stone) but never
+    touches the grammar. Change the law — species, depth, mode — and a new plant grows at the next cycle.</p>
+    <p>Everything is synthesized: the plucks are Karplus–Strong strings, the drone is two oscillators,
+    the room is a seeded noise impulse. No samples, no network, one file.</p>
+  </details>
+
+  <div class="colophon">germen · op. xx — opvscvla · grown, not written</div>
+</div>
+<div id="savebar"></div>
+<script>
+'use strict';
+/* =====================================================================
+   GERMEN — an L-system machine
+   The law: a deterministic parallel rewriting grammar (D0L-system).
+   expand() is pure and provable: axiom + rules + depth => one string.
+   ===================================================================== */
+
+/* ---- 4.1 seeded RNG (house block, verbatim) ------------------------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+
+/* ---- TIMBRE: voicing only. The law (grammars, modes, meter) lives
+   in the model below, never here. ------------------------------------ */
+const TIMBRE={
+  id:'germen',
+  title:'GERMEN · op. XX',
+  doc:'The voices of the machine. Plucks are Karplus–Strong strings: a seeded noise burst fed into a feedback delay line one period long, damped by a lowpass each round trip; deeper branches reuse the same voice a little brighter and softer. The drone is a sine root and a triangle fifth under a slow tremolo. The stem is a low sine breath that marks each new cycle. The room is a seeded noise impulse response. Everything passes the house chain — warmth shaper, glue compressor, brick-wall limiter — before the output trim.',
+  groups:{
+    master:{label:'master',doc:'Output trim after a gentle warmth shaper, glue compressor and a brick-wall limiter (−1.5 dB, ratio 20 — the house ceiling).',params:{
+      trim:{v:.9,min:.3,max:1.3,step:.01,label:'out trim',doc:'final level after the limiter'},
+      drive:{v:.06,min:0,max:.5,step:.01,label:'warmth drive',doc:'gentle waveshaper — warmth only at the shipped value'},
+      limThresh:{v:-1.5,min:-6,max:0,step:.1,unit:'dB',label:'limiter ceiling',doc:'brick-wall threshold; the mix never exceeds this'},
+    }},
+    pluck:{label:'pluck',doc:'The main stem voice: a Karplus–Strong string.',params:{
+      level:{v:.42,min:0,max:1.2,step:.01,label:'level',doc:'pluck bus gain'},
+      bright:{v:5200,min:800,max:12000,step:50,unit:'Hz',label:'brightness',doc:'lowpass inside the feedback loop — damping of the string'},
+      ring:{v:1.9,min:.4,max:4,step:.05,unit:'×dur',label:'ring time',doc:'how long the string sings, as a multiple of the note length'},
+      excite:{v:.7,min:.2,max:1.2,step:.01,label:'pick attack',doc:'level of the noise-burst excitation'},
+      spread:{v:.35,min:0,max:1,step:.01,label:'stereo spread',doc:'per-note panning width by string position'},
+    }},
+    branch:{label:'branch',doc:'Side-branches reuse the pluck voice, tinted by nesting depth.',params:{
+      level:{v:.8,min:0,max:1.2,step:.01,label:'relative level',doc:'gain of branch voices against the trunk'},
+      bright:{v:7600,min:1500,max:14000,step:50,unit:'Hz',label:'brightness',doc:'branch lowpass — twigs ring brighter than the trunk'},
+      falloff:{v:.72,min:.4,max:1,step:.01,label:'depth falloff',doc:'each deeper bracket multiplies gain by this'},
+    }},
+    drone:{label:'drone',doc:'The ground: a sine root and a triangle fifth under a slow breathing tremolo.',params:{
+      level:{v:.14,min:0,max:.6,step:.005,label:'level',doc:'drone bus gain'},
+      cutoff:{v:420,min:120,max:2000,step:10,unit:'Hz',label:'muffle',doc:'lowpass on the drone'},
+      tremRate:{v:.11,min:.02,max:.8,step:.005,unit:'Hz',label:'breath rate',doc:'tremolo LFO speed'},
+      tremDepth:{v:.25,min:0,max:.9,step:.01,label:'breath depth',doc:'tremolo depth'},
+      fifth:{v:.5,min:0,max:1,step:.01,label:'fifth mix',doc:'level of the fifth against the root'},
+    }},
+    stem:{label:'stem',doc:'A low sine breath that sounds once per cycle, marking the season.',params:{
+      level:{v:.3,min:0,max:.9,step:.01,label:'level',doc:'stem breath gain'},
+      attack:{v:.6,min:.05,max:3,step:.01,unit:'s',label:'inhale',doc:'swell time at cycle start'},
+      decay:{v:2.4,min:.3,max:8,step:.05,unit:'s',label:'exhale',doc:'release after the swell'},
+    }},
+    room:{label:'room',doc:'A seeded convolution reverb — the stone the plant grows against.',params:{
+      send:{v:.32,min:0,max:1,step:.01,label:'send',doc:'how much of the voices enters the room'},
+      decay:{v:1.9,min:.3,max:6,step:.05,unit:'s',label:'room size',doc:'impulse response length / decay'},
+      preDelay:{v:.012,min:0,max:.08,step:.001,unit:'s',label:'pre-delay',doc:'gap before the first reflection'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine — copy verbatim) ------- */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+
+/* =====================================================================
+   THE MODEL — pure, DOM-free, deterministic. This is the part you can
+   hold in your head and verify by hand.
+   ===================================================================== */
+
+/* The species. Each is a D0L-system: axiom + parallel productions.
+   `post` transcribes non-turtle symbols into turtle/sound symbols.
+   ang is the turtle's turning angle in degrees (drawing only).     */
+const GRAMMARS={
+  fronda:{label:'FRONDA — the fern', axiom:'X',
+    rules:{X:'F[+X]F[-X]+X', F:'FF'}, ang:20, itMin:3, itMax:5, itDef:5,
+    blurb:'every frond is a smaller fern; note count grows 2(3ⁿ−2ⁿ)'},
+  salix:{label:'SALIX — the willow', axiom:'F',
+    rules:{F:'F[+F][-F]F'}, ang:26, itMin:2, itMax:5, itDef:4,
+    blurb:'branch left, branch right, grow on; 4ⁿ notes'},
+  alga:{label:'ALGA — the first species', axiom:'A',
+    rules:{A:'AB', B:'A'}, post:{A:'F', B:'+F-F'}, ang:14, itMin:7, itMax:12, itDef:10,
+    blurb:'Lindenmayer’s 1968 original — the Fibonacci word as a rhythm of longs and shorts'},
+  pavimentum:{label:'PAVIMENTUM — the tiled floor', axiom:'X',
+    rules:{X:'X+YF++YF-FX--FXFX-YF+', Y:'-FX+YFYF++YF+FX--FX-Y'}, ang:60, itMin:2, itMax:3, itDef:3,
+    blurb:'the Gosper flowsnake — a curve that tiles the plane'},
+};
+
+const MODES={
+  dorian:{label:'DORIAN', steps:[0,2,3,5,7,9,10]},
+  phrygian:{label:'PHRYGIAN', steps:[0,1,3,5,7,8,10]},
+  penta:{label:'PENTATONIC', steps:[0,2,4,7,9]},
+  hira:{label:'HIRAJŌSHI', steps:[0,2,3,7,8]},
+};
+const ROOT_MIDI=50; /* D3 — where the plucked strings speak best */
+
+/* Parallel rewriting: every symbol replaced at once, n times.
+   Deterministic by construction — no randomness anywhere in the law. */
+function expand(grammarKey, iterations){
+  const G=GRAMMARS[grammarKey];
+  let s=G.axiom;
+  for(let i=0;i<iterations;i++){
+    let out='';
+    for(let j=0;j<s.length;j++){
+      const ch=s[j];
+      out+=(G.rules[ch]!==undefined)?G.rules[ch]:ch;
+    }
+    s=out;
+    if(s.length>400000) break; /* a gardener's mercy, never hit in the shipped ranges */
+  }
+  if(G.post){ let out=''; for(let j=0;j<s.length;j++){const p=G.post[s[j]]; out+=(p!==undefined)?p:s[j];} s=out; }
+  return s;
+}
+
+/* degree -> midi, wrapping any integer degree into the mode */
+function degToMidi(deg,modeKey){
+  const S=MODES[modeKey].steps, l=S.length;
+  const o=Math.floor(deg/l), i=((deg%l)+l)%l;
+  return ROOT_MIDI+S[i]+12*o;
+}
+function midiToFreq(m){return 440*Math.pow(2,(m-69)/12);}
+
+/* The turtle reads the string twice at once: as drawing (x,y,angle)
+   and as score (degree, depth, time). One walk, one truth.
+     F  = step forward, strike a note at the current degree
+     + − = turn the turtle; raise / lower the degree
+     [ ] = push / pop BOTH states: a branch leaves the trunk untouched,
+           musically it is a side-melody, higher and quicker when deep.
+   The seed is the weather only: it adds small grace-note doublings and
+   velocity variation; it can never change which notes the law writes. */
+function stringToScore(str, params){
+  const G=GRAMMARS[params.grammar];
+  const unit=(60/params.tempo)/2;            /* one eighth-note per F */
+  const rng=mulberry32(params.seed^0x9E3779B1);
+  const startDeg=Math.floor(rng()*MODES[params.mode].steps.length);
+  const events=[], segments=[];
+  let deg=startDeg, t=0, depth=0;
+  let x=0, y=0, ang=-Math.PI/2, step=1;
+  const stack=[];
+  const CAP=1500;                            /* pruned pressings stay playable */
+  let pruned=false;
+
+  for(let i=0;i<str.length;i++){
+    const ch=str[i];
+    if(ch==='F'){
+      const nx=x+Math.cos(ang)*step*Math.pow(.72,depth);
+      const ny=y+Math.sin(ang)*step*Math.pow(.72,depth);
+      if(events.length<CAP){
+        const dur=unit*1.6/(1+depth*.55);
+        const vel=Math.pow(.82,depth)*(0.86+0.28*rng());
+        const ev={t:t, midi:degToMidi(deg,params.mode)+Math.min(depth,2)*12,
+          dur:dur, vel:Math.min(vel,1.15), depth:depth, seg:segments.length, grace:0};
+        /* the weather: an occasional grace-note doubling (seeded) */
+        if(rng()<0.10 && depth===0 && events.length<CAP-1){
+          ev.grace=1;
+          events.push({t:t, midi:ev.midi, dur:dur*.42, vel:ev.vel*.92, depth:depth, seg:segments.length, grace:2});
+          events.push({t:t+unit*.5, midi:degToMidi(deg+1,params.mode)+Math.min(depth,2)*12,
+            dur:dur*.5, vel:ev.vel*.8, depth:depth, seg:segments.length, grace:2});
+        }
+        events.push(ev);
+      } else pruned=true;
+      segments.push({x1:x,y1:y,x2:nx,y2:ny,depth:depth,_ev:events.length?events[events.length-1]:null});
+      x=nx; y=ny;
+      t+=unit;
+    }
+    else if(ch==='+'){ ang+=G.ang*Math.PI/180; deg+=1; }
+    else if(ch==='-'){ ang-=G.ang*Math.PI/180; deg-=1; }
+    else if(ch==='['){ stack.push({deg:deg,x:x,y:y,ang:ang}); depth++; }
+    else if(ch===']'){ const s=stack.pop(); if(s){deg=s.deg;x=s.x;y=s.y;ang=s.ang;} depth=Math.max(0,depth-1); }
+  }
+  /* sort by onset (grace notes are inserted before their main note),
+     then renumber each segment's note reference to the sorted order */
+  events.sort((a,b)=>(a.t-b.t)||(a.midi-b.midi));
+  events.forEach((e,i)=>{e._i=i;});
+  segments.forEach(s=>{ s.note=s._ev?s._ev._i:-1; delete s._ev; });
+  events.forEach(e=>{delete e._i;});
+  const lastEnd=events.length?Math.max.apply(null,events.map(e=>e.t+e.dur)):0;
+  const beat=60/params.tempo;
+  const cycleLen=t+beat*4;                    /* four beats of silence: winter */
+  return {events:events, segments:segments, cycleLen:cycleLen, lastEnd:lastEnd,
+    stringLen:str.length, pruned:pruned, startDeg:startDeg};
+}
+
+/* genAll: seed + params -> one deterministic pressing */
+function genAll(seed,params){
+  const str=expand(params.grammar,params.iterations);
+  const sc=stringToScore(str,Object.assign({seed:seed},params));
+  sc.seed=seed; sc.params=Object.assign({},params);
+  return sc;
+}
+
+/* =====================================================================
+   THE AUDIO GRAPH — every voice synthesized. No samples, ever.
+   ===================================================================== */
+const SR=44100;
+let AC=null, G=null;                 /* AudioContext + live graph */
+let playing=false, paused=false;
+let SCORE=null, pendingScore=null;
+let cycleStart=0, schedTimer=null, drawTimer=null;
+let droneNodes=null;
+
+const st={ seed: 4231, grammar:'fronda', iterations:5, mode:'dorian', tempo:96 };
+
+function makeIR(ctx,seed,seconds){
+  const n=Math.ceil(seconds*ctx.sampleRate), b=ctx.createBuffer(2,n,ctx.sampleRate);
+  for(let c=0;c<2;c++){
+    const d=b.getChannelData(c), r=mulberry32(seed^(c?0x85EBCA6B:0x27D4EB2F));
+    for(let i=0;i<n;i++){ const k=1-i/n; d[i]=(r()*2-1)*k*k; }
+  }
+  return b;
+}
+
+function warmthCurve(drive){
+  const n=1024,c=new Float32Array(n),k=drive*15;
+  for(let i=0;i<n;i++){const x=i/(n-1)*2-1;c[i]=(1+k)*x/(1+k*Math.abs(x));}
+  return c;
+}
+
+/* House master chain: voices -> sum -> warmth -> glue -> limiter -> trim.
+   Reverb sums in BEFORE the limiter so nothing bypasses the ceiling. */
+function buildGraph(ctx,seed){
+  const g={};
+  g.sum=ctx.createGain(); g.sum.gain.value=1;
+  g.shaper=ctx.createWaveShaper(); g.shaper.curve=warmthCurve(TP.master.drive); g.shaper.oversample='2x';
+  g.glue=ctx.createDynamicsCompressor();
+  g.glue.threshold.value=-14; g.glue.knee.value=12; g.glue.ratio.value=2.4;
+  g.glue.attack.value=.01; g.glue.release.value=.25;
+  g.limiter=ctx.createDynamicsCompressor();
+  g.limiter.threshold.value=TP.master.limThresh; g.limiter.knee.value=0; g.limiter.ratio.value=20;
+  g.limiter.attack.value=.002; g.limiter.release.value=.1;
+  g.trim=ctx.createGain(); g.trim.gain.value=TP.master.trim;
+  g.sum.connect(g.shaper); g.shaper.connect(g.glue); g.glue.connect(g.limiter); g.limiter.connect(g.trim);
+  g.trim.connect(ctx.destination);
+
+  /* room: seeded convolution, send path */
+  g.room=ctx.createConvolver(); g.room.buffer=makeIR(ctx,seed^0xC2B2AE35,Math.max(.3,TP.room.decay));
+  g.roomGain=ctx.createGain(); g.roomGain.gain.value=TP.room.send;
+  g.roomPre=ctx.createDelay(.1); g.roomPre.delayTime.value=TP.room.preDelay;
+  g.roomIn=ctx.createGain(); g.roomIn.gain.value=1;
+  g.roomIn.connect(g.roomPre); g.roomPre.connect(g.room); g.room.connect(g.roomGain); g.roomGain.connect(g.glue);
+
+  g.pluckBus=ctx.createGain(); g.pluckBus.gain.value=TP.pluck.level;
+  g.pluckBus.connect(g.sum); g.pluckBus.connect(g.roomIn);
+  g.droneBus=ctx.createGain(); g.droneBus.gain.value=TP.drone.level;
+  g.droneBus.connect(g.sum); g.droneBus.connect(g.roomIn);
+  g.stemBus=ctx.createGain(); g.stemBus.gain.value=TP.stem.level;
+  g.stemBus.connect(g.sum); g.stemBus.connect(g.roomIn);
+  g.ctx=ctx; g.seed=seed;
+  return g;
+}
+
+/* Karplus–Strong plucks, synthesized sample-by-sample and cached per
+   pitch: a seeded noise burst one period long, then each round trip
+   through the string is an averaging lowpass and a whisper of loss.
+   One buffer per (pitch, depth, ring) — every note after the first is
+   just a buffer source, so even a 1300-note season stays light.      */
+const __ksCache=new Map();
+function ksBuffer(ctx,seed,freq,dur,depth){
+  const bright=depth>0?TP.branch.bright:TP.pluck.bright;
+  const decay=Math.max(.12,dur*TP.pluck.ring);
+  const qd=Math.round(decay*20)/20;                  /* quantize: bounds the cache */
+  const key=[Math.round(freq*10),depth,qd,Math.round(bright),seed].join('|');
+  const hit=__ksCache.get(key); if(hit) return hit;
+  const sr=ctx.sampleRate, N=Math.max(2,Math.round(sr/freq));
+  const len=Math.min(Math.ceil(decay*sr*1.1)+N, sr*6);
+  const b=ctx.createBuffer(1,len,sr), d=b.getChannelData(0);
+  const r=mulberry32((seed^Math.imul(Math.round(freq*10),2654435761))|0);
+  for(let i=0;i<N;i++) d[i]=(r()*2-1)*TP.pluck.excite*(1-.3*i/N);
+  const c=Math.exp(-2*Math.PI*bright/sr);            /* one-pole brightness */
+  const gLoss=Math.pow(.001,1/(sr*decay));           /* -60 dB at decay */
+  for(let i=N;i<len;i++){
+    const avg=.5*(d[i-N]+d[i-N+1]);
+    d[i]=((1-c)*avg+c*d[i-1])*gLoss;
+  }
+  let peak=0; for(let i=0;i<len;i++){const v=Math.abs(d[i]); if(v>peak)peak=v;}
+  if(peak>1e-6){const s=.9/peak; for(let i=0;i<len;i++)d[i]*=s;}
+  if(__ksCache.size>240) __ksCache.clear();
+  __ksCache.set(key,b); return b;
+}
+
+function pluckVoice(g,t,freq,vel,dur,depth){
+  const ctx=g.ctx;
+  const src=ctx.createBufferSource(); src.buffer=ksBuffer(ctx,g.seed,freq,dur,depth);
+  const out=ctx.createGain();
+  const dv=depth>0?TP.branch.level*Math.pow(TP.branch.falloff,depth-1):1;
+  out.gain.value=vel*dv;
+  const pan=ctx.createStereoPanner?ctx.createStereoPanner():null;
+  src.connect(out);
+  if(pan){
+    pan.pan.value=clamp((freq-300)/900,-1,1)*TP.pluck.spread*(depth%2?-1:1);
+    out.connect(pan); pan.connect(g.pluckBus);
+  } else out.connect(g.pluckBus);
+  src.start(t);
+}
+
+/* The drone: root sine + fifth triangle, breathing under a lowpass. */
+function startDrone(g,t){
+  const ctx=g.ctx;
+  const root=midiToFreq(ROOT_MIDI-12);
+  const o1=ctx.createOscillator(); o1.type='sine'; o1.frequency.value=root;
+  const o2=ctx.createOscillator(); o2.type='triangle'; o2.frequency.value=root*1.5; o2.detune.value=3;
+  const g1=ctx.createGain(); g1.gain.value=.7;
+  const g2=ctx.createGain(); g2.gain.value=TP.drone.fifth*.5;
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=TP.drone.cutoff; lp.Q.value=.3;
+  const trem=ctx.createGain(); trem.gain.value=1-TP.drone.tremDepth/2;
+  const lfo=ctx.createOscillator(); lfo.frequency.value=TP.drone.tremRate;
+  const lfoG=ctx.createGain(); lfoG.gain.value=TP.drone.tremDepth/2;
+  lfo.connect(lfoG); lfoG.connect(trem.gain);
+  o1.connect(g1); o2.connect(g2); g1.connect(lp); g2.connect(lp); lp.connect(trem); trem.connect(g.droneBus);
+  const t0=Math.max(t,ctx.currentTime+.02);
+  trem.gain.setValueAtTime(0,t0); trem.gain.linearRampToValueAtTime(1-TP.drone.tremDepth/2,t0+2.5);
+  o1.start(t0); o2.start(t0); lfo.start(t0);
+  droneNodes={o1:o1,o2:o2,lfo:lfo,trem:trem,lp:lp,g2:g2};
+}
+function stopDrone(){
+  if(!droneNodes||!G) return;
+  const ctx=G.ctx, t=ctx.currentTime, dn=droneNodes; droneNodes=null;
+  try{
+    dn.trem.gain.cancelScheduledValues(t);
+    dn.trem.gain.setTargetAtTime(0,t,.25);
+    dn.o1.stop(t+1.4); dn.o2.stop(t+1.4); dn.lfo.stop(t+1.4);
+  }catch(e){}
+}
+
+/* The stem breath: one low swell per cycle, marking the season. */
+function stemVoice(g,t){
+  const ctx=g.ctx;
+  const o=ctx.createOscillator(); o.type='sine'; o.frequency.value=midiToFreq(ROOT_MIDI-24);
+  const o2=ctx.createOscillator(); o2.type='sine'; o2.frequency.value=midiToFreq(ROOT_MIDI-24)*1.005;
+  const e=ctx.createGain();
+  e.gain.setValueAtTime(0,t);
+  e.gain.linearRampToValueAtTime(.8,t+TP.stem.attack);
+  e.gain.setTargetAtTime(0,t+TP.stem.attack,TP.stem.decay/3);
+  o.connect(e); o2.connect(e); e.connect(g.stemBus);
+  const stop=t+TP.stem.attack+TP.stem.decay*2;
+  o.start(t); o2.start(t); o.stop(stop); o2.stop(stop);
+}
+
+/* ---- 4.3 iOS / autoplay audio unlock (house block) ------------------ */
+function __hint(msg){/* in-page hint element; optional */}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(!paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{
+    if(document.visibilityState==='visible')kick();
+    else if(ac.state==='running')ac.suspend().catch(()=>{});
+  }catch(e){}};
+  document.addEventListener('visibilitychange',onVis);
+  window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+}
+
+function ensureAudio(){
+  if(!AC){
+    AC=new (window.AudioContext||window.webkitAudioContext)({sampleRate:SR});
+    __iosAudio(AC);
+    G=buildGraph(AC,st.seed);
+  }
+  if(AC.state!=='running'&&!paused) AC.resume().catch(()=>{});
+}
+
+/* =====================================================================
+   THE DRIVER — a live scheduler walking the score against currentTime.
+   The piece is endless: one growth performed, four beats of winter,
+   grown again. A change of law takes root at the next cycle — the
+   transport is never yanked.
+   ===================================================================== */
+function scheduleCycle(g,score,t0){
+  stemVoice(g,t0);
+  for(let i=0;i<score.events.length;i++){
+    const e=score.events[i];
+    pluckVoice(g,t0+e.t,midiToFreq(e.midi),e.vel,e.dur,e.depth);
+  }
+}
+
+let lastCycleAt=0;
+function schedTick(){
+  if(!playing||!G) return;
+  if(pendingScore){ SCORE=pendingScore; pendingScore=null; rebuildStatic(); updateStat(); }
+  const ahead=AC.currentTime+.3;
+  while(cycleStart<ahead){
+    scheduleCycle(G,SCORE,cycleStart);
+    lastCycleAt=cycleStart;
+    cycleStart+=SCORE.cycleLen;
+  }
+}
+
+function play(){
+  ensureAudio();
+  if(!SCORE) regen();
+  if(playing) return;
+  playing=true; paused=false;
+  cycleStart=AC.currentTime+.15; lastCycleAt=cycleStart;
+  startDrone(G,AC.currentTime+.02);
+  schedTick();
+  schedTimer=setInterval(schedTick,40);
+  document.getElementById('bPlay').textContent='■ SISTE';
+  document.getElementById('bPlay').classList.remove('primary');
+  startDraw();
+}
+function stop(){
+  playing=false; paused=false;
+  clearInterval(schedTimer); schedTimer=null;
+  stopDrone();
+  document.getElementById('bPlay').textContent='▶ CRESCE';
+  document.getElementById('bPlay').classList.add('primary');
+  stopDraw(); drawOnce();
+}
+function togglePlay(){ playing?stop():play(); }
+
+/* 4.4 pause/resume — suspend freezes currentTime, so score & canvas hold. */
+function togglePause(){
+  if(!playing||!AC) return;
+  if(!paused){ paused=true; AC.suspend().catch(()=>{}); stopDraw();
+    document.getElementById('bPause').textContent='► REDI'; }
+  else{ paused=false; AC.resume().catch(()=>{}); startDraw();
+    document.getElementById('bPause').textContent='❚❚ MORA'; }
+}
+
+function another(){
+  st.seed=(Math.imul(st.seed,1103515245)+12345>>>0)%999983;
+  if(st.seed<1)st.seed+=7;
+  regen();
+}
+
+function regen(){
+  const fresh=genAll(st.seed,{grammar:st.grammar,iterations:st.iterations,mode:st.mode,tempo:st.tempo});
+  if(playing){ pendingScore=fresh; }
+  else{ SCORE=fresh; rebuildStatic(); }
+  updateStat();
+}
+
+/* =====================================================================
+   THE CANVAS — draws the model: the turtle-grown plant. The static
+   plant is cached offscreen; the live pass blits the cache and lights
+   only the segments whose notes are sounding now.
+   ===================================================================== */
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const cv=document.getElementById('cv'), cx2=cv.getContext('2d');
+let staticCv=null, plantTransform=null, dpr=1;
+
+function fitCanvas(){
+  dpr=Math.min(window.devicePixelRatio||1,2);
+  const w=cv.clientWidth||cv.width, h=Math.round(w*520/680);
+  cv.style.height=h+'px';
+  cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+  rebuildStatic();
+}
+
+function computeTransform(segs){
+  if(!segs.length) return {s:1,ox:0,oy:0};
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const s of segs){
+    x0=Math.min(x0,s.x1,s.x2); x1=Math.max(x1,s.x1,s.x2);
+    y0=Math.min(y0,s.y1,s.y2); y1=Math.max(y1,s.y1,s.y2);
+  }
+  const W=cv.width,H=cv.height,m=Math.min(W,H)*.09;
+  const sc=Math.min((W-2*m)/Math.max(x1-x0,1e-6),(H-2*m)/Math.max(y1-y0,1e-6));
+  return {s:sc, ox:m+(W-2*m-(x1-x0)*sc)/2-x0*sc, oy:m+(H-2*m-(y1-y0)*sc)/2-y0*sc};
+}
+
+function depthColor(d,alpha){
+  /* bark at the trunk, leaf-green outward, gold at the tips */
+  const stops=[[138,111,77],[95,158,63],[159,214,106],[232,194,90]];
+  const c=stops[Math.min(d,stops.length-1)];
+  return 'rgba('+c[0]+','+c[1]+','+c[2]+','+alpha+')';
+}
+
+function rebuildStatic(){
+  if(!cv.width) return;
+  staticCv=document.createElement('canvas');
+  staticCv.width=cv.width; staticCv.height=cv.height;
+  const c=staticCv.getContext('2d');
+  c.fillStyle='#121a10'; c.fillRect(0,0,cv.width,cv.height);
+  /* faint soil line */
+  c.strokeStyle='rgba(138,111,77,.25)'; c.lineWidth=1*dpr;
+  c.beginPath(); c.moveTo(0,cv.height-14*dpr); c.lineTo(cv.width,cv.height-14*dpr); c.stroke();
+  if(!SCORE) return;
+  plantTransform=computeTransform(SCORE.segments);
+  const T=plantTransform;
+  c.lineCap='round';
+  for(const s of SCORE.segments){
+    c.strokeStyle=depthColor(s.depth,.5);
+    c.lineWidth=Math.max(1,(3.1-s.depth*.8))*dpr*.9;
+    c.beginPath();
+    c.moveTo(s.x1*T.s+T.ox,s.y1*T.s+T.oy);
+    c.lineTo(s.x2*T.s+T.ox,s.y2*T.s+T.oy);
+    c.stroke();
+  }
+  drawOnce();
+}
+
+function litSegments(){
+  /* segments whose notes are sounding now (against ctx.currentTime) */
+  if(!SCORE||!playing||!AC) return [];
+  const local=AC.currentTime-lastCycleAt;
+  if(local<0||local>SCORE.lastEnd+.3) return [];
+  const out=[];
+  for(const e of SCORE.events){
+    if(e.t>local+.05) break;                 /* events are sorted by onset */
+    if(e.t<=local&&e.t+e.dur*.6>=local&&e.seg>=0) out.push(e.seg);
+  }
+  return out;
+}
+
+function drawOnce(){
+  if(!staticCv) return;
+  cx2.clearRect(0,0,cv.width,cv.height);
+  cx2.drawImage(staticCv,0,0);
+  if(!playing||!plantTransform) return;
+  const T=plantTransform, lit=litSegments();
+  cx2.lineCap='round';
+  for(const si of lit){
+    const s=SCORE.segments[si]; if(!s) continue;
+    cx2.strokeStyle=depthColor(Math.min(s.depth+1,3),RM?.85:.95);
+    cx2.lineWidth=Math.max(1.5,(4.4-s.depth*.9))*dpr*.9;
+    if(!RM){ cx2.shadowColor='rgba(159,214,106,.8)'; cx2.shadowBlur=10*dpr; }
+    cx2.beginPath();
+    cx2.moveTo(s.x1*T.s+T.ox,s.y1*T.s+T.oy);
+    cx2.lineTo(s.x2*T.s+T.ox,s.y2*T.s+T.oy);
+    cx2.stroke();
+    cx2.shadowBlur=0;
+  }
+}
+
+function startDraw(){
+  stopDraw();
+  if(RM){ drawTimer=setInterval(drawOnce,140); }
+  else{
+    const loop=()=>{ drawOnce(); if(playing&&!paused) drawTimer=requestAnimationFrame(loop); else drawTimer=null; };
+    drawTimer=requestAnimationFrame(loop);
+  }
+}
+function stopDraw(){ if(drawTimer){ if(RM) clearInterval(drawTimer); else cancelAnimationFrame(drawTimer); drawTimer=null; } }
+
+/* ---- 4.5 URL-hash round-trip: the hash is the pressing --------------- */
+let __applying=false;
+function __state(){ return {s:st.seed, g:st.grammar, i:st.iterations, m:st.mode, t:st.tempo}; }
+function __apply(o){
+  if(o.s!==undefined&&!isNaN(+o.s)) st.seed=Math.max(1,Math.floor(+o.s));
+  if(o.g&&GRAMMARS[o.g]) st.grammar=o.g;
+  if(o.i!==undefined&&!isNaN(+o.i)) st.iterations=+o.i;
+  if(o.m&&MODES[o.m]) st.mode=o.m;
+  if(o.t!==undefined&&!isNaN(+o.t)) st.tempo=clamp(+o.t,56,140);
+  syncControls(); regen();
+}
+function __hashRead(){const h=location.hash.slice(1);if(!h)return null;const o={};
+  for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}
+function __hashWrite(){if(__applying)return;
+  try{const o=__state();history.replaceState(null,'','#'+Object.entries(o).map(([k,v])=>k+'='+v).join('&'));}catch(e){}}
+document.addEventListener('click',()=>setTimeout(__hashWrite,140),true);
+document.addEventListener('change',()=>setTimeout(__hashWrite,140),true);
+
+/* ---- 4.6 offline render -> deterministic 16-bit WAV (house encode) --- */
+function encodeWav(L,R,sr){
+  const n=L.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');d.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  ws(36,'data');d.setUint32(40,n*4,true);
+  let o=44;
+  for(let i=0;i<n;i++){ d.setInt16(o,clamp(L[i],-1,1)*32767,true);o+=2; d.setInt16(o,clamp(R[i],-1,1)*32767,true);o+=2; }
+  return new Blob([buf],{type:'audio/wav'});
+}
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  var bar=document.getElementById('savebar');
+  bar.innerHTML='⬇ <a href="'+url+'" download="'+filename+'">Save WAV — '+filename+'</a>';
+  bar.style.display='block';
+  setTimeout(function(){bar.style.display='none';},30000);
+}
+
+/* One pressing = one cycle: the same score through the same graph,
+   rendered offline. Reverb IR and noise bursts are seeded from st.seed,
+   so the cut is bit-identical for the same hash. */
+async function cut(){
+  if(!SCORE) regen();
+  if(pendingScore){ SCORE=pendingScore; pendingScore=null; rebuildStatic(); }
+  const durSec=SCORE.cycleLen;
+  const btn=document.getElementById('bCut'); btn.textContent='… RECIDITUR';
+  try{
+    const ctx=new OfflineAudioContext(2,Math.ceil((durSec+0.4)*SR),SR);
+    const g=buildGraph(ctx,st.seed);
+    stemVoice(g,0.02);
+    for(const e of SCORE.events) pluckVoice(g,e.t+0.02,midiToFreq(e.midi),e.vel,e.dur,e.depth);
+    /* a quiet drone for the cut, identical to the live voice */
+    const root=midiToFreq(ROOT_MIDI-12);
+    const o1=ctx.createOscillator(); o1.type='sine'; o1.frequency.value=root;
+    const o2=ctx.createOscillator(); o2.type='triangle'; o2.frequency.value=root*1.5; o2.detune.value=3;
+    const g1=ctx.createGain(); g1.gain.value=.7;
+    const g2=ctx.createGain(); g2.gain.value=TP.drone.fifth*.5;
+    const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=TP.drone.cutoff;
+    const trem=ctx.createGain(); trem.gain.value=1-TP.drone.tremDepth/2;
+    const lfo=ctx.createOscillator(); lfo.frequency.value=TP.drone.tremRate;
+    const lfoG=ctx.createGain(); lfoG.gain.value=TP.drone.tremDepth/2;
+    lfo.connect(lfoG); lfoG.connect(trem.gain);
+    o1.connect(g1); o2.connect(g2); g1.connect(lp); g2.connect(lp); lp.connect(trem); trem.connect(g.droneBus);
+    o1.start(.02); o2.start(.02); lfo.start(.02);
+    o1.stop(durSec+.3); o2.stop(durSec+.3); lfo.stop(durSec+.3);
+    const rb=await ctx.startRendering();
+    const n=Math.floor(durSec*SR);
+    const L=rb.getChannelData(0).slice(0,n), R=rb.getChannelData(1).slice(0,n);
+    saveWav(encodeWav(L,R,SR),'germen_'+st.grammar+'_seed'+st.seed+'.wav');
+  }catch(e){ console.error(e); }
+  btn.textContent='⬇ RECIDE';
+}
+
+/* =====================================================================
+   OFFICINA hooks — the bench drives the running machine.
+   touch() ramps the live graph; it never restarts the transport.
+   ===================================================================== */
+TIMBRE.touch=function(path){
+  if(!G||!AC) return;
+  const t=AC.currentTime, ramp=(node,v)=>{try{node.setTargetAtTime(v,t,.05);}catch(e){}};
+  const all=!path;
+  if(all||path==='master.trim') ramp(G.trim.gain,TP.master.trim);
+  if(all||path==='master.drive') G.shaper.curve=warmthCurve(TP.master.drive);
+  if(all||path==='master.limThresh') ramp(G.limiter.threshold,TP.master.limThresh);
+  if(all||path==='pluck.level') ramp(G.pluckBus.gain,TP.pluck.level);
+  /* baked pluck buffers: re-bake lazily — never yank the transport */
+  if(all||path==='pluck.bright'||path==='pluck.ring'||path==='pluck.excite'||path==='branch.bright')
+    __ksCache.clear();
+  if(all||path==='drone.level') ramp(G.droneBus.gain,TP.drone.level);
+  if(all||path==='stem.level') ramp(G.stemBus.gain,TP.stem.level);
+  if(all||path==='room.send') ramp(G.roomGain.gain,TP.room.send);
+  if(all||path==='room.preDelay') ramp(G.roomPre.delayTime,TP.room.preDelay);
+  if(all||path==='room.decay'){ G.room.buffer=makeIR(AC,st.seed^0xC2B2AE35,Math.max(.3,TP.room.decay)); }
+  if(droneNodes){
+    if(all||path==='drone.cutoff') ramp(droneNodes.lp.frequency,TP.drone.cutoff);
+    if(all||path==='drone.tremRate') ramp(droneNodes.lfo.frequency,TP.drone.tremRate);
+    if(all||path==='drone.tremDepth'){ ramp(droneNodes.lfoG.gain,TP.drone.tremDepth/2); }
+    if(all||path==='drone.fifth') ramp(droneNodes.g2.gain,TP.drone.fifth*.5);
+  }
+};
+TIMBRE.demo=function(group){
+  ensureAudio();
+  const t=AC.currentTime+.05;
+  if(group==='pluck'||group==='branch'){
+    const degs=[0,2,4,7];
+    for(let i=0;i<4;i++){
+      const d=group==='branch'?1:0;
+      pluckVoice(G,t+i*.22,midiToFreq(degToMidi(degs[i],st.mode)+12*d),.9,.35,d);
+    }
+  }else if(group==='drone'){ if(!droneNodes){ startDrone(G,t); setTimeout(()=>{if(!playing)stopDrone();},3500);} }
+  else if(group==='stem'){ stemVoice(G,t); }
+  else if(group==='room'||group==='master'){
+    pluckVoice(G,t,midiToFreq(degToMidi(0,st.mode)),.9,.5,0);
+    pluckVoice(G,t+.4,midiToFreq(degToMidi(4,st.mode)),.9,.5,0);
+  }
+};
+
+/* =====================================================================
+   CONTROLS — the law made interactive.
+   ===================================================================== */
+const $=id=>document.getElementById(id);
+function buildControls(){
+  const gs=$('cGrammar');
+  for(const k in GRAMMARS){ const o=document.createElement('option'); o.value=k; o.textContent=GRAMMARS[k].label; gs.appendChild(o); }
+  const ms=$('cMode');
+  for(const k in MODES){ const o=document.createElement('option'); o.value=k; o.textContent=MODES[k].label; ms.appendChild(o); }
+  gs.addEventListener('change',()=>{ st.grammar=gs.value; clampIter(); regen(); });
+  ms.addEventListener('change',()=>{ st.mode=ms.value; regen(); });
+  $('cIter').addEventListener('input',()=>{ st.iterations=+$('cIter').value; regen(); });
+  $('cTempo').addEventListener('input',()=>{ st.tempo=+$('cTempo').value; regen(); });
+  $('bPlay').addEventListener('click',togglePlay);
+  $('bPause').addEventListener('click',togglePause);
+  $('bAnother').addEventListener('click',another);
+  $('bCut').addEventListener('click',cut);
+  for(const id of ['bPlay','bPause','bAnother','bCut'])
+    $(id).addEventListener('click',function(){this.blur();});
+  document.addEventListener('keydown',e=>{
+    const tag=(e.target&&e.target.tagName)||'';
+    if(tag==='INPUT'||tag==='TEXTAREA'||tag==='SELECT') return;
+    if(e.code==='Space'){ e.preventDefault(); togglePlay(); }
+    else if(e.key==='p'||e.key==='P'){ togglePause(); }
+    else if(e.key==='r'||e.key==='R'){ another(); }
+    else if(e.key==='c'||e.key==='C'){ cut(); }
+  });
+}
+function clampIter(){
+  const Gm=GRAMMARS[st.grammar];
+  st.iterations=clamp(st.iterations,Gm.itMin,Gm.itMax);
+  const r=$('cIter'); r.min=Gm.itMin; r.max=Gm.itMax; r.value=st.iterations;
+}
+function syncControls(){
+  $('cGrammar').value=st.grammar; clampIter();
+  $('cMode').value=st.mode;
+  $('cTempo').value=st.tempo;
+}
+function updateStat(){
+  const sc=(pendingScore||SCORE); if(!sc) return;
+  $('vIter').textContent='n = '+st.iterations;
+  $('vTempo').textContent=st.tempo+' bpm';
+  const secs=Math.round(sc.cycleLen);
+  $('stat').innerHTML=
+    'seed <b>'+st.seed+'</b> · species <b>'+GRAMMARS[st.grammar].label.split(' — ')[0]+'</b> · '+
+    'string <b>'+sc.stringLen.toLocaleString('en')+'</b> symbols · <b>'+sc.events.length+'</b> notes'+
+    (sc.pruned?' <span class="pend">(pruned at 1500)</span>':'')+
+    ' · one season ≈ <b>'+Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0')+'</b>'+
+    (pendingScore?' · <span class="pend">new growth takes root next season</span>':'')+
+    '<br><span style="opacity:.7">'+GRAMMARS[st.grammar].blurb+'</span>';
+}
+
+/* =====================================================================
+   INIT
+   ===================================================================== */
+buildControls();
+fitCanvas();
+window.addEventListener('resize',()=>{ fitCanvas(); });
+const __o=__hashRead();
+if(__o){ __applying=true; __apply(__o); __applying=false; }
+else { syncControls(); regen(); }
+__hashWrite();
+updateStat();
+</script>
+</body>
+</html>
