@@ -36,6 +36,11 @@ body{background:
 
 /* exit to opuscula (shared) */
 .exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:0 0 12px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(6,14,20,.55);border:1px solid rgba(232,228,214,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+/* direct link to officina — the voicing bench (added) */
+.bench{position:fixed;top:max(6px,env(safe-area-inset-top));right:max(6px,env(safe-area-inset-right));z-index:100;display:flex;width:-moz-fit-content;width:fit-content;align-items:center;gap:.55em;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(6,14,20,.55);border:1px solid rgba(232,228,214,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench:hover,.bench:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.bench:active{transform:translateY(1px)}
+@media(prefers-reduced-motion:reduce){.bench{transition:none}}
 .exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(232,228,214,.7);background:rgba(6,14,20,.85);outline:none}
 .exit:active{transform:translateY(1px)}
 .exit .x{font-size:15px;line-height:1;letter-spacing:0}
@@ -109,6 +114,7 @@ footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 <body>
 <div class="board">
   <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+  <a class="bench" href="../officina/#m=khoomei" aria-label="Open in officina — the voicing bench" title="officina">officina</a>
 
   <div class="eyebrow">op. XI · хөөмий</div>
   <h1>Khöömei</h1>

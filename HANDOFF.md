@@ -243,6 +243,28 @@ Conventions when touching this layer:
 
 Newest first.
 
+### Direct officina link on every machine — cross-machine sweep
+**Branch:** `copilot/cleanup-general-bugs-issues` · **Files:** all nineteen
+`*/index.html` · **Status:** done, verified headless (Chromium, all 19 pass:
+link present, correct `href`, zero pageerrors). Maintainer's brief: officina
+was only reachable from the landing-page colophon, "not very handy" when
+already inside a machine.
+
+Added a fixed top-right pill `<a class="bench" href="../officina/#m=<dir>">
+officina</a>` to every machine page, sitting alongside the existing top-left
+`.exit` pill (independent `position:fixed`, doesn't interact with `.exit`'s
+`position:sticky`). Reuses each machine's own `.exit` color/background/border
+values so the pill matches the page's palette instead of a generic default.
+`officina/index.html` already parses `#m=<id>` on load (`pick(id)` at the
+bottom of its script) and auto-selects that machine's chip, so no officina-side
+change was needed — this was a pure "expose the existing deep link" sweep.
+This is the OFFICINA-bridge-style duplicated-verbatim exception to "no shared
+code": the CSS block and anchor are near-identical in all 19 files (only the
+per-machine color values and `#m=` slug differ), added mechanically rather
+than hand-edited to keep them consistent. Any future *change* to this pill
+(copy, position, behavior) is another cross-machine sweep, same discipline as
+the OFFICINA bridge itself.
+
 ### TRITAVA — new machine, op. XIX (the Bohlen–Pierce scale — a music with no octave)
 **Branch:** `claude/session-vfb3ko` · **File:** `tritava/index.html` · **Status:**
 done, verified headless (Chromium, 46 checks, zero pageerrors). New op.
