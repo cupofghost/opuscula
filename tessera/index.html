@@ -888,7 +888,6 @@ function drawViz(){
       const y=y0+i*rowH;
       const isRest=(i===size-1), isChosen=(cur&&i===cur.tok);
       const label=isRest?'∅':(SCORE.gen.rats[i][0]+'/'+SCORE.gen.rats[i][1]);
-      cx.fillStyle=isChosen?'var(--ink)':'rgba(236,231,246,.55)';
       cx.fillStyle=isChosen?'#ece7f6':'rgba(236,231,246,.5)';
       cx.font=(isChosen?'700 ':'400 ')+'12px "IBM Plex Mono",monospace'; cx.textAlign='right';
       cx.fillText(label,lx+42,y+rowH*0.72);

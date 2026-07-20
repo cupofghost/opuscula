@@ -224,12 +224,8 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
    ENGINE writes the bass riddim, the halfstep drums and a 64-bar
    arrangement, all synthesized (no samples).
 
-   ⚠ SCAFFOLD STATUS: this file is the designed SHELL of the machine —
-   UI, state, hash, TIMBRE schema, OFFICINA bridge, and the canvas are
-   real and working; the ENGINE and AUDIO sections are contracted stubs.
-   See sublow/NOTES.md for the full composition + synthesis spec, the
-   verify plan, and the registration checklist. Fenced TODO(SONNET)
-   blocks mark exactly what remains. RILLE (../rille/index.html) is the
+   UI, state, hash, TIMBRE schema, OFFICINA bridge, ENGINE, AUDIO, and the
+   canvas are all real and working. RILLE (../rille/index.html) is the
    reference implementation for the skeleton (realtime bar scheduler +
    offline cut) — same shape, different law.
 
@@ -245,7 +241,7 @@ input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;bac
    KEYS: space = run/hold · u = pull up (rewind) · r = new dub · c = cut
 
    THIS FILE: helpers → LAW (JI, riddims, talk) → TIMBRE/bridge →
-   ENGINE stubs → state → AUDIO stubs → stack canvas → UI wiring → hash.
+   ENGINE → state → AUDIO → stack canvas → UI wiring → hash.
    ===================================================================== */
 
 /* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
@@ -1146,9 +1142,9 @@ TIMBRE.demo=()=>{ if(!RT)playBtn.click(); };
    phrase drawn as the wave it speaks (each note a squiggle whose period
    is its wobble division; a hold is a straight line), kicks and the
    beat-3 snare marked underneath.
-   Static wall+lane cached to an offscreen layer; when the engine lands,
-   the dynamic pass (TODO(SONNET)) redraws only: sub-cone excursion from
-   the sounding bass env, horn flash on snare, LED VU, playhead. Idle =
+   Static wall+lane cached to an offscreen layer; the dynamic pass redraws
+   only: sub-cone excursion from the sounding bass env, horn flash on
+   snare, LED VU, playhead. Idle =
    draw once; loop only while playing; prefers-reduced-motion = playhead
    only.                                                                */
 const cv=document.getElementById('stack'), cx=cv.getContext('2d');
