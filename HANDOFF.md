@@ -171,7 +171,7 @@ here, and `officina`'s `MACHINES` chips:
   rebase-before-push is where you re-sync them against what landed under you.
 
 **Cross-machine sweeps** — bridge changes, a convention applied everywhere:
-- The OFFICINA bridge is duplicated verbatim in all fourteen machines, so
+- The OFFICINA bridge is duplicated verbatim in all nineteen machines, so
   editing it touches every file and conflicts with every live branch. A
   sweep gets its **own dedicated branch**, mixes in no per-machine feature
   work, lands fast, and announces itself in Open threads so per-machine
