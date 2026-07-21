@@ -246,12 +246,12 @@ Conventions when touching this layer:
 
 Newest first.
 
-### Lock-screen playback via Media Session API — sweep in progress (PAS SALÉ, SCALA, GRADUS done)
+### Lock-screen playback via Media Session API — sweep in progress (I–IV done)
 **Branch:** `claude/app-link-request-vj8sml` · **Files done:** `pas-sale/index.html`
-(op. I), `scala/index.html` (op. II), `gradus/index.html` (op. III) ·
-**Status:** in progress, going down the op. list in order; each machine
-verified headless (Chromium) as it lands. Maintainer-requested: listen with
-the phone locked/backgrounded.
+(op. I), `scala/index.html` (op. II), `gradus/index.html` (op. III),
+`rille/index.html` (op. IV) · **Status:** in progress, going down the op.
+list in order; each machine verified headless (Chromium) as it lands.
+Maintainer-requested: listen with the phone locked/backgrounded.
 
 - **`__iosAudio`'s hide-suspend removed** in each machine touched so far: it
   used to deliberately `ac.suspend()` on `visibilitychange`→hidden (comment:
@@ -259,34 +259,41 @@ the phone locked/backgrounded.
   what's wanted now, so it's gone — the context only ever gets `kick()`ed
   (resumed), never suspended, on visibility/statechange. `pagehide` still
   suspends (real navigation/unload, not backgrounding). Where a machine has
-  its own pause flag (SCALA's `st.paused`), `kick()` already guarded on it
-  (same gotcha as the RILLE MORA/pause thread) — untouched, still respected.
+  its own pause flag (SCALA/GRADUS/RILLE's `st.paused`), `kick()` already
+  guarded on it — untouched, still respected. **Re-verified the RILLE pause
+  gotcha specifically** (headless): manually pause, simulate hide→show,
+  confirm the context stays `suspended` (kick() didn't undo it), only then
+  resume via the pause button.
 - **Media Session added** (`__mediaSessionInit`/`__mediaSessionUpdate`):
   wires lock-screen/notification-shade play/pause/stop to each machine's own
   start/stop/pause functions; next-track maps to whatever that machine calls
   "another take" (PAS SALÉ's `encore()`, SCALA's next-preset cycle, GRADUS's
-  `regenerate(true)`/ALIUD). Metadata (title/op. number/current-take-as-album)
-  refreshes on every start/stop/pause-toggle/take-change.
+  `regenerate(true)`/ALIUD, RILLE's `applyChange(true)`/ALIUD). Metadata
+  (title/op. number/current-take-as-album) refreshes on every
+  start/stop/pause-toggle/take-change — RILLE also refreshes it from
+  `finishMix()` (the harmonic auto-blend handoff) and `applyChange()`, since
+  both can silently swap the live seed mid-playback.
 - **Silent looping `<audio>` anchor** (`__silStart`/`__silStop`, `__SILENCE`
   data-URI, 8kHz/8-bit/50ms, identical in both files so far): pure Web Audio
   doesn't reliably surface an OS "now playing" session or stay exempt from
   background tab-timer throttling; a real (silent) `<audio>` element playing
   alongside does both. Starts/stops with the transport.
-- **Verified headless** for all three machines: `ctx.state`/`RT.ctx.state`/
+- **Verified headless** for all four machines: `ctx.state`/`RT.ctx.state`/
   `RT.ac.state` stays `'running'` after a simulated `visibilitychange`→hidden
   (previously suspended); Media Session metadata/`playbackState` update
-  correctly; the silence anchor plays while the transport runs; SCALA's and
-  GRADUS's manual MORA/PERGE pause still suspends/resumes correctly under the
-  new visibility logic. Scripts `scratchpad/verify_pas_sale.js`,
-  `scratchpad/verify_scala.js`, `scratchpad/verify_gradus.js` (scratch, not
-  committed).
+  correctly; the silence anchor plays while the transport runs; SCALA's,
+  GRADUS's, and RILLE's manual pause still suspends/resumes correctly under
+  the new visibility logic (RILLE additionally checked hide→show *while
+  paused* doesn't wake it). Scripts `scratchpad/verify_pas_sale.js`,
+  `scratchpad/verify_scala.js`, `scratchpad/verify_gradus.js`,
+  `scratchpad/verify_rille.js` (scratch, not committed).
 - **Pattern is a copy-adapt, not a literal duplicate-verbatim** like the
   OFFICINA bridge — each machine's metadata title/op. number, transport
   function names, and "another take" equivalent differ, so every machine
   needs its own look before wiring in the three pieces (suspend-removal,
   Media Session, silence anchor).
-- **Pick-up:** continue down the op. list (next: RILLE, op. IV) on this same
-  branch until all machines are done, or until told to stop/reassess.
+- **Pick-up:** continue down the op. list (next: COCHLEA, op. V) on this
+  same branch until all machines are done, or until told to stop/reassess.
 
 ### RILLE — reverted to pre-recomposition · English-first UI · reworked arp · URTEIL harness
 **Branch:** `claude/rille-major-chords-a6pm9r` · **Files:** `rille/index.html`
