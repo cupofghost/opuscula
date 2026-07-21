@@ -309,23 +309,55 @@ function __iosAudio(ac){
   const kick=()=>{try{if(!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
   kick();
   try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
-  // stop the sound when the page is backgrounded (phone locked, app switched
-  // or closed) — a playback-session AudioContext otherwise keeps rendering in
-  // the background. Suspend on hidden; only auto-resume while visible.
-  const onVis=()=>{try{
-    if(document.visibilityState==='visible')kick();
-    else if(ac.state==='running')ac.suspend().catch(()=>{});
-  }catch(e){}};
+  // playback-session AudioContext keeps rendering when backgrounded (phone
+  // locked, app switched) — that's wanted now (lock-screen listening via
+  // Media Session, below), so only ever resume here, never suspend on hide.
+  // kick() already guards on !st.paused, so a manual PAUSE still holds.
+  const onVis=()=>{try{if(document.visibilityState==='visible')kick();}catch(e){}};
   document.addEventListener&&document.addEventListener('visibilitychange',onVis);
   window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
   try{ac.addEventListener('statechange',()=>{
     if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
     if(ac.state==='running')__hint('');
-    else if(document.visibilityState==='visible')setTimeout(kick,60);
+    else setTimeout(kick,60);
   });}catch(e){}
   setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
     __hint('AUDIO PAUSED — tap Play again · if silent, check the ring/silent switch');}catch(e){}},450);
 }
+
+/* ---- Media Session: lock-screen / notification-shade transport ----
+   A silent looping <audio> anchors the OS "now playing" session — Web
+   Audio alone doesn't reliably surface one — and keeps the tab exempt from
+   background timer throttling so the lookahead scheduler stays live with
+   the phone locked. */
+const __SILENCE='data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+let __silAudio=null;
+function __mediaSessionInit(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.setActionHandler('play',()=>{if(!st.playing)startPlay();else if(st.paused)togglePause();});
+    navigator.mediaSession.setActionHandler('pause',()=>{if(st.playing&&!st.paused)togglePause();});
+    navigator.mediaSession.setActionHandler('stop',()=>{if(st.playing)stopPlay();});
+    navigator.mediaSession.setActionHandler('nexttrack',()=>{const b=$('aliud');b&&b.click();});
+  }catch(e){}
+}
+function __mediaSessionUpdate(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.metadata=new MediaMetadata({
+      title:'RILLE', artist:'OPVSCVLA · op. IV',
+      album:'matrix '+st.seed.toString(16).toUpperCase()
+    });
+    navigator.mediaSession.playbackState=(st.playing&&!st.paused)?'playing':'paused';
+  }catch(e){}
+}
+function __silStart(){
+  try{
+    if(!__silAudio){__silAudio=new Audio(__SILENCE);__silAudio.loop=true;__silAudio.setAttribute('playsinline','');}
+    __silAudio.play().catch(()=>{});
+  }catch(e){}
+}
+function __silStop(){try{__silAudio&&__silAudio.pause();}catch(e){}}
 
 /* ============================ ENGINE-BEGIN ============================ */
 /* RILLE — seeded minimal techno generator. AFFECTUS presets steer key,
@@ -749,7 +781,7 @@ function regenPatterns(newSeed){
 // If stopped, just refresh the preview and reset to the top.
 function applyChange(newSeed){
   regenPatterns(newSeed);
-  if(RT){ applySharedFX(RT.G,st.g.M,RT.ac.currentTime); applyDeckFX(RT.decks[0].D,st.g.M,RT.ac.currentTime); updateHarm(); }
+  if(RT){ applySharedFX(RT.G,st.g.M,RT.ac.currentTime); applyDeckFX(RT.decks[0].D,st.g.M,RT.ac.currentTime); updateHarm(); __mediaSessionUpdate(); }
   else { st.bar=0;st.step=0; drawDisc(0,0,null); updateHarm(); }
 }
 // ramp the shared send FX (reverb, echo) to a mood. The reverb IR is swapped
@@ -1322,6 +1354,7 @@ function startPlay(){
   $('play').textContent='STOP (Stopp)';$('play').classList.add('on');
   $('pause').disabled=false;$('pause').textContent='PAUSE';$('pause').classList.remove('on');
   $('mixnow').disabled=false;
+  __mediaSessionInit(); __mediaSessionUpdate(); __silStart();
   updateHarm();
   tick();
 }
@@ -1408,7 +1441,7 @@ function finishMix(){
   RT.mix=null; RT.sinceMix=0;
   applyMoodSkin(); renderLedger(); refreshChips();
   $('matrix').textContent='MATRIX '+st.seed.toString(16).toUpperCase().padStart(8,'0');
-  updateHarm(); __hashWrite();
+  updateHarm(); __hashWrite(); __mediaSessionUpdate();
 }
 function stopPlay(){
   if(!RT)return;
@@ -1421,6 +1454,7 @@ function stopPlay(){
   $('mixnow').disabled=true;
   const sn=$('secname');if(sn)sn.textContent='—';
   drawDisc(0,0,null); updateHarm();
+  __mediaSessionUpdate(); __silStop();
 }
 let lastT=0,__frameKey='';
 function tick(ts){
@@ -1455,6 +1489,7 @@ function togglePause(){
     $('pause').textContent='PAUSE';$('pause').classList.remove('on');tick();}
   else{st.paused=true;RT.ac.suspend();
     $('pause').textContent='RESUME (Weiter)';$('pause').classList.add('on');}
+  __mediaSessionUpdate();
 }
 $('pause').addEventListener('click',togglePause);
 
