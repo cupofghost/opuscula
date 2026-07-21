@@ -100,7 +100,7 @@
   <div class="panel">
     <h2>On this music</h2>
     <p><em>Fado</em> emerges from Lisbon's Alfama district in the 18th century, born from the longing of sailors' wives and the marginal communities of the port. It is a music of <em>saudade</em> — a melancholic yearning without cure — sung by <em>fadistas</em> (fado singers) accompanied by the classical 12-string <em>guitarra</em>.</p>
-    <p>The tradition rests on a small arsenal of harmonic changes: the "Fado progression" cycles through minor chords (typically Am-Em-Dm-E or variations), creating an emotional space where melody can move with freedom. Singers ornament these changes with <em>melismas</em> — long runs of notes on a single syllable — and slides between tones, each song a conversation between the voice and the guitar's responsive plucking.</p>
+    <p>The tradition rests on a small arsenal of harmonic changes: a minor tonic moving to a second chord and back — the dominant a fifth above, the subdominant a fourth above, or the flattened seventh a whole tone below the octave — creating an emotional space where melody can move with freedom. Singers ornament these changes with <em>melismas</em> — long runs of notes on a single syllable — and slides between tones, each song a conversation between the voice and the guitar's responsive plucking.</p>
     <p>This machine generates fado as a dialogue: the fadista melody is constrained to move within the mode but allowed to wander, while the guitarra's harmonic progression remains fixed, creating both structure and space for the voice's lament.</p>
   </div>
 
@@ -144,22 +144,22 @@ const TIMBRE = {
     },
     voice: {
       label: 'Voice (Fadista)',
-      doc: 'The mezzo-soprano fadista voice.',
+      doc: 'The mezzo-soprano fadista voice. Level rides live; vibrato/attack/release are baked per note and apply at the next Play/Another.',
       params: {
-        level: { v: 0.7, min: 0.3, max: 1, step: 0.05, label: 'Level', unit: '', doc: 'Voice volume.' },
-        vibrato: { v: 0.08, min: 0, max: 0.15, step: 0.01, label: 'Vibrato', unit: '', doc: 'Vibrato depth (cents).' },
-        vibRate: { v: 4.5, min: 3, max: 7, step: 0.2, label: 'Vibrato Rate', unit: 'Hz', doc: 'Vibrato speed.' },
-        attack: { v: 0.04, min: 0.01, max: 0.15, step: 0.01, label: 'Attack', unit: 's', doc: 'Note attack time.' },
-        release: { v: 0.3, min: 0.1, max: 0.8, step: 0.1, label: 'Release', unit: 's', doc: 'Note release time.' }
+        level: { v: 0.7, min: 0.3, max: 1, step: 0.05, label: 'Level', unit: '', doc: 'Voice volume (live).' },
+        vibrato: { v: 0.08, min: 0, max: 0.15, step: 0.01, label: 'Vibrato', unit: '', doc: 'Vibrato depth, cents/100 (applies next Play/Another).' },
+        vibRate: { v: 4.5, min: 3, max: 7, step: 0.2, label: 'Vibrato Rate', unit: 'Hz', doc: 'Vibrato speed (applies next Play/Another).' },
+        attack: { v: 0.04, min: 0.01, max: 0.15, step: 0.01, label: 'Attack', unit: 's', doc: 'Note attack time (applies next Play/Another).' },
+        release: { v: 0.3, min: 0.1, max: 0.8, step: 0.1, label: 'Release', unit: 's', doc: 'Note release time (applies next Play/Another).' }
       }
     },
     guitarra: {
       label: 'Guitarra',
-      doc: 'The classical Portuguese guitar accompaniment.',
+      doc: 'The classical Portuguese guitar accompaniment. Level rides live; brightness/decay are baked per strum and apply at the next Play/Another.',
       params: {
-        level: { v: 0.6, min: 0.2, max: 1, step: 0.05, label: 'Level', unit: '', doc: 'Guitar volume.' },
-        brightness: { v: 3000, min: 1000, max: 8000, step: 200, label: 'Brightness', unit: 'Hz', doc: 'Guitar tone cutoff.' },
-        decay: { v: 1.2, min: 0.5, max: 2, step: 0.1, label: 'Decay', unit: 's', doc: 'Pluck decay time.' }
+        level: { v: 0.6, min: 0.2, max: 1, step: 0.05, label: 'Level', unit: '', doc: 'Guitar volume (live).' },
+        brightness: { v: 3000, min: 1000, max: 8000, step: 200, label: 'Brightness', unit: 'Hz', doc: 'Strum lowpass cutoff (applies next Play/Another).' },
+        decay: { v: 1.2, min: 0.5, max: 2, step: 0.1, label: 'Decay', unit: 's', doc: 'Pluck decay time (applies next Play/Another).' }
       }
     },
     bass: {
@@ -172,91 +172,52 @@ const TIMBRE = {
     }
   }
 };
-const tpDefaults = {};
-for (const g in TIMBRE.groups) {
-  for (const p in TIMBRE.groups[g].params) {
-    tpDefaults[g] = tpDefaults[g] || {};
-    tpDefaults[g][p] = TIMBRE.groups[g].params[p].v;
-  }
-}
-// OFFICINA bridge (duplicated verbatim in every machine)
-(function() {
-  const stored = localStorage[`opvscvla.timbre.${TIMBRE.id}`];
-  const override = stored ? JSON.parse(stored) : {};
-  window.TP = JSON.parse(JSON.stringify(tpDefaults));
-  if (override.v) {
-    for (const g in override.v) {
-      for (const p in override.v[g]) {
-        if (TP[g] && p in TP[g]) TP[g][p] = override.v[g][p];
-      }
-    }
-  }
-  window.TIMBRE.touch = function(path) {
-    const [g, p] = path.split('.');
-    if (TP[g] && p in TP[g]) {
-      const v = TP[g][p];
-      if (window.applyTimbreEdit) window.applyTimbreEdit(g, p, v);
-    }
-  };
-  window.TIMBRE.demo = function(group) {
-    if (window.demoPulse) window.demoPulse(group);
-  };
-  window.addEventListener('message', (ev) => {
-    if (ev.data.officina !== 1) return;
-    if (ev.data.op === 'schema') return;
-    if (ev.data.op === 'set' && ev.data.path) {
-      const [g, p] = ev.data.path.split('.');
-      if (TP[g] && p in TP[g]) {
-        TP[g][p] = ev.data.value;
-        const stored = localStorage[`opvscvla.timbre.${TIMBRE.id}`];
-        const o = stored ? JSON.parse(stored) : { preset: 'factory', v: {} };
-        o.v[g] = o.v[g] || {}; o.v[g][p] = ev.data.value;
-        localStorage[`opvscvla.timbre.${TIMBRE.id}`] = JSON.stringify(o);
-        if (window.applyTimbreEdit) window.applyTimbreEdit(g, p, ev.data.value);
-      }
-    } else if (ev.data.op === 'bulk' && ev.data.values) {
-      for (const g in ev.data.values) {
-        for (const p in ev.data.values[g]) {
-          if (TP[g] && p in TP[g]) TP[g][p] = ev.data.values[g][p];
-        }
-      }
-      const o = { preset: 'factory', v: ev.data.values };
-      localStorage[`opvscvla.timbre.${TIMBRE.id}`] = JSON.stringify(o);
-      if (window.applyTimbreEdit) window.applyTimbreEdit('*', '*', null);
-    }
-    if (window.parent !== window) window.parent.postMessage({ officina: 1, id: TIMBRE.id, op: 'ack' }, '*');
-  });
-  if (window.parent !== window) {
-    window.parent.postMessage({
-      officina: 1, id: TIMBRE.id,
-      op: 'schema', schema: TIMBRE,
-      values: TP
-    }, '*');
-  }
+/* ---- OFFICINA bridge (identical in every machine) ------------------------ */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
 })();
 
 // ============ STATE ============
 const st = {
   seed: 0, mode: 0, tempo: 72, playing: false, paused: false, lap: 0
 };
-const live = { q: [], pause: false, regQ: [] };
 let ac, RT = { g: null };
 let canvas, ctx;
 
 // ============ FADO MUSICAL LAW ============
 const BASE = 220; // A3 as base
+// Pythagorean (3-limit) chromatic ladder, stacked fifths reduced to the octave.
 const JI = [
-  [1,1],[256,243],[9,8],[32,27],[81,64],[4,3],[1024,683],[3,2],[128,81],[27,16],[16,9],[243,128],[2,1]
+  [1,1],[256,243],[9,8],[32,27],[81,64],[4,3],[729,512],[3,2],[128,81],[27,16],[16,9],[243,128],[2,1]
 ];
 const MODES = [
   { name: 'Phrygian (Triste)', steps: [0,1,3,5,7,8,10] },
   { name: 'Harmonic Minor (Anguished)', steps: [0,2,3,5,7,8,11] },
   { name: 'Aeolian (Melancholic)', steps: [0,2,3,5,7,9,10] }
 ];
+// All three progressions are in A (BASE), root degrees are JI-table semitone
+// indices (0-11) — verified against the JI ratios so the labels match what
+// actually sounds: i=0 (A), V=7 (E), iv=5 (D), bVII=10 (G).
 const PROGRESSIONS = [
-  { name: 'Am–E–Am', degrees: [0,4,0,4,0] },
-  { name: 'Em–B–Em', degrees: [4,11,4,11,4] },
-  { name: 'Dm–A–Dm', degrees: [2,9,2,9,2] }
+  { name: 'i–V–i', degrees: [0,7,0,7,0] },
+  { name: 'i–iv–i', degrees: [0,5,0,5,0] },
+  { name: 'i–♭VII–i', degrees: [0,10,0,10,0] }
 ];
 
 function jiFreq(num, den, octave = 0) {
@@ -273,6 +234,9 @@ function mulberry32(a) {
 }
 
 // ============ COMPOSITION ENGINE ============
+// Returns {events, prog} — prog is the chosen harmonic progression, kept
+// alongside the events so the canvas can show the progression actually
+// sounding rather than guessing at it.
 function genAll(seed, modeIdx, lap = 0) {
   const rng = mulberry32(seed ^ (lap * 0x9e3779b1));
   const mode = MODES[modeIdx];
@@ -280,28 +244,32 @@ function genAll(seed, modeIdx, lap = 0) {
   const bars = 32; // 32-bar song
   const events = [];
 
-  let pitchContext = [5,5,5]; // last 3 melody notes
+  let stepIdx = Math.floor(mode.steps.length / 2); // scale-step index, persists across bars
   for (let bar = 0; bar < bars; bar++) {
     const beat = bar * 2; // 2 beats per bar (2/4 time)
-    const harmonyDegree = prog.degrees[bar % prog.degrees.length];
-    const baseFreq = jiFreq(JI[harmonyDegree][0], JI[harmonyDegree][1], 1);
+    const rootDeg = prog.degrees[bar % prog.degrees.length]; // JI-table semitone index (0–11)
+    const fifthDeg = (rootDeg + 7) % 12;
+    const rootFreq = jiFreq(JI[rootDeg][0], JI[rootDeg][1], 0);
+    const fifthFreq = jiFreq(JI[fifthDeg][0], JI[fifthDeg][1], 0);
 
-    // Guitarra strums harmonic degrees: bass note + chord
+    // Guitarra strums root + fifth + octave, plus a low bass string.
     events.push({
-      type: 'chord', t: beat, bass: baseFreq / 2, degrees: [harmonyDegree, (harmonyDegree+2)%mode.steps.length, (harmonyDegree+4)%mode.steps.length], vel: 0.5
+      type: 'chord', t: beat,
+      bass: rootFreq / 2,
+      strings: [rootFreq, fifthFreq, rootFreq * 2],
+      vel: 0.5
     });
 
-    // Fadista melody: constrained walk within mode
+    // Fadista melody: constrained walk within the mode's scale steps.
     const nNotes = 1 + Math.floor(rng() * 3); // 1-3 notes per bar
     for (let n = 0; n < nNotes; n++) {
       const beatOffset = (n + 0.5) * (2 / nNotes);
-      let nextDegree = pitchContext[2]; // start from last note
-      const steps = [-1, 0, 1]; // allowed steps in the mode
-      nextDegree = mode.steps[Math.max(0, Math.min(mode.steps.length - 1, nextDegree + steps[Math.floor(rng() * steps.length)]))];
-      pitchContext = [pitchContext[1], pitchContext[2], nextDegree];
+      const delta = [-1, 0, 1][Math.floor(rng() * 3)];
+      stepIdx = Math.max(0, Math.min(mode.steps.length - 1, stepIdx + delta));
+      const semitone = mode.steps[stepIdx];
 
       const octave = Math.floor(rng() * 2); // voice in two octaves
-      const freq = jiFreq(JI[nextDegree][0], JI[nextDegree][1], octave);
+      const freq = jiFreq(JI[semitone][0], JI[semitone][1], octave);
       const dur = 0.5 + rng() * 0.3;
       events.push({
         type: 'note', t: beat + beatOffset, freq, dur, vel: 0.6 + rng() * 0.2
@@ -309,7 +277,7 @@ function genAll(seed, modeIdx, lap = 0) {
     }
   }
 
-  return events;
+  return { events, prog };
 }
 
 // ============ AUDIO GRAPH ============
@@ -348,6 +316,7 @@ function buildGraph(audioContext) {
 
   // Bass oscillator
   nodes.bassOsc = new OscillatorNode(audioContext, { type: 'sine', frequency: TP.bass.tone });
+  nodes.bassOsc.connect(nodes.bassGain);
 
   // Routing: busses → comp → dry/wet → master → out
   nodes.voiceGain.connect(nodes.comp);
@@ -366,33 +335,66 @@ function buildGraph(audioContext) {
 }
 
 // ============ SCHEDULER ============
+const STRUM_STAGGER = 0.012; // seconds between successive struck strings
+
 function scheduleEvents(events, nodes) {
   for (const ev of events) {
     if (ev.type === 'note') {
       const startTime = ac.currentTime + ev.t * 60 / st.tempo;
       const osc = new OscillatorNode(ac, { type: 'sine', frequency: ev.freq });
+
+      const vibDepth = TP.voice.vibrato * 100; // cents
+      if (vibDepth > 0) {
+        const vibLFO = new OscillatorNode(ac, { type: 'sine', frequency: TP.voice.vibRate });
+        const vibGain = new GainNode(ac);
+        vibGain.gain.value = vibDepth;
+        vibLFO.connect(vibGain);
+        vibGain.connect(osc.detune);
+        vibLFO.start(startTime);
+        vibLFO.stop(startTime + ev.dur);
+      }
+
       const env = new GainNode(ac);
+      const rel = Math.min(TP.voice.release, ev.dur * 0.6);
+      const sustainEnd = startTime + Math.max(TP.voice.attack, ev.dur - rel);
       env.gain.setValueAtTime(0, startTime);
       env.gain.linearRampToValueAtTime(ev.vel, startTime + TP.voice.attack);
+      env.gain.setValueAtTime(ev.vel, sustainEnd);
       env.gain.linearRampToValueAtTime(0, startTime + ev.dur);
 
       osc.connect(env);
-      env.connect(nodes.voice.gainMain);
+      env.connect(nodes.voiceGain);
       osc.start(startTime);
       osc.stop(startTime + ev.dur);
-      nodes.voice.nodeList.push(osc);
 
     } else if (ev.type === 'chord') {
       const startTime = ac.currentTime + ev.t * 60 / st.tempo;
-      // Bass note
+      const decay = TP.guitarra.decay;
+
+      // Low bass string
       const bassOsc = new OscillatorNode(ac, { type: 'sine', frequency: ev.bass });
       const bassEnv = new GainNode(ac);
       bassEnv.gain.setValueAtTime(ev.vel * 0.3, startTime);
-      bassEnv.gain.linearRampToValueAtTime(0, startTime + 1.5);
+      bassEnv.gain.linearRampToValueAtTime(0, startTime + decay);
       bassOsc.connect(bassEnv);
-      bassEnv.connect(nodes.guitarra.gainMain);
+      bassEnv.connect(nodes.guitarGain);
       bassOsc.start(startTime);
-      bassOsc.stop(startTime + 1.5);
+      bassOsc.stop(startTime + decay);
+
+      // Strummed upper strings (root, fifth, octave), lightly staggered.
+      ev.strings.forEach((freq, i) => {
+        const t0 = startTime + i * STRUM_STAGGER;
+        const strOsc = new OscillatorNode(ac, { type: 'sawtooth', frequency: freq });
+        const strFilt = new BiquadFilterNode(ac, { type: 'lowpass', frequency: TP.guitarra.brightness, Q: 0.7 });
+        const strEnv = new GainNode(ac);
+        strEnv.gain.setValueAtTime(ev.vel * 0.35, t0);
+        strEnv.gain.exponentialRampToValueAtTime(0.001, t0 + decay);
+        strOsc.connect(strFilt);
+        strFilt.connect(strEnv);
+        strEnv.connect(nodes.guitarGain);
+        strOsc.start(t0);
+        strOsc.stop(t0 + decay);
+      });
     }
   }
 }
@@ -402,7 +404,6 @@ function play() {
   if (st.playing) return;
   st.playing = true;
   st.paused = false;
-  live.pause = false;
   document.getElementById('play').disabled = true;
   document.getElementById('pause').disabled = false;
   document.getElementById('stop').disabled = false;
@@ -413,10 +414,10 @@ function play() {
 
   if (!RT.g) {
     RT.g = buildGraph(ac);
-    RT.g.bassOsc.connect(RT.g.bassGain);
-    RT.g.bassGain.connect(RT.g.comp);
     RT.g.bassOsc.start();
-    RT.events = genAll(st.seed, st.mode, st.lap);
+    const gen = genAll(st.seed, st.mode, st.lap);
+    RT.events = gen.events;
+    RT.prog = gen.prog;
     scheduleEvents(RT.events, RT.g);
   } else if (ac.state === 'suspended') {
     ac.resume();
@@ -438,7 +439,6 @@ function play() {
 function pause() {
   if (!st.playing || st.paused) return;
   st.paused = true;
-  live.pause = true;
   ac.suspend();
   document.getElementById('pause').textContent = '⏵ Resume';
   document.getElementById('pause').classList.add('on');
@@ -447,7 +447,6 @@ function pause() {
 function resume() {
   if (!st.playing || !st.paused) return;
   st.paused = false;
-  live.pause = false;
   ac.resume();
   document.getElementById('pause').textContent = '⏸ Pause';
   document.getElementById('pause').classList.remove('on');
@@ -473,6 +472,7 @@ function stop() {
 function another() {
   stop();
   st.seed = Math.floor(Math.random() * 100000);
+  st.lap = 0;
   document.getElementById('seedVal').textContent = st.seed;
   play();
 }
@@ -483,42 +483,35 @@ async function cut() {
   const sr = 44100;
   const offlineCtx = new OfflineAudioContext(1, Math.floor(songDuration * sr), sr);
 
-  // Save AC reference
+  // scheduleEvents reads the shared `ac` for currentTime; swap it in for the render.
   const savedAc = ac;
   ac = offlineCtx;
   const offlineNodes = buildGraph(offlineCtx);
-  offlineNodes.bassOsc.connect(offlineNodes.bassGain);
-  offlineNodes.bassGain.connect(offlineNodes.comp);
   offlineNodes.bassOsc.start(0);
   offlineNodes.bassOsc.stop(songDuration);
 
-  const events = genAll(st.seed, st.mode);
-  scheduleEvents(events, offlineNodes);
+  const gen = genAll(st.seed, st.mode);
+  scheduleEvents(gen.events, offlineNodes);
 
   const rendered = await offlineCtx.startRendering();
   ac = savedAc;
 
-  // WAV encode
-  saveWav(rendered, TP.master.level);
+  saveWav(rendered);
 }
 
-function saveWav(audioBuffer, masterLevel = 1) {
-  const len = audioBuffer.length, sr = audioBuffer.sampleRate;
+// Master gain is already baked into `audioBuffer` by the render graph — don't reapply it.
+function saveWav(audioBuffer) {
+  const sr = audioBuffer.sampleRate;
   const left = audioBuffer.getChannelData(0);
   const right = audioBuffer.numberOfChannels > 1 ? audioBuffer.getChannelData(1) : left;
-  const interleaved = new Float32Array(len * 2);
-  for (let i = 0; i < len; i++) {
-    interleaved[i*2] = left[i] * masterLevel;
-    interleaved[i*2+1] = right[i] * masterLevel;
-  }
 
   const encoder = new WavEncoder();
-  const wav = encoder.encode([[...left], audioBuffer.numberOfChannels > 1 ? [...right] : [...left]], sr);
+  const wav = encoder.encode([Array.from(left), Array.from(right)], sr);
   const blob = new Blob([wav], { type: 'audio/wav' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `fadó-${st.seed}.wav`;
+  a.download = `fado-${st.seed}.wav`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -564,6 +557,47 @@ class WavEncoder {
   }
 }
 
+// ============ OFFICINA LIVE EDIT / AUDITION ============
+// Bus levels and the bass drone ride live. Per-note params (vibrato, attack,
+// release, guitarra brightness/decay) are baked into events at schedule time —
+// like GRADUS/NENIA, edits to those take effect on the next Play/Another.
+function applyTimbreEdit(g, p, v) {
+  if (!RT.g || !ac) return;
+  const now = ac.currentTime;
+  const tau = 0.05;
+  if (g === '*') {
+    RT.g.gainM.gain.setTargetAtTime(TP.master.level, now, tau);
+    RT.g.wetGain.gain.setTargetAtTime(TP.master.room, now, tau);
+    RT.g.dryGain.gain.setTargetAtTime(1 - TP.master.room, now, tau);
+    RT.g.voiceGain.gain.setTargetAtTime(TP.voice.level, now, tau);
+    RT.g.guitarGain.gain.setTargetAtTime(TP.guitarra.level, now, tau);
+    RT.g.bassGain.gain.setTargetAtTime(TP.bass.level, now, tau);
+    RT.g.bassOsc.frequency.setTargetAtTime(TP.bass.tone, now, tau);
+    return;
+  }
+  if (g === 'master' && p === 'level') RT.g.gainM.gain.setTargetAtTime(v, now, tau);
+  else if (g === 'master' && p === 'room') {
+    RT.g.wetGain.gain.setTargetAtTime(v, now, tau);
+    RT.g.dryGain.gain.setTargetAtTime(1 - v, now, tau);
+  } else if (g === 'voice' && p === 'level') RT.g.voiceGain.gain.setTargetAtTime(v, now, tau);
+  else if (g === 'guitarra' && p === 'level') RT.g.guitarGain.gain.setTargetAtTime(v, now, tau);
+  else if (g === 'bass' && p === 'level') RT.g.bassGain.gain.setTargetAtTime(v, now, tau);
+  else if (g === 'bass' && p === 'tone') RT.g.bassOsc.frequency.setTargetAtTime(v, now, tau);
+  // else: baked param, applies next Play/Another (documented in its TIMBRE doc string)
+}
+
+// ► HEAR convention for a continuous/looping machine: start the transport if idle.
+function demoPulse(group) {
+  if (!st.playing) play();
+}
+
+TIMBRE.touch = (path) => {
+  if (!path) { applyTimbreEdit('*', '*', null); return; }
+  const i = path.indexOf('.'), g = path.slice(0, i), p = path.slice(i + 1);
+  applyTimbreEdit(g, p, TP[g][p]);
+};
+TIMBRE.demo = (group) => demoPulse(group);
+
 // ============ VISUALIZATION ============
 function animate() {
   if (!st.playing) return;
@@ -577,9 +611,9 @@ function animate() {
   ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--txt');
   ctx.font = '12px monospace';
 
-  // Draw harmonic progression
-  const prog = PROGRESSIONS[Math.floor(Math.random() * PROGRESSIONS.length)];
-  ctx.fillText(`Mode: ${MODES[st.mode].name} | Progression: ${prog.name}`, 10, 20);
+  // Draw the harmonic progression actually sounding this lap.
+  const progName = RT.prog ? RT.prog.name : '—';
+  ctx.fillText(`Mode: ${MODES[st.mode].name} | Progression: ${progName}`, 10, 20);
   ctx.fillText(`Lap: ${st.lap + 1} | Tempo: ${st.tempo} bpm`, 10, 40);
 
   // Draw oscillating waveform
@@ -616,13 +650,16 @@ document.addEventListener('keydown', (e) => {
 document.getElementById('seed').addEventListener('input', (e) => {
   st.seed = parseInt(e.target.value);
   document.getElementById('seedVal').textContent = st.seed;
+  updateHash();
 });
 document.getElementById('mode').addEventListener('change', (e) => {
   st.mode = parseInt(e.target.value);
+  updateHash();
 });
 document.getElementById('tempo').addEventListener('input', (e) => {
   st.tempo = parseInt(e.target.value);
   document.getElementById('tempoVal').textContent = st.tempo;
+  updateHash();
 });
 
 canvas = document.getElementById('canvas');
@@ -664,6 +701,5 @@ for (const prog of PROGRESSIONS) {
 
 loadHash();
 </script>
-</head>
 </body>
 </html>
