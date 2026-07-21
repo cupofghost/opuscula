@@ -31,6 +31,13 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
   font-size:clamp(3rem,13vw,4.6rem);letter-spacing:.14em;line-height:1;margin:10px 0 6px;text-indent:.14em}
 .sub{text-align:center;font-style:italic;font-size:1.04rem;color:var(--txt);max-width:46ch;margin:0 auto}
 .rule{border:none;border-top:3px double var(--hair);margin:22px 0}
+.opxy{display:flex;justify-content:center;margin:16px auto 0}
+.opxy a{display:inline-flex;align-items:center;gap:.6em;font-family:'IBM Plex Mono',monospace;font-size:.66rem;
+  letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--txt);
+  background:rgba(20,18,15,.7);border:1px solid var(--hair);border-radius:999px;padding:8px 15px;
+  transition:border-color .15s ease,background .15s ease}
+.opxy a:hover,.opxy a:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(20,18,15,.92);outline:none}
+.opxy .tag{color:var(--dim)}
 .grid{display:grid;grid-template-columns:1fr;gap:22px}
 @media(min-width:640px){.grid{grid-template-columns:1fr 1fr}}
 .card{display:block;text-decoration:none;color:var(--txt);
@@ -103,6 +110,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
   <div class="sub">twenty-one small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="opxy"><a href="./opxy/"><span class="tag">new →</span> play these on a teenage engineering OP–XY · MIDI fork</a></div>
   <hr class="rule">
 
   <div class="grid">

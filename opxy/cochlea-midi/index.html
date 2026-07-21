@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>COCHLEA · MIDI → OP–XY (path B · drifting comma pump)</title>
+<style>
+  :root{
+    --bg:#14110c; --ink:#ece2cf; --dim:#a2917a; --line:#2c2519;
+    --field:#1b160e; --accent:#c9a24a; --brass:#d9b45a; --ok:#94c46a; --warn:#d98b4a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  a{color:var(--accent)}
+  .wrap{max-width:940px;margin:0 auto;padding:20px 16px 80px}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;border-bottom:1px solid var(--line);padding-bottom:12px}
+  h1{font-size:20px;margin:0;letter-spacing:.5px}
+  h1 small{color:var(--accent);font-size:12px;letter-spacing:2px}
+  .sub{color:var(--dim);font-size:12px}
+  .pill{margin-left:auto;font-size:11px;color:var(--dim);text-decoration:none;border:1px solid var(--line);padding:4px 8px;border-radius:4px}
+  section{border:1px solid var(--line);border-radius:6px;margin-top:16px;background:var(--field)}
+  section>h2{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin:0;padding:9px 12px;border-bottom:1px solid var(--line)}
+  .body{padding:12px}
+  .row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+  label{font-size:12px;color:var(--dim)}
+  select,input[type=number],input[type=text]{background:#100c07;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:5px 7px;font:inherit;font-size:13px}
+  button{background:#241d10;color:var(--ink);border:1px solid #382d1a;border-radius:5px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+  button.primary{background:var(--accent);color:#150f04;border-color:var(--accent);font-weight:600}
+  button.on{background:var(--brass);border-color:var(--brass);color:#150f04}
+  .log{height:140px;overflow:auto;background:#0c0906;border:1px solid var(--line);border-radius:4px;padding:8px;font-size:11px;color:var(--dim);white-space:pre-wrap}
+  .enc{display:grid;grid-template-columns:70px 1fr 90px 70px;gap:8px;align-items:center;margin-bottom:8px}
+  .enc .val{font-size:12px;color:var(--accent);text-align:right}
+  .status{font-size:12px}
+  .status .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5a4c30;margin-right:6px;vertical-align:middle}
+  .status.ok .dot{background:var(--ok)} .status.warn .dot{background:var(--warn)}
+  .hint{color:var(--dim);font-size:11.5px;margin:6px 0 0}
+  .warnbox{border:1px solid var(--warn);border-radius:5px;padding:8px 10px;color:var(--warn);font-size:11.5px;margin-top:10px}
+  .kbd{border:1px solid var(--line);border-radius:3px;padding:0 5px;color:var(--ink)}
+  details{margin-top:16px;border:1px solid var(--line);border-radius:6px;background:var(--field)}
+  details summary{cursor:pointer;padding:10px 12px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+  details .body p{margin:0 0 10px}
+  .drift{font-size:22px;letter-spacing:1px;color:var(--brass);font-variant-numeric:tabular-nums}
+  .driftsub{font-size:12px;color:var(--dim)}
+  .chans{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+  .cc{width:26px;height:22px;border:1px solid var(--line);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--dim)}
+  .cc.lit{background:var(--accent);color:#150f04;border-color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>COCHLEA <small>MIDI → OP–XY</small></h1>
+    <span class="sub">path B — a just-intonation comma pump · the tuning that never comes home</span>
+    <a class="pill" href="../">↑ opxy fork</a>
+  </header>
+
+  <section>
+    <h2>1 · connect</h2>
+    <div class="body">
+      <div class="row">
+        <button id="connect" class="primary">connect MIDI</button>
+        <label>output <select id="out"><option value="">— none (monitor only) —</option></select></label>
+        <label>input (encoders) <select id="in"><option value="">— none —</option></select></label>
+        <label><input type="checkbox" id="mon" checked> audio monitor</label>
+      </div>
+      <p class="status" id="mstatus"><span class="dot"></span>not connected — Web MIDI needs Chrome/Edge. The monitor works with no device.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>2 · the drift — why no tuning table can hold this</h2>
+    <div class="body">
+      <div class="drift" id="drift">0.0¢</div>
+      <div class="driftsub" id="driftSub">stopped · load a pump and press play</div>
+      <p class="hint">Every chord is pure just intonation, but each lap the home note is carried a whole <b>comma</b> off
+      where it began — so the reference pitch drifts without ever returning. A tuning table is set once and can't follow
+      it; only a bend recomputed against the moving tonic on every note can. Bends are recomputed continuously below.</p>
+      <div class="row" style="margin-top:8px">
+        <label>routing <select id="route">
+          <option value="mpe">MPE lower zone — master ch1, notes ch2–16</option>
+          <option value="poly">poly-channel pool</option>
+        </select></label>
+        <label>pool <input id="poolN" type="number" min="1" max="15" value="8" style="width:52px"></label>
+        <label>bend range <input id="bend" type="number" min="1" max="48" value="2" style="width:52px"> st</label>
+        <label><input type="checkbox" id="mpeSetup" checked> send MPE/RPN setup</label>
+      </div>
+      <div class="chans" id="chanView"></div>
+      <div class="warnbox">⚠ set the OP–XY's pitch-bend range to match the value above, or the drift will be scaled wrong.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>3 · play</h2>
+    <div class="body">
+      <div class="row">
+        <button id="play" class="primary">▶ play</button>
+        <label>pump <select id="pump"></select></label>
+        <label>direction <select id="dir"><option value="deorsum">deorsum (drift down)</option><option value="sursum">sursum (drift up)</option></select></label>
+        <label>tempo <input id="bpm" type="number" min="40" max="140" value="72" style="width:60px"> bpm</label>
+        <label>seed <input id="seed" type="number" min="0" max="99999" value="0" style="width:72px"></label>
+        <button id="reseed">↻</button>
+      </div>
+      <p class="hint" id="commaInfo" style="margin-top:8px">—</p>
+      <p class="hint">Keys: <span class="kbd">space</span> play/stop · <span class="kbd">r</span> new walk. The drift is deterministic from the seed; it does not reset between loops (the pump never comes home).</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>4 · four encoders → parameters</h2>
+    <div class="body">
+      <p class="hint">Map each slot's CC to an OP–XY encoder (shift+rotate on the device to assign its CC; <b>learn</b> here to capture). Law changes restart the pump at the next loop.</p>
+      <div id="encMap"></div>
+      <p class="status" id="ccStatus"><span class="dot"></span>last CC: —</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>5 · MIDI stream</h2>
+    <div class="body"><div class="log" id="log"></div></div>
+  </section>
+
+  <details>
+    <summary>on this fork</summary>
+    <div class="body">
+      <p><b>Path B, hardest case.</b> TRITAVA proves a scale a tuning table can't <i>hold</i> (no octave). COCHLEA proves
+      a tuning that a table can't <i>track</i>: it moves. Stack pure fifths and thirds around Euler's lattice and the
+      arithmetic refuses to close — a I–vi–ii–V–I of perfectly tuned chords returns a syntonic comma (81/80, ≈21.5¢)
+      below where it started, and sinks another comma every lap. This drift is the reason keyboards are tempered at all.</p>
+      <p>COCHLEA refuses to temper. The model here is copied verbatim from the machine — the same lattice walk, the same
+      named pumps, the same comma arithmetic over {2,3,5,7}. Only the output changed: for every chord tone the fork
+      recomputes the exact just frequency against the <i>current, drifted</i> tonic, finds the nearest key, and bends to
+      it. Watch the bend values sweep as the comma accumulates — that sweep is the drift, and it is exactly what a static
+      tuning table cannot reproduce. If the OP–XY ever exposes real-time MTS SysEx retuning, that would be the ideal
+      transport for this; per-note bend is the path that works today.</p>
+    </div>
+  </details>
+</div>
+
+<script>
+"use strict";
+/* ===================== COCHLEA model (verbatim from cochlea/index.html) ==== */
+function mulberry32(a){ return function(){ a|=0; a=(a+0x6D2B79F5)|0; var t=Math.imul(a^(a>>>15),1|a);
+  t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){var t=a%b;a=b;b=t}return a||1}
+function fr(n,d){var g=gcd(n,d);return [n/g,d/g]}
+function fmul(A,B){return fr(A[0]*B[0],A[1]*B[1])}
+function finv(A){return [A[1],A[0]]}
+function fcents(A){return 1200*Math.log2(A[0]/A[1])}
+function ffold(A){var n=A[0],d=A[1];while(n/d>=2)d*=2;while(n/d<1)n*=2;return fr(n,d)}
+function foldNear1(A){var f=ffold(A),n=f[0],d=f[1];if(n/d>Math.SQRT2){d*=2;f=fr(n,d);n=f[0];d=f[1]}return [n,d]}
+function monzo(A){var out={2:0,3:0,5:0,7:0,ok:true};function f(x,s){var ps=[2,3,5,7];
+  for(var i=0;i<ps.length;i++){var p=ps[i];while(x%p===0){x/=p;out[p]+=s}}if(x!==1)out.ok=false;}
+  f(A[0],1);f(A[1],-1);return out;}
+function refold(v){while(v>=2)v/=2;while(v<1)v*=2;return v}
+function foldRange(f,lo,hi){while(f<lo)f*=2;while(f>=hi)f/=2;return f}
+
+var MOVES5=[[3,2],[2,3],[4,3],[3,4],[5,4],[4,5],[6,5],[5,6],[9,8],[8,9],[16,15],[15,16]];
+var MOVES7=[[7,6],[6,7],[8,7],[7,8]];
+var QUAL={ maior:[[1,1],[5,4],[3,2]], minor:[[1,1],[6,5],[3,2]],
+           submin:[[1,1],[7,6],[3,2]], domsept:[[1,1],[5,4],[3,2],[7,4]] };
+var PUMPS={
+  syntonica:{ chords:['maior','minor','minor','maior'], moves:[[5,6],[4,3],[4,3],[4,3]] },
+  diesis:   { chords:['maior','maior','maior'], moves:[[5,4],[5,4],[5,4]] },
+  septimalis:{chords:['submin','submin','maior'], moves:[[7,6],[7,6],[3,2]] },
+  kleisma:  { chords:['minor','minor','minor','minor','minor','minor'], moves:[[6,5],[6,5],[6,5],[6,5],[6,5],[2,5]] },
+  cyclus:   { chords:['maior','maior','maior','maior','maior','maior','maior','maior','maior','maior','maior','maior'],
+              moves:[[3,2],[3,4],[3,2],[3,4],[3,2],[3,4],[3,2],[3,4],[3,2],[3,4],[3,2],[3,4]] },
+  stasis:   { chords:['maior','minor','maior','maior'], moves:[[5,6],[4,5],[9,8],[4,3]] }
+};
+var PUMPKEYS=['alea','syntonica','diesis','septimalis','kleisma','cyclus','stasis'];
+function buildPreset(id){ var P=PUMPS[id];
+  return { id:id, chords:P.chords.slice(), moves:P.moves.map(function(m){return m.slice()}), stats:null, fallback:false }; }
+function orient(walk,dir){ if(dir==='sursum')walk.moves=walk.moves.map(finv); return walk; }
+function generateWalk(seed,o){
+  var rnd=mulberry32(seed>>>0); var pal=o.septimus?MOVES5.concat(MOVES7):MOVES5;
+  var stats={tempt:0,rej:{banda:0,orbis:0}}; var budget=(o&&o._budget!=null)?o._budget:2400; var t0=Date.now();
+  for(var a=0;a<budget;a++){
+    if(Date.now()-t0>250)break; stats.tempt++;
+    var moves=[],cum=[1,1],pcs={'1/1':1},pcCount=1;
+    for(var i=0;i<o.passus;i++){
+      var m,guard=0,prev=moves.length?moves[moves.length-1]:null;
+      do{ m=pal[(rnd()*pal.length)|0]; guard++; } while(guard<24&&prev&&m[0]===prev[1]&&m[1]===prev[0]);
+      moves.push(m); cum=fmul(cum,m);
+      if(i<o.passus-1){ var f=ffold(cum),key=f[0]+'/'+f[1]; if(!pcs[key]){pcs[key]=1;pcCount++} }
+    }
+    var res=foldNear1(cum); var c=Math.abs(fcents(res));
+    if(c<3||c>45){stats.rej.banda++;continue}
+    if(pcCount<Math.min(3,o.passus-1)){stats.rej.orbis++;continue}
+    var chords=[];
+    for(var j=0;j<o.passus;j++){
+      var r=rnd(),q;
+      if(o.genus==='maior')      q = r<0.72?'maior':'minor';
+      else if(o.genus==='minor') q = r<0.72?'minor':'maior';
+      else                       q = r<0.5 ?'maior':'minor';
+      if(o.septimus){ var r2=rnd(); if(q==='maior'&&r2<0.22)q='domsept'; else if(r2<0.14)q='submin'; }
+      chords.push(q);
+    }
+    return {id:'alea',chords:chords,moves:moves,stats:stats,fallback:false};
+  }
+  var F=PUMPS.syntonica;
+  return {id:'alea',chords:F.chords.slice(),moves:F.moves.map(function(m){return m.slice()}),stats:stats,fallback:true};
+}
+function commaName(res){
+  if(res[0]===1&&res[1]===1)return 'nullum — redit';
+  var n=Math.max(res[0],res[1]),d=Math.min(res[0],res[1]);
+  var T={'81/80':'comma syntonicum','128/125':'diesis minor','49/48':'diesis septimalis','15625/15552':'kleisma',
+    '531441/524288':'comma pythagoreum','64/63':'comma septimale','2048/2025':'diaschisma','32805/32768':'schisma',
+    '2187/2048':'apotome','250/243':'diesis maximus','3125/3072':'diesis parvus','245/243':'comma minus septimale',
+    '225/224':'kleisma septimale','126/125':'semicomma septimale','36/35':'quartus toni septimalis',
+    '50/49':'tritonus diesis','648/625':'diesis maior'};
+  return T[n+'/'+d]||'comma ignotum';
+}
+function analyse(walk){
+  var K=walk.moves.length; var pc=[[1,1]]; var cum=[1,1];
+  for(var i=0;i<K;i++){ cum=fmul(cum,walk.moves[i]); if(i<K-1)pc.push(ffold(cum)); }
+  var residual=foldNear1(cum);
+  return { pc:pc, residual:residual, centsPer:fcents(residual), name:commaName(residual) };
+}
+
+/* ===================== state ============================================== */
+const st={ pump:'syntonica', dir:'deorsum', bpm:72, seed:0, genus:'mixtum', passus:6, septimus:false,
+           route:'mpe', poolN:8, bendRange:2, mpeSetup:true, monitor:true };
+let walk=null, ana=null, resetDrift=true;
+function regen(){
+  const opts={passus:st.passus, genus:st.genus, septimus:st.septimus, bpm:st.bpm, seed:st.seed};
+  walk = st.pump==='alea' ? generateWalk(st.seed>>>0, opts) : buildPreset(st.pump);
+  orient(walk, st.dir); ana=analyse(walk); resetDrift=true;
+  const r=ana.residual, cp=ana.centsPer;
+  el('commaInfo').textContent = (r[0]===1&&r[1]===1)
+    ? 'stasis — this loop returns home (residual 1/1, no drift)'
+    : ana.name+' ('+r[0]+'/'+r[1]+', '+(cp>=0?'+':'')+cp.toFixed(2)+'¢ per lap'+(walk.fallback?' · alea fell back to syntonica':'')+')';
+}
+function readHash(){ const h=new URLSearchParams(location.hash.slice(1));
+  if(h.has('p')&&PUMPKEYS.includes(h.get('p')))st.pump=h.get('p');
+  if(h.has('d')&&(h.get('d')==='sursum'||h.get('d')==='deorsum'))st.dir=h.get('d');
+  if(h.has('t'))st.bpm=Math.max(40,Math.min(140,+h.get('t')||72));
+  if(h.has('s'))st.seed=+h.get('s')||0; }
+function writeHash(){ location.replace('#'+new URLSearchParams({p:st.pump,d:st.dir,t:st.bpm,s:st.seed}).toString()); }
+
+/* ===================== Web MIDI ============================================ */
+let midi=null, outPort=null, inPort=null; const el=id=>document.getElementById(id);
+function log(s){ const L=el('log'); L.textContent+=s+'\n'; L.scrollTop=L.scrollHeight; }
+function setStatus(id,cls,txt){ const e=el(id); e.className='status'+(cls?' '+cls:''); e.innerHTML='<span class="dot"></span>'+txt; }
+async function connect(){
+  if(!navigator.requestMIDIAccess){ setStatus('mstatus','warn','Web MIDI unavailable (use Chrome/Edge). Monitor still works.'); return; }
+  try{ midi=await navigator.requestMIDIAccess({sysex:false}); midi.onstatechange=refreshPorts; refreshPorts();
+    setStatus('mstatus','ok','MIDI ready — pick your OP–XY as output (and input for the encoders).');
+  }catch(e){ setStatus('mstatus','warn','MIDI access denied: '+e.message+'. Monitor still works.'); }
+}
+function refreshPorts(){
+  const o=el('out'),i=el('in'); const kO=o.value,kI=i.value;
+  o.innerHTML='<option value="">— none (monitor only) —</option>'; i.innerHTML='<option value="">— none —</option>';
+  for(const p of midi.outputs.values()){ const x=document.createElement('option'); x.value=p.id;x.textContent=p.name;o.appendChild(x); }
+  for(const p of midi.inputs.values()){ const x=document.createElement('option'); x.value=p.id;x.textContent=p.name;i.appendChild(x); }
+  if(!kO) for(const p of midi.outputs.values()) if(/op[- ]?xy/i.test(p.name)){ o.value=p.id; break; }
+  if(!kI) for(const p of midi.inputs.values())  if(/op[- ]?xy/i.test(p.name)){ i.value=p.id; break; }
+  o.value=o.value||kO; i.value=i.value||kI; selectOut(); selectIn();
+}
+function selectOut(){ outPort=midi?midi.outputs.get(el('out').value)||null:null; }
+function selectIn(){ if(inPort) inPort.onmidimessage=null; inPort=midi?midi.inputs.get(el('in').value)||null:null; if(inPort) inPort.onmidimessage=onCC; }
+function send(bytes,whenMs){ if(outPort) outPort.send(bytes,whenMs); }
+
+/* ===================== audio monitor ====================================== */
+let ac=null, monGain=null;
+function ensureAudio(){ if(ac) return; ac=new (window.AudioContext||window.webkitAudioContext)();
+  monGain=ac.createGain(); monGain.gain.value=0.16; monGain.connect(ac.destination); }
+function monVoice(freq,whenAC,dur,vel,voice){
+  if(!st.monitor) return;
+  const o=ac.createOscillator(), g=ac.createGain();
+  o.type = voice==='bass' ? 'triangle' : 'sawtooth'; o.frequency.value=freq;
+  const peak=vel*(voice==='bass'?0.5:0.32);
+  g.gain.setValueAtTime(0.0001,whenAC);
+  g.gain.exponentialRampToValueAtTime(Math.max(peak,0.001),whenAC+0.03);
+  g.gain.setValueAtTime(Math.max(peak,0.001),whenAC+dur*0.7);
+  g.gain.exponentialRampToValueAtTime(0.0005,whenAC+dur);
+  o.connect(g); g.connect(monGain); o.start(whenAC); o.stop(whenAC+dur+0.05);
+}
+
+/* ===================== frequency → note + pitch bend ====================== */
+function freqToBend(freq){
+  const note=Math.round(69+12*Math.log2(freq/440));
+  const nf=440*Math.pow(2,(note-69)/12);
+  const cents=1200*Math.log2(freq/nf);
+  let b=Math.round(8192 + cents/(st.bendRange*100)*8192); b=Math.max(0,Math.min(16383,b));
+  return {note,bend:b,cents};
+}
+function bendToFreq(note,bend14,bendRange){ const nf=440*Math.pow(2,(note-69)/12);
+  return nf*Math.pow(2,((bend14-8192)/8192*bendRange*100)/1200); }
+
+/* ===================== channel allocation (deterministic) ================= */
+function channelPool(){
+  if(st.route==='mpe'){ const n=Math.max(1,Math.min(15,st.poolN)); const a=[]; for(let c=2;c<2+n;c++)a.push(c); return a; }
+  const n=Math.max(1,Math.min(16,st.poolN)); const a=[]; for(let c=1;c<=n;c++)a.push(c); return a;
+}
+function assignChannels(events,pool){
+  const freeAt=pool.map(()=>-1), lastEv=pool.map(()=>null);
+  for(const e of events){
+    let idx=-1; for(let k=0;k<pool.length;k++){ if(freeAt[k]<=e.tSec+1e-9){ idx=k; break; } }
+    if(idx<0){ idx=0; for(let k=1;k<pool.length;k++) if(freeAt[k]<freeAt[idx]) idx=k; e.stolen=true;
+      if(lastEv[idx]) lastEv[idx].dur=Math.max(0,e.tSec-lastEv[idx].tSec); }
+    e.channel=pool[idx]; freeAt[idx]=e.tSec+e.dur; lastEv[idx]=e;
+  }
+}
+
+/* ===================== planner — the pump, as MIDI ======================== */
+// Faithful to planIter: pcv drifts by the residual once per lap (tonic*=residF).
+// The reference NEVER returns, so every note's bend is recomputed against it.
+const CHUNK=4; // laps built per scheduler chunk (drift carries across chunks)
+function planChunk(startTonic,startLap){
+  const K=walk.chords.length, spc=240/st.bpm, residF=ana.residual[0]/ana.residual[1];
+  let tonic=startTonic, lap=startLap, t=0; const events=[];
+  for(let c=0;c<CHUNK*K;c++){
+    const i=c%K;
+    const pcv=refold((ana.pc[i][0]/ana.pc[i][1])*tonic);
+    const qual=QUAL[walk.chords[i]]; const pcs=[], seen={};
+    for(const qr of qual){ const v=refold(pcv*qr[0]/qr[1]); const key=v.toFixed(9); if(!seen[key]){seen[key]=1;pcs.push(v);} }
+    events.push({tSec:t, dur:spc*0.98, freq:foldRange(264*pcv,110,220), voice:'bass', vel:0.62});
+    pcs.forEach((v,idx)=>events.push({tSec:t+idx*0.006, dur:spc*0.95, freq:foldRange(264*v,220,440), voice:'reed', vel:0.5}));
+    t+=spc; if(i===K-1){ lap++; tonic*=residF; }
+  }
+  for(const e of events){ const fb=freqToBend(e.freq); e.note=fb.note; e.bend=fb.bend; e.cents=fb.cents;
+    e.vel=Math.max(1,Math.min(127,Math.round(e.vel*127))); }
+  events.sort((a,b)=>a.tSec-b.tSec);
+  assignChannels(events, channelPool());
+  return { events, dur:CHUNK*K*spc, endTonic:tonic, endLap:lap };
+}
+
+/* ===================== transport / scheduler ============================== */
+let running=false, timer=null, tp=null; const LOOKAHEAD=0.14, TICK=25;
+function sendMpeSetup(){
+  if(!st.mpeSetup||!outPort) return;
+  if(st.route==='mpe'){ const members=Math.max(1,Math.min(15,st.poolN));
+    send([0xB0,101,0]); send([0xB0,100,6]); send([0xB0,6,members]);
+    for(let c=2;c<2+members;c++){ const ch=c-1; send([0xB0|ch,101,0]); send([0xB0|ch,100,0]); send([0xB0|ch,6,Math.max(1,Math.min(48,st.bendRange))]); }
+  } else { for(const c of channelPool()){ const ch=c-1; send([0xB0|ch,101,0]); send([0xB0|ch,100,0]); send([0xB0|ch,6,Math.max(1,Math.min(48,st.bendRange))]); } }
+}
+function start(){
+  ensureAudio(); if(ac.state==='suspended') ac.resume();
+  running=true; el('play').classList.add('on'); el('play').textContent='■ stop';
+  if(!walk) regen(); resetDrift=false;
+  sendMpeSetup();
+  const lp=planChunk(1,0);
+  tp={ ...lp, i:0, startPerf:performance.now()+80, startAC:ac.currentTime+0.08 };
+  timer=setInterval(scan,TICK);
+}
+function stop(){
+  running=false; el('play').classList.remove('on'); el('play').textContent='▶ play';
+  clearInterval(timer); timer=null;
+  if(outPort) for(let c=0;c<16;c++){ outPort.send([0xB0|c,123,0]); outPort.send([0xE0|c,0,64]); }
+  litChannels(new Set()); el('driftSub').textContent='stopped';
+}
+function scan(){
+  if(!tp) return;
+  const elapsed=(performance.now()-tp.startPerf)/1000, horizon=elapsed+LOOKAHEAD;
+  while(tp.i<tp.events.length && tp.events[tp.i].tSec<=horizon){
+    const e=tp.events[tp.i++]; if(e.dur<=0) continue; const ch=e.channel-1;
+    const onMs=tp.startPerf+e.tSec*1000, offMs=onMs+e.dur*1000, onAC=tp.startAC+e.tSec;
+    send([0xE0|ch, e.bend&0x7F, (e.bend>>7)&0x7F], onMs);
+    send([0x90|ch, e.note, e.vel], onMs);
+    send([0x80|ch, e.note, 0], offMs);
+    monVoice(e.freq,onAC,e.dur,e.vel/127,e.voice);
+    if(tp.i%8===0) log('t+'+e.tSec.toFixed(1)+' ch'+e.channel+' '+e.voice+' n'+e.note+' bend'+e.bend+' ('+(e.cents>=0?'+':'')+e.cents.toFixed(1)+'¢)');
+  }
+  // live drift readout (accumulated cents from origin)
+  const curDrift=1200*Math.log2(currentTonic(elapsed));
+  el('drift').textContent=(curDrift>=0?'+':'')+curDrift.toFixed(1)+'¢';
+  el('driftSub').textContent='lap '+currentLap(elapsed)+' · '+ana.name+' · '+(ana.centsPer>=0?'+':'')+ana.centsPer.toFixed(2)+'¢/lap';
+  const lit=new Set(); const pool=channelPool();
+  for(let k=Math.max(0,tp.i-pool.length*3);k<tp.i;k++){ const e=tp.events[k]; if(e&&e.tSec<=elapsed&&e.tSec+e.dur>elapsed) lit.add(e.channel); }
+  litChannels(lit);
+  if(elapsed>=tp.dur){
+    tp.startPerf+=tp.dur*1000; tp.startAC+=tp.dur;
+    if(resetDrift){ resetDrift=false; const lp=planChunk(1,0); Object.assign(tp,lp,{i:0}); }
+    else { const lp=planChunk(tp.endTonic,tp.endLap); Object.assign(tp,lp,{i:0}); }
+  }
+}
+// tonic/lap at a given elapsed time within the current chunk (for the readout)
+function currentTonic(elapsed){ const K=walk.chords.length, spc=240/st.bpm, residF=ana.residual[0]/ana.residual[1];
+  const chordsIn=Math.floor(elapsed/spc); const startLap=tp.endLap-CHUNK; // chunk began here
+  const lapsIn=Math.floor(chordsIn/K); return Math.pow(residF, Math.max(0,startLap)+lapsIn); }
+function currentLap(elapsed){ const K=walk.chords.length, spc=240/st.bpm; const chordsIn=Math.floor(elapsed/spc);
+  return Math.max(0,(tp.endLap-CHUNK))+Math.floor(chordsIn/K); }
+
+/* ===================== channel view ====================================== */
+function buildChanView(){ const v=el('chanView'); v.innerHTML=''; for(let c=1;c<=16;c++){ const d=document.createElement('div'); d.className='cc'; d.id='ch'+c; d.textContent=c; v.appendChild(d); } }
+function litChannels(set){ for(let c=1;c<=16;c++){ const d=el('ch'+c); if(d) d.classList.toggle('lit', set.has(c)); } }
+
+/* ===================== encoder CC-in mapping ============================== */
+const PARAMS={
+  pump:  {label:'pump',   min:0,max:6,   get:()=>PUMPKEYS.indexOf(st.pump), set:v=>{ st.pump=PUMPKEYS[Math.max(0,Math.min(6,Math.round(v)))]; regen(); } },
+  bpm:   {label:'tempo',  min:44,max:132,get:()=>st.bpm,                    set:v=>st.bpm=Math.round(v) },
+  dir:   {label:'drift',  min:0,max:1,   get:()=>st.dir==='sursum'?1:0,     set:v=>{ st.dir=Math.round(v)?'sursum':'deorsum'; regen(); } },
+  seed:  {label:'seed',   min:0,max:127, get:()=>0,                         set:v=>{ st.seed=Math.round(v)*211+1; if(st.pump==='alea') regen(); } },
+};
+const encoders=[ {cc:1,param:'pump'}, {cc:2,param:'bpm'}, {cc:3,param:'dir'}, {cc:4,param:'seed'} ];
+let learnIdx=-1;
+function buildEncUI(){
+  const box=el('encMap'); box.innerHTML='';
+  encoders.forEach((slot,idx)=>{
+    const row=document.createElement('div'); row.className='enc';
+    const cc=document.createElement('input'); cc.type='number';cc.min=0;cc.max=127;cc.value=slot.cc;cc.style.width='60px'; cc.oninput=()=>slot.cc=+cc.value;
+    const sel=document.createElement('select'); for(const k in PARAMS){ const o=document.createElement('option'); o.value=k;o.textContent=PARAMS[k].label; if(k===slot.param)o.selected=true; sel.appendChild(o); } sel.onchange=()=>slot.param=sel.value;
+    const learn=document.createElement('button'); learn.textContent='learn'; learn.onclick=()=>{ learnIdx=idx; learn.classList.add('on'); setTimeout(()=>{ if(learnIdx===idx){learnIdx=-1;learn.classList.remove('on');} },6000); };
+    const val=document.createElement('div'); val.className='val'; val.id='encval'+idx; val.textContent='cc'+slot.cc;
+    row.append(document.createTextNode('CC'),cc,sel,learn,val); box.appendChild(row);
+  });
+}
+function onCC(msg){
+  const [status,d1,d2]=msg.data; if((status&0xf0)!==0xB0) return;
+  setStatus('ccStatus','ok','last CC: cc'+d1+' = '+d2+'  (ch'+((status&0x0f)+1)+')');
+  if(learnIdx>=0){ encoders[learnIdx].cc=d1; learnIdx=-1; buildEncUI(); return; }
+  encoders.forEach((slot,idx)=>{ if(slot.cc!==d1) return; const P=PARAMS[slot.param];
+    P.set(P.min+(d2/127)*(P.max-P.min)); el('encval'+idx).textContent=P.label+'='+Math.round(P.get()); syncControls(); writeHash(); });
+}
+
+/* ===================== wiring ============================================= */
+function fillSelects(){ const p=el('pump'); PUMPKEYS.forEach(k=>{ const o=document.createElement('option'); o.value=k;
+  o.textContent = k==='alea'?'alea · random walk':k; p.appendChild(o); }); }
+function syncControls(){ el('pump').value=st.pump; el('dir').value=st.dir; el('bpm').value=st.bpm; el('seed').value=st.seed;
+  el('route').value=st.route; el('poolN').value=st.poolN; el('bend').value=st.bendRange; el('mpeSetup').checked=st.mpeSetup; el('mon').checked=st.monitor; }
+function init(){
+  readHash(); fillSelects(); buildEncUI(); buildChanView(); syncControls(); writeHash(); regen();
+  el('connect').onclick=connect; el('out').onchange=selectOut; el('in').onchange=selectIn;
+  el('mon').onchange=()=>st.monitor=el('mon').checked;
+  el('route').onchange=()=>st.route=el('route').value;
+  el('poolN').oninput=()=>st.poolN=Math.max(1,Math.min(15,+el('poolN').value||8));
+  el('bend').oninput=()=>st.bendRange=Math.max(1,Math.min(48,+el('bend').value||2));
+  el('mpeSetup').onchange=()=>st.mpeSetup=el('mpeSetup').checked;
+  el('pump').onchange=()=>{ st.pump=el('pump').value; regen(); writeHash(); };
+  el('dir').onchange=()=>{ st.dir=el('dir').value; regen(); writeHash(); };
+  el('bpm').oninput=()=>{ st.bpm=+el('bpm').value; writeHash(); };
+  el('seed').oninput=()=>{ st.seed=+el('seed').value; if(st.pump==='alea') regen(); writeHash(); };
+  el('reseed').onclick=()=>{ st.seed=(Math.random()*99999)|0; if(st.pump==='alea') regen(); syncControls(); writeHash(); };
+  el('play').onclick=()=> running?stop():start();
+  window.addEventListener('keydown',e=>{ if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
+    if(e.code==='Space'){ e.preventDefault(); running?stop():start(); } if(e.key==='r'){ el('reseed').click(); } });
+  window.__cochlea={ PUMPS,QUAL,MOVES5,MOVES7, generateWalk,buildPreset,orient,analyse,commaName,
+    planChunk,freqToBend,bendToFreq,channelPool,assignChannels,refold,foldRange,fcents,
+    PARAMS,encoders,onCC, st, regen, get walk(){return walk}, get ana(){return ana} };
+}
+init();
+</script>
+</body>
+</html>

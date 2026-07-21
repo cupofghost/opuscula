@@ -49,10 +49,18 @@ sends a 14-bit pitch bend *before* the note-on. One note per channel = an
 independent tuning per voice — the MPE idea. With MPE routing that's up to 15
 simultaneously, independently-tuned voices.
 
-- **Demo:** TRITAVA (op. XIX), the **Bohlen–Pierce** scale — built from the odd
-  harmonics 3·5·7 and closing at the **tritave** (3/1, a perfect twelfth). It
-  has *no octave*, so an octave-repeating tuning table literally cannot express
-  it. This is where "MPE is needed" is true.
+- **Demos (two, increasing in difficulty):**
+  - **TRITAVA** (op. XIX), the **Bohlen–Pierce** scale — built from the odd
+    harmonics 3·5·7 and closing at the **tritave** (3/1, a perfect twelfth). It
+    has *no octave*, so an octave-repeating tuning table literally cannot
+    *hold* it. This is where "MPE is needed" is true.
+  - **COCHLEA** (op. V), a just-intonation **comma pump** — every chord is pure,
+    but the tonic is carried a whole comma (e.g. the syntonic comma, 81/80,
+    ≈21.5¢) off home *every lap* and never returns. A tuning table set once
+    can't *track* a reference that keeps moving; the fork recomputes each note's
+    bend against the drifted tonic. Path B's hardest case, and the one that
+    would most benefit from real-time MTS SysEx retuning if the OP–XY exposes
+    it. The page shows the accumulated drift live.
 - **Routing options:**
   - **MPE lower zone** — master ch 1, member notes on ch 2–16. Sends an MPE
     configuration message (RPN 6) and a per-channel pitch-bend-range (RPN 0) on
@@ -109,10 +117,11 @@ scope:
 
 ```
 opxy/
-  index.html            fork landing page (links both machines)
-  README.md             this file
-  fado-midi/index.html  path A — native tuning table (Pythagorean JI)
-  tritava-midi/index.html  path B — per-note pitch bend / MPE (Bohlen–Pierce)
+  index.html               fork landing page (links the machines)
+  README.md                this file
+  fado-midi/index.html     path A — native tuning table (Pythagorean JI)
+  tritava-midi/index.html  path B — per-note pitch bend / MPE (Bohlen–Pierce, non-octave)
+  cochlea-midi/index.html  path B — per-note pitch bend, drifting comma pump (continuous retune)
 ```
 
 Each page is standalone and self-contained, faithful to the original machine's

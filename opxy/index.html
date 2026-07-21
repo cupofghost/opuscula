@@ -13,8 +13,8 @@
   h1{font-size:22px;letter-spacing:.5px;margin:0 0 4px}
   h1 small{color:var(--dim);font-size:12px;letter-spacing:2px;display:block;margin-top:6px}
   p{color:var(--dim)} a{color:var(--a)}
-  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px}
-  @media(max-width:620px){.cards{grid-template-columns:1fr}}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px}
+  @media(max-width:720px){.cards{grid-template-columns:1fr}}
   .card{display:block;border:1px solid var(--line);border-radius:8px;padding:18px;text-decoration:none;color:var(--ink);background:#17151d}
   .card:hover{border-color:var(--a)}
   .card.b:hover{border-color:var(--b)}
@@ -31,8 +31,9 @@
   <h1>OPVSCVLA → OP–XY
     <small>a MIDI fork · non-equal temperament out to teenage engineering's OP–XY</small></h1>
   <p>The main collection <em>synthesizes</em> its music in the browser. This fork instead <em>plays the OP–XY</em> over
-  MIDI, taking care to preserve just intonation and other non-equal tunings. Two proof-of-concept machines demonstrate
-  the two ways to get a non-12-TET scale onto the device.</p>
+  MIDI, taking care to preserve just intonation and other non-equal tunings. Three proof-of-concept machines show the two
+  ways to get a non-12-TET scale onto the device — one for the tuning-table path, two for the pitch-bend path (increasing
+  in difficulty).</p>
 
   <div class="cards">
     <a class="card a" href="fado-midi/">
@@ -44,8 +45,14 @@
     <a class="card b" href="tritava-midi/">
       <div class="tag">path B · per-note bend / MPE</div>
       <h2>TRITAVA</h2>
-      <p>The Bohlen–Pierce scale — no octave, so no tuning table can hold it. Each note gets its own channel and is bent
-      to its exact frequency. For &gt;12-note, non-octave, or drifting tunings.</p>
+      <p>The Bohlen–Pierce scale — no octave, so no tuning table can <em>hold</em> it. Each note gets its own channel and
+      is bent to its exact frequency. The case for &gt;12-note or non-octave scales.</p>
+    </a>
+    <a class="card b" href="cochlea-midi/">
+      <div class="tag">path B · drifting comma pump</div>
+      <h2>COCHLEA</h2>
+      <p>A just-intonation comma pump — the tonic drifts a comma every lap and never comes home, so no table can
+      <em>track</em> it. Bends are recomputed against the moving reference. Path B's hardest case.</p>
     </a>
   </div>
 

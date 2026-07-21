@@ -325,13 +325,16 @@ tonal content reverts, per the ⚠ marker below).
   clean, English+German labels render, judge bridge inert without `?judge`,
   MAJ_SHAPE swap live, arp is a 9-note shaped figure. Registry files
   (landing/README/officina) untouched.
-### OP–XY MIDI fork — feasibility + two proof-of-concept machines (new `opxy/` tree, NOT an op.)
+### OP–XY MIDI fork — feasibility + three proof-of-concept machines (new `opxy/` tree, NOT an op.)
 **Branch:** `claude/opuscula-te-opxy-midi-a5vvtf` · **Files:** `opxy/index.html`,
-`opxy/README.md`, `opxy/fado-midi/index.html`, `opxy/tritava-midi/index.html` ·
-**Status:** done, verified headless (Chromium, 22 checks, zero pageerrors). **No
-op. registry changes** — this is a fork, not a catalogue machine; the landing
-`index.html`, `README.md`, the file table above and `officina` are deliberately
-untouched so parallel machine-sessions don't conflict.
+`opxy/README.md`, `opxy/fado-midi/index.html`, `opxy/tritava-midi/index.html`,
+`opxy/cochlea-midi/index.html` · **plus one registry line:** a small banner at
+the top of the landing `index.html` (its own `.opxy` style + one link to
+`./opxy/`) so the fork is reachable from the main page — the maintainer asked
+for it there. **Status:** done, verified headless (Chromium, 36 checks, zero JS
+pageerrors). No op. cards / README rows / officina chips / file-table rows were
+touched (only the one landing banner), so parallel machine-sessions don't
+conflict.
 
 Maintainer's brief: a separate version of OPVSCVLA that outputs MIDI to a
 Teenage Engineering **OP–XY**, preserving just intonation / non-equal
@@ -377,28 +380,47 @@ feasibility rating (≈8/10, high), then built one machine per tuning path.
   seed always yields the same channel/bend assignment); pool exhaustion steals
   the soonest-freeing channel and truncates the previous note so streams never
   overlap. Verified: bend reconstructs exact freq (max err 0.011 ¢ @ ±2 st).
-- **Four encoders → params (both pages):** CC-in via Web MIDI, per-slot editable
+- **Path B (hardest) — `cochlea-midi/` (drifting comma pump).** COCHLEA's
+  just-intonation comma pump copied verbatim (the lattice walk, named PUMPS,
+  `analyse`, the comma arithmetic over {2,3,5,7}). Where TRITAVA is a scale a
+  table can't *hold*, COCHLEA is a tuning a table can't *track*: the tonic is
+  carried a whole comma off home every lap (`tonic *= residF`) and never
+  returns, so every note's exact just frequency is recomputed against the
+  **drifted** tonic and bent to it. Drift is **continuous across loops** (the
+  transport carries tonic/lap between chunks; it does not reset) and shown live
+  in cents. Same per-note-bend + deterministic channel allocation as TRITAVA.
+  Verified: comma arithmetic faithful (syntonica = −21.51 ¢/lap, stasis = 0),
+  bend reconstructs exact freq (max err 0.011 ¢), the same chord lands on a
+  **different note/bend each lap** (the property a fixed table can't reproduce),
+  drift continuous (86 ¢ → 172 ¢ across two chunks).
+- **Four encoders → params (all pages):** CC-in via Web MIDI, per-slot editable
   CC number + a `learn` capture, values scale to each param's range, law changes
-  re-vibe at the next loop. FADÓ: mode/prog/tempo/seed. TRITAVA: mode/meter/
-  motion/tempo.
+  re-vibe at the next loop. FADÓ: mode/prog/tempo/seed · TRITAVA: mode/meter/
+  motion/tempo · COCHLEA: pump/tempo/drift-direction/seed.
+- **Landing link:** a small `.opxy` banner under the subtitle on the main
+  `index.html` (mono pill, same visual language as the `.dl` download pill)
+  links `./opxy/`; `opxy/index.html` is a 3-card gallery. Minimal-diff, one new
+  style block + one element — no card grid or counts touched.
 - **Conventions kept:** standalone single-file pages, no build/deps; hash **is**
   the pressing; deterministic; `space`=play/stop, `r`=reseed. Web MIDI is
   Chrome/Edge only (Safari has none) — matches the Chromium-verify convention.
 - **Verified headless** (`scratchpad/verify-opxy.mjs`, playwright + full chrome
   `chromium-1194/.../chrome` `--headless=new`; scratchpad not committed, per the
-  GONGAN/TESSERA precedent — 22 checks): both pages load clean; path A tuning
-  math + plain-note invariant + determinism + encoder; path B BP-has-no-octave +
-  tritave folding + bend reconstruction + valid MIDI ranges + non-overlapping
-  channel allocation (incl. pool=2 steal stress) + determinism + encoder; and a
-  **live transport smoke** against a fake MIDI output — path A sends note-ons and
-  **no** bend, path B sends a bend before every note-on, both send all-notes-off
-  on stop.
+  GONGAN/TESSERA precedent — **36 checks**): all three pages + the landing banner
+  load clean; path A tuning math + plain-note invariant + determinism + encoder;
+  path B (TRITAVA) BP-has-no-octave + tritave folding + bend reconstruction +
+  valid MIDI + non-overlapping channel allocation (incl. pool=2 steal stress) +
+  determinism + encoder; path B (COCHLEA) comma arithmetic + drift-shows-in-MIDI
+  + continuous-drift + bend reconstruction + allocation + determinism + encoder;
+  the landing banner links `./opxy/`; and a **live transport smoke** against a
+  fake MIDI output for all three — path A sends note-ons and **no** bend, both
+  path-B pages send a bend before every note-on, all send all-notes-off on stop.
 - **Pick-up ideas / next steps:** confirm MPE input + tuning-table scope on real
-  hardware (decides whether DIAMOND/COCHLEA join path A or need path B); a
-  tuning-table exporter that writes a Scala `.scl`/`.kbm` pair per machine; an
-  MTS-ESP SysEx path if the OP–XY turns out to accept it (would beat channel
-  rotation for dynamic retuning); porting COCHLEA (comma-pump drift) as the third
-  demo — the one that needs *continuous* retuning, exercising path B hardest.
+  hardware (decides whether DIAMOND joins path A or needs path B); a tuning-table
+  exporter that writes a Scala `.scl`/`.kbm` pair per machine (path A automation);
+  an MTS-ESP SysEx path if the OP–XY turns out to accept it (would beat channel
+  rotation for COCHLEA's continuous retune); DIAMOND (Partch's 43-tone diamond)
+  as a fourth demo — the density stress for path B's channel budget.
 
 ### FADÓ — bugfix pass on op. XXII (the initial build didn't actually run)
 **Branch:** `claude/niche-musical-machine-yolbzs` · **File:** `fado/index.html` ·
