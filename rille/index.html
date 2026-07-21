@@ -542,7 +542,12 @@ function jf(bassMidi,note,dom){
 }
 // per-mood hover colour (vstyle): all built on the minor-9 family — root, ♭3
 // (or sus 4), ♭7, 9 — the deep, longing voicing. cluster stays EISEN's harshness.
-const HOVER_SHAPE={shell9:[0,3,10,14],stack9:[0,3,7,14],sus9:[0,5,10,14],cluster:[0,6,13]};
+// All four shapes need exactly 4 tones: the arp figure (below) indexes 0..3,
+// and cluster used to have only 3 — its "peak" note (idx 3) wrapped to idx 0
+// and silently replayed the root instead of reaching a tone, reading as a
+// repeated/broken top line (URTEIL feedback on EISEN). Added a 4th, harsher
+// tone (the tritone's octave) rather than softening the voicing.
+const HOVER_SHAPE={shell9:[0,3,10,14],stack9:[0,3,7,14],sus9:[0,5,10,14],cluster:[0,6,13,18]};
 const MAJ_SHAPE=[0,4,7];                  // passing majors: a plain, brief triad
 function harmRecipe(M,P){                 // resolve suum → the mood's own
   return P.pool?{pool:P.pool,cad:P.cad||0,half:!!P.half}
@@ -564,11 +569,15 @@ function buildHarm(M,root,recipe,rng){
   let b=0,prev=-1;
   while(b<HARMBARS){
     if(cadStart.includes(b)){
-      // pre-dominant: iv if the mode gives it clean, else ♭VI. Its own kind —
-      // it is functional (it belongs to the charged phrase, and the bass walks
-      // it: iv→V→i), not passing colour, so the one-bar major law is not for it.
-      const pd=chordQual(mode,3).dim?5:3, pq=chordQual(mode,pd);
-      for(let k=0;k<2&&b<HARMBARS;k++,b++)bars[b]=mk(pd,pq.minor?hov:MAJ_SHAPE,'pre',2,k===0);
+      // pre-dominant: iv if the mode gives it clean, else ♭VI. Always voiced
+      // with the mood's own minor-9 hov shape, not the diatonic triad quality —
+      // in Dorian (aurora/gurges) the diatonic iv is itself major, and letting
+      // that through here stacked with the dominant made the whole cadence
+      // read as "too major" (URTEIL feedback). It is functional (it belongs to
+      // the charged phrase, and the bass walks it: iv→V→i), not passing colour,
+      // so the one-bar major law doesn't apply to it either way.
+      const pd=chordQual(mode,3).dim?5:3;
+      for(let k=0;k<2&&b<HARMBARS;k++,b++)bars[b]=mk(pd,hov,'pre',2,k===0);
       // the yearning: V7sus held, then V7 — the 4-3 suspension resolving,
       // leading tone raised a semitone under the key root
       for(let k=0;k<2&&b<HARMBARS;k++,b++)bars[b]=mk(4,[0,5,7,10],'dom',2,k===0);

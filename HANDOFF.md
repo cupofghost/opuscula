@@ -246,6 +246,67 @@ Conventions when touching this layer:
 
 Newest first.
 
+### RILLE — URTEIL snippet-rating feedback: cluster arp bug + Dorian "too major" cadence fix
+**Branch:** `claude/rille-snippet-ratings-o62zyv` · **File:** `rille/index.html` ·
+**Status:** done, verified headless (Chromium): arp-index/predominant-quality
+check across all 7 moods × 5 seeds, plus offline `cutPlate` render for the
+touched moods (aurora/gurges/ferrum) and a control (tenebrae) — NaN-free,
+non-silent, unclipped, zero page errors.
+
+Maintainer ran a batch of `judge.html` (URTEIL) ratings across moods/seeds and
+pasted the JSON verdicts into chat (13 rated: 1 yes, 3 maybe, 9 no). Two
+patterns were unanimous and traced to real causes rather than just "dial it by
+ear":
+
+- **EISEN (IRON) — "terrible top part," "sound like a repeat," "out of key, no
+  emotion":** `HOVER_SHAPE.cluster` had only 3 tones (`[0,6,13]`) while every
+  other vstyle has 4 and the shaped arp figure (the "arc to a peak" motif from
+  the last arp rework) indexes into it with `idx` reaching 3 for the peak note.
+  `H.notes[idx % H.notes.length]` wrapped `3 % 3 → 0`, so the peak of the arc —
+  the note that's supposed to land highest/tensest — silently played the root
+  again instead. That's a literal repeated note where a climax should be,
+  exactly matching the complaint. Fixed by giving cluster a 4th, harsher tone
+  (`18`, the tritone's octave — an added #11, not a softened voicing) so all
+  four arp-shape indices resolve to distinct pitches.
+- **DÄMMERUNG (DAWN) and SOG (UNDERTOW) — "too major," "no emotion," "carefree
+  major sound" (5/5 negative across both, no exceptions):** both are the only
+  two moods on **Dorian** mode. Dorian's raised 6th makes the diatonic `iv`
+  chord itself *major* (unlike Phrygian/Aeolian, where `iv` is minor) — so at
+  every charged cadence, `buildHarm`'s predominant picked that diatonic
+  quality (`pq.minor?hov:MAJ_SHAPE`) and rendered 2 bars of plain major triad
+  right before the already-major dominant (4 bars), making 6 of the cadence's
+  8 bars major-quality at the single most audible, foregrounded moment in the
+  piece — the "audibly resolving" climax the harmonic-narrative comment block
+  describes. Every other mood's predominant stayed minor, so this was silently
+  Dorian-only. Fixed by always voicing the predominant with the mood's own
+  minor-9 `hov` shape regardless of the degree's diatonic quality — consistent
+  with `voiceAt`'s own stated law ("quality is CHOSEN per function, not
+  inherited from diatonic stacking") already used everywhere else in the
+  harmonic engine. No-op for the 5 non-Dorian moods (their diatonic `iv` was
+  already minor); cuts Dorian cadences from 6/8 major bars to 4/8 (only the
+  dominant itself, which needs the raised leading tone to resolve).
+- **Not touched — weaker/ambiguous signal, flagged for the next by-ear pass:**
+  FINSTERNIS (DARKNESS) got 2 "maybe"s ("cuts out too much, sounds broken" /
+  "harmonic structure is meh") — most likely just an unlucky BRUCH (break)
+  roll inside a short judge.html clip (22% chance every 8 bars, mutes
+  kick+bass for 4 bars) rather than a bug; SCHATTEN (SHADOW) got one "maybe"
+  ("sounds almost random... could work if it develops and stays in mood") —
+  this is the same "first shaped arp version may resolve too predictably"
+  open item from the previous RILLE session, not a new finding. Left both
+  alone rather than guess at a fix from one ambiguous data point each; LEERE
+  (VOID) got the one "yes" ("works in isolation at least") — untouched.
+- **Verified headless** (scratchpad, not committed): for all 7 moods × 5 seeds,
+  `genAll`'s arp-note lookup is never undefined/NaN and EISEN now reaches 4
+  distinct arp pitches (was 3); the cadence predominant bar's chord shape is
+  minor-quality (`hov`, never `MAJ_SHAPE`) for every mood including
+  aurora/gurges; `cutPlate`'s offline render path (rebuilt inline against
+  `buildGraph`/`scheduleBar`) is NaN-free, non-silent (peak .74–.91, RMS
+  .26–.37), unclipped, zero page errors for aurora/gurges/ferrum + a tenebrae
+  control.
+- **Pick-up:** re-run URTEIL on DAWN/UNDERTOW/IRON to confirm the fixes land;
+  DARKNESS's BRUCH-during-short-clip question and SHADOW's arp-predictability
+  question are still open and need more by-ear samples before touching code.
+
 ### Lock-screen playback via Media Session API — sweep in progress (I–V done)
 **Branch:** `claude/app-link-request-vj8sml` was the original sweep branch;
 the session doing COCHLEA landed on `claude/new-session-owsnx3` instead (its
