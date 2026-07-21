@@ -7,7 +7,7 @@ start of a session — it's meant to be enough to work without re-explaining.
 
 ## Architecture
 
-**OPVSCVLA is nineteen independent single-file Web Audio machines** plus a static
+**OPVSCVLA is twenty-one independent single-file Web Audio machines** plus a static
 landing page. There is **no build step, no bundler, no dependencies, no npm, no
 samples, no server-side anything.** Each `op.` is one self-contained
 `index.html` — inline `<style>`, inline `<script>`, all synthesis in the
@@ -81,6 +81,8 @@ sublow/index.html    op. XVI  SUBLOW     — dubstep / sound system music
 tessera/index.html   op. XVII TESSERA    — a self-predicting language model (PPM)
 vyvid/index.html     op. XVIII VYVID     — Crimean steppe women's polyphony
 tritava/index.html   op. XIX   TRITAVA    — Bohlen–Pierce scale (a music with no octave)
+germen/index.html    op. XX    GERMEN     — an L-system that grows music from grammar
+forfex/index.html    op. XXI   FORFEX     — early tape splicing (musique concrète, elektronische Musik)
 ```
 
 The `op.` roman-numeral order is fixed and lives in `index.html` and `README.md`;
@@ -171,7 +173,7 @@ here, and `officina`'s `MACHINES` chips:
   rebase-before-push is where you re-sync them against what landed under you.
 
 **Cross-machine sweeps** — bridge changes, a convention applied everywhere:
-- The OFFICINA bridge is duplicated verbatim in all nineteen machines, so
+- The OFFICINA bridge is duplicated verbatim in all twenty-one machines, so
   editing it touches every file and conflicts with every live branch. A
   sweep gets its **own dedicated branch**, mixes in no per-machine feature
   work, lands fast, and announces itself in Open threads so per-machine
@@ -243,27 +245,89 @@ Conventions when touching this layer:
 
 Newest first.
 
-### Direct officina link on every machine — cross-machine sweep
-**Branch:** `copilot/cleanup-general-bugs-issues` · **Files:** all nineteen
-`*/index.html` · **Status:** done, verified headless (Chromium, all 19 pass:
-link present, correct `href`, zero pageerrors). Maintainer's brief: officina
-was only reachable from the landing-page colophon, "not very handy" when
-already inside a machine.
+### GERMEN — registering an unclaimed machine, op. XX (an L-system that grows music from grammar)
+**File:** `germen/index.html` · **Status:** registered this session; the
+machine itself was landed directly to `main` (bypassing any branch/PR) as
+"Add files via upload" by the maintainer while a Copilot cleanup PR was also
+in flight, so it arrived on `main` fully built but with **zero registry
+entries** — no landing card, no README row, no officina chip, no HANDOFF
+thread, and no `.exit`/`.bench` navigation pills, so it was unreachable from
+the site and a dead end if you found the URL directly. This thread is that
+registration, done alongside FORFEX (below) in the same session — not this
+session's composition or synthesis design, credited to whoever built it.
 
-Added a fixed top-right pill `<a class="bench" href="../officina/#m=<dir>">
-officina</a>` to every machine page, sitting alongside the existing top-left
-`.exit` pill (independent `position:fixed`, doesn't interact with `.exit`'s
-`position:sticky`). Reuses each machine's own `.exit` color/background/border
-values so the pill matches the page's palette instead of a generic default.
-`officina/index.html` already parses `#m=<id>` on load (`pick(id)` at the
-bottom of its script) and auto-selects that machine's chip, so no officina-side
-change was needed — this was a pure "expose the existing deep link" sweep.
-This is the OFFICINA-bridge-style duplicated-verbatim exception to "no shared
-code": the CSS block and anchor are near-identical in all 19 files (only the
-per-machine color values and `#m=` slug differ), added mechanically rather
-than hand-edited to keep them consistent. Any future *change* to this pill
-(copy, position, behavior) is another cross-machine sweep, same discipline as
-the OFFICINA bridge itself.
+- **The law is a Lindenmayer system (D0L)** — a 1968 formal grammar for plant
+  growth: an axiom plus parallel rewrite rules, expanded `n` times with zero
+  randomness (`expand()`, pure/deterministic — same species+depth always
+  yields the identical string, checkable by hand). Four grammars: **FRONDA**
+  (a fern, 2(3ⁿ−2ⁿ) notes), **SALIX** (a willow, 4ⁿ notes), **ALGA**
+  (Lindenmayer's own 1968 original species — the Fibonacci word as longs/
+  shorts), **PAVIMENTUM** (the Gosper flowsnake, a plane-tiling curve). A
+  second turtle walks the expanded string **twice at once** — as drawing
+  (x/y/angle) and as score (scale degree/depth/time) — so `F` both steps
+  forward *and* strikes a note, `+`/`-` turn the turtle *and* raise/lower
+  the degree, and `[`/`]` push/pop *both* states, so a side-branch is
+  simultaneously a graphic twig and a little melody that leaves the main
+  stem untouched, pitched higher and quicker the deeper it nests.
+- **Tuned in 12-tone equal temperament** (`midiToFreq` is `440·2^((m-69)/12)`)
+  over four modes (Dorian/Phrygian/Pentatonic/Hirajōshi as semitone-offset
+  tables) — a genuine departure from this collection's usual "zero ET, exact
+  JI" convention; noted here factually rather than corrected, since retuning
+  the law wasn't this session's call to make on someone else's machine.
+- **Synthesis, no samples:** Karplus–Strong plucked strings (a seeded noise
+  burst one period long, fed through a damped feedback delay; cached per
+  `(pitch,depth,decay,brightness,seed)` key so repeat notes are just buffer
+  replays), a branch voice reusing the same pluck tinted brighter/softer by
+  nesting depth, a sine-root/triangle-fifth drone under a slow tremolo, a low
+  sine "stem" breath once per cycle, a seeded convolution room. TIMBRE: 6
+  groups (master/pluck/branch/drone/stem/room), bridge verbatim, `touch()`
+  ramps live params and clears the Karplus–Strong cache on brightness/ring
+  edits, `demo()` auditions each group.
+- **Registration work done this session:** added the landing card (`--bg:
+  #121a10`, a branching-stem SVG emblem in the machine's own leaf/gold
+  palette), the README row, the officina chip, this file-table row. **Added
+  the missing `.exit`/`.bench` pills** (the sticky "back to opvscvla" pill
+  and the officina deep-link pill, both absent from the uploaded file) using
+  germen's own `--ink`/`--field`/`--line` palette values, matching the
+  convention every other machine now carries post-officina-pill-sweep.
+  Otherwise the file is untouched — its engine, synthesis, canvas, hash and
+  WAV-cut logic are exactly as uploaded.
+- **Verified headless** alongside FORFEX's own suite: page loads with no
+  console/page errors, play/pause/stop/another/cut all present and wired,
+  hash round-trips seed/grammar/iterations/mode/tempo, OFFICINA schema
+  announces (6 groups) and live `set` round-trips.
+- **Pick-up ideas** (not this session's to pursue, flagging for whoever
+  continues it): the equal-tempered tuning could get a just-intonation mode
+  to match the collection's norm elsewhere; the reader-notes panel and TIMBRE
+  docs are already thorough and didn't need touching.
+
+### FORFEX — new machine, op. XXI (early tape splicing)
+**Branch:** `claude/tape-splicing-machine-os3bbj` · **File:** `forfex/index.html` ·
+**Status:** done, verified headless (Chromium, 24 checks, zero pageerrors). New
+op. Registered in `index.html` (card + counts), `README.md` (row + count),
+`officina` (chip), `CLAUDE.md`/this file (file table + counts); counts bumped
+to twenty-one everywhere. **Renumbered XX → XXI at landing:** `germen/
+index.html` had already landed on `main` (a direct upload, see the thread
+above) self-declaring "op. XX" in its own title/colophon before this branch's
+registration, so per the claiming-by-landing rule this took the next numeral
+instead. **Also fixed stale counts:** `CLAUDE.md`'s Repo-shape line and this
+file's own Architecture line were still "eighteen" (TRITAVA's landing bumped
+the registries but missed these two prose lines; a Copilot cleanup PR then
+bumped them to "nineteen") — both now read "twenty-one" with GERMEN+FORFEX
+both landing this session. Maintainer's brief: a new machine based on early
+tape splicing, generated rather than sampled, with a creative solution for
+the sound. One-session build (design + implement + verify + register), full
+autonomy.
+
+**Also worth flagging, discovered but out of this session's scope:** a
+Copilot agent commit (`2ae7687`, "Changes before error encountered", part of
+the same cleanup PR that landed the officina-pill sweep below) mistranslated
+`pas-sale/index.html`'s French transport UI to English mid-task before
+erroring out — ROULEZ/ARRÊTE/REPRENDS/"autre version pressée" became PLAY/
+STOP/RESUME/"another version pressed". PAS SALÉ is deliberately French (op.
+I, zydeco, the collection's mother-tongue-per-genre rule). Left untouched
+here — not this branch's machine — but it's a real regression sitting on
+`main` and someone should revert those four strings.
 
 ### TRITAVA — new machine, op. XIX (the Bohlen–Pierce scale — a music with no octave)
 **Branch:** `claude/session-vfb3ko` · **File:** `tritava/index.html` · **Status:**

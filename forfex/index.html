@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#15110c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FORFEX">
+<title>FORFEX — music made by cutting tape (early tape splicing)</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   FORFEX — early tape splicing. The razor and the splicing block.
+   Warm bakelite #15110c · ferric oxide #cf9a52 · ember/rust #c0603a ·
+   leader bone #ece2d2 · chinagraph pencil #7fb0c4 · dim #9a8b74.
+   The look is a tape-editing bench: two reels turning, and below them the
+   reel laid flat as an edit strip — segments as blocks of tape, splices as
+   razor lines (a vertical butt cut, a diagonal cut). Named in Latin —
+   FORFEX, the shears — because the cut is the whole art. Musique concrète
+   was cut with a razor on an aluminium block; the collection's Latin tongue
+   (SCALA, GRADUS, NENIA, TESSERA) names the act of cutting.
+   ===================================================================== */
+:root{
+  color-scheme:dark;
+  --ground:#15110c; --panel:#0f0c08; --bone:#ece2d2;
+  --oxide:#cf9a52; --ember:#c0603a; --pencil:#7fb0c4;
+  --txt:#ece2d2; --dim:#9a8b74; --hair:rgba(207,154,82,.20); --hair2:rgba(207,154,82,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;background:var(--ground)}
+body{
+  background:var(--ground);
+  background-image:radial-gradient(120% 80% at 50% -8%, rgba(207,154,82,.07), transparent 55%),
+                   radial-gradient(90% 60% at 50% 110%, rgba(192,96,58,.06), transparent 60%);
+  color:var(--txt);font-family:'EB Garamond',Georgia,serif;
+  min-height:100vh;display:flex;justify-content:center;
+  padding:max(14px,env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom));
+}
+.pit{
+  width:100%;max-width:600px;background:var(--panel);
+  border:1.5px solid var(--oxide);
+  box-shadow:0 0 0 5px var(--ground),0 0 0 6.5px var(--hair),inset 0 0 70px rgba(0,0,0,.6);
+  display:flex;flex-direction:column;padding:0 0 18px;
+}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:14px 0 0 14px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#ece2d2;background:rgba(15,12,8,.5);border:1px solid rgba(236,226,210,.24);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+/* direct link to officina — the voicing bench (added) */
+.bench{position:fixed;top:max(6px,env(safe-area-inset-top));right:max(6px,env(safe-area-inset-right));z-index:100;display:flex;width:-moz-fit-content;width:fit-content;align-items:center;gap:.55em;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#ece2d2;background:rgba(15,12,8,.5);border:1px solid rgba(236,226,210,.24);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench:hover,.bench:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.bench:active{transform:translateY(1px)}
+@media(prefers-reduced-motion:reduce){.bench{transition:none}}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(236,226,210,.7);background:rgba(15,12,8,.82);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+
+header{padding:14px 20px 12px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.3em;color:var(--ember);text-transform:uppercase}
+h1{font-family:'Cormorant SC',serif;font-weight:700;font-size:clamp(2.8rem,14vw,4.4rem);
+  letter-spacing:.16em;line-height:1;color:var(--txt);margin:6px 0 8px;text-indent:.16em;
+  text-shadow:0 1px 0 rgba(207,154,82,.22)}
+.sub{font-style:italic;font-size:1rem;color:var(--txt);line-height:1.45}
+.sub b{font-style:normal;color:var(--oxide)}
+.credit{font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--dim);letter-spacing:.06em;margin-top:9px;text-transform:uppercase}
+
+.plate{position:relative;margin:2px 14px 0;border:1px solid var(--hair);background:var(--ground)}
+.plate canvas{display:block;width:100%;height:auto}
+.plate .tag{position:absolute;top:7px;left:10px;font-family:'IBM Plex Mono',monospace;font-size:.56rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.plate .tagr{left:auto;right:10px;text-align:right}
+.plate .tag b{color:var(--oxide)}
+
+.controls{padding:14px 20px 0;display:flex;flex-direction:column;gap:14px}
+.lab{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.26em;color:var(--oxide);text-transform:uppercase;margin-bottom:7px;display:flex;justify-content:space-between}
+.lab .rd{color:var(--txt);letter-spacing:.05em}
+
+button{font-family:'EB Garamond',serif;color:var(--txt);background:transparent;
+  border:1px solid var(--hair);cursor:pointer;touch-action:manipulation;letter-spacing:.05em}
+button:focus-visible{outline:2px solid var(--oxide);outline-offset:2px}
+button:active{transform:translateY(1px)}
+button,canvas{-webkit-user-select:none;user-select:none}
+
+.pick{width:100%;padding:16px;font-family:'Cormorant SC',serif;font-weight:600;
+  font-size:1.25rem;letter-spacing:.3em;text-transform:uppercase;border-width:1.5px;
+  border-color:var(--oxide);transition:background .15s,color .15s,border-color .15s}
+.pick.on{background:var(--oxide);border-color:var(--oxide);color:#211703}
+.pick:disabled{opacity:.4;cursor:default}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chips button{padding:8px 11px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--dim);letter-spacing:.04em}
+.chips button.on{background:var(--ember);color:#1a0f08;border-color:var(--ember)}
+.chips button small{display:block;font-size:.82em;opacity:.7;letter-spacing:0;text-transform:none}
+.chips button.on small{opacity:.85}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--hair)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;margin-top:-9px;border-radius:50%;background:var(--panel);border:2px solid var(--oxide);box-shadow:0 0 7px rgba(207,154,82,.4)}
+input[type=range]::-moz-range-track{height:2px;background:var(--hair)}
+input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--panel);border:2px solid var(--oxide)}
+
+.cut{width:100%;padding:13px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;border-style:dashed;border-color:var(--hair)}
+.cut:disabled{opacity:.45;cursor:default}
+.cutnote{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim);text-align:center;margin-top:7px;min-height:1em;letter-spacing:.05em}
+
+.foot{margin:16px 20px 0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;
+  letter-spacing:.2em;color:var(--dim);text-transform:uppercase;line-height:1.9;border-top:1px solid var(--hair2);padding-top:12px}
+.foot a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
+</style>
+</head>
+<body>
+<div class="pit">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+  <a class="bench" href="../officina/#m=forfex" aria-label="Open in officina — the voicing bench" title="officina">officina</a>
+
+  <header>
+    <div class="eyebrow">op. XXI · early tape splicing</div>
+    <h1>Forfex</h1>
+    <div class="sub"><b>Music made by cutting tape.</b> Before samplers, before software, a composer made electronic music with a razor blade. You recorded a sound to magnetic tape, then physically <em>cut</em> the tape and glued the pieces back in a new order — a splice. Play it faster and it rises in pitch; turn the piece around and it runs backwards; join its ends and it loops forever. This machine is that studio. It synthesizes its own raw sounds, then composes by cutting and splicing them — you set the school, the montage, the cut, and how worn the tape is; the machine edits the reel.</div>
+    <div class="credit">musique concrète · elektronische Musik · the radiophonic workshop · tape-loop phasing — all synthesized, no samples · varispeed pitches are exact just ratios of 220 Hz · wow, flutter, saturation and hiss are modelled, printed onto the reel</div>
+  </header>
+
+  <div class="plate">
+    <canvas id="cv" width="920" height="560" aria-label="Two tape reels turning above the reel laid flat as an edit strip — each segment a block of spliced tape, coloured by its sound, marked with the razor cut that joins it (a vertical butt splice or a diagonal one), reversed pieces flagged; a playhead reads across it like a tape head"></canvas>
+    <div class="tag">CUT · <b id="cutTag">—</b></div>
+    <div class="tag tagr"><span id="schoolTag">Paris</span></div>
+  </div>
+
+  <div class="controls">
+
+    <div style="display:flex;gap:10px">
+      <button class="pick" id="pick" style="flex:1">Play</button>
+      <button class="pick" id="pause" style="flex:0 0 34%" disabled>Pause</button>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Studio <span class="rd" id="schoolrd">Paris · musique concrète</span></div>
+      <div class="chips" id="school"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Montage <span class="rd" id="montagerd">Courant · flowing cuts</span></div>
+      <div class="chips" id="montage"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Cut <span class="rd" id="couperd">Mixte · butt & diagonal</span></div>
+      <div class="chips" id="coupe"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Wear <span class="rd" id="usurerd">45% · a played reel</span></div>
+      <input type="range" id="usure" min="0" max="100" value="45" aria-label="Tape and machine wear — wow, flutter, saturation and hiss">
+    </div>
+
+    <div class="fld">
+      <div class="lab">Pace <span class="rd" id="tempord">96 / min</span></div>
+      <input type="range" id="tempo" min="56" max="168" value="96" aria-label="The reel's pace">
+    </div>
+
+    <div class="fld">
+      <button class="cut" id="cut">Cut a dubplate · 16-bit WAV</button>
+      <div class="cutnote" id="cutnote">renders the whole reel, seamlessly looped</div>
+    </div>
+  </div>
+
+  <details class="reader">
+    <summary>On this music · the razor and the splicing block</summary>
+    <div class="rbody">
+      <h4>What you're hearing</h4>
+      <p>A generative piece assembled the way the first electronic composers worked: not by playing an instrument but by <b>editing tape</b>. The machine synthesizes a small library of raw sounds — electronic tones, bands of noise, struck bodies, a breath, a voice — then cuts them into segments and splices those segments into a reel: some sped up or slowed down (which raises or lowers their pitch), some turned backwards, some joined end-to-end into loops. The finished reel is played back through a modelled tape transport, so you also hear the medium itself: the slow pitch-drift called <em>wow</em>, the faster <em>flutter</em>, the warm compression of magnetic saturation, and tape hiss. The loop you hear is the reel; the WAV you cut is exactly that reel.</p>
+      <h4>Why cut tape at all</h4>
+      <p>When magnetic tape reached studios after the war it did something no instrument could: it made sound into a <em>physical object</em> you could hold, cut, and rearrange. A recorded sound became a length of tape. You could shorten it, splice it to another, run it at a different speed, or reverse it — edits impossible with a live performer. In 1948, in Paris, the engineer <b>Pierre Schaeffer</b> built <em>Étude aux chemins de fer</em> out of recorded locomotives and coined <em>musique concrète</em>: music composed from concrete recorded sound rather than written notes. With <b>Pierre Henry</b> he made whole works this way. The tape splice — a diagonal razor cut across an aluminium block, the two ends butted and joined with a strip of splicing tape — was the pen.</p>
+      <h4>Paris, and then Cologne</h4>
+      <p>A rival school formed in Cologne. Where Paris recorded the world, the West German Radio studio (WDR) built its sounds from nothing — pure sine tones and filtered noise from oscillators and generators, printed to tape and spliced together tone by tone. <b>Karlheinz Stockhausen</b>'s <em>Studie I</em> (1953) is made of sine-tone mixtures; <em>Studie II</em> (1954) of bands of noise. A single "note" might be five sine tones recorded separately and spliced into one chord. It was painstaking, mathematical, and entirely constructed. This machine's <b>Köln</b> setting works in that palette — sines and noise-bands, clean butt splices, pitches organised in orderly rows.</p>
+      <h4>London, and the loop</h4>
+      <p>At the BBC's <b>Radiophonic Workshop</b>, <b>Delia Derbyshire</b> realised the <em>Doctor Who</em> theme (1963) with no synthesizer at all: each note of the melody was a single recorded sound, cut to length and its tape speed changed to reach each pitch, then the pieces spliced in sequence — a hand-built tune. And once you join a tape's two ends you have a <em>loop</em>: a phrase that repeats forever. In New York, <b>Steve Reich</b> (<em>It's Gonna Rain</em>, 1965) and <b>Terry Riley</b> ran two copies of the same loop at fractionally different speeds so they slid out of phase and slowly back again — music made purely from the drift between two tapes. The <b>Radiophonique</b> and <b>Phase</b> settings here are those two ideas.</p>
+      <h4>Varispeed, and why the pitches are exact</h4>
+      <p>Change a tape's speed and you change pitch and duration together — double the speed and everything jumps an octave and plays in half the time. This machine pitches its cut segments the same way, by <em>varispeed</em>, and it chooses only <b>exact whole-number ratios</b> — 3/2, 5/4, 4/3, and octaves of them — so every transposition is a pure just interval over a single reference of 220 Hz. Like the rest of this collection, there is no equal temperament in the notes. The wow and flutter you can dial up with <b>Wear</b> are the one deliberate detuning: the transport's unsteady hand, a modelled imperfection laid over exact pitches — not a tempered scale but a wobbling one.</p>
+      <h4>Everything is synthesized — that is the point</h4>
+      <p>Musique concrète famously recorded real trains and voices. This machine records nothing: every raw sound is generated in the page — additive sine mixtures, filtered-noise bands, inharmonic struck bodies, swept breath, a formant voice, a click. The character you remember from early tape music — the swoops, the reversed swells, the loops, the grain and hiss — comes not from the sources but from the <em>process</em>: the cut, the splice, the speed change, the worn transport. So the machine gives you the process, in full, and lets it act on sounds it made itself. That is faithful to how Cologne worked, and it lets a link or a cut WAV reproduce a pressing exactly, which no reel of real tape ever could.</p>
+      <h4>The controls</h4>
+      <p><b>Studio</b> chooses the school and its palette and habits. <b>Montage</b> sets the density of the cutting — <em>tenu</em> holds long segments, <em>haché</em> chops fast. <b>Cut</b> chooses the splice: a <em>franche</em> butt cut edits hard and ticks at the join, a <em>biaise</em> diagonal cut crossfades smoothly, <em>mixte</em> mixes them. <b>Wear</b> ages the tape and the machine — from a pristine studio reel to a wobbling, hissing, saturated one. <b>Pace</b> sets the speed of the reel. The plate draws the reel flat, as an editor would lay it on the bench, every splice a razor line.</p>
+      <h4>The name</h4>
+      <p>op. XXI is named in Latin, the collection's tongue: <em>forfex</em>, the shears — the tool of the cut. The studios cut with a single-edged razor on a grooved metal block, but the art was always the cut itself: choosing where sound is severed and what it is joined to. Editing, made audible.</p>
+    </div>
+  </details>
+
+  <div class="foot">
+    op. XXI · <a href="../">opvscvla</a> · keys: space=play · p=pause · r=another · c=cut
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* =====================================================================
+   READER'S GUIDE — FORFEX (op. XXI)
+   ---------------------------------------------------------------------
+   Early tape splicing as a generative editing bench. The machine
+   synthesizes a small library of raw SOURCES (sine mixtures, noise
+   bands, struck bodies, breath, a formant voice, a click), then a
+   seeded EDITOR cuts them into SEGMENTS and splices those onto a reel:
+   each segment varispeed'd (pitch = an EXACT just ratio, applied as a
+   tape-speed change), some reversed, the bed a repeating LOOP. The reel
+   is baked once and looped; the offline WAV is that same reel.
+
+   The LAW is the edit grammar, exposed as four controls:
+     STUDIO  — school + palette + habits (paris/koln/radio/phase)
+     MONTAGE — density/length of the cutting (tenu/courant/haché)
+     COUPE   — the splice: butt (hard, ticks) / diagonal (crossfade)
+     USURE   — tape+machine wear: wow, flutter, saturation, hiss
+   plus PACE (the reel tempo). Voicing (the tape machine's character and
+   each source's timbre) lives in TIMBRE, editable in ../officina/.
+
+   THIS FILE: engine (gamut / schools / montage / genAll — the editor)
+   → state → TIMBRE / bridge → source synthesis → DSP (cut · splice ·
+   varispeed · echo · wow+flutter · saturation · hiss) → renderMaster
+   (bake the reel, seam-seamless) → graph → transport → WAV cut →
+   canvas (reels + the flat edit strip) → controls → hash / keys → init.
+
+   KEYS: space = play/stop · p = pause/resume · r = another reel · c = cut a WAV
+   ===================================================================== */
+
+/* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
+function __hint(msg){
+  try{
+    const p=document.getElementById('pick')||document.querySelector('button');
+    if(!p||!p.insertAdjacentElement)return;
+    let h=document.getElementById('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin:8px 20px 0;font-style:italic;letter-spacing:.04em';
+      p.parentNode.appendChild(h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{
+    if(document.visibilityState==='visible')kick();
+    else if(ac.state==='running')ac.suspend().catch(()=>{});
+  }catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else if(document.visibilityState==='visible')setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('AUDIO SUSPENDED — tap Play again · if still silent, check the ring/silent switch');}catch(e){}},450);
+}
+
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function hashStr(s){let h=2166136261>>>0;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+
+/* ============================ ENGINE-BEGIN ============================
+   Pure, DOM-free. The editor: seed + law -> a deterministic reel of
+   spliced segments. Nothing here touches the AudioContext. */
+
+// The pitch alphabet for varispeed. Every entry is an EXACT ratio; a
+// segment's tape speed = ratio * 2^k (k = octave register), which stays
+// rational, so every transposition is a pure just interval over BASE.
+// (Zero equal temperament — the collection's rule; wow/flutter is the one
+// modelled, deliberate detuning, and it lives in the transport, not here.)
+const GAMUT=[[1,1],[9,8],[5,4],[4,3],[3,2],[5,3],[15,8],[2,1]];
+
+// speed = ratio * 2^k as an exact fraction {num,den} (+ its float value).
+function speedPair(ratio,k){
+  let num=ratio[0],den=ratio[1];
+  if(k>0)num*=(1<<k); else if(k<0)den*=(1<<(-k));
+  return {num,den,val:num/den,ratio,k};
+}
+
+// The four SCHOOLS — each a palette of sources plus editing habits. This
+// is the law: what gets recorded, how far it is varispeed'd, how often
+// reversed, how much echo, how pitch is organised, which sources carry
+// the figure and the loop bed. (The splice angle is COUPE, set by the
+// user; wear is USURE. Those are kept off the school on purpose.)
+const SCHOOLS={
+  paris:{label:'Paris', sub:'musique concrète',
+    pal:['corps','souffle','voix','grain'], bed:'souffle',
+    figSrc:['corps','voix','souffle'], rev:.42, echo:1.0, org:'free', wide:.9},
+  koln:{label:'Köln', sub:'elektronische Musik',
+    pal:['sinus','bande','grain'], bed:'sinus',
+    figSrc:['sinus','bande'], rev:.12, echo:.30, org:'serial', wide:.35},
+  radio:{label:'Radiophonique', sub:'the workshop',
+    pal:['sinus','corps','souffle','grain','voix'], bed:'souffle',
+    figSrc:['sinus','corps'], rev:.22, echo:.60, org:'scalar', wide:.6},
+  phase:{label:'Phase', sub:'tape-loop drift',
+    pal:['voix','corps','grain'], bed:'voix',
+    figSrc:['voix'], rev:0, echo:.15, org:'scalar', wide:.4},
+};
+const SCHOOL_ORDER=['paris','koln','radio','phase'];
+
+// MONTAGE — the density and length of the cutting.
+const MONTAGE={
+  tenu:{label:'Tenu', sub:'long, held cuts', segBeats:[2,4], dens:.42},
+  courant:{label:'Courant', sub:'flowing cuts', segBeats:[1,2], dens:.72},
+  hache:{label:'Haché', sub:'chopped, frantic', segBeats:[.5,1], dens:.96},
+};
+const MONTAGE_ORDER=['tenu','courant','hache'];
+const COUPE={franche:{label:'Franche',sub:'butt cuts — hard'},biaise:{label:'Biaise',sub:'diagonal — crossfaded'},mixte:{label:'Mixte',sub:'butt & diagonal'}};
+const COUPE_ORDER=['franche','biaise','mixte'];
+
+const SRECDUR=2.6;   // seconds of each source "recording" (grain material)
+
+// pick the next pitch under the school's organisation.
+function pickPitch(org,rng,walk,row,wide){
+  if(org==='serial'){const idx=row[walk.ri%row.length];walk.ri++;return {ratio:GAMUT[idx],k:0};}
+  if(org==='scalar'){const step=rng()<.7?(rng()<.5?1:-1):(rng()<.5?2:-2);
+    walk.idx=clamp(walk.idx+step,0,GAMUT.length-1);return {ratio:GAMUT[walk.idx],k:0};}
+  // free (concrète): a leap anywhere in the gamut, over a wide register.
+  const idx=(rng()*GAMUT.length)|0; const rr=rng(); let k;
+  if(wide>.7) k = rr<.28?-1: rr<.46?1: rr<.57?-2: rr<.67?2:0;
+  else if(wide>.4) k = rr<.35?-1: rr<.6?1:0;
+  else k = rr<.2?-1: rr<.35?1:0;
+  return {ratio:GAMUT[idx],k};
+}
+function serialRow(rng){const r=[];for(let i=0;i<GAMUT.length;i++)r.push(i);
+  for(let i=r.length-1;i>0;i--){const j=(rng()*(i+1))|0;const t=r[i];r[i]=r[j];r[j]=t;}return r;}
+
+// genAll — the editor. Returns the reel plan: the segment list (bed loop,
+// figure line, punctuation), the sources it needs baked, and (for PHASE)
+// a loop-cell description used both to render and to draw. Deterministic
+// in {school, montage, coupe, tempo, seed}.
+function genAll(st){
+  const sc=SCHOOLS[st.school], mo=MONTAGE[st.montage];
+  const beatDur=60/st.tempo, BARS=8, bpb=4, totalBeats=BARS*bpb;
+  const salt=st.seed>>>0;
+  const segs=[]; const used=new Set();
+  const add=s=>{used.add(s.src);segs.push(s);};
+
+  if(st.school==='phase'){
+    // a short loop-cell of a few notes; the render plays it as 2-3 copies
+    // drifting out of phase and back. Notes stored here so the canvas can
+    // draw the same cell the render builds.
+    const cellBeats=2, rng=mulberry32(salt^0x9A5E);
+    const nnotes=Math.max(2,Math.round(cellBeats*2));
+    const notes=[]; let idx=(rng()*GAMUT.length)|0;
+    for(let n=0;n<nnotes;n++){
+      notes.push({at:(n/nnotes)*cellBeats, out:(cellBeats/nnotes)*0.92, ratio:GAMUT[idx], inPt:0.05+rng()*0.2});
+      idx=clamp(idx+(rng()<.5?1:-1)*(1+((rng()*2)|0)),0,GAMUT.length-1);
+    }
+    used.add(sc.bed);
+    return {segs,dur:totalBeats*beatDur,BARS,bpb,totalBeats,beatDur,
+      school:st.school,sources:[...used],montage:st.montage,coupe:st.coupe,
+      phase:{src:sc.bed,cellBeats,notes}};
+  }
+
+  // ---- BED: a looped cell, repeated across the reel (the ostinato). ----
+  const bedRng=mulberry32(salt^0xB3D5);
+  const cellBeats=4, nCells=totalBeats/cellBeats;
+  const cell=[]; {let t=0;
+    while(t<cellBeats-0.01){
+      const L=Math.min(cellBeats-t, 1+(bedRng()<.5?1:0));      // 1-2 beats
+      const ratio=bedRng()<.6?[1,1]:[3,2];
+      cell.push({dt:t,L,ratio});
+      t+=L+(bedRng()<.2?1:0);
+    }}
+  for(let c=0;c<nCells;c++)for(const b of cell){
+    const spd=speedPair(b.ratio,-1);                            // bed sits an octave low
+    add({layer:'bed',src:sc.bed,t:(c*cellBeats+b.dt)*beatDur,outSec:b.L*beatDur,
+      speed:spd,rev:false,inPt:0.15,gain:0.5,pan:bedRng()*.3-.15,splice:'diag',ratio:b.ratio,k:-1});
+  }
+
+  // ---- FIGURE: a cursor walk of cut segments (the melody / gesture). ----
+  const figRng=mulberry32(salt^0xF16E);
+  const walk={idx:(figRng()*GAMUT.length)|0,ri:0}; const row=serialRow(figRng);
+  let t=0;
+  while(t<totalBeats*beatDur-0.05){
+    if(sc.org!=='scalar' && figRng()>mo.dens*0.9){t+=beatDur*0.5;continue;} // a rest
+    const beats=mo.segBeats[0]+figRng()*(mo.segBeats[1]-mo.segBeats[0]);
+    const outSec=Math.min(beats*beatDur, totalBeats*beatDur-t);
+    const pp=pickPitch(sc.org,figRng,walk,row,sc.wide);
+    const spd=speedPair(pp.ratio,pp.k);
+    const src=sc.figSrc[(figRng()*sc.figSrc.length)|0];
+    const rev=figRng()<sc.rev;
+    const splice=st.coupe==='franche'?'butt':st.coupe==='biaise'?'diag':(figRng()<.5?'butt':'diag');
+    const grainSec=outSec*spd.val;
+    const inPt=sc.org==='free'?figRng()*Math.max(0.05,SRECDUR-grainSec-0.05):(0.02+figRng()*0.25);
+    add({layer:'fig',src,t,outSec,speed:spd,rev,inPt,gain:0.85,pan:figRng()*1.2-0.6,splice,ratio:pp.ratio,k:pp.k});
+    t+=outSec+(figRng()<0.15?beatDur*0.5:0);
+  }
+
+  // ---- PUNCTUATION: sparse accents — a click or a reversed swoosh. ----
+  const pRng=mulberry32(salt^0x9C71);
+  const slots=totalBeats*2;
+  for(let s=0;s<slots;s++){
+    if(pRng()<0.12*mo.dens){
+      const tt=s*beatDur/2;
+      if(sc.pal.indexOf('souffle')>=0 && pRng()<.4){
+        const outSec=0.6+pRng()*0.8, spd=speedPair([1,1],pRng()<.5?0:-1);
+        add({layer:'ponct',src:'souffle',t:Math.max(0,tt-outSec*0.5),outSec,speed:spd,rev:true,
+          inPt:pRng()*1.2,gain:0.5,pan:pRng()*1.4-0.7,splice:'diag',ratio:[1,1],k:spd.k});
+      }else if(sc.pal.indexOf('grain')>=0){
+        const spd=speedPair(GAMUT[(pRng()*GAMUT.length)|0],pRng()<.5?0:1);
+        add({layer:'ponct',src:'grain',t:tt,outSec:0.16/spd.val,speed:spd,rev:false,
+          inPt:0,gain:0.6,pan:pRng()*1.4-0.7,splice:'butt',ratio:spd.ratio,k:spd.k});
+      }
+    }
+  }
+
+  segs.sort((a,b)=>a.t-b.t);
+  return {segs,dur:totalBeats*beatDur,BARS,bpb,totalBeats,beatDur,
+    school:st.school,sources:[...used],montage:st.montage,coupe:st.coupe,phase:null};
+}
+/* ============================ ENGINE-END (genAll) ===================== */
+
+/* ------------------------------- state ---------------------------------- */
+const st={school:'paris',montage:'courant',coupe:'mixte',usure:45,tempo:96,seed:1,playing:false,paused:false};
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted into one documented place. The code
+   reads TP.<group>.<param>; the numbers below are the factory voice. Open
+   ../officina/ — the voicing bench — to edit these live, save presets and
+   export them. A preset saved there applies even when this file is opened
+   directly (localStorage); add ?factory to hear the shipped voice. The
+   EDIT — the schools, the montage, the splice grammar, the pitches — is
+   NOT here: that is the law, in the engine above. TIMBRE holds only how
+   the tape machine sounds (its wear) and how each raw source is built. */
+const TIMBRE={
+  id:'forfex', title:'FORFEX · op. XXI',
+  doc:'A tape-splicing studio. The engine cuts and splices a reel; TIMBRE is how it all SOUNDS. TRANSPORT is the tape machine\'s character — wow, flutter, magnetic saturation, high-frequency loss and hiss — all scaled by the page\'s WEAR slider and printed into the baked reel. ECHO is the tape-echo unit (each school uses it more or less). SPLICE is the click of a butt cut and the length of a diagonal crossfade. The six SOURCES are the raw recorded material — SINUS (a sine-tone mixture, Cologne), BANDE (a noise band, Cologne), CORPS (a struck inharmonic body), SOUFFLE (swept breath), VOIX (a formant voice), GRAIN (a click). MASTER/ROOM ride live; every other edit re-bakes the reel on the next play — the ► HEAR button auditions any group instantly.',
+  groups:{
+    master:{label:'master chain',doc:'A gentle shaper into a glue compressor, then a brick-wall limiter, then an output trim, plus a warm room send. The limiter, not the shaper, holds the ceiling.',params:{
+      drive:{v:.05,min:0,max:1,step:.01,label:'drive',doc:'waveshaper warmth only; the limiter does the loudness'},
+      compThresh:{v:-15,min:-36,max:-4,step:.5,unit:'dB',label:'comp threshold'},
+      compRatio:{v:2.6,min:1,max:8,step:.1,label:'comp ratio'},
+      limThresh:{v:-1.2,min:-8,max:0,step:.1,unit:'dB',label:'limiter ceiling',doc:'the brick wall — nothing passes above this (knee 0, ratio 20)'},
+      outTrim:{v:.9,min:.4,max:1.1,step:.01,label:'out trim'},
+      wet:{v:.16,min:0,max:.5,step:.01,label:'room return',doc:'a small dead studio room'},
+    }},
+    room:{label:'room',doc:'The impulse response for the room send (seeded, so the WAV is deterministic).',params:{
+      size:{v:1.5,min:.2,max:3,step:.05,unit:'s',label:'room size'},
+      decay:{v:2.6,min:1,max:5,step:.1,label:'room decay curve'},
+    }},
+    transport:{label:'tape transport',doc:'The tape machine itself. WEAR (the page slider) scales wow/flutter/hiss from nothing up to these ceilings and drives the saturation and treble loss harder — a pristine studio reel at 0, a wobbling worn one at 100. These are printed into the baked reel; changing WEAR re-bakes.',params:{
+      wowRate:{v:1.3,min:.2,max:6,step:.05,unit:'Hz',label:'wow rate',doc:'slow pitch drift'},
+      wowDepth:{v:.006,min:0,max:.03,step:.001,label:'wow depth',doc:'peak fractional pitch deviation at full wear'},
+      flutterRate:{v:11,min:5,max:30,step:.5,unit:'Hz',label:'flutter rate'},
+      flutterDepth:{v:.0016,min:0,max:.01,step:.0002,label:'flutter depth'},
+      satDrive:{v:2,min:0,max:6,step:.1,label:'saturation',doc:'magnetic soft-clip drive (has a floor even at wear 0)'},
+      tone:{v:.6,min:.1,max:1,step:.02,label:'treble',doc:'playback brightness — a one-pole rolloff (1 = open)'},
+      toneLoss:{v:.3,min:0,max:.6,step:.02,label:'treble loss',doc:'how much wear darkens the treble'},
+      hiss:{v:.012,min:0,max:.05,step:.001,label:'hiss',doc:'tape noise floor at full wear'},
+    }},
+    echo:{label:'tape echo',doc:'A feedback delay standing in for a second machine (or a loop over two heads). Each school leans on it more (Paris) or less (Köln).',params:{
+      div:{v:.75,min:.1,max:2,step:.05,unit:'beat',label:'delay time',doc:'in beats of the reel pace'},
+      feedback:{v:.42,min:0,max:.85,step:.02,label:'feedback'},
+      damp:{v:.35,min:.05,max:1,step:.05,label:'repeat tone',doc:'treble lost on each repeat'},
+      mix:{v:.5,min:0,max:1,step:.02,label:'mix',doc:'base send; the school scales it'},
+    }},
+    splice:{label:'the splice',doc:'The join between two pieces of tape. A butt (franche) cut ticks; a diagonal (biaise) cut crossfades over this length.',params:{
+      click:{v:.07,min:0,max:.4,step:.01,label:'butt tick',doc:'the click a hard splice makes'},
+      xfade:{v:12,min:2,max:60,step:1,unit:'ms',label:'diagonal crossfade'},
+    }},
+    sinus:{label:'sinus · sine mixture',doc:'Cologne\'s material — a stack of sine partials whose amplitudes drift slowly, a soft attack and a gentle sustain, so a cut anywhere gives a live tone-mixture.',params:{
+      partials:{v:6,min:1,max:14,step:1,label:'partials'},
+      rolloff:{v:1.1,min:.4,max:2.4,step:.05,label:'harmonic rolloff'},
+      drift:{v:.25,min:0,max:.8,step:.02,label:'partial drift'},
+      level:{v:1,min:0,max:1.6,step:.01,label:'level'},
+    }},
+    bande:{label:'bande · noise band',doc:'Studie II\'s material — white noise through a resonant bandpass whose centre drifts, giving a pitched hiss.',params:{
+      q:{v:13,min:2,max:40,step:1,label:'band Q'},
+      drift:{v:1,min:0,max:2,step:.05,label:'centre drift'},
+      level:{v:.9,min:0,max:1.6,step:.01,label:'level'},
+    }},
+    corps:{label:'corps · struck body',doc:'A concrète object — a bank of inharmonic partials struck a few times across the recording, ringing down.',params:{
+      inharm:{v:1,min:0,max:2,step:.05,label:'inharmonicity'},
+      decay:{v:1.1,min:.2,max:3,step:.05,unit:'s',label:'ring'},
+      strikes:{v:3,min:1,max:6,step:1,label:'strikes'},
+      level:{v:1,min:0,max:1.6,step:.01,label:'level'},
+    }},
+    souffle:{label:'souffle · breath',doc:'Wind or steam — white noise through a wide bandpass sweeping across the spectrum, swelling in and out.',params:{
+      sweep:{v:1,min:0,max:2,step:.05,label:'sweep range'},
+      width:{v:.5,min:.1,max:1.5,step:.05,label:'band width'},
+      level:{v:.9,min:0,max:1.6,step:.01,label:'level'},
+    }},
+    voix:{label:'voix · formant voice',doc:'A vocal fragment — a glottal buzz on a pitch contour through three formant resonances, its vowel changing.',params:{
+      glide:{v:1,min:0,max:2,step:.05,label:'vibrato/glide'},
+      breath:{v:.2,min:0,max:.8,step:.02,label:'breathiness'},
+      level:{v:1,min:0,max:1.6,step:.01,label:'level'},
+    }},
+    grain:{label:'grain · click',doc:'A single filtered click — the pointillist unit, and the tick placed at butt splices.',params:{
+      tone:{v:3,min:.5,max:10,step:.1,label:'tone',doc:'resonant centre, in multiples of the reference'},
+      decay:{v:.09,min:.02,max:.4,step:.005,unit:'s',label:'decay'},
+      level:{v:.8,min:0,max:1.6,step:.01,label:'level'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------ */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+/* ------------------------------- audio ---------------------------------- */
+const SR=44100;
+const BASE=220;                          // the reference Hz — nothing else is a literal
+function norm(o,peak){let mx=1e-9;for(let i=0;i<o.length;i++){const a=Math.abs(o[i]);if(a>mx)mx=a;}
+  const k=peak/mx;for(let i=0;i<o.length;i++)o[i]*=k;return o;}
+
+/* ---- SOURCE SYNTHESIS — the raw "recordings" (each ~SRECDUR seconds).
+   Deterministic in the passed seed. Segments cut grains out of these. ---- */
+
+// SINUS — a sine-tone mixture with slowly drifting partial amplitudes.
+function synSinus(seed){
+  const S=TP.sinus, n=Math.floor(SRECDUR*SR), o=new Float32Array(n), rng=mulberry32(seed);
+  const P=Math.max(1,Math.round(S.partials)), nyq=SR*0.45;
+  const amp=[],w=[],ph=[],lw=[],lp=[],ld=[];
+  for(let k=0;k<P;k++){const h=k+1,f=BASE*h;if(f>nyq)break;
+    amp.push(Math.pow(h,-S.rolloff));w.push(2*Math.PI*f/SR);ph.push(rng()*6.283);
+    lw.push(2*Math.PI*(0.15+rng()*0.5)/SR);lp.push(rng()*6.283);ld.push(S.drift);}
+  const K=amp.length;
+  for(let i=0;i<n;i++){const t=i/SR;
+    const env=Math.min(1,t/0.008)*(1-0.5*(t/SRECDUR));
+    let s=0;for(let k=0;k<K;k++){s+=Math.sin(ph[k])*amp[k]*(1+ld[k]*Math.sin(lp[k]));ph[k]+=w[k];lp[k]+=lw[k];}
+    o[i]=s*env;}
+  return norm(o,0.7);
+}
+// BANDE — bandpass-filtered noise, centre drifting (a state-variable filter).
+function synBande(seed){
+  const B=TP.bande, n=Math.floor(SRECDUR*SR), o=new Float32Array(n), rng=mulberry32(seed);
+  const q=1/Math.max(1,B.q); let lp=0,bp=0, cph=rng()*6.283, cw=2*Math.PI*(0.25+rng()*0.5)/SR;
+  for(let i=0;i<n;i++){const t=i/SR;
+    const fc=BASE*(1+0.4*B.drift*Math.sin(cph));cph+=cw;
+    const f=2*Math.sin(Math.PI*Math.min(0.45,fc/SR));
+    const x=rng()*2-1; const hp=x-lp-q*bp; bp+=f*hp; lp+=f*bp;
+    const env=Math.min(1,t/0.02)*Math.min(1,(SRECDUR-t)/0.3);
+    o[i]=bp*env;}
+  return norm(o,0.7);
+}
+// CORPS — an inharmonic struck body, a few strikes across the recording.
+function synCorps(seed){
+  const C=TP.corps, n=Math.floor(SRECDUR*SR), o=new Float32Array(n), rng=mulberry32(seed);
+  const base=[1,2.01,2.76,3.94,5.42], ratios=base.map(r=>1+(r-1)*C.inharm);
+  const ns=Math.max(1,Math.round(C.strikes));
+  for(let s=0;s<ns;s++){
+    const t0=s===0?0:rng()*SRECDUR*0.7, off=Math.floor(t0*SR);
+    const amp=s===0?1:0.5+rng()*0.4, det=1+(rng()*2-1)*0.02;
+    for(let p=0;p<ratios.length;p++){
+      const f=BASE*ratios[p]*det; if(f>SR*0.45)continue;
+      const w=2*Math.PI*f/SR, dec=C.decay/(1+p*0.6), a=amp/(1+p*1.2); let ph=rng()*6.283;
+      for(let i=off;i<n;i++){const tt=(i-off)/SR; o[i]+=Math.sin(ph)*a*Math.exp(-tt/dec)*Math.min(1,tt/0.001);ph+=w;}
+    }
+  }
+  return norm(o,0.7);
+}
+// SOUFFLE — wide swept-bandpass noise; a breath / steam / wind.
+function synSouffle(seed){
+  const S=TP.souffle, n=Math.floor(SRECDUR*SR), o=new Float32Array(n), rng=mulberry32(seed);
+  const q=1/Math.max(1.2,8*S.width); let lp=0,bp=0, cph=rng()*6.283, cw=2*Math.PI*(0.12+rng()*0.25)/SR;
+  for(let i=0;i<n;i++){const t=i/SR;
+    const fc=600+ (2200*S.sweep)*(0.5+0.5*Math.sin(cph)); cph+=cw;
+    const f=2*Math.sin(Math.PI*Math.min(0.45,fc/SR));
+    const x=rng()*2-1; const hp=x-lp-q*bp; bp+=f*hp; lp+=f*bp;
+    const env=Math.min(1,t/0.15)*Math.min(1,(SRECDUR-t)/0.4);
+    o[i]=bp*env;}
+  return norm(o,0.7);
+}
+// VOIX — a glottal buzz on a pitch contour through three formant resonances.
+function synVoix(seed){
+  const V=TP.voix, n=Math.floor(SRECDUR*SR), o=new Float32Array(n), rng=mulberry32(seed);
+  const notes=[]; let idx=(rng()*GAMUT.length)|0; const nseg=3+((rng()*3)|0);
+  for(let k=0;k<nseg;k++){notes.push(BASE*GAMUT[idx][0]/GAMUT[idx][1]);
+    idx=clamp(idx+(rng()<.5?1:-1)*(1+((rng()*2)|0)),0,GAMUT.length-1);}
+  const vowels=[[700,1200,2600],[400,2000,2800],[300,2300,3000],[500,900,2500],[350,700,2400]];
+  let ph=0, s1l=0,s1b=0,s2l=0,s2b=0,s3l=0,s3b=0;
+  for(let i=0;i<n;i++){const t=i/SR;
+    const nidx=Math.min(notes.length-1,Math.floor(t/SRECDUR*notes.length));
+    const f0=notes[nidx]*(1+V.glide*0.008*Math.sin(2*Math.PI*5.2*t));
+    ph+=2*Math.PI*f0/SR; let src=2*((ph/(2*Math.PI))%1)-1; src=src*0.5+(rng()*2-1)*V.breath*0.3;
+    const vw=vowels[nidx%vowels.length]; let out=0;
+    let f=2*Math.sin(Math.PI*Math.min(0.45,vw[0]/SR)); let hp=src-s1l-0.12*s1b; s1b+=f*hp; s1l+=f*s1b; out+=s1b;
+    f=2*Math.sin(Math.PI*Math.min(0.45,vw[1]/SR)); hp=src-s2l-0.12*s2b; s2b+=f*hp; s2l+=f*s2b; out+=s2b*0.8;
+    f=2*Math.sin(Math.PI*Math.min(0.45,vw[2]/SR)); hp=src-s3l-0.14*s3b; s3b+=f*hp; s3l+=f*s3b; out+=s3b*0.6;
+    const env=Math.min(1,t/0.03)*Math.min(1,(SRECDUR-t)/0.25);
+    o[i]=out*env;}
+  return norm(o,0.7);
+}
+// GRAIN — a short filtered click (the pointillist unit + the splice tick).
+function synGrain(seed){
+  const G=TP.grain, n=Math.floor(0.16*SR), o=new Float32Array(n), rng=mulberry32(seed);
+  const fc=BASE*G.tone, f=2*Math.sin(Math.PI*Math.min(0.45,fc/SR)), q=0.4; let lp=0,bp=0;
+  const burst=Math.floor(0.0015*SR);
+  for(let i=0;i<n;i++){const x=i<burst?rng()*2-1:0; const hp=x-lp-q*bp; bp+=f*hp; lp+=f*bp;
+    o[i]=bp*Math.exp(-(i/SR)/G.decay);}
+  return norm(o,0.7);
+}
+const SRCFN={sinus:synSinus,bande:synBande,corps:synCorps,souffle:synSouffle,voix:synVoix,grain:synGrain};
+
+/* ---- DSP: cut · splice · varispeed · echo · wow/flutter · saturation ---- */
+function readSrc(src,pos){
+  if(pos<=0)return src[0]||0;
+  const i0=pos|0; if(i0>=src.length-1)return src[src.length-1]||0;
+  const fr=pos-i0; return src[i0]+(src[i0+1]-src[i0])*fr;
+}
+// varispeed cut: read grainS input-samples at `speed`, forwards or reversed.
+function cutSeg(src,inPtS,grainS,speed,rev){
+  const outN=Math.max(1,Math.round(grainS/speed)), o=new Float32Array(outN);
+  const gs=Math.min(grainS,src.length-inPtS-1);
+  for(let i=0;i<outN;i++){
+    const pos=rev?(inPtS+gs-i*speed):(inPtS+i*speed);
+    o[i]=readSrc(src,pos);
+  }
+  return o;
+}
+// the splice: a diagonal cut crossfades (equal-power); a butt cut is hard
+// (a 0.4 ms declick only) and gets a tick added at the join by addClick.
+function applySpliceFade(g,type){
+  const nn=g.length;
+  if(type==='diag'){const xf=Math.min(nn>>1,Math.max(1,Math.round(TP.splice.xfade/1000*SR)));
+    for(let i=0;i<xf;i++){const w=Math.sin(i/xf*Math.PI/2);g[i]*=w;g[nn-1-i]*=w;}}
+  else{const xf=Math.min(nn>>1,Math.max(1,Math.round(0.4/1000*SR)));
+    for(let i=0;i<xf;i++){const w=i/xf;g[i]*=w;g[nn-1-i]*=w;}}
+}
+function mixSeg(L,R,off,g,pan,gain,N){
+  const a=(pan+1)*Math.PI/4, gL=Math.cos(a)*gain, gR=Math.sin(a)*gain;
+  for(let i=0;i<g.length;i++){const idx=off+i;if(idx<0)continue;if(idx>=N)break;const s=g[i];L[idx]+=s*gL;R[idx]+=s*gR;}
+}
+function addClick(L,R,off,pan,N){
+  const nn=Math.max(2,Math.round(0.0016*SR)), lv=TP.splice.click;
+  const a=(pan+1)*Math.PI/4, gL=Math.cos(a)*lv, gR=Math.sin(a)*lv;
+  for(let i=0;i<nn;i++){const idx=off+i;if(idx<0||idx>=N)continue;
+    const s=(1-i/nn)*(i===0?1:((i%2)?0.55:-0.55));L[idx]+=s*gL;R[idx]+=s*gR;}
+}
+// tape echo — a damped feedback delay, added to the dry (dry preserved).
+function echoChan(x,N,d,fb,damp,mix){
+  if(d<1)return; const w=new Float32Array(N); let lp=0;
+  for(let i=0;i<N;i++){const src=(i-d>=0)?(x[i-d]+fb*w[i-d]):0; lp+=damp*(src-lp); w[i]=lp;}
+  for(let i=0;i<N;i++)x[i]+=mix*w[i];
+}
+function interpWrap(buf,rp,N){
+  rp=rp-N*Math.floor(rp/N);
+  const i0=rp|0, i1=(i0+1)%N, fr=rp-i0;
+  return buf[i0]+(buf[i1]-buf[i0])*fr;
+}
+// wow + flutter as a length-preserving modulated delay over a PERIODIC
+// buffer (reads wrap mod N). The LFO frequencies are quantised to an
+// integer number of cycles over the loop, so the wobble is itself periodic
+// and the seam stays seamless.
+function wowFlutter(inBuf,N,wowA,wowF,flutA,flutF,phc){
+  const out=new Float32Array(N), D0=wowA+flutA+4;
+  for(let i=0;i<N;i++){const t=i/SR;
+    const d=D0+wowA*Math.sin(2*Math.PI*wowF*t+phc)+flutA*Math.sin(2*Math.PI*flutF*t+phc*1.7);
+    out[i]=interpWrap(inBuf,i-d,N);
+  }
+  return out;
+}
+// magnetic saturation + treble loss; one-pole warmed up periodically.
+function saturate(x,N,drive,tone){
+  let lp=0; const pre=Math.min(N,(SR*0.05)|0);
+  for(let i=N-pre;i<N;i++)lp+=tone*(x[i]-lp);
+  const norm=Math.tanh(drive)||1;
+  for(let i=0;i<N;i++){lp+=tone*(x[i]-lp);x[i]=Math.tanh(drive*lp)/norm;}
+}
+function addHiss(L,R,N,lv,seed){
+  if(lv<=0)return; const rng=mulberry32(seed>>>0); let pl=0,pr=0;
+  for(let i=0;i<N;i++){const a=rng()*2-1,b=rng()*2-1;
+    const yl=a-pl*0.85;pl=a; const yr=b-pr*0.85;pr=b;
+    L[i]+=yl*lv;R[i]+=yr*lv;}
+}
+function bakeSources(plan){
+  const S={}, base=st.seed>>>0;
+  for(const id of plan.sources){const seed=(hashStr(id)^Math.imul(base|1,2654435761))>>>0;S[id]=SRCFN[id](seed);}
+  return S;
+}
+// PHASE — two/three copies of one loop-cell drifting out of phase and back.
+// All voices are at cell-phase 0 at i=0 AND at i=durN (rates land integer
+// cell-cycles over the reel), so the reel is seamless and sweeps every
+// phase relationship between.
+function buildPhase(pL,pR,durN,plan,S){
+  const beatDur=plan.beatDur, ph=plan.phase;
+  const cellN=Math.max(1,Math.round(ph.cellBeats*beatDur*SR));
+  const cell=new Float32Array(cellN), src=S[ph.src];
+  for(const nt of ph.notes){
+    const spd=speedPair(nt.ratio,0), outSec=nt.out*beatDur;
+    const grainS=Math.round(outSec*spd.val*SR), inPtS=Math.round(nt.inPt*SR);
+    const g=cutSeg(src,inPtS,grainS,spd.val,false); applySpliceFade(g,'diag');
+    const off=Math.round(nt.at*beatDur*SR);
+    for(let i=0;i<g.length;i++)cell[(off+i)%cellN]+=g[i];   // wrap → periodic cell
+  }
+  norm(cell,0.7);
+  const P=Math.max(2,Math.round(durN/cellN));
+  const voices=[{r:(P*cellN)/durN,pan:-0.32,g:0.9},{r:((P+1)*cellN)/durN,pan:0.32,g:0.9},{r:((P-1)*cellN)/durN,pan:0,g:0.6}];
+  for(const v of voices){const a=(v.pan+1)*Math.PI/4, gL=Math.cos(a)*v.g, gR=Math.sin(a)*v.g;
+    for(let i=0;i<durN;i++){const s=interpWrap(cell,(i*v.r)%cellN,cellN);pL[i]+=s*gL;pR[i]+=s*gR;}}
+}
+
+// renderMaster — bake the whole reel ONCE (deterministic in the seed):
+// place every spliced segment, run the tape echo, fold the overhanging
+// tail back onto the head (seamless loop), then print the transport
+// (wow/flutter, saturation, hiss) scaled by WEAR. One length-durN buffer.
+function renderMaster(){
+  const plan=genAll(st);
+  const durN=Math.round(plan.dur*SR);
+  const maxSeg=MONTAGE[st.montage].segBeats[1]*plan.beatDur;
+  const eTsec=TP.echo.div*plan.beatDur;
+  const tailN=Math.min(durN, Math.round((maxSeg+eTsec*5+1)*SR));
+  const N=durN+tailN;
+  const pL=new Float32Array(N), pR=new Float32Array(N);
+  const S=bakeSources(plan);
+  if(plan.phase){buildPhase(pL,pR,durN,plan,S);}
+  else{
+    for(const sg of plan.segs){const src=S[sg.src];if(!src)continue;
+      const spdv=sg.speed.val, grainS=Math.round(sg.outSec*spdv*SR), inPtS=Math.round((sg.inPt||0)*SR);
+      const g=cutSeg(src,inPtS,grainS,spdv,sg.rev); applySpliceFade(g,sg.splice);
+      const off=Math.round(sg.t*SR);
+      mixSeg(pL,pR,off,g,sg.pan,sg.gain*(TP[sg.src]?TP[sg.src].level:1),N);
+      if(sg.splice==='butt')addClick(pL,pR,off,sg.pan,N);
+    }
+    const echoMix=TP.echo.mix*SCHOOLS[st.school].echo;
+    if(echoMix>0.001){const eT=Math.max(1,Math.round(eTsec*SR));
+      echoChan(pL,N,eT,TP.echo.feedback,TP.echo.damp,echoMix);
+      echoChan(pR,N,Math.round(eT*1.5),TP.echo.feedback,TP.echo.damp,echoMix);}
+  }
+  // fold overhang (mod durN) → periodic loop of length durN
+  const cL=new Float32Array(durN), cR=new Float32Array(durN);
+  cL.set(pL.subarray(0,durN)); cR.set(pR.subarray(0,durN));
+  for(let i=durN;i<N;i++){cL[i%durN]+=pL[i];cR[i%durN]+=pR[i];}
+  // transport (printed), scaled by WEAR
+  const durSec=durN/SR, wear=clamp(st.usure/100,0,1), T=TP.transport;
+  const wowF=Math.max(1,Math.round(T.wowRate*durSec))/durSec;
+  const flutF=Math.max(1,Math.round(T.flutterRate*durSec))/durSec;
+  const wowA=(T.wowDepth*wear)*SR/(2*Math.PI*wowF);
+  const flutA=(T.flutterDepth*wear)*SR/(2*Math.PI*flutF);
+  const wL=wowFlutter(cL,durN,wowA,wowF,flutA,flutF,0.0);
+  const wR=wowFlutter(cR,durN,wowA,wowF,flutA,flutF,1.1);
+  const drive=1+T.satDrive*(0.25+0.75*wear);
+  const tone=clamp(T.tone-T.toneLoss*wear,0.05,1);
+  saturate(wL,durN,drive,tone); saturate(wR,durN,drive,tone);
+  addHiss(wL,wR,durN,T.hiss*(0.15+0.85*wear),(st.seed>>>0)^0x4155);
+  let mx=1e-6;for(let i=0;i<durN;i++){const a=Math.abs(wL[i]);if(a>mx)mx=a;const b=Math.abs(wR[i]);if(b>mx)mx=b;}
+  const k=0.9/mx;for(let i=0;i<durN;i++){wL[i]*=k;wR[i]*=k;}
+  return {L:wL,R:wR,dur:durSec,plan};
+}
+
+function toStereoBuffer(ctx,L,R){const b=ctx.createBuffer(2,L.length,SR);b.getChannelData(0).set(L);b.getChannelData(1).set(R);return b;}
+function makeRoomIR(ctx,sec,exp,seed){
+  const len=Math.max(1,Math.floor(sec*ctx.sampleRate)),b=ctx.createBuffer(2,len,ctx.sampleRate),rng=mulberry32(seed>>>0);
+  for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,exp);lp+=0.3*((rng()*2-1)-lp);d[i]=lp*e*1.4;}}
+  return b;
+}
+function makeShaperCurve(amount){
+  const n=1024,curve=new Float32Array(n),k=amount*18+0.0001,nrm=Math.tanh(k);
+  for(let i=0;i<n;i++){const x=i/(n-1)*2-1;curve[i]=Math.tanh(k*x)/nrm;}
+  return curve;
+}
+// the fixed signal path — identical realtime & offline so the WAV is faithful.
+function buildGraph(ctx,L,R,loop){
+  const G={ctx};
+  G.shaper=ctx.createWaveShaper();G.shaper.curve=makeShaperCurve(TP.master.drive);G.shaper.oversample='2x';
+  G.comp=ctx.createDynamicsCompressor();
+  G.comp.threshold.value=TP.master.compThresh;G.comp.ratio.value=TP.master.compRatio;
+  G.comp.knee.value=6;G.comp.attack.value=0.006;G.comp.release.value=0.15;
+  G.master=ctx.createGain();G.master.gain.value=1;
+  G.lim=ctx.createDynamicsCompressor();
+  G.lim.threshold.value=TP.master.limThresh;G.lim.knee.value=0;G.lim.ratio.value=20;
+  G.lim.attack.value=0.002;G.lim.release.value=0.12;
+  G.out=ctx.createGain();G.out.gain.value=TP.master.outTrim;
+  G.shaper.connect(G.comp).connect(G.master);
+  G.master.connect(G.lim).connect(G.out).connect(ctx.destination);
+  G.verb=ctx.createConvolver();G.verb.buffer=makeRoomIR(ctx,TP.room.size,TP.room.decay,0x0FF1CE);
+  G.wet=ctx.createGain();G.wet.gain.value=TP.master.wet;
+  G.verb.connect(G.wet).connect(G.master);
+  G.dry=ctx.createGain();G.dry.gain.value=1;G.dry.connect(G.shaper);
+  G.src=ctx.createBufferSource();G.src.buffer=toStereoBuffer(ctx,L,R);G.src.loop=!!loop;
+  G.src.connect(G.dry);G.src.connect(G.verb);
+  return G;
+}
+
+/* -------------------------- realtime transport --------------------------- */
+let RT=null;
+function play(){
+  const M=renderMaster();
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ctx);
+  const G=buildGraph(ctx,M.L,M.R,true);
+  RT={ctx,G,t0:ctx.currentTime+0.08,dur:M.dur,plan:M.plan};
+  G.src.start(RT.t0);
+  st.playing=true;st.paused=false;$('pick').textContent='Stop';$('pick').classList.add('on');
+  $('pause').disabled=false;$('pause').textContent='Pause';$('pause').classList.remove('on');
+  invalidate();
+}
+function stop(){
+  if(!RT)return;
+  const g=RT.G.out.gain,ct=RT.ctx.currentTime;
+  try{g.cancelScheduledValues(ct);g.setValueAtTime(g.value,ct);g.linearRampToValueAtTime(0,ct+0.25);}catch(e){}
+  const c=RT.ctx;setTimeout(()=>{try{c.close();}catch(e){}},420);
+  RT=null;st.playing=false;st.paused=false;$('pick').textContent='Play';$('pick').classList.remove('on');
+  $('pause').disabled=true;$('pause').textContent='Pause';$('pause').classList.remove('on');
+  invalidate();
+}
+function regen(){ if(RT){stop();play();} else {invalidate();} }
+
+/* OFFICINA live hook: master/room ride in immediately; everything baked into
+   the reel applies on the NEXT play (the ► HEAR convention). */
+let __dmT=0;
+TIMBRE.touch=()=>{
+  if(RT){const ct=RT.ctx.currentTime;
+    RT.G.out.gain.setTargetAtTime(TP.master.outTrim,ct,.06);
+    RT.G.wet.gain.setTargetAtTime(TP.master.wet,ct,.08);
+    RT.G.lim.threshold.setTargetAtTime(TP.master.limThresh,ct,.06);}
+  clearTimeout(__dmT);__dmT=setTimeout(()=>{if(!RT)regen();},300);
+};
+
+/* ------------------------------ cut · WAV -------------------------------- */
+function encodeWav(L,R,sr){
+  const n=L.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');d.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  ws(36,'data');d.setUint32(40,n*4,true);
+  let o=44;for(let i=0;i<n;i++){d.setInt16(o,clamp(L[i],-1,1)*32767,true);o+=2;d.setInt16(o,clamp(R[i],-1,1)*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+async function cut(){
+  const btn=$('cut'),note=$('cutnote');btn.disabled=true;note.textContent='splicing the dubplate…';
+  try{
+    const M=renderMaster();
+    const total=M.L.length/SR;
+    const ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
+    const G=buildGraph(ctx,M.L,M.R,false);
+    G.src.start(0);
+    const rb=await ctx.startRendering();
+    const blob=encodeWav(rb.getChannelData(0),rb.getChannelData(1),SR);
+    saveWav(blob,`forfex_${st.school}_${st.montage}_${st.coupe}.wav`);
+    note.textContent=`cut · ${SCHOOLS[st.school].label} · ${MONTAGE[st.montage].label} · ${Math.round(M.dur)}s reel`;
+  }catch(e){note.textContent='render failed — '+e.message;}
+  btn.disabled=false;
+}
+
+/* ------------------------------- canvas ---------------------------------- */
+// Top: two reels turning. Below: the reel laid flat as an edit strip — one
+// block per spliced segment, coloured by its source, in three lanes
+// (punctuation / figure / bed), each splice drawn as the razor line that
+// joins it (a vertical butt cut, a diagonal one), reversed pieces flagged.
+// A playhead reads across like the tape head. Static layer cached; rebuilt
+// on any edit; sleeps when idle. prefers-reduced-motion drops the motion.
+const cv=$('cv'),cx=cv.getContext('2d');
+const CW=cv.width,CH=cv.height;
+const oc=document.createElement('canvas');oc.width=CW;oc.height=CH;const ox=oc.getContext('2d');
+const SRC_COL={sinus:'#7fb0c4',bande:'#9ec0a0',corps:'#cf9a52',souffle:'#9a8b74',voix:'#c0603a',grain:'#ece2d2'};
+const SRC_LABEL={sinus:'sinus',bande:'bande',corps:'corps',souffle:'souffle',voix:'voix',grain:'grain'};
+const RCX1=205,RCX2=715,RCY=112,RR=86;                 // reel geometry
+const SX0=42,SX1=CW-42,SY0=300,SY1=524;                // strip geometry
+const SW=SX1-SX0;
+const LANES={ponct:[SY0,SY0+58],fig:[SY0+66,SY0+150],bed:[SY0+158,SY1]};
+let VIEW=null,viewDirty=true;
+let needsDraw=true;const invalidate=()=>{needsDraw=true;VIEW=null;viewDirty=true;};
+function refreshView(){VIEW=genAll(st);buildStatic();viewDirty=false;}
+
+function reelBody(x,y){
+  ox.save();
+  const grd=ox.createRadialGradient(x,y,10,x,y,RR);
+  grd.addColorStop(0,'#241a10');grd.addColorStop(.72,'#3a2a17');grd.addColorStop(1,'#1c150d');
+  ox.fillStyle=grd;ox.beginPath();ox.arc(x,y,RR,0,2*Math.PI);ox.fill();
+  ox.strokeStyle='rgba(207,154,82,.32)';ox.lineWidth=1.4;ox.stroke();
+  // wound tape rings
+  ox.strokeStyle='rgba(207,154,82,.10)';ox.lineWidth=1;
+  for(let r=RR-6;r>26;r-=6){ox.beginPath();ox.arc(x,y,r,0,2*Math.PI);ox.stroke();}
+  // hub
+  ox.fillStyle='#0f0c08';ox.beginPath();ox.arc(x,y,24,0,2*Math.PI);ox.fill();
+  ox.strokeStyle='rgba(236,226,210,.35)';ox.lineWidth=1.2;ox.stroke();
+  ox.restore();
+}
+function buildStatic(){
+  ox.clearRect(0,0,CW,CH);
+  ox.fillStyle='#100c08';ox.fillRect(0,0,CW,CH);
+  // reels + head + tape path
+  reelBody(RCX1,RCY);reelBody(RCX2,RCY);
+  ox.strokeStyle='rgba(207,154,82,.5)';ox.lineWidth=2.4;
+  ox.beginPath();ox.moveTo(RCX1+RR-2,RCY-6);ox.lineTo(CW/2-30,RCY+70);
+  ox.lineTo(CW/2+30,RCY+70);ox.lineTo(RCX2-RR+2,RCY-6);ox.stroke();
+  // head stack
+  ox.fillStyle='#26211a';ox.fillRect(CW/2-34,RCY+66,68,20);
+  ox.strokeStyle='rgba(127,176,196,.55)';ox.lineWidth=1.4;ox.strokeRect(CW/2-34,RCY+66,68,20);
+  ox.fillStyle='rgba(127,176,196,.75)';
+  for(let i=-1;i<=1;i++){ox.fillRect(CW/2-6+i*18,RCY+70,3,12);}
+  ox.font='500 10px "IBM Plex Mono",monospace';ox.fillStyle='rgba(154,139,116,.8)';
+  ox.textAlign='center';ox.textBaseline='alphabetic';
+  ox.fillText('SUPPLY',RCX1,RCY+RR+18);ox.fillText('TAKE-UP',RCX2,RCY+RR+18);ox.fillText('HEADS',CW/2,RCY+104);
+  // strip background (the tape laid flat)
+  ox.fillStyle='#1b140c';ox.fillRect(SX0-4,SY0-16,SW+8,(SY1-SY0)+30);
+  ox.strokeStyle='rgba(207,154,82,.18)';ox.lineWidth=1;ox.strokeRect(SX0-4.5,SY0-16.5,SW+9,(SY1-SY0)+31);
+  // lane guides + labels
+  ox.font='500 9px "IBM Plex Mono",monospace';ox.textAlign='left';ox.fillStyle='rgba(154,139,116,.55)';
+  ox.fillText('PUNCT',SX0,SY0-4);ox.fillText('FIGURE',SX0,LANES.fig[0]-3);ox.fillText('LOOP',SX0,LANES.bed[0]-3);
+  if(VIEW.phase){buildPhaseStatic();}
+  else{
+    for(const sg of VIEW.segs){
+      const x=SX0+(sg.t/VIEW.dur)*SW, w=Math.max(2.5,(sg.outSec/VIEW.dur)*SW);
+      const lane=LANES[sg.layer]||LANES.fig, ly=lane[0], lh=lane[1]-lane[0];
+      // register nudges the block within its lane (higher k -> higher)
+      const kk=clamp((sg.k||0),-2,2), pad=6, bh=Math.max(7,lh-2*pad);
+      const y=ly+pad+(1-(kk+2)/4)*(lh-2*pad-bh);
+      ox.fillStyle=SRC_COL[sg.src]||'#cf9a52';ox.globalAlpha=sg.layer==='bed'?.5:(sg.layer==='ponct'?.72:.9);
+      ox.fillRect(x,y,w,bh);ox.globalAlpha=1;
+      // splice line at the block's leading edge
+      ox.strokeStyle='rgba(236,226,210,.8)';ox.lineWidth=1.2;ox.beginPath();
+      if(sg.splice==='diag'){ox.moveTo(x,y+bh);ox.lineTo(x+Math.min(w,9),y);}
+      else{ox.moveTo(x+.5,y-2);ox.lineTo(x+.5,y+bh+2);}
+      ox.stroke();
+      if(sg.rev){ox.fillStyle='rgba(21,17,12,.85)';ox.font='700 9px "IBM Plex Mono",monospace';
+        ox.textAlign='left';ox.textBaseline='middle';if(w>12)ox.fillText('◀',x+3,y+bh/2);}
+    }
+  }
+  ox.textBaseline='alphabetic';
+}
+function buildPhaseStatic(){
+  // draw the loop-cell tiled across the strip, in the figure lane
+  const ph=VIEW.phase, lane=LANES.fig, ly=lane[0], lh=lane[1]-lane[0];
+  const cellSec=ph.cellBeats*VIEW.beatDur, P=Math.max(2,Math.round(VIEW.dur/cellSec));
+  for(let c=0;c<P;c++){
+    for(const nt of ph.notes){
+      const t=c*cellSec+nt.at*VIEW.beatDur, x=SX0+(t/VIEW.dur)*SW, w=Math.max(3,(nt.out*VIEW.beatDur/VIEW.dur)*SW);
+      ox.fillStyle=SRC_COL[ph.src]||'#c0603a';ox.globalAlpha=.85;ox.fillRect(x,ly+8,w,lh-16);ox.globalAlpha=1;
+      ox.strokeStyle='rgba(236,226,210,.7)';ox.lineWidth=1;ox.beginPath();ox.moveTo(x+.5,ly+6);ox.lineTo(x+.5,ly+lh-6);ox.stroke();
+    }
+    ox.strokeStyle='rgba(127,176,196,.25)';ox.setLineDash([3,4]);ox.beginPath();
+    const cx0=SX0+(c*cellSec/VIEW.dur)*SW;ox.moveTo(cx0,LANES.bed[1]);ox.lineTo(cx0,LANES.ponct[0]);ox.stroke();ox.setLineDash([]);
+  }
+  ox.font='500 10px "IBM Plex Mono",monospace';ox.fillStyle='rgba(127,176,196,.8)';ox.textAlign='right';
+  ox.fillText('two loops drifting out of phase',SX1,LANES.bed[1]+16);ox.textAlign='left';
+}
+function draw(){
+  if(viewDirty||!VIEW)refreshView();
+  const V=VIEW;
+  let playing=false, el=0;
+  if(RT){playing=true;el=Math.max(0,RT.ctx.currentTime-RT.t0)%V.dur;}
+  const wob=(playing&&!RM)?Math.sin(performance.now()/430)*2:0;
+  cx.clearRect(0,0,CW,CH);cx.drawImage(oc,0,wob);
+  // rotating reel spokes
+  const ang=(playing&&!RM)?performance.now()/900:0;
+  for(const rx of [RCX1,RCX2]){
+    cx.save();cx.translate(rx,RCY+wob);cx.rotate(ang*(rx===RCX1?1:1.02));
+    cx.strokeStyle='rgba(236,226,210,.4)';cx.lineWidth=2;
+    for(let s=0;s<3;s++){const a=s*2*Math.PI/3;cx.beginPath();cx.moveTo(0,0);cx.lineTo(Math.cos(a)*22,Math.sin(a)*22);cx.stroke();}
+    cx.fillStyle='#c0603a';cx.beginPath();cx.arc(0,-16,2.4,0,2*Math.PI);cx.fill();
+    cx.restore();
+  }
+  // record light
+  cx.fillStyle=playing?'#c0603a':'rgba(192,96,58,.25)';cx.beginPath();cx.arc(CW/2,RCY-64,5,0,2*Math.PI);cx.fill();
+  if(playing){cx.globalAlpha=.35;cx.beginPath();cx.arc(CW/2,RCY-64,5+3*Math.abs(Math.sin(performance.now()/300)),0,2*Math.PI);cx.fill();cx.globalAlpha=1;}
+
+  // playhead(s)
+  let curLabel='—';
+  if(V.phase){
+    const cellSec=V.phase.cellBeats*V.beatDur, P=Math.max(2,Math.round(V.dur/cellSec));
+    const cyc=[P,P+1,P-1], cols=['#ece2d2','#7fb0c4','#c0603a'];
+    if(playing)cyc.forEach((cc,i)=>{const fr=((el/V.dur)*cc)%1, x=SX0+fr*SW;
+      cx.strokeStyle=cols[i];cx.lineWidth=i===0?1.8:1.2;cx.globalAlpha=i===0?.9:.6;
+      cx.beginPath();cx.moveTo(x,LANES.ponct[0]-4+wob);cx.lineTo(x,LANES.bed[1]+4+wob);cx.stroke();cx.globalAlpha=1;});
+    curLabel='phase · '+SRC_LABEL[V.phase.src];
+  }else{
+    if(playing){const x=SX0+(el/V.dur)*SW;
+      cx.strokeStyle='#ece2d2';cx.lineWidth=1.8;
+      cx.beginPath();cx.moveTo(x,LANES.ponct[0]-6+wob);cx.lineTo(x,LANES.bed[1]+6+wob);cx.stroke();
+      cx.fillStyle='#ece2d2';cx.beginPath();cx.moveTo(x-4,LANES.ponct[0]-6+wob);cx.lineTo(x+4,LANES.ponct[0]-6+wob);cx.lineTo(x,LANES.ponct[0]+wob);cx.closePath();cx.fill();
+      // current segment
+      let cur=null;for(const sg of V.segs){if(sg.layer==='bed')continue;if(sg.t<=el&&el<sg.t+sg.outSec)cur=sg;}
+      if(!cur)for(const sg of V.segs){if(sg.t<=el&&el<sg.t+sg.outSec){cur=sg;break;}}
+      if(cur)curLabel=SRC_LABEL[cur.src]+' · '+cur.ratio[0]+'/'+cur.ratio[1]+(cur.rev?' ◀':'')+' · '+(cur.splice==='butt'?'franche':'biaise');
+    }
+  }
+  $('cutTag').textContent=curLabel;
+  $('schoolTag').textContent=playing?(SCHOOLS[st.school].label+' · '+Math.round(el)+'/'+Math.round(V.dur)+'s'):SCHOOLS[st.school].label;
+}
+function loop(){
+  const playing=!!RT;
+  if(playing||needsDraw){draw();if(!playing)needsDraw=false;}
+  setTimeout(()=>requestAnimationFrame(loop),playing?(RM?90:45):200);
+}
+requestAnimationFrame(loop);
+
+/* ------------------------------ controls --------------------------------- */
+function chipSel(container,items,current,onPick){
+  container.innerHTML='';
+  items.forEach(([val,label,sub])=>{
+    const b=document.createElement('button');b.dataset.v=String(val);
+    b.innerHTML=sub?(label+'<small>'+sub+'</small>'):label;
+    if(String(val)===String(current))b.classList.add('on');
+    b.onclick=()=>{container.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+      b.classList.add('on');onPick(val);};
+    container.appendChild(b);
+  });
+}
+function usureWord(u){return u<12?'a fresh studio reel':u<40?'lightly played':u<62?'a played reel':u<85?'worn, wobbling':'a battered dubplate';}
+function syncReadouts(){
+  $('schoolrd').textContent=SCHOOLS[st.school].label+' · '+SCHOOLS[st.school].sub;
+  $('montagerd').textContent=MONTAGE[st.montage].label+' · '+MONTAGE[st.montage].sub;
+  $('couperd').textContent=COUPE[st.coupe].label+' · '+COUPE[st.coupe].sub;
+  $('usurerd').textContent=st.usure+'% · '+usureWord(st.usure);
+  $('tempord').textContent=st.tempo+' / min';
+}
+chipSel($('school'),SCHOOL_ORDER.map(k=>[k,SCHOOLS[k].label,SCHOOLS[k].sub]),st.school,v=>{st.school=v;syncReadouts();regen();});
+chipSel($('montage'),MONTAGE_ORDER.map(k=>[k,MONTAGE[k].label,MONTAGE[k].sub]),st.montage,v=>{st.montage=v;syncReadouts();regen();});
+chipSel($('coupe'),COUPE_ORDER.map(k=>[k,COUPE[k].label,COUPE[k].sub]),st.coupe,v=>{st.coupe=v;syncReadouts();regen();});
+$('usure').value=st.usure;
+$('usure').addEventListener('input',e=>{st.usure=+e.target.value;$('usurerd').textContent=st.usure+'% · '+usureWord(st.usure);});
+$('usure').addEventListener('change',()=>{if(RT)regen();});
+$('tempo').value=st.tempo;
+$('tempo').addEventListener('input',e=>{st.tempo=+e.target.value;$('tempord').textContent=st.tempo+' / min';});
+$('tempo').addEventListener('change',()=>{invalidate();if(RT)regen();});
+syncReadouts();
+
+$('pick').addEventListener('click',()=>st.playing?stop():play());
+function togglePause(){
+  if(!RT||!st.playing)return;
+  if(st.paused){st.paused=false;RT.ctx.resume();$('pause').textContent='Pause';$('pause').classList.remove('on');}
+  else{st.paused=true;RT.ctx.suspend();$('pause').textContent='Resume';$('pause').classList.add('on');}
+}
+$('pause').addEventListener('click',togglePause);
+$('cut').addEventListener('click',cut);
+
+/* ---------------------- opuscula shared: hash · keys --------------------- */
+let __applying=false;
+function __state(){return {sc:st.school,mo:st.montage,co:st.coupe,u:st.usure,b:st.tempo,sd:st.seed};}
+function __apply(o){
+  if(o.sc&&SCHOOLS[o.sc]){const b=$('school').querySelector('[data-v="'+o.sc+'"]');b&&b.click();}
+  if(o.mo&&MONTAGE[o.mo]){const b=$('montage').querySelector('[data-v="'+o.mo+'"]');b&&b.click();}
+  if(o.co&&COUPE[o.co]){const b=$('coupe').querySelector('[data-v="'+o.co+'"]');b&&b.click();}
+  if(o.u!==undefined){st.usure=clamp(+o.u|0,0,100);$('usure').value=st.usure;syncReadouts();invalidate();}
+  if(o.b){st.tempo=clamp(+o.b|0,56,168);$('tempo').value=st.tempo;$('tempord').textContent=st.tempo+' / min';invalidate();}
+  if(o.sd!==undefined){const sd=+o.sd;if(Number.isFinite(sd)){st.seed=sd>>>0;invalidate();}}
+}
+function __hashRead(){const h=location.hash.slice(1);if(!h)return null;const o={};
+  for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}
+function __hashWrite(){if(__applying)return;
+  try{const o=__state();history.replaceState(null,'','#'+Object.entries(o).map(([k,v])=>k+'='+v).join('&'));}catch(e){}}
+document.addEventListener('click',()=>setTimeout(__hashWrite,120),true);
+document.addEventListener('change',()=>setTimeout(__hashWrite,120),true);
+
+function another(){                                   // r = another reel
+  if(RT)stop();
+  st.seed=1+((Math.random()*1e6)|0);
+  $('school').querySelector('[data-v="'+SCHOOL_ORDER[(Math.random()*SCHOOL_ORDER.length)|0]+'"]').click();
+  $('montage').querySelector('[data-v="'+MONTAGE_ORDER[(Math.random()*MONTAGE_ORDER.length)|0]+'"]').click();
+  $('coupe').querySelector('[data-v="'+COUPE_ORDER[(Math.random()*COUPE_ORDER.length)|0]+'"]').click();
+  invalidate();play();
+}
+addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
+  if(e.code==='Space'){e.preventDefault();$('pick').click();}
+  else if(e.key==='p'||e.key==='P')togglePause();
+  else if(e.key==='r'||e.key==='R'){e.preventDefault();another();}
+  else if(e.key==='c'||e.key==='C')$('cut').click();
+});
+
+(function init(){const o=__hashRead();
+  if(o){__applying=true;try{__apply(o);}catch(e){}__applying=false;}
+  syncReadouts();__hashWrite();invalidate();
+})();
+
+/* ---- robust WAV save (shared) ---------------------------------------------- */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(15,12,8,.94);color:#ece2d2;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#ece2d2;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
+
+/* OFFICINA audition (► HEAR): a few cut segments of one source, or a short
+   montage through the transport, freshly built with the current TIMBRE. */
+let __demoCtx=null;
+function wowDemo(L,R,n){                                 // non-looping wow for the demo
+  const T=TP.transport, wear=clamp(st.usure/100,0,1);
+  const wowA=(T.wowDepth*wear)*SR/(2*Math.PI*T.wowRate), flutA=(T.flutterDepth*wear)*SR/(2*Math.PI*T.flutterRate);
+  const D0=wowA+flutA+4;
+  for(const ch of [L,R]){const cp=ch.slice();for(let i=0;i<n;i++){const t=i/SR;
+    const d=D0+wowA*Math.sin(2*Math.PI*T.wowRate*t)+flutA*Math.sin(2*Math.PI*T.flutterRate*t);
+    const rp=clamp(i-d,0,n-2),i0=rp|0,fr=rp-i0;ch[i]=cp[i0]+(cp[i0+1]-cp[i0])*fr;}}
+  const drive=1+T.satDrive*(0.25+0.75*wear), tone=clamp(T.tone-T.toneLoss*wear,0.05,1);
+  saturate(L,n,drive,tone);saturate(R,n,drive,tone);
+  addHiss(L,R,n,T.hiss*(0.15+0.85*wear),0xA11);
+}
+TIMBRE.demo=(group)=>{
+  if(RT)stop();
+  const secs=3.4, n=Math.ceil(secs*SR), L=new Float32Array(n), R=new Float32Array(n);
+  const isSrc=!!SRCFN[group];
+  const srcId=isSrc?group:(SCHOOLS[st.school].figSrc[0]||'sinus');
+  const src=SRCFN[srcId]((hashStr(srcId)^0xABCD)>>>0);
+  const pitches=[[1,1],[5,4],[3,2],[2,1],[4,3]];
+  pitches.forEach((r,i)=>{const spd=speedPair(r,0), outSec=0.5, grainS=Math.round(outSec*spd.val*SR);
+    const g=cutSeg(src,Math.round(0.05*SR),grainS,spd.val,false);
+    applySpliceFade(g,group==='splice'?(i%2?'butt':'diag'):'diag');
+    const off=Math.round((0.1+i*0.62)*SR);
+    mixSeg(L,R,off,g,i%2?0.2:-0.2,0.8*(TP[srcId]?TP[srcId].level:1),n);
+    if(group==='splice'&&i%2)addClick(L,R,off,0,n);});
+  if(group==='transport'||group==='echo'||group==='master'||group==='room'){
+    if(group==='echo'){const eT=Math.max(1,Math.round(TP.echo.div*(60/st.tempo)*SR));
+      echoChan(L,n,eT,TP.echo.feedback,TP.echo.damp,TP.echo.mix);echoChan(R,n,Math.round(eT*1.5),TP.echo.feedback,TP.echo.damp,TP.echo.mix);}
+    else wowDemo(L,R,n);
+  }
+  norm(L,0.85);norm(R,0.85);
+  try{if(__demoCtx)__demoCtx.close()}catch(e){}
+  const ac=new (window.AudioContext||window.webkitAudioContext)();__demoCtx=ac;
+  try{ac.resume()}catch(e){}
+  const G=buildGraph(ac,L,R,false);G.src.start(ac.currentTime+.03);
+  setTimeout(()=>{try{if(__demoCtx===ac){__demoCtx=null;ac.close()}}catch(e){}},Math.ceil(secs*1000)+700);
+};
+
+/* headless-verify handle (not used by the page) */
+window.__FORFEX={SR,BASE,GAMUT,st,SCHOOLS,MONTAGE,genAll,renderMaster,speedPair,cutSeg,TP};
+</script>
+
+</body>
+</html>

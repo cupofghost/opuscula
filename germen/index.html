@@ -23,6 +23,16 @@ body{background:var(--ground);color:var(--ink);
   min-height:100vh;display:flex;justify-content:center;
   padding:max(14px,env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom));}
 .wrap{width:min(680px,100%);}
+/* exit to opuscula (added) */
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:0 0 12px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:var(--ink);background:rgba(13,18,12,.55);border:1px solid rgba(233,240,226,.24);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,240,226,.7);background:rgba(13,18,12,.85);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+/* direct link to officina — the voicing bench (added) */
+.bench{position:fixed;top:max(6px,env(safe-area-inset-top));right:max(6px,env(safe-area-inset-right));z-index:100;display:flex;width:-moz-fit-content;width:fit-content;align-items:center;gap:.55em;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:var(--ink);background:rgba(13,18,12,.55);border:1px solid rgba(233,240,226,.24);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench:hover,.bench:focus-visible{color:#fff;border-color:rgba(233,240,226,.72);background:rgba(13,18,12,.85);outline:none}
+.bench:active{transform:translateY(1px)}
+@media(prefers-reduced-motion:reduce){.bench{transition:none}}
 header{margin:18px 0 14px;}
 h1{font-size:clamp(30px,7vw,44px);font-weight:700;letter-spacing:.06em;line-height:1;}
 h1 .op{font-family:'IBM Plex Mono',monospace;font-size:.42em;color:var(--dim);letter-spacing:.12em;vertical-align:middle;margin-left:12px;}
@@ -63,6 +73,8 @@ details.reader b{color:var(--ink);font-weight:500;}
 </head>
 <body>
 <div class="wrap">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+  <a class="bench" href="../officina/#m=germen" aria-label="Open in officina — the voicing bench" title="officina">officina</a>
   <header>
     <h1>GERMEN<span class="op">op. XX</span></h1>
     <div class="tag">a machine that grows music from grammar — the plant is the score</div>
