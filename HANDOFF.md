@@ -180,7 +180,8 @@ here, and `officina`'s `MACHINES` chips:
   work, lands fast, and announces itself in Open threads so per-machine
   sessions know to rebase before continuing.
 
-**Design briefs** (`rille/HARMONIA.md`, `diamond/GENESIS.md`):
+**Design briefs** (`rille/HARMONIA.md`, `diamond/GENESIS.md`,
+`tenebrae/OFFICIUM.md`):
 - A brief in a machine's directory claims the **concept and the directory
   name, not the opus number** — the number is assigned when the machine
   ships. Delete the brief when it ships and fold the outcome into the
@@ -344,6 +345,50 @@ cadence voicings, JI system):
   "too lush/major" (minor-9 over ♭6 bass = ♭VImaj9 colour — if flagged,
   darken that step's upper structure first, don't rewrite); whether the
   divisions arc is audible enough.
+
+### TENEBRAE — design brief for a new machine (renaissance sacred polyphony; brief only, NO code yet)
+**Branch:** `claude/renaissance-polyphony-framework-ydca11` · **File:**
+`tenebrae/OFFICIUM.md` (new) · **Status:** design complete, implementation
+NOT started — the brief is the deliverable, per the HARMONIA/GENESIS
+precedent; a later session (planned: a Sonnet session) implements from it.
+Claims the **directory name `tenebrae/` and the concept only** — op. XXIV
+is provisional until landing (XXII = FADÓ is the last *shipped* machine;
+the RICERCAR brief above holds XXIII provisionally, having landed first —
+re-check the registry at every rebase). No registry files touched (no
+card/row/chip until the machine ships).
+
+- **The machine:** TENEBRAE — Renaissance sacred polyphony narrowed to one
+  specific liturgical order: the **Office of Tenebrae**, and further to
+  **Good Friday's nine responsories** (the texts Victoria set in the
+  *Officium Hebdomadae Sanctae*, 1585). One pressing = one responsory,
+  freshly composed in strict 16th-c. counterpoint (imitation points,
+  falsobordone verses, prepared suspensions only, ficta at the clausula)
+  on four synthesized voices (SATB vowel-stream formant consort) in a
+  stone room. The rite supplies the structure: strict responsory form
+  a·b·℣·b (da capo on III/VI/IX, no Gloria Patri), the fifteen-candle
+  hearse with rubric-exact candle math (`out = 3·ceil(k/3)`) coupling
+  canvas light AND master timbre darkening across the nine, and the
+  strepitus (seeded earthquake-noise coda) on IX only.
+- **Tuning law:** 5-limit JI per Zarlino's senario — bassus anchored to a
+  fixed mode lattice over `BASE=220` (finals 3-limit: D 2/3 · E 3/4 ·
+  G 8/9 · A 1/2), every vertical sonority retuned to exact ratios over the
+  sounding bass (the choir's comma handling), and **suspensions hold their
+  preparation's exact frequency** while dissonating. Integer-pair ratios
+  end to end, zero ET.
+- **Deliberate scope walls** (§13 of the brief): not a Mass machine, not a
+  mensuration-canon machine (future op.), not an extension of GRADUS
+  (classroom vs. living practice — GRADUS's rules are switches, TENEBRAE's
+  are law), Good Friday only in v1 (the other 18 texts are a schema-ready
+  pickup), dissonance vocabulary capped at passing/neighbor/suspension.
+- **For the implementer:** the brief carries the full baked-data spec (all
+  nine Latin texts with repetendum marks — cross-check against the Liber
+  Usualis while baking), the counterpoint rule kernel (GRADUS's
+  backtracking-search architecture generalized to 4vv, with a bounded,
+  deterministic relaxation ladder), cadence formula tables, TIMBRE sketch
+  (~32 params/8 groups), canvas spec (hearse + choirbook), the full verify
+  gauntlet (§14), and the registration checklist (§15, which includes
+  deleting the brief at landing). Build in Media Session + no-suspend-on-
+  hide from day one (see the lock-screen sweep thread below).
 
 ### Lock-screen playback via Media Session API — sweep in progress (I–V done)
 **Branch:** `claude/app-link-request-vj8sml` was the original sweep branch;
