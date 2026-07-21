@@ -246,12 +246,17 @@ Conventions when touching this layer:
 
 Newest first.
 
-### Lock-screen playback via Media Session API — sweep in progress (I–IV done)
-**Branch:** `claude/app-link-request-vj8sml` · **Files done:** `pas-sale/index.html`
-(op. I), `scala/index.html` (op. II), `gradus/index.html` (op. III),
-`rille/index.html` (op. IV) · **Status:** in progress, going down the op.
-list in order; each machine verified headless (Chromium) as it lands.
-Maintainer-requested: listen with the phone locked/backgrounded.
+### Lock-screen playback via Media Session API — sweep in progress (I–V done)
+**Branch:** `claude/app-link-request-vj8sml` was the original sweep branch;
+the session doing COCHLEA landed on `claude/new-session-owsnx3` instead (its
+harness-assigned branch) — same commit as `origin/main` at pickup, so no
+history was lost, just a branch-name handoff. Whichever branch picks this up
+next: rebase onto `origin/main` first, same as always. **Files done:**
+`pas-sale/index.html` (op. I), `scala/index.html` (op. II), `gradus/index.html`
+(op. III), `rille/index.html` (op. IV), `cochlea/index.html` (op. V) ·
+**Status:** in progress, going down the op. list in order; each machine
+verified headless (Chromium) as it lands. Maintainer-requested: listen with
+the phone locked/backgrounded.
 
 - **`__iosAudio`'s hide-suspend removed** in each machine touched so far: it
   used to deliberately `ac.suspend()` on `visibilitychange`→hidden (comment:
@@ -278,22 +283,36 @@ Maintainer-requested: listen with the phone locked/backgrounded.
   doesn't reliably surface an OS "now playing" session or stay exempt from
   background tab-timer throttling; a real (silent) `<audio>` element playing
   alongside does both. Starts/stops with the transport.
-- **Verified headless** for all four machines: `ctx.state`/`RT.ctx.state`/
+- **Verified headless** for all five machines: `ctx.state`/`RT.ctx.state`/
   `RT.ac.state` stays `'running'` after a simulated `visibilitychange`→hidden
   (previously suspended); Media Session metadata/`playbackState` update
   correctly; the silence anchor plays while the transport runs; SCALA's,
-  GRADUS's, and RILLE's manual pause still suspends/resumes correctly under
-  the new visibility logic (RILLE additionally checked hide→show *while
-  paused* doesn't wake it). Scripts `scratchpad/verify_pas_sale.js`,
+  GRADUS's, RILLE's, and COCHLEA's manual pause still suspends/resumes
+  correctly under the new visibility logic (hide→show *while paused* checked
+  on all four — doesn't wake it). Scripts `scratchpad/verify_pas_sale.js`,
   `scratchpad/verify_scala.js`, `scratchpad/verify_gradus.js`,
-  `scratchpad/verify_rille.js` (scratch, not committed).
+  `scratchpad/verify_rille.js`, `scratchpad/verify_cochlea.js` (scratch, not
+  committed).
+- **COCHLEA shape differs from the other four**, worth flagging for whatever
+  machine's next: no `st.paused`-style flag or split `onVis`/`ac.onstatechange`
+  pair — pause is `live.paused` + a direct `ctx.suspend()`/`ctx.resume()` in
+  `togglePause()` (MORA/PERGE), and `__iosAudio` is a single self-invoking
+  IIFE with one `visibilitychange` listener that already branched on
+  `document.hidden`. The fix was the same in spirit (stop suspending on
+  hide, always `kick()`), just a smaller diff since there was no separate
+  `statechange` branch to touch. `kick()`'s existing `if(live.paused)return`
+  guard is what protects a manual MORA pause — same gotcha, different flag
+  name. "Another take" is `regen({newSeed:true})` (button `ALIUD`); since
+  `regen()` already calls `stop()`+`start()` around a live reseed, the
+  Media Session metadata refresh comes for free — no extra call needed
+  there (unlike RILLE's `finishMix()`).
 - **Pattern is a copy-adapt, not a literal duplicate-verbatim** like the
   OFFICINA bridge — each machine's metadata title/op. number, transport
   function names, and "another take" equivalent differ, so every machine
   needs its own look before wiring in the three pieces (suspend-removal,
   Media Session, silence anchor).
-- **Pick-up:** continue down the op. list (next: COCHLEA, op. V) on this
-  same branch until all machines are done, or until told to stop/reassess.
+- **Pick-up:** continue down the op. list (next: BOLG, op. VI) until all
+  machines are done, or until told to stop/reassess.
 
 ### RILLE — reverted to pre-recomposition · English-first UI · reworked arp · URTEIL harness
 **Branch:** `claude/rille-major-chords-a6pm9r` · **Files:** `rille/index.html`

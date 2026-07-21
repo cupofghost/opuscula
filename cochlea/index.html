@@ -848,6 +848,7 @@ function start(){
   live.timer=setInterval(tickSched,45);
   el.btnSona.textContent='TACE';
   el.btnMora.disabled=false; el.btnMora.textContent='MORA'; el.btnMora.classList.remove('on');
+  __mediaSessionInit(); __mediaSessionUpdate(); __silStart();
   updateHint(); needsDraw=true; startRaf();
 }
 function stop(){
@@ -865,6 +866,7 @@ function stop(){
   live.active=[]; live.uiQ=[]; live.paused=false;
   el.btnSona.textContent='SONA';
   el.btnMora.disabled=true; el.btnMora.textContent='MORA'; el.btnMora.classList.remove('on');
+  __mediaSessionUpdate(); __silStop();
   updateHint(); needsDraw=true; startRaf();
 }
 function togglePlay(){ if(live.playing)stop(); else start(); }
@@ -877,6 +879,7 @@ function togglePause(){
     el.btnMora.textContent='MORA'; el.btnMora.classList.remove('on');}
   else{live.paused=true; ctx.suspend();
     el.btnMora.textContent='PERGE'; el.btnMora.classList.add('on');}
+  __mediaSessionUpdate();
   updateHint();
 }
 
@@ -1360,13 +1363,48 @@ function updateHint(){
   catch(e){window.addEventListener('pointerdown',kick,true)}
   window.addEventListener('keydown',kick,true);
   document.addEventListener('visibilitychange',function(){
-    // stop the sound when backgrounded (locked, app switched or closed);
-    // a playback-session context otherwise keeps rendering in the background
-    if(document.hidden){ if(ctx&&ctx.state==='running')ctx.suspend().catch(function(){}); }
-    else kick();
+    // playback-session context keeps rendering in the background (phone
+    // locked, app switched) — that's wanted now (lock-screen listening via
+    // Media Session, below), so only ever resume here, never suspend on hide.
+    // kick() already guards on live.paused, so a manual MORA pause still holds.
+    kick();
   });
   window.addEventListener('pagehide',function(){try{if(ctx&&ctx.state==='running')ctx.suspend()}catch(e){}});
 })();
+
+/* ---- Media Session: lock-screen / notification-shade transport ----
+   A silent looping <audio> anchors the OS "now playing" session — Web
+   Audio alone doesn't reliably surface one — and keeps the tab exempt from
+   background timer throttling so the lookahead scheduler stays live with
+   the phone locked. */
+const __SILENCE='data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+let __silAudio=null;
+function __mediaSessionInit(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.setActionHandler('play',()=>{if(!live.playing)start();else if(live.paused)togglePause();});
+    navigator.mediaSession.setActionHandler('pause',()=>{if(live.playing&&!live.paused)togglePause();});
+    navigator.mediaSession.setActionHandler('stop',()=>{if(live.playing)stop();});
+    navigator.mediaSession.setActionHandler('nexttrack',()=>{regen({newSeed:true});});
+  }catch(e){}
+}
+function __mediaSessionUpdate(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.metadata=new MediaMetadata({
+      title:'COCHLEA', artist:'OPVSCVLA · op. V',
+      album:'pump '+seedHex()
+    });
+    navigator.mediaSession.playbackState=(live.playing&&!live.paused)?'playing':'paused';
+  }catch(e){}
+}
+function __silStart(){
+  try{
+    if(!__silAudio){__silAudio=new Audio(__SILENCE);__silAudio.loop=true;__silAudio.setAttribute('playsinline','');}
+    __silAudio.play().catch(()=>{});
+  }catch(e){}
+}
+function __silStop(){try{__silAudio&&__silAudio.pause();}catch(e){}}
 
 /* -------------------------------- init ----------------------------------- */
 function init(){
