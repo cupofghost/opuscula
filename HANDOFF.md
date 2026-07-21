@@ -246,6 +246,62 @@ Conventions when touching this layer:
 
 Newest first.
 
+### RILLE — harmony recomposed on the LAMENTO GROUND (a tradition with rules)
+**Branch:** `claude/rille-edm-aesthetic-fix-m3nik7` · **Files:** `rille/index.html`
+only (engine + display + reader notes; UI shell, drums, mix chain, TIMBRE,
+judge bridge protocol all untouched). **Status:** done, verified headless
+(Chromium, 796 checks + URTEIL bridge smoke, zero page errors; all 7 moods
+render NaN-free, peaks ≤ .92). Awaiting maintainer URTEIL listening.
+
+Maintainer mandate: *"fix RILLE once and for all — use a fitting music
+tradition or something with rules already in place; minimal aesthetic, EDM
+vibe"* (reference track: Isla Den "keepOn" — dreamy melancholic-euphoric).
+The chosen tradition: the **descending-tetrachord ground bass (lamento)** —
+8·♭7·♭6·5, the codified Western language of longing (Monteverdi/Purcell)
+*and* the harmonic skeleton of melancholic EDM. Design honours the standing
+"small over sweeping" lesson by replacing only the harmony *generator* every
+complaint traced to, keeping everything rated good (beats, mix, arp figure,
+cadence voicings, JI system):
+
+- **`buildHarm` rewritten:** the weighted-random hover pool (the "aimless"
+  root cause) → a deterministic 8-bar ground cycle ×8. Texture is the
+  *Lamento della Ninfa*'s own: the mood's minor-9 `hov` shape **held above
+  while only the bass falls** (i → i/♭7 → i/♭6 → v), so the arp never
+  touches a major chord tone — the only major left anywhere is the granted
+  V7. Ungranted cycles end on the open sigh (minor-9 hanging over the
+  dominant bass, no leading tone); every `cad` bars the existing charged
+  treatment fires (V7sus → V7, 4-3 suspension, raised leading tone) and the
+  **next cycle's downbeat blooms** (`tonic` swell) before the fall resumes.
+  `half:true` = charges but hangs, as before. Per-bar `bassOff` carries the
+  descent; JI (`jf`) re-tunes every upper tone against the walking bass, so
+  the same figure is re-coloured at each step.
+- **Divisions (the tradition's cure for "sounds like a repeat"):** `genAll`
+  now builds `g.arpDivs` — 8 per-cycle variants of the shaped figure on an
+  intensity arc `[0,1,1,2,2,3,2,1]` (density + octave-lifted peaks + vel),
+  trim positions re-rolled per cycle from the seed. Also the EDM build.
+- **Dorian removed** (DAWN/UNDERTOW → Aeolian): 9/9 "no — too major" in the
+  last URTEIL batch; the raised 6th was the structural smuggler the old
+  HARMONIA brief named. Warmth now carried by the thirdless sus9 voicing.
+- **EISEN:** owns the **passus duriusculus** (chromatic fall, 1 bar/semitone,
+  cad:0 — grief with no release; "the harsh passage", so harshness is now
+  structural, not accidental). Folded in the unmerged `b1e0354` fix:
+  `HOVER_SHAPE.cluster` gets its 4th tone `[0,6,13,18]` (the idx-wrap
+  repeated-peak bug). **If branch `claude/rille-snippet-ratings-o62zyv` is
+  still unlanded, this supersedes it** (its other fix — Dorian predominant —
+  is moot: no Dorian, no pool-based predominant).
+- **PROGS simplified 8 → 4** (OWN / LAMENTO / CHROMATIC / OPEN), per the old
+  brief's "simplify the input layout". `kind:'maj'` + `MAJ_SHAPE` kept but
+  currently unreachable (judge-bridge maj swap = harmless no-op, noted in
+  code). `chordQual`/`voiceAt`/`poolDegs`/`chordLetters` removed;
+  `groundLetters` shows the bass descent. All moods `follow:true` now except
+  none — VOID's drone re-sounds per bar so even it walks the descent; BASS
+  HOLDS chip still pedals the tonic (descent then lives in the JI relations).
+- **Open:** needs URTEIL listening. Watch for: ♭6-step composite reading
+  "too lush/major" (minor-9 over ♭6 bass = ♭VImaj9 colour — if flagged,
+  darken that step's upper structure first, don't rewrite); whether the
+  divisions arc is audible enough; DARKNESS "cuts out" thread below still
+  open and untouched.
+
 ### Lock-screen playback via Media Session API — sweep in progress (I–V done)
 **Branch:** `claude/app-link-request-vj8sml` was the original sweep branch;
 the session doing COCHLEA landed on `claude/new-session-owsnx3` instead (its

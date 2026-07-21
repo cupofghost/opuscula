@@ -231,8 +231,8 @@ button,canvas,.centerlabel{-webkit-user-select:none;user-select:none}
         <p>Techno was born in the mid-1980s in Detroit, in the drum-machines and synthesizers of Juan Atkins, Derrick May and Kevin Saunderson. <em>Minimal</em> techno pared it back to the barest hypnotic essentials. After the Wall fell in 1989 Berlin became its second home, and in the city's studios Basic Channel — Moritz von Oswald and Mark Ernestus — fused techno with the echo, reverb and cavernous space of Jamaican <em>dub</em>. The result trades melody for the slow, patient evolution of a single groove: the loop <em>is</em> the composition.</p>
         <h4>Affect and law</h4>
         <p>Seven <em>Affekte</em> — moods — set the key, tempo, palette, spread and density; a harmonic-narrative engine writes a long arc of longing and rare release (see below) while the arrangement writes itself. Six lean dark or industrial; the seventh, <em>SOG</em>, is the warm, rolling, stripped-back pocket of <em>minimal deep tech</em> — slower, sparser, more space between the hits. A “dubplate”, or white label, is the one-off acetate a DJ cuts to road-test a track before anyone else can get a copy.</p>
-        <h4>Longing and release</h4>
-        <p>The harmony is written to ache, and it is not a loop — it is a sixty-four-bar story. Most of that story <em>hovers</em>: deep minor-ninth chords drifting among <em>i</em>, <em>iv</em> and the mood's darker neighbours, held for bars at a time, going nowhere on purpose — and never sounded whole. Each chord is <em>broken open</em> into an arpeggio, one soft tone at a time, always reaching for a shape it never states at once; each mood rolls its own way (rising, falling, rocking). And every tone above the bass is tuned in <em>just intonation</em> — exact whole-number ratios from the sounding bass root (6/5, 5/4, 4/3, 3/2), not equal temperament — so the upper voices lock beat-free onto the low end, the way the tuning works elsewhere in this catalogue. Major chords are rationed by law — when a <em>♭VI</em>, <em>♭VII</em> or Neapolitan <em>♭II</em> passes through, it gets one bar and one quick upward glint, gone before it can turn bright. Resolution is rarer still: only where a phrase has charged up does the cadence come — the mode's own <em>v</em> is minor and cannot pull home, so its third is raised to a leading tone, and the music strips to its barest: the bass and a single held interval above it. The suspension hangs at a pure 4/3 with the harmonic seventh's lean, resolves to 5/4 — the leading tone of the key, tuned just over the dominant bass — and releases home onto 6/5 and 3/2 over <em>i</em>, as the bass walks down and home and the melody falls silent. Some moods never grant it: they end their phrases hanging on the dominant — a <em>half-cadence</em>, longing left open.</p>
+        <h4>Longing and release · the lamento ground</h4>
+        <p>The harmony follows one of the oldest rule-books of grief in Western music: the <em>lamento</em> ground bass. From Monteverdi's <em>Lamento della Ninfa</em> to Purcell's Dido, a bass falling stepwise from tonic to dominant — 8 · ♭7 · ♭6 · 5 — was the codified emblem of longing, repeated endlessly while the voices above it varied. The descent never left; it is the harmonic skeleton of melancholic dance music to this day. Here every eight bars the bass makes that fall while the upper voices <em>hold their grief</em> — the mood's own deep minor-ninth colour, never a major chord — so the progression lives in the bass relation underneath: home, then falling, darker, darkest, open. Each chord is <em>broken open</em> into an arpeggio, one soft tone at a time, and the figure is varied every cycle — the old art of <em>divisions</em> — on a slow arc from sparse to full and back, the same patient build a dance record makes. Every tone above the bass is tuned in <em>just intonation</em> — exact whole-number ratios from the sounding bass (6/5, 5/4, 4/3, 3/2), not equal temperament — so the same figure is re-coloured at every step of the descent, and the upper voices lock beat-free onto the low end. Most cycles end unresolved: the ♭6 sighs onto the bare dominant with the minor ninth still hanging over it, and the descent simply begins again. Only rarely — where a mood grants it — is the dominant <em>charged</em>: the music strips to the bass and a single held interval, the suspension hangs at a pure 4/3 with the harmonic seventh's lean, resolves to 5/4 — the leading tone, tuned just over the dominant bass — and the next downbeat blooms home onto <em>i</em> before the ground resumes its fall. Some moods never grant it, hanging forever; one mood, IRON, takes the <em>passus duriusculus</em> — the "harder path", the chromatic descent Bach built the Crucifixus on — one semitone a bar, harsh by design.</p>
         <h4>Mixing in key</h4>
         <p>Turn on <em>AUTO-SET</em> and RILLE stops being one track and becomes a set: it beatmatches and blends into a fresh generated track every so often, the way a DJ threads a night together. It chooses the next key by the <em>Camelot wheel</em>, the harmonic-mixing system where adjacent numbers are a perfect fifth apart — so the move is a fifth up or down, the same key, or now and then a semitone/whole-tone <em>energy</em> lift. Each blend is a long, phrase-aligned crossfade with a <em>bass swap</em>: the incoming record's tops come up first while its low end is held back, then kick and bass are handed over cleanly at the bar so two basslines never fight. <em>JETZT →</em> triggers the next blend by hand. Every transition stays in key.</p>
         <h4>The name</h4>
@@ -421,21 +421,21 @@ const PARTLABEL={fundus:'KICK',bassus:'BASS',crepitus:'HATS',manus:'CLAP',chorda
 const MOODS=[
  {id:'tenebrae',gloss:'dunkel',name:'FINSTERNIS',hue:'#2c3438',ink:'#22303a',
   bpm:130,root:41,mode:[0,1,3,5,7,8,10],modeName:'phrygisch',
-  harm:{pool:[[0,3],[1,1],[3,1.5]],cad:32,half:true},arp:{rate:8,dens:.5,dir:'dn'},vstyle:'shell9',follow:false,stab:{bp:520,q:1.6,dec:.5,pad:false},
+  harm:{ground:'lamento',cad:32,half:true},arp:{rate:8,dens:.5,dir:'dn'},vstyle:'shell9',follow:true,stab:{bp:520,q:1.6,dec:.5,pad:false},
   hat16:.18,openPat:'ten',bass:'offbeat',clap:'rim',
   kick:{drive:2.6,dec:.32,pitch:120},swing:.02,dust:.5,
   verb:{sec:1.6,mix:.16},dly:{fb:.42,mix:.2},cantus:false,duck:.5,
   order:['bassus','crepitus','chordae','manus']},
  {id:'umbra',gloss:'düster',name:'SCHATTEN',hue:'#26424a',ink:'#1e3d46',
   bpm:126,root:44,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
-  harm:{pool:[[0,3],[3,1.5],[5,1],[6,1]],cad:64},arp:{rate:16,dens:.45,dir:'ud'},vstyle:'shell9',follow:false,stab:{bp:760,q:1.3,dec:.7,pad:false},
+  harm:{ground:'lamento',cad:64},arp:{rate:16,dens:.45,dir:'ud'},vstyle:'shell9',follow:true,stab:{bp:760,q:1.3,dec:.7,pad:false},
   hat16:.3,openPat:'one',bass:'offbeat',clap:'clap',
   kick:{drive:1.9,dec:.36,pitch:110},swing:.05,dust:.65,
   verb:{sec:2.6,mix:.24},dly:{fb:.55,mix:.32},cantus:false,duck:.45,
   order:['bassus','chordae','crepitus','manus']},
  {id:'lacrimae',gloss:'ergreifend',name:'TRÄNEN',hue:'#4a2c3c',ink:'#4a2338',
   bpm:123,root:45,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
-  harm:{pool:[[0,3],[3,1.5],[5,1]],cad:32},arp:{rate:8,dens:.6,dir:'up'},vstyle:'stack9',follow:true,
+  harm:{ground:'lamento',cad:32},arp:{rate:8,dens:.6,dir:'up'},vstyle:'stack9',follow:true,
   stab:{bp:900,q:.9,dec:1.6,pad:true},
   hat16:.22,openPat:'two',bass:'roll',clap:'clap',
   kick:{drive:1.6,dec:.4,pitch:105},swing:.06,dust:.4,
@@ -443,32 +443,41 @@ const MOODS=[
   order:['chordae','bassus','crepitus','manus','cantus']},
  {id:'ferrum',gloss:'industriell',name:'EISEN',hue:'#4a2a22',ink:'#57281c',
   bpm:136,root:40,mode:[0,1,3,5,7,8,10],modeName:'phrygisch',
-  harm:{pool:[[0,1]],cad:0},arp:{rate:16,dens:.8,dir:'rnd'},vstyle:'cluster',follow:false,stab:{bp:1400,q:2.2,dec:.22,pad:false},
+  // EISEN walks the passus duriusculus — the "harsh passage", the chromatic
+  // descent — and never resolves (cad:0): industrial grief with no release.
+  harm:{ground:'passus',cad:0},arp:{rate:16,dens:.8,dir:'rnd'},vstyle:'cluster',follow:true,stab:{bp:1400,q:2.2,dec:.22,pad:false},
   hat16:.85,openPat:'ten',bass:'roll',clap:'clapnoise',
   kick:{drive:4.2,dec:.3,pitch:150},swing:0,dust:.3,
   verb:{sec:1.1,mix:.12},dly:{fb:.3,mix:.12},cantus:false,duck:.55,
   order:['crepitus','bassus','manus','chordae']},
+ // DÄMMERUNG was Dorian; the raised 6th made the diatonic iv MAJOR, and every
+ // URTEIL rating of this mood said "too major" (4/4 no). Aeolian now — the
+ // warmth lives in the sus9 voicing (no third) and the swing, not the scale.
  {id:'aurora',gloss:'warm',name:'DÄMMERUNG',hue:'#4a3c22',ink:'#4d3a17',
-  bpm:125,root:38,mode:[0,2,3,5,7,9,10],modeName:'dorisch',
-  harm:{pool:[[0,3],[3,1],[6,1]],cad:32},arp:{rate:16,dens:.5,dir:'ud'},vstyle:'sus9',follow:true,stab:{bp:1050,q:.8,dec:1.0,pad:false},
+  bpm:125,root:38,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
+  harm:{ground:'lamento',cad:32},arp:{rate:16,dens:.5,dir:'ud'},vstyle:'sus9',follow:true,stab:{bp:1050,q:.8,dec:1.0,pad:false},
   hat16:.4,openPat:'all',bass:'offbeat',clap:'clap',
   kick:{drive:1.5,dec:.38,pitch:100},swing:.08,dust:.55,
   verb:{sec:2.2,mix:.2},dly:{fb:.45,mix:.22},cantus:false,duck:.4,
   order:['crepitus','bassus','chordae','manus']},
  {id:'vacuum',gloss:'tief',name:'LEERE',hue:'#222c42',ink:'#1e2a48',
   bpm:120,root:36,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
-  harm:{pool:[[0,4],[3,1]],cad:0},arp:{rate:8,dens:.3,dir:'dn'},vstyle:'stack9',follow:false,stab:{bp:600,q:.7,dec:2.4,pad:true},
+  // VOID's drone bass re-sounds every bar, so with follow:true the drone
+  // itself makes the lamento descent — a deep, slow sighing pedal.
+  harm:{ground:'lamento',cad:0},arp:{rate:8,dens:.3,dir:'dn'},vstyle:'stack9',follow:true,stab:{bp:600,q:.7,dec:2.4,pad:true},
   hat16:.08,openPat:'none',bass:'drone',clap:'rim',
   kick:{drive:1.2,dec:.5,pitch:90},swing:.03,dust:.8,
   verb:{sec:4.5,mix:.38},dly:{fb:.6,mix:.3},cantus:false,duck:.35,
   order:['bassus','chordae','crepitus','manus']},
  // SOG — minimal deep tech: the warm, rolling, stripped-back pocket. ~123 BPM,
  // clean short kick, a rolling deep sub, soft claps, sparse open sus stabs (no
- // third — deep-house colour), Dorian for the bright natural 6th. More space and
- // gentle swing than the techno moods; a moderate sidechain roll. 6A on the wheel.
+ // third — deep-house colour). More space and gentle swing than the techno
+ // moods; a moderate sidechain roll. 6A on the wheel. Was Dorian "for the
+ // bright natural 6th" — URTEIL said "too major" (3/3 no); Aeolian now, the
+ // warmth carried by the thirdless sus9 voicing instead of the scale.
  {id:'gurges',gloss:'hypnotisch',name:'SOG',hue:'#33344a',ink:'#2b2a44',
-  bpm:123,root:43,mode:[0,2,3,5,7,9,10],modeName:'dorisch',
-  harm:{pool:[[0,3],[3,1.5],[6,1]],cad:32},arp:{rate:16,dens:.55,dir:'up'},vstyle:'sus9',follow:false,stab:{bp:680,q:.7,dec:.8,pad:false},
+  bpm:123,root:43,mode:[0,2,3,5,7,8,10],modeName:'äolisch',
+  harm:{ground:'lamento',cad:32},arp:{rate:16,dens:.55,dir:'up'},vstyle:'sus9',follow:true,stab:{bp:680,q:.7,dec:.8,pad:false},
   hat16:.28,openPat:'two',bass:'roll',clap:'clap',
   kick:{drive:1.7,dec:.34,pitch:100},swing:.07,dust:.6,
   verb:{sec:2.4,mix:.2},dly:{fb:.48,mix:.24},cantus:false,duck:.42,
@@ -485,50 +494,51 @@ const moodEn=m=>MOOD_EN[m.id]||m.name;
 const modeEn=n=>MODE_EN[n]||n;
 const secEn=s=>(SEC_EN[s]&&SEC_EN[s]!==s)?SEC_EN[s]+' ('+s.toLowerCase()+')':(SEC_EN[s]||s);
 
-/* ---------------- harmonic narrative ---------------- */
-// The harmony is not a chord loop but a 64-bar NARRATIVE. A fixed 2-bars-per-
-// chord loop can never ache: resolution comes around mechanically, so nothing is
-// earned. Instead the harmony lives in two states —
-//   HOVER: long unresolved drifting among the mood's minor chords (i, iv, and
-//     brief passing colour), each held 2–4 bars, voiced as deep minor-9ths.
-//     Engine LAW: any hover chord whose diatonic quality is MAJOR (♭VI, ♭VII,
-//     ♭III, ♭II, IV) is capped at ONE bar and ONE short stab — major colour is
-//     minimal and passing, never a destination.
-//   CADENCE: rarely — every `cad` bars, per recipe/mood — an 8-bar charged
-//     phrase: pre-dominant → V7sus held → V7 (the 4-3 suspension audibly
-//     resolving; the mode's own v is minor and cannot pull home, so the third is
-//     raised to the leading tone) → i blooming as a sustained swell. The bass
-//     walks the cadence roots, so V→i lands in the low end. `half:true` recipes
-//     hang on the V7 and never land — a half-cadence, maximum longing.
-// A recipe: {pool:[[degree,weight],…], cad:bars-between-cadences (0 = never),
-// half:bool}. PROGS[0]='suum' defers to the mood's own `harm` recipe.
+/* ---------------- harmonic narrative: the LAMENTO GROUND ---------------- */
+// The harmony now follows a music tradition with rules already in place: the
+// descending-tetrachord GROUND BASS — the lamento. From the seventeenth
+// century on (Monteverdi's Lamento della Ninfa, Purcell's Dido), a bass
+// falling stepwise from tonic to dominant — 8 · ♭7 · ♭6 · 5 — was THE
+// codified emblem of grief, repeated endlessly while the voices above it
+// varied; the same descent is the harmonic skeleton of melancholic dance
+// music to this day. It answers, by construction, everything the listening
+// feedback kept circling:
+//   · "aimless" — a ground has maximal direction; every bar is falling
+//     toward the dominant, and the ear knows it.
+//   · "too major" — the texture is the Lamento della Ninfa's own: the upper
+//     voices HOLD the mood's minor-9 colour while ONLY THE BASS falls, so
+//     the progression (i → i/♭7 → i/♭6 → v) is heard in the bass relation
+//     and the arp never touches a major chord tone. The one major sonority
+//     left anywhere is the functional V7 — and only when a cycle earns it.
+//   · "no good resolve" — most cycles end on the open sigh: ♭6 falling onto
+//     the dominant with the minor-9 still hanging over it (the cadential
+//     6-4 left unresolved — the Phrygian half-cadence's colour). Every
+//     `cad` bars the dominant is CHARGED instead: V7sus held, then V7 with
+//     the raised leading tone (the 4-3 suspension, as before), and the NEXT
+//     cycle's downbeat blooms home on i before the ground resumes its fall.
+//     Resolution stays rationed and earned — but it now lands on the one
+//     chord the whole descent has been aiming at.
+//   · "sounds like a repeat" — the tradition's own cure: DIVISIONS. The
+//     ground repeats unchanged; the surface varies every cycle on a seeded
+//     intensity arc (see the arp block in genAll) — which is also the slow
+//     build of a dance record.
+// Two grounds:
+//   lamento — the diatonic fall, 8·♭7·♭6·5, two bars a step.
+//   passus  — the passus duriusculus, "the harder path": the CHROMATIC fall
+//     8·7·♭7·6·♭6·5, a semitone a bar (the Crucifixus bass) — the minor-9
+//     grinding over each chromatic bass note. Harsh by design.
+// A recipe: {id:'lamento'|'passus', cad:bars-between-granted-resolutions
+// (0 = never), half:bool — charged cycles hang on V7sus and never land}.
+// PROGS[0]='suum' defers to the mood's own `harm` recipe.
 const HARMBARS=64;                        // one narrative cycle = one WAV cut
+const CYCLE=8;                            // one fall of the ground = 8 bars
 const PROGS=[
- {id:'suum',     pool:null},                                       // the mood's own
- {id:'schweben', pool:[[0,3],[3,1]],              cad:0},          // i·iv, never resolves
- {id:'sehnen',   pool:[[0,3],[3,1.5],[5,1]],      cad:0},          // + passing ♭VI, never
- {id:'halb',     pool:[[0,3],[6,1],[5,1]],        cad:32,half:true},// hangs on V7, open
- {id:'selten',   pool:[[0,3],[3,1.5],[5,1]],      cad:64},         // one release per cycle
- {id:'erzählen', pool:[[0,3],[3,1.5],[5,1],[6,1]],cad:32},
- {id:'neapel',   pool:[[0,3],[1,1],[3,1.5]],      cad:32},         // ♭II where the mode has it
- {id:'oft',      pool:[[0,3],[3,1]],              cad:16},
+ {id:'suum'},                                         // the mood's own treatment
+ {id:'lamento',ground:'lamento',cad:32},              // the falling ground, rare release
+ {id:'passus', ground:'passus', cad:32},              // chromatic — the harder path
+ {id:'offen',  ground:'lamento',cad:32,half:true},    // charges, hangs, never lands
 ];
 const scaleAt=(mode,i)=>mode[((i%7)+7)%7]+12*Math.floor(i/7);
-function chordQual(mode,deg){
-  const t=scaleAt(mode,deg+2)-scaleAt(mode,deg);
-  const f=scaleAt(mode,deg+4)-scaleAt(mode,deg);
-  return {minor:t===3,dim:f===6,aug:f===8};
-}
-// Voice a chord as explicit semitone offsets on a degree root — quality is
-// CHOSEN per function, not inherited from diatonic stacking, so the emotional
-// colour is guaranteed and no accidental clash can appear. The root stays
-// anchored to the octave band nearest the key root (the register fix).
-function voiceAt(mode,root,deg,offs){
-  let cr=root+12+scaleAt(mode,deg);
-  while(cr-(root+12)>6)cr-=12;
-  while((root+12)-cr>6)cr+=12;
-  return {rootMidi:cr,notes:offs.map(o=>cr+o)};
-}
 // JUST INTONATION against the bass. Every harmonic tone above the bass is tuned
 // as an exact frequency ratio from the sounding bass root — not equal
 // temperament — so upper voices lock beat-free onto the low end (the tuning
@@ -542,79 +552,69 @@ function jf(bassMidi,note,dom){
 }
 // per-mood hover colour (vstyle): all built on the minor-9 family — root, ♭3
 // (or sus 4), ♭7, 9 — the deep, longing voicing. cluster stays EISEN's harshness.
-const HOVER_SHAPE={shell9:[0,3,10,14],stack9:[0,3,7,14],sus9:[0,5,10,14],cluster:[0,6,13]};
-const MAJ_SHAPE=[0,4,7];                  // passing majors: a plain, brief triad
+// All four shapes carry exactly 4 tones: the arp figure (genAll) indexes 0..3,
+// and cluster used to have only 3 — its "peak" note (idx 3) wrapped to idx 0
+// and silently replayed the root instead of reaching a tone, reading as a
+// repeated/broken top line (URTEIL feedback on EISEN). The 4th tone is the
+// tritone's octave — harsher, not softened, per the standing EISEN note.
+const HOVER_SHAPE={shell9:[0,3,10,14],stack9:[0,3,7,14],sus9:[0,5,10,14],cluster:[0,6,13,18]};
+const MAJ_SHAPE=[0,4,7];   // kept for the judge bridge; no ground deals a passing major now
 function harmRecipe(M,P){                 // resolve suum → the mood's own
-  return P.pool?{pool:P.pool,cad:P.cad||0,half:!!P.half}
-               :{pool:M.harm.pool,cad:M.harm.cad||0,half:!!M.harm.half};
+  return P.ground?{id:P.ground,cad:P.cad||0,half:!!P.half}
+                 :{id:M.harm.ground,cad:M.harm.cad||0,half:!!M.harm.half};
 }
 function buildHarm(M,root,recipe,rng){
   const mode=M.mode;
   const hov=HOVER_SHAPE[M.vstyle]||HOVER_SHAPE.stack9;
-  // degrees whose triad is diminished are unusable colour — drop them (e.g. the
-  // ♭II slot outside phrygian); an emptied pool falls back to the tonic.
-  let pool=recipe.pool.map(([d,w])=>({d,w,q:chordQual(mode,d)})).filter(p=>!p.q.dim);
-  if(!pool.length)pool=[{d:0,w:1,q:chordQual(mode,0)}];
+  // the fall: bass offsets from the key root, one entry per bar (6 bars),
+  // then 2 bars on the dominant. Diatonic lamento reads ♭7/♭6 from the mode;
+  // the passus walks every semitone (its accidentals ARE the tradition).
+  const b7=scaleAt(mode,6)-12, b6=scaleAt(mode,5)-12;
+  const fall=recipe.id==='passus'?[0,-1,b7,-3,b6,b6]:[0,0,b7,b7,b6,b6];
+  // every bar: {notes (absolute midi, the arp reads idx 0..3), kind, span,
+  // first, bassOff (the ground step), sus (V7sus vs V7)}
+  const mkb=(offs,kind,span,first,bassOff,sus)=>
+    ({notes:offs.map(o=>root+12+o),kind,span,first,bassOff,sus:!!sus});
+  const V=7;                                             // dominant root offset
+  const grant=c=>recipe.cad>0&&((c+1)*CYCLE)%recipe.cad===0;
   const bars=new Array(HARMBARS);
-  const mk=(deg,offs,kind,span,first)=>({...voiceAt(mode,root,deg,offs),kind,span,first});
-  // cadence windows: the LAST 8 bars of each `cad` span, so the release lands on
-  // the phrase boundary the groove has been building toward.
-  const cadStart=[];
-  if(recipe.cad>0)for(let c=recipe.cad;c<=HARMBARS;c+=recipe.cad)cadStart.push(c-8);
-  let b=0,prev=-1;
-  while(b<HARMBARS){
-    if(cadStart.includes(b)){
-      // pre-dominant: iv if the mode gives it clean, else ♭VI. Its own kind —
-      // it is functional (it belongs to the charged phrase, and the bass walks
-      // it: iv→V→i), not passing colour, so the one-bar major law is not for it.
-      const pd=chordQual(mode,3).dim?5:3, pq=chordQual(mode,pd);
-      for(let k=0;k<2&&b<HARMBARS;k++,b++)bars[b]=mk(pd,pq.minor?hov:MAJ_SHAPE,'pre',2,k===0);
-      // the yearning: V7sus held, then V7 — the 4-3 suspension resolving,
-      // leading tone raised a semitone under the key root
-      for(let k=0;k<2&&b<HARMBARS;k++,b++)bars[b]=mk(4,[0,5,7,10],'dom',2,k===0);
-      for(let k=0;k<2&&b<HARMBARS;k++,b++)bars[b]=mk(4,[0,4,7,10],'dom',2,k===0);
-      // the release: i blooming — unless this recipe hangs (half cadence)
-      if(!recipe.half)for(let k=0;k<2&&b<HARMBARS;k++,b++)bars[b]=mk(0,[0,3,7,14],'tonic',2,k===0);
-      prev=-1;continue;
+  for(let c=0;c<HARMBARS/CYCLE;c++){
+    const b0=c*CYCLE, gr=grant(c);
+    // a cycle following a granted full cadence opens with the BLOOM: two bars
+    // of i as a sustained swell (kind 'tonic' — the arp falls silent), the
+    // arrival the descent earned — which then immediately falls away again.
+    const bloom=!recipe.half&&grant((c+HARMBARS/CYCLE-1)%(HARMBARS/CYCLE));
+    for(let k=0;k<6;k++){
+      if(k<2&&bloom){bars[b0+k]=mkb([0,3,7,14],'tonic',2,k===0,0);continue;}
+      const off=fall[k], first=(k===0)||off!==fall[k-1]||(k===2&&bloom);
+      let span=1;for(let j=k+1;j<6&&fall[j]===off;j++)span++;
+      bars[b0+k]=mkb(hov,'hover',first?span:1,first,off);
     }
-    // hover: weighted pick, no immediate repeat (settling back on i is allowed)
-    let tot=0;for(const p of pool)tot+=(p.d===prev&&p.d!==0)?0:p.w;
-    let r=rng()*tot,pick=pool[0];
-    for(const p of pool){const w=(p.d===prev&&p.d!==0)?0:p.w;if((r-=w)<=0){pick=p;break;}}
-    const nc=cadStart.find(c=>c>=b);
-    const room=Math.max(1,Math.min(nc!==undefined?nc-b:HARMBARS-b,4));
-    let span,kind,shape;
-    if(pick.q.minor){span=Math.min(room,rng()<.5?4:2);kind='hover';shape=hov;}
-    else{span=1;kind='maj';shape=MAJ_SHAPE;}   // majors: minimal and short, by law
-    for(let k=0;k<span&&b<HARMBARS;k++,b++)bars[b]=mk(pick.d,shape,kind,span,k===0);
-    prev=pick.d;
+    // the dominant. Granted → the charged treatment: V7sus held, then (unless
+    // the recipe hangs) V7 with the raised leading tone — the 4-3 suspension
+    // audibly resolving, and the next cycle blooms. Ungranted → the open
+    // sigh: the minor-9 still hanging over the dominant bass, no leading
+    // tone, no resolution — the descent simply begins again.
+    if(gr){
+      bars[b0+6]=mkb([V,V+5,V+7,V+10],'dom',2,true,-5,true);
+      bars[b0+7]=recipe.half?mkb([V,V+5,V+7,V+10],'dom',2,false,-5,true)
+                            :mkb([V,V+4,V+7,V+10],'dom',2,false,-5);
+    }else{
+      for(let k=0;k<2;k++)bars[b0+6+k]=mkb(hov,'hover',2,k===0,-5);
+    }
   }
   return bars;
 }
-// the degrees a pool actually plays in this mode (buildHarm drops diminished
-// slots at runtime; the display must show the same truth)
-function poolDegs(mode,pool){
-  const d=pool.map(p=>p[0]).filter(x=>!chordQual(mode,x).dim);
-  return d.length?d:[0];
-}
-// display: the hover pool in romans, then how the phrase ends. Degrees sitting
-// a semitone below their major-scale position get the ♭ (phrygian ♭II, aeolian
-// ♭VI/♭VII) — the notation longing is written in.
+// display: the ground as scale-step numerals, then how the phrase ends.
 function harmLabel(mode,recipe){
-  const R=['i','ii','iii','iv','v','vi','vii'],MAJ=[0,2,4,5,7,9,11];
-  const part=poolDegs(mode,recipe.pool).map(d=>{
-    const q=chordQual(mode,d);let s=R[d%7];
-    if(!q.minor)s=s.toUpperCase();
-    if(((scaleAt(mode,d)%12)+12)%12===(MAJ[d%7]+11)%12)s='♭'+s;
-    return s;
-  }).join('·');
-  return part+(recipe.cad?(recipe.half?' …V7 (offen)':' …V7→i'):' ∞');
+  const fall=recipe.id==='passus'?'8·7·♭7·6·♭6·5':'8·♭7·♭6·5';
+  return fall+(recipe.cad?(recipe.half?' …V7sus (offen)':' …V7→i'):' ∞');
 }
-function chordLetters(mode,root,degs){
-  return degs.map(d=>{
-    const q=chordQual(mode,d);
-    return NOTE[(root+scaleAt(mode,d))%12].toUpperCase()+(q.minor?'m':'')+(q.dim?'°':'');
-  }).join(' → ');
+// the ground's bass letters in this key (what the low end actually walks)
+function groundLetters(mode,root,recipe){
+  const offs=recipe.id==='passus'?[0,-1,-2,-3,-4,-5]
+                                 :[0,scaleAt(mode,6)-12,scaleAt(mode,5)-12,-5];
+  return offs.map(o=>NOTE[((root+o)%12+12)%12].toUpperCase()).join('·');
 }
 
 /* ---------------- pattern generation ---------------- */
@@ -677,17 +677,20 @@ function genAll(seed,mi,bpm,progIdx,follow,rootOverride){
   // chord-tone INDICES (notes resolve at schedule time against the current bar
   // of the narrative). Per-mood character: rate (8ths or 16ths), density,
   // direction (up = yearning rise, dn = falling dark, ud = rocking, rnd = broken).
-  g.arpSeq=[];                                          // {s(0..31), idx, oct, vel, len}
   {
-    // A SHAPED 2-bar phrase, not a random cycle. The old arp walked the chord
-    // tones in a fixed direction and dropped notes at random — a motif never
-    // formed, nothing landed, and it curdled the longer it ran. Now the line
-    // ARCS to a peak and then SIGHS home, always RESOLVING to the root on a
-    // long, held note (it lands instead of trickling). The rhythm is a fixed
-    // grid — a figure the ear can latch onto — trimmed by the mood's density
-    // (more space when sparse), and the mood's `dir` sets climb / fall / arch.
-    // The harmony moving under it (i→iv→…) transposes the same figure, so it
-    // reads as a riff over changes rather than aimless noodling.
+    // A SHAPED 2-bar phrase, not a random cycle. The line ARCS to a peak and
+    // then SIGHS home, always RESOLVING to the root on a long, held note. The
+    // rhythm is a fixed grid — a figure the ear can latch onto — trimmed by
+    // the mood's density, and the mood's `dir` sets climb / fall / arch. The
+    // ground moving under it recolours the same figure every step (the JI
+    // lattice re-tunes each tone against the falling bass).
+    // DIVISIONS — the ground-bass tradition's own answer to "sounds like a
+    // repeat": the ground repeats unchanged, the surface varies. One figure,
+    // eight per-cycle variants on an intensity arc (sparse → full → peak →
+    // sigh — also the slow build of a dance record): the arc sets density
+    // and lifts the peak an octave at the top; WHICH interior notes rest is
+    // re-rolled per cycle from the seed, so every pressing ornaments its
+    // cycles differently. Peak and resolve are never trimmed.
     const A=M.arp||{rate:16,dens:.5,dir:'up'};
     const grid = A.rate===8 ? [0,4,8,11,16,20,24,27]
                             : [0,3,6,9,12,14,18,21,24,27,30];
@@ -695,20 +698,26 @@ function genAll(seed,mi,bpm,progIdx,follow,rootOverride){
     const seqDn=[3,2,1,0,1,2,3,2,1,0,0];               // fall, lift, settle home
     const seqUd=[0,1,2,3,2,1,2,3,2,1,0];               // arch
     const shape=(A.dir==='dn'?seqDn:A.dir==='ud'?seqUd:seqUp);
-    // density trims interior notes (never the peak, never the resolve): sparse
-    // moods breathe, dense moods stay busy, the shape always survives.
-    const drop=Math.round((1-Math.min(1,A.dens+.3))*(grid.length-4));
-    const skip=new Set(); for(let d=0,j=2;d<drop&&j<grid.length-2;d++,j+=2)skip.add(j);
-    const reachP=A.reach||0;
-    for(let i=0;i<grid.length;i++){
-      if(skip.has(i))continue;
-      const last=(i===grid.length-1), raw=shape[i]??0, idx=last?0:raw, peak=(raw===3);
-      const oct=(peak&&i<grid.length-3&&reachP)?12:0;  // the reach lifts an early peak an octave
-      const vel=last?.8:peak?.82:.5+((grid[i]%4===2)?.14:0);
-      const len=last?7:peak?3.2:2.4;                   // the resolve sustains and breathes
-      g.arpSeq.push({s:grid[i],idx,oct,vel,len});
-    }
-    if(!g.arpSeq.length)g.arpSeq.push({s:2,idx:0,oct:0,vel:.6,len:6});
+    const mkFig=(dens,lift,velMul)=>{
+      const drop=Math.round((1-Math.min(1,dens+.3))*(grid.length-4));
+      const cand=[];for(let j=2;j<grid.length-2;j++)if((shape[j]??0)!==3)cand.push(j);
+      const skip=new Set();
+      for(let d=0;d<drop&&cand.length;d++)skip.add(cand.splice((rng()*cand.length)|0,1)[0]);
+      const fig=[];
+      for(let i=0;i<grid.length;i++){
+        if(skip.has(i))continue;
+        const last=(i===grid.length-1), raw=shape[i]??0, idx=last?0:raw, peak=(raw===3);
+        const oct=(peak&&lift)?12:0;                   // the arc's top lifts the peak
+        const vel=(last?.8:peak?.82:.5+((grid[i]%4===2)?.14:0))*velMul;
+        const len=last?7:peak?3.2:2.4;                 // the resolve sustains and breathes
+        fig.push({s:grid[i],idx,oct,vel,len});
+      }
+      if(!fig.length)fig.push({s:2,idx:0,oct:0,vel:.6,len:6});
+      return fig;
+    };
+    const ARC=[0,1,1,2,2,3,2,1];                       // intensity per 8-bar cycle
+    g.arpDivs=ARC.map(I=>mkFig(clamp(A.dens+(I-2)*.15,.15,1),I>=2,.85+I*.06));
+    g.arpSeq=g.arpDivs[2];                             // mid-arc figure: display + fallback
   }
 
   // cantus: 5-note motif on minor pentatonic, over 2 bars, sparse
@@ -832,7 +841,7 @@ function refreshChips(){
 }
 function renderLedger(){
   const M=MOODS[st.mood],g=st.g;
-  const chords=chordLetters(M.mode,g.root,poolDegs(M.mode,g.recipe.pool));
+  const chords=groundLetters(M.mode,g.root,g.recipe);
   $('ledger').innerHTML=
    '<b>KEY (Tonart)</b> '+NOTE[g.root%12].toUpperCase()+' '+modeEn(M.modeName)+' &nbsp; <b>HARMONY (Harmonik)</b> '+harmLabel(M.mode,g.recipe)+' · '+chords+' · Bass '+(g.follow?'follows':'holds')+'<br>'+
    '<b>SECTION (Abschnitt)</b> <span id="secname">—</span> &nbsp; <b>BAR (Takt)</b> <span id="barno">0</span> &nbsp; '+
@@ -963,13 +972,10 @@ const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.g
 
 /* ---- URTEIL judge bridge (dev tool — driven by rille/judge.html) ---------
    Inert unless opened with ?judge (the audition harness iframes it that way).
-   Lets the harness swap the PASSING-MAJOR voicing live — MAJ_SHAPE, the little
-   ascending glint on the `maj` bars, the "doofy major chord" — and drive
-   mood / seed / transport, so candidate voicings can be A/B'd by ear and rated
-   ja/nein/vielleicht. MAJ_SHAPE is baked into g.harm at genAll time, so a swap
-   regenerates (applyChange) and re-vibes at the next bar. Only the `maj` glint
-   reads MAJ_SHAPE; the hover colour, the cadence and the raised leading tone
-   have their own shapes, so this reaches nothing else. RILLE-only. */
+   Drives mood / seed / transport so candidate pressings can be auditioned and
+   rated ja/nein/vielleicht. The MAJ_SHAPE swap op is kept protocol-compatible
+   but currently reaches nothing: the lamento grounds deal no passing-major
+   bars (kind 'maj' is unreachable), so a swap is a harmless no-op. RILLE-only. */
 (function(){
   if(!new URLSearchParams(location.search).has('judge'))return;
   const MAJ0=MAJ_SHAPE.slice();                            // factory glint, for baseline/restore
@@ -1288,10 +1294,11 @@ function scheduleBar(G,arr,g,bar,t0,stepDur,rng){
   const H=g.harm[bar%HARMBARS];
   // the bass root of this bar — also the JUST-INTONATION reference every
   // harmonic voice above tunes to (computed even when the bass is silent: the
-  // lattice stands where the bass would stand). Pedal on the key root, or follow
-  // the chord root; during the cadence always follow, so V→i walks the low end.
-  let bRoot=(g.follow||H.kind==='pre'||H.kind==='dom'||H.kind==='tonic')?H.rootMidi-12:g.root;
-  while(bRoot>g.root+6)bRoot-=12;
+  // lattice stands where the bass would stand). A following bass WALKS the
+  // ground (H.bassOff semitones below the key root — the lamento descent,
+  // stepwise in the low end); a holding bass pedals the tonic. The charged
+  // bars (dom/tonic) always land in the bass, so V→i walks the low end.
+  let bRoot=(g.follow||H.kind==='dom'||H.kind==='tonic')?g.root+(H.bassOff||0):g.root;
   const isDom=H.kind==='dom';
   const jn=n=>jf(bRoot,n,isDom);                         // ET target → just Hz over the bass
   if(arr.gate('bassus',bar)){
@@ -1308,21 +1315,24 @@ function scheduleBar(G,arr,g,bar,t0,stepDur,rng){
       // home. Two octaves up puts them in the old stab register.
       if(H.first){
         const fB=mtof(((bRoot-28)%12+12)%12+28+12);      // lattice root, mid register
-        const sus=H.notes[1]-H.notes[0]===5;
-        const iv=H.kind==='tonic'?[6/5,3/2]:(sus?[4/3,7/4]:[5/4,7/4]);
+        const iv=H.kind==='tonic'?[6/5,3/2]:(H.sus?[4/3,7/4]:[5/4,7/4]);
         vChord(G,t0,iv.map(r=>fB*r*2),H.span*16*stepDur*.94,true);
       }
     }else if(H.kind==='maj'){
-      // passing major colour: a quick ascending glint, tuned just. Up to three
-      // notes — length-safe so the judge harness can audition shorter voicings
-      // of MAJ_SHAPE (e.g. a bare fifth) without overrunning H.notes.
+      // passing major colour: a quick ascending glint, tuned just. Currently
+      // UNREACHABLE — no ground deals a passing major (every URTEIL rating of
+      // major colour was negative; the only major left is the granted V7).
+      // Kept for a future ground that rations one back in, and for the judge
+      // bridge's MAJ_SHAPE audition path. Length-safe up to three notes.
       const s0=(bar%2)?8:3;
       for(let k=0;k<3&&k<H.notes.length;k++)
         vArpN(G,t0+(s0+k)*stepDur+sw(s0+k),jn(H.notes[k]),.8-.15*k,stepDur*1.8);
     }else{
-      // hover (and the cadence's pre-dominant): the chord broken open — an
-      // arpeggio of just intervals, always reaching, never landing all at once
-      for(const a of g.arpSeq){
+      // hover: the minor-9 broken open over the falling ground — an arpeggio
+      // of just intervals, always reaching, never landing all at once. Each
+      // 8-bar cycle plays its own division of the figure (the intensity arc).
+      const fig=(g.arpDivs&&g.arpDivs[((bar%HARMBARS)/CYCLE)|0])||g.arpSeq;
+      for(const a of fig){
         if(Math.floor(a.s/16)!==(bar%2))continue;
         const s=a.s%16;
         vArpN(G,t0+s*stepDur+sw(s),jn(H.notes[a.idx%H.notes.length]+a.oct),a.vel,(a.len||2.4)*stepDur);
@@ -1651,8 +1661,10 @@ function renderProgChips(){
   PROGS.forEach((p,i)=>{
     const b=document.createElement('button');
     const rec=harmRecipe(M,p);
-    b.innerHTML=(p.id==='suum'?'OWN':harmLabel(M.mode,rec))+
-      '<span class="en">'+(p.id==='suum'?"the mood's own (eigen)":chordLetters(M.mode,M.root,poolDegs(M.mode,rec.pool)))+'</span>';
+    const LBL={suum:'OWN',lamento:'LAMENTO',passus:'CHROMATIC',offen:'OPEN'};
+    const EN={suum:"the mood's own (eigen)",lamento:'the falling ground · '+groundLetters(M.mode,M.root,rec),
+              passus:'the harder path · '+groundLetters(M.mode,M.root,rec),offen:'charges, never lands (offen)'};
+    b.innerHTML=LBL[p.id]+'<span class="en">'+EN[p.id]+'</span>';
     if(i===st.prog)b.classList.add('on');
     b.addEventListener('click',()=>{
       st.prog=i;
