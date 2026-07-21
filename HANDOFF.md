@@ -296,11 +296,22 @@ cadence voicings, JI system):
   `groundLetters` shows the bass descent. All moods `follow:true` now except
   none — VOID's drone re-sounds per bar so even it walks the descent; BASS
   HOLDS chip still pedals the tonic (descent then lives in the JI relations).
+- **Drop fixes (maintainer: "fix the kicks and other notes dropping"),
+  follow-up commit:** the four-on-the-floor is never thinned anymore — the
+  random fill kick-drop (`fill && s===12 && rng()<.3`) and VOID's baked-in
+  40%-chance missing fourth kick are both removed; BRUCH (the kick+bass
+  break) goes 22%→10% chance and 4→2 bars (riser length now follows
+  `arr.frac`), and never fires under `JUDGE_FULL` — an URTEIL snippet
+  auditions the melody, not arrangement luck. This also resolves the
+  DARKNESS "cuts out too much / sounds broken" thread's leading hypothesis.
+  Verified headless: kick pattern complete across all moods × 40 seeds,
+  BRUCH ≈ 9.9% of phrases at exactly 2 bars, zero breaks in judge mode,
+  full suite still 796/796, zero page errors. **Landed on `main`** (both
+  commits pushed at the maintainer's request).
 - **Open:** needs URTEIL listening. Watch for: ♭6-step composite reading
   "too lush/major" (minor-9 over ♭6 bass = ♭VImaj9 colour — if flagged,
   darken that step's upper structure first, don't rewrite); whether the
-  divisions arc is audible enough; DARKNESS "cuts out" thread below still
-  open and untouched.
+  divisions arc is audible enough.
 
 ### Lock-screen playback via Media Session API — sweep in progress (I–V done)
 **Branch:** `claude/app-link-request-vj8sml` was the original sweep branch;

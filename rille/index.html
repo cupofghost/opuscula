@@ -633,7 +633,6 @@ function genAll(seed,mi,bpm,progIdx,follow,rootOverride){
   g.kick=new Array(16).fill(0);
   [0,4,8,12].forEach(s=>g.kick[s]=1);
   if(M.id==='ferrum'&&rng()<.6)g.kick[14]=.55;
-  if(M.id==='vacuum'&&rng()<.4)g.kick[12]=0;            // dropped fourth
 
   // closed hats: velocity per step (0 = silent); opens as separate map
   g.hatC=new Array(16).fill(0);
@@ -751,9 +750,13 @@ function newArrange(g,rng){
         const p=this.queue.shift();this.active[p]=true;
         this.section=this.queue.length?'AUFBAU':'VOLL';
       }else{
+        // BRUCH (kick+bass mute) was too frequent and too long — a 22% roll
+        // for 4 bars every phrase read as "cuts out too much / sounds broken"
+        // (URTEIL, DARKNESS). Rarer and half as long now, and never inside an
+        // URTEIL snippet: the judge auditions the melody, not arrangement luck.
         const r=rng();
-        if(r<.22){this.frac=4;this.section='BRUCH';}
-        else if(r<.36){this.active.crepitus=false;this.section='SCHWEBE';}
+        if(r<.10&&!JUDGE_FULL){this.frac=2;this.section='BRUCH';}
+        else if(r<.24){this.active.crepitus=false;this.section='SCHWEBE';}
         else{this.active.crepitus=true;
           if(g.M.cantus)this.active.cantus=true;         // this deck's own mood
           this.section='VOLL';}
@@ -1272,9 +1275,10 @@ function scheduleBar(G,arr,g,bar,t0,stepDur,rng){
   const sw=s=>(s%2===1?M.swing*stepDur*2:0);
   const fill=bar%8===7;
   // kick
+  // the four-on-the-floor is sacred: no random kick drops (a silently missing
+  // beat reads as the record skipping, not as a fill — URTEIL "sounds broken")
   if(arr.gate('fundus',bar))for(let s=0;s<16;s++){
-    let v=g.kick[s];
-    if(fill&&s===12&&rng()<.3)v=0;
+    const v=g.kick[s];
     if(v>0)vKick(G,t0+s*stepDur+sw(s),v);
   }
   // hats
@@ -1401,7 +1405,7 @@ function schedTick(){
     }
     for(const ds of RT.decks){                           // every live deck, same clock
       ds.arr.tickBar();
-      if(bar%8===0){ds.arr.advance(bar); if(ds.arr.frac>0)vSweep(ds.D,t,4,dur);}
+      if(bar%8===0){ds.arr.advance(bar); if(ds.arr.frac>0)vSweep(ds.D,t,ds.arr.frac,dur);}
       const g=(ds===RT.decks[0])?st.g:ds.g;              // primary reads LIVE patterns
       scheduleBar(ds.D,ds.arr,g,bar,t,dur,ds.rng);
     }
@@ -1624,7 +1628,7 @@ async function cutPlate(){
           arr.active.chordae=false;arr.active.cantus=false;arr.active.manus=false;
           if(bar>=BARS-4){arr.active.bassus=false;arr.active.crepitus=false;}
           arr.section='AUSKLANG';
-        }else{arr.advance(bar);if(arr.frac>0)vSweep(D,t,4,stepDur);}
+        }else{arr.advance(bar);if(arr.frac>0)vSweep(D,t,arr.frac,stepDur);}
       }
       scheduleBar(D,arr,g,bar,t,stepDur,rng);
       t+=16*stepDur;
