@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TRITAVA · MIDI → OP–XY (path B · per-note pitch bend / MPE)</title>
+<style>
+  :root{
+    --bg:#0e0d16; --ink:#e6e2f2; --dim:#8a86a6; --line:#242138;
+    --field:#161425; --accent:#9a8cff; --cyan:#7fd4d0; --gold:#d9b44a; --ok:#7fbf6a; --warn:#d98b4a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font:14px/1.5 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  a{color:var(--accent)}
+  .wrap{max-width:940px;margin:0 auto;padding:20px 16px 80px}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;border-bottom:1px solid var(--line);padding-bottom:12px}
+  h1{font-size:20px;margin:0;letter-spacing:.5px}
+  h1 small{color:var(--accent);font-size:12px;letter-spacing:2px}
+  .sub{color:var(--dim);font-size:12px}
+  .pill{margin-left:auto;font-size:11px;color:var(--dim);text-decoration:none;border:1px solid var(--line);padding:4px 8px;border-radius:4px}
+  section{border:1px solid var(--line);border-radius:6px;margin-top:16px;background:var(--field)}
+  section>h2{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin:0;padding:9px 12px;border-bottom:1px solid var(--line)}
+  .body{padding:12px}
+  .row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+  label{font-size:12px;color:var(--dim)}
+  select,input[type=number],input[type=text]{background:#0c0b14;color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:5px 7px;font:inherit;font-size:13px}
+  button{background:#211d38;color:var(--ink);border:1px solid #332e54;border-radius:5px;padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+  button.primary{background:var(--accent);color:#0d0a1c;border-color:var(--accent);font-weight:600}
+  button.on{background:#6f5ff0;border-color:#6f5ff0;color:#fff}
+  table{border-collapse:collapse;width:100%;font-size:12px}
+  th,td{text-align:right;padding:3px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{color:var(--dim);font-weight:400}
+  td.n,th.n{text-align:left}
+  .mono{font-variant-numeric:tabular-nums}
+  .log{height:150px;overflow:auto;background:#090812;border:1px solid var(--line);border-radius:4px;padding:8px;font-size:11px;color:var(--dim);white-space:pre-wrap}
+  .enc{display:grid;grid-template-columns:70px 1fr 90px 70px;gap:8px;align-items:center;margin-bottom:8px}
+  .enc .val{font-size:12px;color:var(--accent);text-align:right}
+  .status{font-size:12px}
+  .status .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#443c66;margin-right:6px;vertical-align:middle}
+  .status.ok .dot{background:var(--ok)} .status.warn .dot{background:var(--warn)}
+  .hint{color:var(--dim);font-size:11.5px;margin:6px 0 0}
+  .warnbox{border:1px solid var(--warn);border-radius:5px;padding:8px 10px;color:var(--warn);font-size:11.5px;margin-top:10px}
+  .kbd{border:1px solid var(--line);border-radius:3px;padding:0 5px;color:var(--ink)}
+  details{margin-top:16px;border:1px solid var(--line);border-radius:6px;background:var(--field)}
+  details summary{cursor:pointer;padding:10px 12px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+  details .body p{margin:0 0 10px}
+  .chans{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+  .cc{width:26px;height:22px;border:1px solid var(--line);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--dim)}
+  .cc.lit{background:var(--accent);color:#0d0a1c;border-color:var(--accent)}
+  .now{font-size:13px} .now b{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>TRITAVA <small>MIDI → OP–XY</small></h1>
+    <span class="sub">path B — per-note pitch bend / MPE · the Bohlen–Pierce scale (no octave)</span>
+    <a class="pill" href="../">↑ opxy fork</a>
+  </header>
+
+  <section>
+    <h2>1 · connect</h2>
+    <div class="body">
+      <div class="row">
+        <button id="connect" class="primary">connect MIDI</button>
+        <label>output <select id="out"><option value="">— none (monitor only) —</option></select></label>
+        <label>input (encoders) <select id="in"><option value="">— none —</option></select></label>
+        <label><input type="checkbox" id="mon" checked> audio monitor</label>
+      </div>
+      <p class="status" id="mstatus"><span class="dot"></span>not connected — Web MIDI needs Chrome/Edge. The monitor works with no device.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>2 · pitch-bend / channel routing</h2>
+    <div class="body">
+      <p class="hint">Bohlen–Pierce repeats at the <b>tritave</b> (3/1), not the octave — an octave-repeating tuning table
+      can't hold it. So each note is sent on its own MIDI channel and bent to its exact frequency. One note per channel =
+      independent tuning per voice (the MPE idea).</p>
+      <div class="row">
+        <label>routing <select id="route">
+          <option value="mpe">MPE lower zone — master ch1, notes ch2–16</option>
+          <option value="poly">poly-channel pool</option>
+        </select></label>
+        <label>pool size <input id="poolN" type="number" min="1" max="15" value="8" style="width:56px"></label>
+        <label>bend range <input id="bend" type="number" min="1" max="48" value="2" style="width:56px"> semitones</label>
+        <label><input type="checkbox" id="mpeSetup" checked> send MPE/RPN setup on play</label>
+      </div>
+      <div class="chans" id="chanView"></div>
+      <div class="warnbox" id="bendWarn">⚠ the OP–XY's pitch-bend range (system settings → MIDI → pitchbend) must equal the
+        value above, or every bent note will land at the wrong pitch. ±2 semitones is a safe, precise default.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>3 · play</h2>
+    <div class="body">
+      <div class="row">
+        <button id="play" class="primary">▶ play</button>
+        <label>mode <select id="mode"></select></label>
+        <label>meter <select id="meter"></select></label>
+        <label>motion <select id="motion"></select></label>
+        <label>tempo <input id="tempo" type="number" min="180" max="460" value="300" style="width:64px"></label>
+        <label>seed <input id="seed" type="number" min="0" max="99999" value="1" style="width:72px"></label>
+        <button id="reseed">↻</button>
+      </div>
+      <p class="now" id="now" style="margin-top:10px">—</p>
+      <p class="hint">Keys: <span class="kbd">space</span> play/stop · <span class="kbd">r</span> new seed. Deterministic — same
+      seed → same score → same channel/bend assignment.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>4 · four encoders → parameters</h2>
+    <div class="body">
+      <p class="hint">Point each slot's CC at whatever CC an OP–XY encoder transmits. Press <b>learn</b>, then move an
+      encoder to capture it. Law changes re-vibe at the next loop.</p>
+      <div id="encMap"></div>
+      <p class="status" id="ccStatus"><span class="dot"></span>last CC: —</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>5 · MIDI stream</h2>
+    <div class="body"><div class="log" id="log"></div></div>
+  </section>
+
+  <details>
+    <summary>on this fork</summary>
+    <div class="body">
+      <p><b>Path B</b> is for the machines the tuning table can't express: more than 12 pitches per octave, non-octave
+      scales, or tunings that drift while they play. TRITAVA is the sharpest case — the Bohlen–Pierce scale is built from
+      the odd harmonics 3·5·7 and closes at the <b>tritave</b> (3/1, a perfect twelfth), so it has no octave at all. You
+      cannot fold it into a per-octave detune table; the pitches simply aren't there.</p>
+      <p>The fix is per-note pitch bend. For every note the fork finds the nearest 12-TET key, computes the cents it must
+      bend to reach the exact BP frequency, puts the note on its own channel, and sends the bend before the note-on. With
+      MPE routing that's up to 15 independently-tuned voices at once. This is where "MPE is needed" is literally true.</p>
+      <p><b>The open risk:</b> whether the OP–XY honours voice-per-channel MPE <i>input</i> is unconfirmed. The
+      poly-channel pool is the fallback — it works on any multitimbral synth that applies pitch bend per channel, capped
+      at the pool size. Set the device's bend range to match, and the monitor (playing the exact frequencies) is your
+      reference for whether the device agrees.</p>
+    </div>
+  </details>
+</div>
+
+<script>
+"use strict";
+/* ===================== TRITAVA model (faithful to tritava/index.html) ====== */
+const BASE=220;
+const BP=[[1,1],[27,25],[25,21],[9,7],[7,5],[75,49],[5,3],[9,5],[49,25],[15,7],[7,3],[63,25],[25,9]];
+const MODEKEYS=['lambda','gamma','harmonia','chromatic'];
+const MODES={
+  lambda:   {deg:[0,2,3,4,6,7,9,10,12], label:'Lambda'},
+  gamma:    {deg:[0,1,3,4,6,7,8,10,12], label:'Gamma'},
+  harmonia: {deg:[0,3,4,6,7,10],        label:'Harmonia'},
+  chromatic:{deg:[0,1,2,3,4,5,6,7,8,9,10,11,12], label:'Chromatic'},
+};
+const CHORDS={ clarus:{mul:[[1,1],[5,3],[7,3]]}, obscurus:{mul:[[1,1],[7,5],[9,5]]} };
+const METERKEYS=[4,5,7];
+const METERS={4:[2,2],5:[2,3],7:[2,2,3]};
+const MOTIONKEYS=['still','flow','sparkle'];
+const REGBAND={pulsus:[BASE,BASE*3],campana:[BASE,BASE*3],cantus:[BASE*3,BASE*9]};
+
+function gcd(a,b){return b?gcd(b,a%b):a;}
+function reduceFrac(n,d){const g=gcd(n,d)||1;return [n/g,d/g];}
+function foldTri(n,d){let [a,b]=reduceFrac(n,d);while(a/b>=3)b*=3;while(a/b<1)a*=3;return reduceFrac(a,b);}
+function centsOf(r){return 1200*Math.log2(r[0]/r[1]);}
+function clamp(v,lo,hi){return v<lo?lo:v>hi?hi:v;}
+function chordTones(root,quality){return CHORDS[quality].mul.map(f=>foldTri(root[0]*f[0],root[1]*f[1]));}
+function ratioToHz(ratio,voice){ const [lo,hi]=REGBAND[voice]; let hz=BASE*ratio[0]/ratio[1];
+  while(hz<lo)hz*=3; while(hz>=hi)hz/=3; return hz; }
+function mulberry32(a){ return function(){ a|=0; a=a+0x6d2b79f5|0; let t=Math.imul(a^a>>>15,1|a);
+  t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+function genAll(st){
+  const mode=MODES[st.mode], deg=mode.deg, nd=deg.length;
+  const rng=mulberry32(((st.seed>>>0)^0x7717A7A)>>>0);
+  const bars=32, ppb=8, changeEvery=st.motion==='still'?2:1;
+  const rootIdx=new Array(bars), qual=new Array(bars); let cur=0;
+  for(let b=0;b<bars;b++){
+    if(b%ppb===0) cur=0;
+    else if(b%changeEvery===0){ const step=rng()<0.72?(rng()<0.5?1:-1):(rng()<0.5?2:-2); cur=((cur+step)%nd+nd)%nd; }
+    rootIdx[b]=cur;
+    qual[b]=(cur===0||b%ppb===ppb-1)?'clarus':(rng()<0.25?'obscurus':'clarus');
+  }
+  return {mode,deg,nd,bars,ppb,rootIdx,qual};
+}
+function assemble(st){
+  const G=genAll(st); const {deg,nd,bars,ppb,rootIdx,qual}=G;
+  const PB=METERS[st.meter], eighths=PB.reduce((a,b)=>a+b,0);
+  const heads=[]; {let c=0;for(const g of PB){heads.push(c);c+=g;}}
+  const eD=60/st.tempo, barDur=eighths*eD; const ev=[];
+  const arpDens=st.motion==='sparkle'?0.85:(st.motion==='flow'?0.55:0.28);
+  const melDens=st.motion==='sparkle'?0.7:(st.motion==='flow'?0.42:0.22);
+  let m=0;
+  for(let b=0;b<bars;b++){
+    const t0=b*barDur; const root=BP[deg[rootIdx[b]]]; const ct=chordTones(root,qual[b]);
+    const rng=mulberry32((((st.seed>>>0)^0x7717A7A)+(b+1)*2654435761)>>>0);
+    for(const h of heads) ev.push({voice:'pulsus',t:t0+h*eD,ratio:[1,1],vel:h===0?1:.55});
+    for(let e=0;e<eighths;e++){
+      const isHead=heads.indexOf(e)>=0;
+      if(isHead){ const tone=e===0?ct[0]:ct[(heads.indexOf(e))%3]; ev.push({voice:'campana',t:t0+e*eD,ratio:tone,vel:e===0?1:.78}); }
+      else if(rng()<arpDens){ ev.push({voice:'campana',t:t0+e*eD,ratio:ct[(rng()*3)|0],vel:.5}); }
+    }
+    if(b%ppb===0) m=rootIdx[b];
+    for(let e=0;e<eighths;e++){
+      const isHead=heads.indexOf(e)>=0;
+      let play=(e===0)||(isHead?rng()<melDens+0.32:rng()<melDens);
+      if(!play) continue;
+      if(e!==0){ const stp=rng()<0.74?(rng()<0.5?1:-1):(rng()<0.5?2:-2); m=clamp(m+stp,0,nd-1); }
+      ev.push({voice:'cantus',t:t0+e*eD,ratio:BP[deg[m]],vel:isHead?.82:.6});
+    }
+  }
+  ev.sort((a,b)=>a.t-b.t);
+  return {ev,dur:bars*barDur,mode:G.mode};
+}
+
+/* ===================== state + hash ======================================= */
+const st={ mode:'lambda', motion:'flow', meter:5, tempo:300, seed:1,
+           route:'mpe', poolN:8, bendRange:2, mpeSetup:true, monitor:true };
+function readHash(){
+  const h=new URLSearchParams(location.hash.slice(1));
+  if(h.has('m')&&MODES[h.get('m')]) st.mode=h.get('m');
+  if(h.has('o')&&MOTIONKEYS.includes(h.get('o'))) st.motion=h.get('o');
+  if(h.has('e')&&METERS[+h.get('e')]) st.meter=+h.get('e');
+  if(h.has('t')) st.tempo=clamp(+h.get('t')||300,180,460);
+  if(h.has('s')) st.seed=+h.get('s')||0;
+}
+function writeHash(){ location.replace('#'+new URLSearchParams({m:st.mode,o:st.motion,e:st.meter,t:st.tempo,s:st.seed}).toString()); }
+
+/* ===================== Web MIDI ============================================ */
+let midi=null, outPort=null, inPort=null;
+const el=id=>document.getElementById(id);
+function log(s){ const L=el('log'); L.textContent+=s+'\n'; L.scrollTop=L.scrollHeight; }
+function setStatus(id,cls,txt){ const e=el(id); e.className='status'+(cls?' '+cls:''); e.innerHTML='<span class="dot"></span>'+txt; }
+async function connect(){
+  if(!navigator.requestMIDIAccess){ setStatus('mstatus','warn','Web MIDI unavailable (use Chrome/Edge). Monitor still works.'); return; }
+  try{ midi=await navigator.requestMIDIAccess({sysex:false}); midi.onstatechange=refreshPorts; refreshPorts();
+    setStatus('mstatus','ok','MIDI ready — pick your OP–XY as output (and input for the encoders).');
+  }catch(e){ setStatus('mstatus','warn','MIDI access denied: '+e.message+'. Monitor still works.'); }
+}
+function refreshPorts(){
+  const o=el('out'),i=el('in'); const kO=o.value,kI=i.value;
+  o.innerHTML='<option value="">— none (monitor only) —</option>'; i.innerHTML='<option value="">— none —</option>';
+  for(const p of midi.outputs.values()){ const x=document.createElement('option'); x.value=p.id; x.textContent=p.name; o.appendChild(x); }
+  for(const p of midi.inputs.values()){ const x=document.createElement('option'); x.value=p.id; x.textContent=p.name; i.appendChild(x); }
+  if(!kO) for(const p of midi.outputs.values()) if(/op[- ]?xy/i.test(p.name)){ o.value=p.id; break; }
+  if(!kI) for(const p of midi.inputs.values())  if(/op[- ]?xy/i.test(p.name)){ i.value=p.id; break; }
+  o.value=o.value||kO; i.value=i.value||kI; selectOut(); selectIn();
+}
+function selectOut(){ outPort=midi?midi.outputs.get(el('out').value)||null:null; }
+function selectIn(){ if(inPort) inPort.onmidimessage=null; inPort=midi?midi.inputs.get(el('in').value)||null:null; if(inPort) inPort.onmidimessage=onCC; }
+function send(bytes,whenMs){ if(outPort) outPort.send(bytes,whenMs); }
+
+/* ===================== audio monitor (odd-harmonic-ish) =================== */
+let ac=null, monGain=null;
+function ensureAudio(){ if(ac) return; ac=new (window.AudioContext||window.webkitAudioContext)();
+  monGain=ac.createGain(); monGain.gain.value=0.20; monGain.connect(ac.destination); }
+function monVoice(freq,whenAC,dur,vel,voice){
+  if(!st.monitor) return;
+  const g=ac.createGain(); g.connect(monGain);
+  const partials= voice==='pulsus'?[1]:[1,3,5];
+  partials.forEach((h,k)=>{ const o=ac.createOscillator(); o.type='sine'; o.frequency.value=freq*h;
+    const gg=ac.createGain(); gg.gain.value=1/(h*h); o.connect(gg); gg.connect(g); o.start(whenAC); o.stop(whenAC+dur+0.05); });
+  const peak=vel*(voice==='campana'?0.5:voice==='cantus'?0.45:0.3);
+  g.gain.setValueAtTime(0.0001,whenAC);
+  g.gain.exponentialRampToValueAtTime(Math.max(peak,0.001),whenAC+0.008);
+  g.gain.exponentialRampToValueAtTime(0.0006,whenAC+dur);
+}
+
+/* ===================== frequency → note + 14-bit pitch bend =============== */
+function freqToBend(freq){
+  const note=Math.round(69+12*Math.log2(freq/440));
+  const nf=440*Math.pow(2,(note-69)/12);
+  const cents=1200*Math.log2(freq/nf);
+  let b=Math.round(8192 + cents/(st.bendRange*100)*8192);
+  b=clamp(b,0,16383);
+  return {note, bend:b, cents};
+}
+// inverse — used by verification to prove the bytes reconstruct the freq
+function bendToFreq(note,bend14,bendRange){
+  const nf=440*Math.pow(2,(note-69)/12);
+  const cents=(bend14-8192)/8192*bendRange*100;
+  return nf*Math.pow(2,cents/1200);
+}
+
+/* ===================== channel allocation (deterministic) ================= */
+function channelPool(){
+  if(st.route==='mpe'){ const n=clamp(st.poolN,1,15); const a=[]; for(let c=2;c<2+n;c++) a.push(c); return a; }
+  const n=clamp(st.poolN,1,16); const a=[]; for(let c=1;c<=n;c++) a.push(c); return a;
+}
+function assignChannels(events,pool){
+  const freeAt=pool.map(()=>-1);      // when each channel next falls silent (sec)
+  const lastEv=pool.map(()=>null);    // the note currently owning each channel
+  for(const e of events){
+    let idx=-1;
+    for(let k=0;k<pool.length;k++){ if(freeAt[k]<=e.tSec+1e-9){ idx=k; break; } }
+    if(idx<0){                        // pool exhausted — steal the soonest-freeing channel
+      idx=0; for(let k=1;k<pool.length;k++) if(freeAt[k]<freeAt[idx]) idx=k;
+      e.stolen=true;
+      if(lastEv[idx]) lastEv[idx].dur=Math.max(0, e.tSec-lastEv[idx].tSec); // truncate so it ends before the steal (0 = dropped)
+    }
+    e.channel=pool[idx]; freeAt[idx]=e.tSec+e.dur; lastEv[idx]=e;
+  }
+}
+
+/* ===================== transport / scheduler ============================== */
+let running=false, timer=null, tp=null;
+const LOOKAHEAD=0.12, TICK=25;
+function gateSec(voice){ const eD=60/st.tempo; return (voice==='pulsus'?0.5:voice==='campana'?1.5:1.0)*eD; }
+function buildLap(){
+  const A=assemble(st);
+  const events=A.ev.map(e=>{ const freq=ratioToHz(e.ratio,e.voice); const fb=freqToBend(freq);
+    return { tSec:e.t, dur:gateSec(e.voice), freq, note:fb.note, bend:fb.bend, cents:fb.cents,
+             vel:Math.max(1,Math.min(127,Math.round(e.vel*127))), voice:e.voice }; });
+  events.sort((a,b)=>a.tSec-b.tSec);
+  assignChannels(events, channelPool());
+  return { events, lapDur:A.dur, mode:A.mode };
+}
+function sendMpeSetup(){
+  if(!st.mpeSetup || !outPort) return;
+  if(st.route==='mpe'){
+    const master=0, members=clamp(st.poolN,1,15);
+    // MPE configuration message on master (RPN 6 = member channel count)
+    send([0xB0|master,101,0]); send([0xB0|master,100,6]); send([0xB0|master,6,members]);
+    for(let c=2;c<2+members;c++){ const ch=c-1;
+      send([0xB0|ch,101,0]); send([0xB0|ch,100,0]); send([0xB0|ch,6,clamp(st.bendRange,1,48)]); } // pitch-bend range
+  } else {
+    for(const c of channelPool()){ const ch=c-1;
+      send([0xB0|ch,101,0]); send([0xB0|ch,100,0]); send([0xB0|ch,6,clamp(st.bendRange,1,48)]); }
+  }
+}
+function start(){
+  ensureAudio(); if(ac.state==='suspended') ac.resume();
+  running=true; el('play').classList.add('on'); el('play').textContent='■ stop';
+  sendMpeSetup();
+  const lp=buildLap();
+  tp={ ...lp, i:0, startPerf:performance.now()+80, startAC:ac.currentTime+0.08, lap:0 };
+  el('now').innerHTML='playing · <b>'+MODES[st.mode].label+'</b> · meter '+st.meter+' · '+st.motion;
+  timer=setInterval(scan,TICK);
+}
+function stop(){
+  running=false; el('play').classList.remove('on'); el('play').textContent='▶ play';
+  clearInterval(timer); timer=null;
+  if(outPort) for(let c=0;c<16;c++){ outPort.send([0xB0|c,123,0]); outPort.send([0xE0|c,0,64]); } // notes off + bend centre
+  litChannels(new Set()); el('now').textContent='—';
+}
+function scan(){
+  if(!tp) return;
+  const elapsed=(performance.now()-tp.startPerf)/1000, horizon=elapsed+LOOKAHEAD;
+  const lit=new Set();
+  while(tp.i<tp.events.length && tp.events[tp.i].tSec<=horizon){
+    const e=tp.events[tp.i++]; if(e.dur<=0) continue; // dropped by a same-instant steal
+    const ch=e.channel-1;
+    const onMs=tp.startPerf+e.tSec*1000, offMs=onMs+e.dur*1000, onAC=tp.startAC+e.tSec;
+    send([0xE0|ch, e.bend&0x7F, (e.bend>>7)&0x7F], onMs);   // bend first
+    send([0x90|ch, e.note, e.vel], onMs);                  // then note-on
+    send([0x80|ch, e.note, 0], offMs);                     // note-off
+    monVoice(e.freq,onAC,e.dur,e.vel/127,e.voice);
+    if(tp.i%9===0) log('t+'+e.tSec.toFixed(2)+' ch'+e.channel+' '+e.voice+' n'+e.note+' bend'+e.bend+' ('+(e.cents>=0?'+':'')+e.cents.toFixed(1)+'¢) '+Math.round(e.freq)+'Hz');
+  }
+  // light active channels (approx: those whose note is sounding now)
+  for(let k=Math.max(0,tp.i-channelPool().length);k<tp.i;k++){ const e=tp.events[k]; if(e && e.tSec<=elapsed && e.tSec+e.dur>elapsed) lit.add(e.channel); }
+  litChannels(lit);
+  if(elapsed>=tp.lapDur){
+    tp.startPerf+=tp.lapDur*1000; tp.startAC+=tp.lapDur;
+    const lp=buildLap(); tp.events=lp.events; tp.lapDur=lp.lapDur; tp.i=0; tp.lap++;
+    el('now').innerHTML='playing · <b>'+MODES[st.mode].label+'</b> · meter '+st.meter+' · '+st.motion+' · loop '+(tp.lap+1);
+  }
+}
+
+/* ===================== channel view ====================================== */
+function buildChanView(){ const v=el('chanView'); v.innerHTML=''; for(let c=1;c<=16;c++){ const d=document.createElement('div'); d.className='cc'; d.id='ch'+c; d.textContent=c; v.appendChild(d); } }
+function litChannels(set){ for(let c=1;c<=16;c++){ const d=el('ch'+c); if(d) d.classList.toggle('lit', set.has(c)); } }
+
+/* ===================== encoder CC-in mapping ============================== */
+const PARAMS={
+  mode:  {label:'mode',   min:0,max:3,   get:()=>MODEKEYS.indexOf(st.mode),   set:v=>st.mode=MODEKEYS[clamp(Math.round(v),0,3)] },
+  meter: {label:'meter',  min:0,max:2,   get:()=>METERKEYS.indexOf(st.meter), set:v=>st.meter=METERKEYS[clamp(Math.round(v),0,2)] },
+  motion:{label:'motion', min:0,max:2,   get:()=>MOTIONKEYS.indexOf(st.motion),set:v=>st.motion=MOTIONKEYS[clamp(Math.round(v),0,2)] },
+  tempo: {label:'tempo',  min:200,max:420,get:()=>st.tempo,                   set:v=>st.tempo=Math.round(v) },
+};
+const encoders=[ {cc:1,param:'mode'}, {cc:2,param:'meter'}, {cc:3,param:'motion'}, {cc:4,param:'tempo'} ];
+let learnIdx=-1;
+function buildEncUI(){
+  const box=el('encMap'); box.innerHTML='';
+  encoders.forEach((slot,idx)=>{
+    const row=document.createElement('div'); row.className='enc';
+    const cc=document.createElement('input'); cc.type='number'; cc.min=0;cc.max=127;cc.value=slot.cc;cc.style.width='60px';
+    cc.oninput=()=>slot.cc=+cc.value;
+    const sel=document.createElement('select');
+    for(const k in PARAMS){ const o=document.createElement('option'); o.value=k;o.textContent=PARAMS[k].label; if(k===slot.param)o.selected=true; sel.appendChild(o); }
+    sel.onchange=()=>slot.param=sel.value;
+    const learn=document.createElement('button'); learn.textContent='learn';
+    learn.onclick=()=>{ learnIdx=idx; learn.classList.add('on'); setTimeout(()=>{ if(learnIdx===idx){learnIdx=-1;learn.classList.remove('on');} },6000); };
+    const val=document.createElement('div'); val.className='val'; val.id='encval'+idx; val.textContent='cc'+slot.cc;
+    row.append(document.createTextNode('CC'),cc,sel,learn,val); box.appendChild(row);
+  });
+}
+function onCC(msg){
+  const [status,d1,d2]=msg.data; if((status&0xf0)!==0xB0) return;
+  const chan=(status&0x0f)+1;
+  setStatus('ccStatus','ok','last CC: cc'+d1+' = '+d2+'  (ch'+chan+')');
+  if(learnIdx>=0){ encoders[learnIdx].cc=d1; learnIdx=-1; buildEncUI(); return; }
+  encoders.forEach((slot,idx)=>{
+    if(slot.cc!==d1) return; const P=PARAMS[slot.param];
+    P.set(P.min+(d2/127)*(P.max-P.min));
+    el('encval'+idx).textContent=P.label+'='+Math.round(P.get());
+    syncControls(); writeHash();
+  });
+}
+
+/* ===================== wiring ============================================= */
+function fillSelects(){
+  const m=el('mode'); MODEKEYS.forEach(k=>{ const o=document.createElement('option'); o.value=k;o.textContent=MODES[k].label; m.appendChild(o); });
+  const e=el('meter'); METERKEYS.forEach(k=>{ const o=document.createElement('option'); o.value=k;o.textContent=k+' · '+METERS[k].join('+'); e.appendChild(o); });
+  const mo=el('motion'); MOTIONKEYS.forEach(k=>{ const o=document.createElement('option'); o.value=k;o.textContent=k; mo.appendChild(o); });
+}
+function syncControls(){
+  el('mode').value=st.mode; el('meter').value=st.meter; el('motion').value=st.motion;
+  el('tempo').value=st.tempo; el('seed').value=st.seed; el('route').value=st.route;
+  el('poolN').value=st.poolN; el('bend').value=st.bendRange; el('mpeSetup').checked=st.mpeSetup; el('mon').checked=st.monitor;
+}
+function init(){
+  readHash(); fillSelects(); buildEncUI(); buildChanView(); syncControls(); writeHash();
+  el('connect').onclick=connect; el('out').onchange=selectOut; el('in').onchange=selectIn;
+  el('mon').onchange=()=>st.monitor=el('mon').checked;
+  el('route').onchange=()=>{ st.route=el('route').value; };
+  el('poolN').oninput=()=>st.poolN=clamp(+el('poolN').value||8,1,15);
+  el('bend').oninput=()=>st.bendRange=clamp(+el('bend').value||2,1,48);
+  el('mpeSetup').onchange=()=>st.mpeSetup=el('mpeSetup').checked;
+  el('mode').onchange=()=>{ st.mode=el('mode').value; writeHash(); };
+  el('meter').onchange=()=>{ st.meter=+el('meter').value; writeHash(); };
+  el('motion').onchange=()=>{ st.motion=el('motion').value; writeHash(); };
+  el('tempo').oninput=()=>{ st.tempo=+el('tempo').value; writeHash(); };
+  el('seed').oninput=()=>{ st.seed=+el('seed').value; writeHash(); };
+  el('reseed').onclick=()=>{ st.seed=(Math.random()*99999)|0; syncControls(); writeHash(); };
+  el('play').onclick=()=> running?stop():start();
+  window.addEventListener('keydown',e=>{
+    if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
+    if(e.code==='Space'){ e.preventDefault(); running?stop():start(); }
+    if(e.key==='r'){ el('reseed').click(); }
+  });
+  window.__tritava={ BP,MODES,CHORDS,METERS,REGBAND, genAll,assemble,ratioToHz,foldTri,centsOf,chordTones,
+    buildLap, freqToBend, bendToFreq, channelPool, assignChannels, PARAMS, encoders, onCC, st, BASE };
+}
+init();
+</script>
+</body>
+</html>

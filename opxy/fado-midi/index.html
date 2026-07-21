@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FADÓ · MIDI → OP–XY (path A · tuning table)</title>
+<style>
+  :root{
+    --bg:#141013; --ink:#e9dcc9; --dim:#9a8b7a; --line:#2e2621;
+    --field:#1d1712; --accent:#e08a2e; --accent2:#c05a3a; --ok:#7fbf6a; --warn:#d98b4a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font:14px/1.5 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  a{color:var(--accent)}
+  .wrap{max-width:940px;margin:0 auto;padding:20px 16px 80px}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 14px;border-bottom:1px solid var(--line);padding-bottom:12px}
+  h1{font-size:20px;margin:0;letter-spacing:.5px}
+  h1 small{color:var(--accent);font-size:12px;letter-spacing:2px}
+  .sub{color:var(--dim);font-size:12px}
+  .pill{margin-left:auto;font-size:11px;color:var(--dim);text-decoration:none;border:1px solid var(--line);
+    padding:4px 8px;border-radius:4px}
+  section{border:1px solid var(--line);border-radius:6px;margin-top:16px;background:var(--field)}
+  section>h2{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--dim);
+    margin:0;padding:9px 12px;border-bottom:1px solid var(--line)}
+  .body{padding:12px}
+  .row{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+  label{font-size:12px;color:var(--dim)}
+  select,input[type=number],input[type=text]{background:#120d0a;color:var(--ink);border:1px solid var(--line);
+    border-radius:4px;padding:5px 7px;font:inherit;font-size:13px}
+  button{background:#241a12;color:var(--ink);border:1px solid #3a2c1f;border-radius:5px;
+    padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+  button.primary{background:var(--accent);color:#170f06;border-color:var(--accent);font-weight:600}
+  button.on{background:var(--accent2);border-color:var(--accent2);color:#fff}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:720px){.grid{grid-template-columns:1fr}}
+  table{border-collapse:collapse;width:100%;font-size:12px}
+  th,td{text-align:right;padding:3px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+  th{color:var(--dim);font-weight:400;text-align:right}
+  td.n,th.n{text-align:left;color:var(--ink)}
+  .mono{font-variant-numeric:tabular-nums}
+  .log{height:150px;overflow:auto;background:#0e0a08;border:1px solid var(--line);border-radius:4px;
+    padding:8px;font-size:11px;color:var(--dim);white-space:pre-wrap}
+  .enc{display:grid;grid-template-columns:70px 1fr 90px 60px;gap:8px;align-items:center;margin-bottom:8px}
+  .enc .val{font-size:12px;color:var(--accent);text-align:right}
+  .status{font-size:12px}
+  .status .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#664;margin-right:6px;vertical-align:middle}
+  .status.ok .dot{background:var(--ok)} .status.warn .dot{background:var(--warn)}
+  .hint{color:var(--dim);font-size:11.5px;margin:6px 0 0}
+  .kbd{border:1px solid var(--line);border-radius:3px;padding:0 5px;color:var(--ink)}
+  details{margin-top:16px;border:1px solid var(--line);border-radius:6px;background:var(--field)}
+  details summary{cursor:pointer;padding:10px 12px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+  details .body p{margin:0 0 10px}
+  .now{font-size:13px;color:var(--ink)}
+  .now b{color:var(--accent)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>FADÓ <small>MIDI → OP–XY</small></h1>
+    <span class="sub">path A — native tuning table · Pythagorean (3-limit) just intonation</span>
+    <a class="pill" href="../">↑ opxy fork</a>
+  </header>
+
+  <section>
+    <h2>1 · connect</h2>
+    <div class="body">
+      <div class="row">
+        <button id="connect" class="primary">connect MIDI</button>
+        <label>output <select id="out"><option value="">— none (monitor only) —</option></select></label>
+        <label>input (encoders) <select id="in"><option value="">— none —</option></select></label>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <label>out channel <input id="ch" type="number" min="1" max="16" value="1" style="width:56px"></label>
+        <label>root note (A) <input id="root" type="number" min="0" max="127" value="57" style="width:56px"></label>
+        <label><input type="checkbox" id="mon" checked> audio monitor</label>
+      </div>
+      <p class="status" id="mstatus"><span class="dot"></span>not connected — Web MIDI needs Chrome/Edge (not Safari). The monitor works with no device.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>2 · tuning table — dial this into the OP–XY</h2>
+    <div class="body">
+      <p class="hint">On the OP–XY: <b>system settings → tuning</b>. Create a user tuning, then play each note on the
+      keyboard and set its <b>detune</b> (cents) to the value below. Then set that user tuning active. FADÓ sends
+      plain 12-TET note numbers; the OP–XY retunes each pitch-class to the exact Pythagorean ratio — nothing bends.</p>
+      <div class="grid">
+        <table id="tuneTbl"><thead><tr>
+          <th class="n">note</th><th>ratio (÷ A)</th><th>cents</th><th>detune ¢</th></tr></thead><tbody></tbody></table>
+        <div>
+          <div class="row"><button id="copyDetune">copy detune list</button><button id="copyScala">copy .scl</button></div>
+          <p class="hint" id="copyMsg">detune = how far each note sits from equal temperament. Twelve values, one octave, repeats every octave.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>3 · play</h2>
+    <div class="body">
+      <div class="row">
+        <button id="play" class="primary">▶ play</button>
+        <label>mode <select id="mode"></select></label>
+        <label>progression <select id="prog"></select></label>
+        <label>tempo <input id="tempo" type="number" min="50" max="120" value="76" style="width:60px"> bpm</label>
+        <label>seed <input id="seed" type="number" min="0" max="99999" value="1848" style="width:76px"></label>
+        <button id="reseed">↻</button>
+      </div>
+      <p class="now" id="now" style="margin-top:10px">—</p>
+      <p class="hint">Keys: <span class="kbd">space</span> play/stop · <span class="kbd">r</span> new seed. Same seed → same pressing → same MIDI bytes.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>4 · four encoders → parameters</h2>
+    <div class="body">
+      <p class="hint">Set each slot's CC to whatever CC an OP–XY encoder sends (hold <b>shift</b>+rotate on the device to
+      assign its CC). Press <b>learn</b> then move an encoder to capture it. Incoming values scale to the parameter's range;
+      law changes re-vibe at the next loop.</p>
+      <div id="encMap"></div>
+      <p class="status" id="ccStatus"><span class="dot"></span>last CC: —</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>5 · MIDI stream</h2>
+    <div class="body"><div class="log" id="log"></div></div>
+  </section>
+
+  <details>
+    <summary>on this fork</summary>
+    <div class="body">
+      <p><b>Path A</b> proves the cleanest way to get non-equal temperament out of the OP–XY: its built-in per-note
+      tuning table (cents + micro-cents, up to 11 user tunings). Any scale of ≤12 pitch-classes that repeats every
+      octave — which is most of OPVSCVLA's tuned machines — becomes twelve detune values you enter once. After that the
+      composition is ordinary MIDI notes, no pitch-bend juggling, full polyphony.</p>
+      <p>FADÓ is the demo: Portuguese fado over a Pythagorean (3-limit) ladder, tonic A. The generator is faithful to the
+      original machine — the same modal walk and i–V / i–iv / i–♭VII root motion — but here it drives the OP–XY's voices
+      instead of the browser's. The internal monitor plays the exact just frequencies so you can hear the target even with
+      no device attached; with the tuning table dialled in, the OP–XY should match it.</p>
+      <p><b>What travels and what doesn't:</b> MIDI carries pitch and tuning, not timbre. The "rich harmonics" you hear
+      are the OP–XY engine's, tuned to fado's ratios — not FADÓ's own synthesis.</p>
+    </div>
+  </details>
+</div>
+
+<script>
+"use strict";
+/* ===================== FADÓ model (faithful to fado/index.html) ============ */
+const BASE = 220;                          // tonic A3
+const JI = [ [1,1],[256,243],[9,8],[32,27],[81,64],[4,3],[729,512],[3,2],[128,81],[27,16],[16,9],[243,128],[2,1] ];
+const MODES = [
+  { name:'Phrygian (triste)',         steps:[0,1,3,5,7,8,10] },
+  { name:'Harmonic minor (anguished)',steps:[0,2,3,5,7,8,11] },
+  { name:'Aeolian (melancholic)',     steps:[0,2,3,5,7,9,10] },
+];
+const PROGRESSIONS = [
+  { name:'i–V–i',   degrees:[0,7,0,7,0] },
+  { name:'i–iv–i',  degrees:[0,5,0,5,0] },
+  { name:'i–♭VII–i',degrees:[0,10,0,10,0] },
+];
+const NOTE_NAMES = ['C','C♯','D','D♯','E','F','F♯','G','G♯','A','A♯','B'];
+
+function jiFreq(num,den,octave){ return BASE * num/den * Math.pow(2, octave||0); }
+function mulberry32(a){ return function(){ a|=0; a=a+0x6d2b79f5|0; let t=Math.imul(a^a>>>15,1|a);
+  t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+
+// Faithful generator, but progression is an explicit param (encoder target) so
+// the fourth encoder can steer harmony instead of it being seed-picked.
+function genAll(seed, modeIdx, progIdx){
+  const rng = mulberry32(seed>>>0);
+  const mode = MODES[modeIdx];
+  const prog = PROGRESSIONS[progIdx];
+  const bars = 32, events = [];
+  let stepIdx = Math.floor(mode.steps.length/2);
+  for(let bar=0; bar<bars; bar++){
+    const beat = bar*2;
+    const rootDeg = prog.degrees[bar % prog.degrees.length];
+    const fifthDeg = (rootDeg+7)%12;
+    const rootFreq = jiFreq(JI[rootDeg][0], JI[rootDeg][1], 0);
+    const fifthFreq= jiFreq(JI[fifthDeg][0], JI[fifthDeg][1], 0);
+    events.push({ type:'chord', t:beat, dur:1.7,
+      freqs:[ rootFreq/2, rootFreq, fifthFreq, rootFreq*2 ], vel:0.5 });
+    const nNotes = 1 + Math.floor(rng()*3);
+    for(let n=0;n<nNotes;n++){
+      const beatOffset = (n+0.5)*(2/nNotes);
+      const delta = [-1,0,1][Math.floor(rng()*3)];
+      stepIdx = Math.max(0, Math.min(mode.steps.length-1, stepIdx+delta));
+      const semis = mode.steps[stepIdx];
+      const octave = Math.floor(rng()*2);
+      const freq = jiFreq(JI[semis][0], JI[semis][1], octave);
+      const dur = 0.5 + rng()*0.3;
+      events.push({ type:'note', t:beat+beatOffset, freqs:[freq], dur, vel:0.6+rng()*0.2 });
+    }
+  }
+  events.sort((a,b)=>a.t-b.t);
+  return { events, prog, mode };
+}
+
+/* ===================== tuning table (path A's whole point) ================= */
+// For MIDI pitch-class m (C=0..B=11): the interval above the A-tonic is
+// p=(m-9+12)%12 semitones. 12-TET puts it at 100·p cents; Pythagorean puts it
+// at 1200·log2(JI[p]) cents. The detune the OP–XY needs is the difference.
+function centsAbove(p){ return 1200*Math.log2(JI[p][0]/JI[p][1]); } // above tonic
+function tuningRows(){
+  const rows=[];
+  for(let m=0;m<12;m++){
+    const p=((m-9)%12+12)%12;
+    const abs=centsAbove(p);
+    rows.push({ m, name:NOTE_NAMES[m], ratio:JI[p], cents:abs, detune:abs-100*p });
+  }
+  return rows;
+}
+
+/* ===================== state + hash ======================================= */
+const st = { seed:1848, mode:0, prog:0, tempo:76, root:57, ch:1, monitor:true };
+function readHash(){
+  const h=new URLSearchParams(location.hash.slice(1));
+  if(h.has('s')) st.seed=+h.get('s')||0;
+  if(h.has('m')) st.mode=Math.max(0,Math.min(2,+h.get('m')||0));
+  if(h.has('p')) st.prog=Math.max(0,Math.min(2,+h.get('p')||0));
+  if(h.has('t')) st.tempo=Math.max(50,Math.min(120,+h.get('t')||76));
+}
+function writeHash(){
+  location.replace('#'+new URLSearchParams({s:st.seed,m:st.mode,p:st.prog,t:st.tempo}).toString());
+}
+
+/* ===================== Web MIDI ============================================ */
+let midi=null, outPort=null, inPort=null;
+const el = id=>document.getElementById(id);
+function log(s){ const L=el('log'); L.textContent += s+'\n'; L.scrollTop=L.scrollHeight; }
+function setStatus(id, cls, txt){ const e=el(id); e.className='status'+(cls?' '+cls:''); e.innerHTML='<span class="dot"></span>'+txt; }
+
+async function connect(){
+  if(!navigator.requestMIDIAccess){ setStatus('mstatus','warn','Web MIDI unavailable in this browser (use Chrome/Edge). Monitor still works.'); return; }
+  try{
+    midi = await navigator.requestMIDIAccess({sysex:false});
+    midi.onstatechange = refreshPorts;
+    refreshPorts();
+    setStatus('mstatus','ok','MIDI ready — pick your OP–XY as output (and input for the encoders).');
+  }catch(e){ setStatus('mstatus','warn','MIDI access denied: '+e.message+'. Monitor still works.'); }
+}
+function refreshPorts(){
+  const o=el('out'), i=el('in');
+  const keepO=o.value, keepI=i.value;
+  o.innerHTML='<option value="">— none (monitor only) —</option>';
+  i.innerHTML='<option value="">— none —</option>';
+  for(const p of midi.outputs.values()){ const op=document.createElement('option'); op.value=p.id; op.textContent=p.name; o.appendChild(op); }
+  for(const p of midi.inputs.values()){ const op=document.createElement('option'); op.value=p.id; op.textContent=p.name; i.appendChild(op); }
+  // auto-select an OP-XY if present
+  if(!keepO){ for(const p of midi.outputs.values()) if(/op[- ]?xy/i.test(p.name)){ o.value=p.id; break; } }
+  if(!keepI){ for(const p of midi.inputs.values())  if(/op[- ]?xy/i.test(p.name)){ i.value=p.id; break; } }
+  o.value=o.value||keepO; i.value=i.value||keepI;
+  selectOut(); selectIn();
+}
+function selectOut(){ outPort = midi ? midi.outputs.get(el('out').value)||null : null; }
+function selectIn(){
+  if(inPort) inPort.onmidimessage=null;
+  inPort = midi ? midi.inputs.get(el('in').value)||null : null;
+  if(inPort) inPort.onmidimessage = onCC;
+}
+function send(bytes, whenMs){ if(outPort) outPort.send(bytes, whenMs); }
+
+/* ===================== audio monitor ====================================== */
+let ac=null, monGain=null;
+function ensureAudio(){
+  if(ac) return;
+  ac = new (window.AudioContext||window.webkitAudioContext)();
+  monGain = ac.createGain(); monGain.gain.value=0.22; monGain.connect(ac.destination);
+}
+function monVoice(freq, whenAC, dur, vel, kind){
+  if(!st.monitor) return;
+  const o=ac.createOscillator(), g=ac.createGain();
+  o.type = kind==='chord' ? 'sawtooth' : 'triangle';
+  o.frequency.value=freq;
+  const a=0.012, peak=vel*(kind==='chord'?0.5:0.9);
+  g.gain.setValueAtTime(0.0001, whenAC);
+  g.gain.exponentialRampToValueAtTime(Math.max(peak,0.001), whenAC+a);
+  g.gain.exponentialRampToValueAtTime(0.0006, whenAC+dur);
+  o.connect(g); g.connect(monGain);
+  o.start(whenAC); o.stop(whenAC+dur+0.05);
+}
+
+/* ===================== frequency → plain MIDI note ========================= */
+function freqToNote(freq){ return Math.round(69 + 12*Math.log2(freq/440)); } // nearest 12-TET
+
+/* ===================== transport / scheduler ============================== */
+let running=false, timer=null, tp=null;
+const LOOKAHEAD=0.12, TICK=25;
+function beatDur(){ return 60/st.tempo; }
+function buildLap(){
+  const g=genAll(st.seed, st.mode, st.prog);
+  const bd=beatDur();
+  const ev=[];
+  for(const e of g.events){
+    for(const f of e.freqs){
+      ev.push({ tSec:e.t*bd, dur:e.dur*bd, freq:f, note:freqToNote(f),
+                vel:Math.max(1,Math.min(127,Math.round(e.vel*127))), kind:e.type });
+    }
+  }
+  ev.sort((a,b)=>a.tSec-b.tSec);
+  return { ev, lapDur:64*bd, prog:g.prog, mode:g.mode };
+}
+function start(){
+  ensureAudio(); if(ac.state==='suspended') ac.resume();
+  running=true; el('play').classList.add('on'); el('play').textContent='■ stop';
+  const lp=buildLap();
+  tp={ ...lp, i:0, startPerf:performance.now()+80, startAC:ac.currentTime+0.08, lap:0 };
+  el('now').innerHTML='playing · <b>'+lp.mode.name+'</b> · '+lp.prog.name;
+  timer=setInterval(scan, TICK);
+}
+function stop(){
+  running=false; el('play').classList.remove('on'); el('play').textContent='▶ play';
+  clearInterval(timer); timer=null;
+  if(outPort) for(let c=0;c<16;c++) outPort.send([0xB0|c,123,0]); // all-notes-off
+  el('now').textContent='—';
+}
+function scan(){
+  if(!tp) return;
+  const elapsed=(performance.now()-tp.startPerf)/1000;
+  const horizon=elapsed+LOOKAHEAD;
+  while(tp.i<tp.ev.length && tp.ev[tp.i].tSec<=horizon){
+    const e=tp.ev[tp.i++];
+    const onMs=tp.startPerf+e.tSec*1000, offMs=onMs+e.dur*1000;
+    const onAC=tp.startAC+e.tSec;
+    send([0x90|(st.ch-1), e.note, e.vel], onMs);
+    send([0x80|(st.ch-1), e.note, 0], offMs);
+    monVoice(e.freq, onAC, e.dur, e.vel/127, e.kind);
+    if(tp.i%7===0) log('t+'+e.tSec.toFixed(2)+'  note '+e.note+' ('+NOTE_NAMES[e.note%12]+') v'+e.vel);
+  }
+  if(elapsed>=tp.lapDur){
+    tp.startPerf+=tp.lapDur*1000; tp.startAC+=tp.lapDur;
+    const lp=buildLap(); tp.ev=lp.ev; tp.lapDur=lp.lapDur; tp.i=0; tp.lap++;
+    el('now').innerHTML='playing · <b>'+lp.mode.name+'</b> · '+lp.prog.name+' · loop '+(tp.lap+1);
+  }
+}
+
+/* ===================== encoder CC-in mapping ============================== */
+const PARAMS = {
+  mode: { label:'mode',        min:0, max:2,   get:()=>st.mode,  set:v=>st.mode=Math.round(v) },
+  prog: { label:'progression', min:0, max:2,   get:()=>st.prog,  set:v=>st.prog=Math.round(v) },
+  tempo:{ label:'tempo',       min:56, max:104,get:()=>st.tempo, set:v=>st.tempo=Math.round(v) },
+  seed: { label:'seed',        min:0, max:127, get:()=>0,        set:v=>st.seed=Math.round(v)*137+1 },
+};
+const encoders = [ {cc:1,param:'mode'}, {cc:2,param:'prog'}, {cc:3,param:'tempo'}, {cc:4,param:'seed'} ];
+let learnIdx=-1;
+function buildEncUI(){
+  const box=el('encMap'); box.innerHTML='';
+  encoders.forEach((slot,idx)=>{
+    const row=document.createElement('div'); row.className='enc';
+    const cc=document.createElement('input'); cc.type='number'; cc.min=0; cc.max=127; cc.value=slot.cc; cc.style.width='60px';
+    cc.oninput=()=>slot.cc=+cc.value;
+    const sel=document.createElement('select');
+    for(const k in PARAMS){ const o=document.createElement('option'); o.value=k; o.textContent=PARAMS[k].label; if(k===slot.param)o.selected=true; sel.appendChild(o); }
+    sel.onchange=()=>slot.param=sel.value;
+    const learn=document.createElement('button'); learn.textContent='learn';
+    learn.onclick=()=>{ learnIdx=idx; learn.classList.add('on'); setTimeout(()=>{ if(learnIdx===idx){learnIdx=-1;learn.classList.remove('on');} },6000); };
+    const val=document.createElement('div'); val.className='val'; val.id='encval'+idx; val.textContent='cc'+slot.cc;
+    row.append(document.createTextNode('CC'), cc, sel, learn, val);
+    box.appendChild(row);
+  });
+}
+function onCC(msg){
+  const [status,d1,d2]=msg.data;
+  if((status&0xf0)!==0xB0) return;            // control-change only
+  const chan=(status&0x0f)+1;
+  setStatus('ccStatus','ok','last CC: cc'+d1+' = '+d2+'  (ch'+chan+')');
+  if(learnIdx>=0){ encoders[learnIdx].cc=d1; learnIdx=-1; buildEncUI(); syncControls(); return; }
+  encoders.forEach((slot,idx)=>{
+    if(slot.cc!==d1) return;
+    const P=PARAMS[slot.param];
+    const v=P.min+(d2/127)*(P.max-P.min);
+    P.set(v);
+    el('encval'+idx).textContent=P.label+'='+Math.round(P.get?P.get():v);
+    syncControls(); writeHash();
+  });
+}
+
+/* ===================== wiring ============================================= */
+function fillSelects(){
+  const m=el('mode'); MODES.forEach((x,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=x.name; m.appendChild(o); });
+  const p=el('prog'); PROGRESSIONS.forEach((x,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=x.name; p.appendChild(o); });
+}
+function renderTuning(){
+  const tb=el('tuneTbl').querySelector('tbody'); tb.innerHTML='';
+  for(const r of tuningRows()){
+    const tr=document.createElement('tr');
+    const d=r.detune>=0?'+':'';
+    tr.innerHTML='<td class="n">'+r.name+'</td><td class="mono">'+r.ratio[0]+'/'+r.ratio[1]+'</td>'+
+      '<td class="mono">'+r.cents.toFixed(1)+'</td><td class="mono">'+d+r.detune.toFixed(2)+'</td>';
+    tb.appendChild(tr);
+  }
+}
+function syncControls(){
+  el('mode').value=st.mode; el('prog').value=st.prog; el('tempo').value=st.tempo;
+  el('seed').value=st.seed; el('ch').value=st.ch; el('root').value=st.root; el('mon').checked=st.monitor;
+}
+function scalaText(){
+  let s='! fado-pythagorean.scl\n! Pythagorean (3-limit) chromatic ladder, tonic A\n 12\n!\n';
+  for(let p=1;p<=12;p++){ const r=JI[p]; s+=' '+r[0]+'/'+r[1]+'\n'; }
+  return s;
+}
+async function copy(text,msg){ try{ await navigator.clipboard.writeText(text); el('copyMsg').textContent=msg; }catch(e){ el('copyMsg').textContent='clipboard blocked — select & copy manually'; } }
+
+function init(){
+  readHash(); fillSelects(); renderTuning(); buildEncUI(); syncControls(); writeHash();
+  el('connect').onclick=connect;
+  el('out').onchange=selectOut; el('in').onchange=selectIn;
+  el('ch').oninput=()=>st.ch=Math.max(1,Math.min(16,+el('ch').value||1));
+  el('root').oninput=()=>st.root=Math.max(0,Math.min(127,+el('root').value||57));
+  el('mon').onchange=()=>st.monitor=el('mon').checked;
+  el('mode').onchange=()=>{ st.mode=+el('mode').value; writeHash(); };
+  el('prog').onchange=()=>{ st.prog=+el('prog').value; writeHash(); };
+  el('tempo').oninput=()=>{ st.tempo=+el('tempo').value; writeHash(); };
+  el('seed').oninput=()=>{ st.seed=+el('seed').value; writeHash(); };
+  el('reseed').onclick=()=>{ st.seed=(Math.random()*99999)|0; syncControls(); writeHash(); };
+  el('play').onclick=()=> running?stop():start();
+  el('copyDetune').onclick=()=> copy(tuningRows().map(r=>r.name+' '+(r.detune>=0?'+':'')+r.detune.toFixed(2)).join('\n'),'copied 12 detune values (note → cents)');
+  el('copyScala').onclick=()=> copy(scalaText(),'copied Scala .scl');
+  window.addEventListener('keydown',e=>{
+    if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT') return;
+    if(e.code==='Space'){ e.preventDefault(); running?stop():start(); }
+    if(e.key==='r'){ el('reseed').click(); }
+  });
+  // expose for headless verification
+  window.__fado = { genAll, tuningRows, buildLap, freqToNote, PARAMS, encoders, onCC, st, JI, BASE, centsAbove };
+}
+init();
+</script>
+</body>
+</html>

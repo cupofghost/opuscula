@@ -325,6 +325,80 @@ tonal content reverts, per the ⚠ marker below).
   clean, English+German labels render, judge bridge inert without `?judge`,
   MAJ_SHAPE swap live, arp is a 9-note shaped figure. Registry files
   (landing/README/officina) untouched.
+### OP–XY MIDI fork — feasibility + two proof-of-concept machines (new `opxy/` tree, NOT an op.)
+**Branch:** `claude/opuscula-te-opxy-midi-a5vvtf` · **Files:** `opxy/index.html`,
+`opxy/README.md`, `opxy/fado-midi/index.html`, `opxy/tritava-midi/index.html` ·
+**Status:** done, verified headless (Chromium, 22 checks, zero pageerrors). **No
+op. registry changes** — this is a fork, not a catalogue machine; the landing
+`index.html`, `README.md`, the file table above and `officina` are deliberately
+untouched so parallel machine-sessions don't conflict.
+
+Maintainer's brief: a separate version of OPVSCVLA that outputs MIDI to a
+Teenage Engineering **OP–XY**, preserving just intonation / non-equal
+temperaments, with the four rotary encoders steering major parameters and MPE
+where needed. Researched the OP–XY (TE guide + reviews + forums), gave a
+feasibility rating (≈8/10, high), then built one machine per tuning path.
+
+- **Key research finding that reframes the whole project:** the OP–XY has a
+  **native per-note tuning table** — up to 11 user tunings, each note in cents +
+  micro-cents. So for any scale of ≤12 pitch-classes that repeats every octave
+  (most of the collection's tuned machines) you do **not** need MPE at all: dial
+  the scale into a user tuning once, then send plain MIDI notes. MPE / per-note
+  pitch bend is only needed for >12-per-octave, non-octave, or drifting tunings.
+- **Also confirmed:** USB-C class-compliant MIDI (TE's own updater runs over
+  browser Web MIDI — so browser→OP–XY is a proven path), receives notes + CC +
+  clock, pitch bend received with a calibratable range, the 4 encoders send
+  assignable CCs (paged M2/M3 → 8), multitimbral 8 tracks / channel-per-track.
+- **The one unconfirmed capability** (decides path B's ceiling): whether the
+  OP–XY honours **voice-per-channel MPE input**. If not, path B degrades to an
+  N-voice poly-channel pool. Also unconfirmed: whether the tuning table is
+  12-per-octave or a full 128-note keymap (a full keymap would move DIAMOND /
+  TRITAVA to path A). Both want a hardware check before scaling the fork up.
+- **The MIDI-carries-pitch-not-timbre caveat** is stated in both pages and the
+  README: the OP–XY's engines make the sound, tuned to each machine's ratios;
+  the machines' own synthesis (odd-harmonic BP spectra, throat formants, …) does
+  not travel. Both pages carry an **internal Web Audio monitor** playing the
+  exact target frequencies, so the intended tuning is audible with no hardware
+  and is the reference to check the device against.
+- **Path A — `fado-midi/` (native tuning table).** FADÓ's Pythagorean (3-limit)
+  model copied verbatim (`genAll`, `JI`, modes; progression promoted to an
+  explicit param so an encoder can steer it). Generates the twelve detune values
+  to dial into the OP–XY, then streams **plain** note-ons — no bend, full poly.
+  Verified invariant: plain-note + table-detune reconstructs the exact JI
+  frequency (max err 2.8e-13 ¢).
+- **Path B — `tritava-midi/` (per-note pitch bend / MPE).** TRITAVA's
+  Bohlen–Pierce model copied verbatim (`genAll`/`assemble`/`ratioToHz`, folding
+  by tritaves ×3 not octaves). BP has **no octave**, so a tuning table literally
+  can't hold it — the sharpest argument for path B. Each note → nearest 12-TET
+  key + 14-bit bend to the exact BP freq, on its own channel. **MPE lower-zone**
+  routing (master ch1, members 2–16, sends the MPE config + per-channel
+  bend-range RPN on play) or a **poly-channel pool** fallback. Channel
+  allocation is computed **deterministically over the score timeline** (so a
+  seed always yields the same channel/bend assignment); pool exhaustion steals
+  the soonest-freeing channel and truncates the previous note so streams never
+  overlap. Verified: bend reconstructs exact freq (max err 0.011 ¢ @ ±2 st).
+- **Four encoders → params (both pages):** CC-in via Web MIDI, per-slot editable
+  CC number + a `learn` capture, values scale to each param's range, law changes
+  re-vibe at the next loop. FADÓ: mode/prog/tempo/seed. TRITAVA: mode/meter/
+  motion/tempo.
+- **Conventions kept:** standalone single-file pages, no build/deps; hash **is**
+  the pressing; deterministic; `space`=play/stop, `r`=reseed. Web MIDI is
+  Chrome/Edge only (Safari has none) — matches the Chromium-verify convention.
+- **Verified headless** (`scratchpad/verify-opxy.mjs`, playwright + full chrome
+  `chromium-1194/.../chrome` `--headless=new`; scratchpad not committed, per the
+  GONGAN/TESSERA precedent — 22 checks): both pages load clean; path A tuning
+  math + plain-note invariant + determinism + encoder; path B BP-has-no-octave +
+  tritave folding + bend reconstruction + valid MIDI ranges + non-overlapping
+  channel allocation (incl. pool=2 steal stress) + determinism + encoder; and a
+  **live transport smoke** against a fake MIDI output — path A sends note-ons and
+  **no** bend, path B sends a bend before every note-on, both send all-notes-off
+  on stop.
+- **Pick-up ideas / next steps:** confirm MPE input + tuning-table scope on real
+  hardware (decides whether DIAMOND/COCHLEA join path A or need path B); a
+  tuning-table exporter that writes a Scala `.scl`/`.kbm` pair per machine; an
+  MTS-ESP SysEx path if the OP–XY turns out to accept it (would beat channel
+  rotation for dynamic retuning); porting COCHLEA (comma-pump drift) as the third
+  demo — the one that needs *continuous* retuning, exercising path B hardest.
 
 ### FADÓ — bugfix pass on op. XXII (the initial build didn't actually run)
 **Branch:** `claude/niche-musical-machine-yolbzs` · **File:** `fado/index.html` ·

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OPVSCVLA → OP–XY · MIDI fork</title>
+<style>
+  :root{ --bg:#111014; --ink:#e8e4ef; --dim:#8f8aa0; --line:#26232f; --a:#e08a2e; --b:#9a8cff; }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font:15px/1.6 ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 18px 80px}
+  h1{font-size:22px;letter-spacing:.5px;margin:0 0 4px}
+  h1 small{color:var(--dim);font-size:12px;letter-spacing:2px;display:block;margin-top:6px}
+  p{color:var(--dim)} a{color:var(--a)}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:24px}
+  @media(max-width:620px){.cards{grid-template-columns:1fr}}
+  .card{display:block;border:1px solid var(--line);border-radius:8px;padding:18px;text-decoration:none;color:var(--ink);background:#17151d}
+  .card:hover{border-color:var(--a)}
+  .card.b:hover{border-color:var(--b)}
+  .card .tag{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
+  .card h2{margin:6px 0 4px;font-size:17px}
+  .card.a h2{color:var(--a)} .card.b h2{color:var(--b)}
+  .card p{margin:6px 0 0;font-size:12.5px;color:var(--dim)}
+  .foot{margin-top:30px;border-top:1px solid var(--line);padding-top:16px;font-size:12px}
+  code{color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>OPVSCVLA → OP–XY
+    <small>a MIDI fork · non-equal temperament out to teenage engineering's OP–XY</small></h1>
+  <p>The main collection <em>synthesizes</em> its music in the browser. This fork instead <em>plays the OP–XY</em> over
+  MIDI, taking care to preserve just intonation and other non-equal tunings. Two proof-of-concept machines demonstrate
+  the two ways to get a non-12-TET scale onto the device.</p>
+
+  <div class="cards">
+    <a class="card a" href="fado-midi/">
+      <div class="tag">path A · tuning table</div>
+      <h2>FADÓ</h2>
+      <p>Pythagorean (3-limit) just intonation. Generates twelve detune values for the OP–XY's built-in tuning table,
+      then sends plain MIDI notes — full polyphony, no bending. Best for any ≤12-note, octave-repeating scale.</p>
+    </a>
+    <a class="card b" href="tritava-midi/">
+      <div class="tag">path B · per-note bend / MPE</div>
+      <h2>TRITAVA</h2>
+      <p>The Bohlen–Pierce scale — no octave, so no tuning table can hold it. Each note gets its own channel and is bent
+      to its exact frequency. For &gt;12-note, non-octave, or drifting tunings.</p>
+    </a>
+  </div>
+
+  <div class="foot">
+    <p>Both pages carry an internal audio monitor (they play the exact target frequencies), so you can hear the result
+    with no hardware attached. Web MIDI needs Chrome or Edge — Safari has none. See <code>README.md</code> for the OP–XY
+    setup steps and the one capability (voice-per-channel MPE input) still worth confirming on hardware.</p>
+    <p><a href="../">← back to OPVSCVLA</a></p>
+  </div>
+</div>
+</body>
+</html>
