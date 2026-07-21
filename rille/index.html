@@ -844,6 +844,11 @@ function renderLedger(){
 
 /* ---------------- audio graph ---------------- */
 let RT=null;
+// URTEIL training: when true, playback starts with the arrangement already at
+// full (all parts sounding from bar 0) instead of the intro build — so the
+// audition drops straight into the melodic section, no drum-only lead-in.
+// Only ever set by the ?judge bridge; false for normal play.
+let JUDGE_FULL=false;
 function makeNoise(ac){const b=ac.createBuffer(1,ac.sampleRate*2,ac.sampleRate);
   const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;return b;}
 function makeCrackle(ac){const b=ac.createBuffer(1,ac.sampleRate*4,ac.sampleRate);
@@ -973,7 +978,18 @@ const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.g
   addEventListener('message',ev=>{
     const m=ev&&ev.data; if(!m||m.rilleJudge!==1)return;
     if(m.op==='hello'){ack({op:'ready',maj0:MAJ0});return;}
-    if(m.op==='stop'){if(RT&&$('play'))$('play').click();return;}
+    if(m.op==='stop'){if(RT)stopPlay();return;}
+    if(m.op==='snippet'){                                  // audition: fresh pressing, straight into the melodic section
+      if(RT)stopPlay();
+      JUDGE_FULL=true;
+      if(m.mood!=null&&MOODS[m.mood]){st.mood=m.mood;st.bpm=MOODS[m.mood].bpm;st.prog=0;st.follow=undefined;st.root=null;}
+      if(m.seed!=null)st.seed=m.seed>>>0;
+      setMaj(m.maj);                                       // optional glint override; factory by default
+      regenPatterns(false);
+      startPlay();
+      ack({op:'playing',mood:st.mood,seed:st.seed>>>0,bpm:st.bpm});
+      return;
+    }
     if(m.op!=='apply')return;
     setMaj(m.maj);
     if(m.mood!=null&&affEl.children[m.mood])affEl.children[m.mood].click();   // mood: bpm + prog reset, re-vibes
@@ -1342,6 +1358,10 @@ function startPlay(){
   const D=G.makeDeck(st.g);
   const rng=mulberry32(st.seed^0xA5A5A5A5);
   const arr=newArrange(st.g,rng);
+  if(JUDGE_FULL){                                        // audition: skip the intro, start on the melodic section
+    arr.active={fundus:true,pulvis:true,bassus:true,crepitus:true,manus:true,chordae:true,cantus:!!st.g.M.cantus};
+    arr.queue=[]; arr.section='VOLL';
+  }
   const dust=startDust(D,ac.currentTime+.05);
   const t0=ac.currentTime+.1, stepDur=60/st.bpm/4;
   // bars: a running log of {bar,t,dur,section} so tempo can change mid-flow and

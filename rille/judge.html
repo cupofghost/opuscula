@@ -1,256 +1,167 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RILLE · URTEIL — Voice Audition</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>RILLE · URTEIL — quick audition</title>
 <style>
-  :root{--bg:#14171a;--ink:#26424a;--pane:#1b2024;--line:#2c343a;--fg:#d7dde0;
-        --dim:#8a969d;--ja:#5fae7a;--nein:#c96b6b;--viel:#c9a24a;--hot:#e6c86e}
+  :root{--bg:#14171a;--pane:#1b2024;--line:#2c343a;--fg:#e6ebee;--dim:#8a969d;
+        --yes:#5fae7a;--no:#c96b6b;--maybe:#c9a24a;--hot:#e6c86e}
   *{box-sizing:border-box}
+  html,body{height:100%}
   body{margin:0;background:var(--bg);color:var(--fg);
-       font:14px/1.5 ui-monospace,"SF Mono",Menlo,Consolas,monospace;
-       -webkit-text-size-adjust:100%}
+       font:15px/1.5 ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+       display:flex;flex-direction:column;align-items:center;-webkit-text-size-adjust:100%}
+  .engine{position:fixed;left:-10000px;top:0;width:360px;height:280px;border:0} /* hidden sound engine */
+  .wrap{width:100%;max-width:460px;padding:22px 18px 40px;display:flex;flex-direction:column;gap:18px;flex:1}
+  header h1{margin:0;font-size:17px;letter-spacing:.16em;font-weight:600}
+  header .op{color:var(--dim);font-weight:400}
+  .lede{color:var(--dim);font-size:12.5px;margin-top:6px;line-height:1.5}
+  .moods{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .moods .lbl{color:var(--dim);font-size:10.5px;letter-spacing:.14em;width:100%;margin-bottom:2px}
+  .moods button{font:inherit;font-size:11.5px;color:var(--fg);background:var(--pane);border:1px solid var(--line);
+                border-radius:999px;padding:5px 11px;cursor:pointer;letter-spacing:.03em}
+  .moods button.on{background:#243a42;border-color:var(--hot);color:#fff}
+  .now{background:var(--pane);border:1px solid var(--line);border-radius:12px;padding:20px 16px;text-align:center}
+  .now .state{font-size:12px;color:var(--dim);letter-spacing:.14em}
+  .now .id{font-size:20px;letter-spacing:.06em;margin-top:6px;font-weight:600;min-height:26px}
+  .now .id b{color:var(--hot)}
+  .now .sub{color:var(--dim);font-size:11.5px;margin-top:2px}
+  .next{width:100%;font:inherit;font-size:16px;letter-spacing:.08em;font-weight:600;color:#0f1512;
+        background:var(--hot);border:0;border-radius:12px;padding:15px;cursor:pointer;margin-top:16px}
+  .next:active{transform:translateY(1px)}
+  .next.sub{background:var(--pane);color:var(--fg);border:1px solid var(--line);font-size:13px;padding:11px;margin-top:9px}
+  .verdicts{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .verdicts button{font:inherit;font-size:15px;font-weight:600;letter-spacing:.05em;color:#0f1512;
+                   border:0;border-radius:12px;padding:16px 8px;cursor:pointer}
+  .verdicts button:active{transform:translateY(1px)}
+  .verdicts .yes{background:var(--yes)} .verdicts .maybe{background:var(--maybe)} .verdicts .no{background:var(--no)}
+  .verdicts button:disabled{opacity:.35;cursor:default}
+  .note{width:100%;background:#12161a;color:var(--fg);border:1px solid var(--line);border-radius:10px;
+        padding:10px 12px;font:13px/1.4 inherit;resize:none}
+  .note::placeholder{color:#5c666d}
+  .bottom{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding-top:8px}
+  .tally{color:var(--dim);font-size:12px;text-align:center}
+  .tally b{color:var(--fg)}
+  .row{display:flex;gap:8px}
+  .row button{flex:1;font:inherit;font-size:12px;color:var(--fg);background:var(--pane);border:1px solid var(--line);
+              border-radius:9px;padding:9px;cursor:pointer;letter-spacing:.04em}
+  #copied{color:var(--yes);font-size:12px;text-align:center;min-height:15px}
+  .foot{color:var(--dim);font-size:10.5px;text-align:center;line-height:1.6}
   a{color:var(--hot)}
-  .wrap{max-width:860px;margin:0 auto;padding:22px 18px 60px}
-  header{border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px}
-  h1{margin:0;font-size:20px;letter-spacing:.14em;font-weight:600}
-  h1 .op{color:var(--dim);font-weight:400}
-  .sub{color:var(--dim);margin-top:5px;font-size:12.5px;letter-spacing:.02em}
-  p.lede{color:var(--fg);font-size:13px;background:var(--pane);border:1px solid var(--line);
-         border-radius:8px;padding:11px 13px;margin:14px 0}
-  p.lede b{color:var(--hot)}
-  .frame{width:100%;border:1px solid var(--line);border-radius:8px;overflow:hidden;
-         background:#000;margin:8px 0 4px;height:300px}
-  .frame iframe{width:100%;height:100%;border:0;display:block}
-  .hint{color:var(--dim);font-size:11.5px;margin:2px 0 16px}
-  .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
-  .bar .lbl{color:var(--dim);font-size:11px;letter-spacing:.1em;min-width:64px}
-  button{font:inherit;color:var(--fg);background:var(--pane);border:1px solid var(--line);
-         border-radius:6px;padding:6px 11px;cursor:pointer;letter-spacing:.04em}
-  button:hover{border-color:#3d4750}
-  button.on{background:var(--ink);border-color:var(--hot);color:#fff}
-  button:disabled{opacity:.4;cursor:default}
-  .transport button{padding:8px 16px;font-size:14px}
-  #status{font-size:12px;color:var(--dim);margin:8px 0 2px;min-height:18px;letter-spacing:.03em}
-  #status b{color:var(--hot);font-weight:600}
-  .trials{margin-top:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
-  .trial{border-top:1px solid var(--line);padding:12px 14px;display:grid;
-         grid-template-columns:1fr auto;gap:8px 14px;align-items:start}
-  .trial:first-child{border-top:0}
-  .trial.active{background:#181e22;box-shadow:inset 3px 0 0 var(--hot)}
-  .trial .name{font-size:14px;letter-spacing:.08em;font-weight:600}
-  .trial .name .ref{color:var(--dim);font-size:10px;letter-spacing:.14em;margin-left:8px;
-                    border:1px solid var(--line);border-radius:4px;padding:1px 5px;vertical-align:1px}
-  .trial .voic{color:var(--hot);font-size:12px;margin-top:2px}
-  .trial .desc{color:var(--dim);font-size:12px;margin-top:3px;max-width:52ch}
-  .trial .right{display:flex;flex-direction:column;gap:7px;align-items:flex-end}
-  .trial .hoeren{min-width:104px}
-  .verdicts{display:flex;gap:5px}
-  .verdicts button{padding:5px 9px;font-size:12px;min-width:38px}
-  .verdicts button.ja.set{background:var(--ja);border-color:var(--ja);color:#0d1410}
-  .verdicts button.nein.set{background:var(--nein);border-color:var(--nein);color:#160c0c}
-  .verdicts button.viel.set{background:var(--viel);border-color:var(--viel);color:#161005}
-  .trial textarea{grid-column:1/-1;width:100%;background:#12161a;color:var(--fg);
-                  border:1px solid var(--line);border-radius:6px;padding:7px 9px;
-                  font:12px/1.45 inherit;resize:vertical;min-height:34px}
-  .trial textarea::placeholder{color:#5c666d}
-  .exp{margin-top:22px;border-top:1px solid var(--line);padding-top:16px}
-  .exp h2{font-size:13px;letter-spacing:.12em;color:var(--dim);margin:0 0 8px;font-weight:600}
-  .exp textarea{width:100%;min-height:120px;background:#12161a;color:var(--dim);
-                border:1px solid var(--line);border-radius:6px;padding:9px;font:11.5px/1.4 inherit}
-  .foot{color:var(--dim);font-size:11px;margin-top:20px;line-height:1.6}
-  kbd{background:#12161a;border:1px solid var(--line);border-radius:4px;padding:0 5px;font-size:11px}
 </style>
 </head>
 <body>
+<iframe class="engine" id="engine" title="RILLE engine" allow="autoplay" src="index.html?judge&amp;factory"></iframe>
 <div class="wrap">
   <header>
-    <h1><span class="op">OPVSCVLA · op. IV ·</span> RILLE · URTEIL</h1>
-    <div class="sub">Voice audition — hear the candidates, judge yes / no / maybe, add a note.</div>
+    <h1><span class="op">RILLE ·</span> URTEIL</h1>
+    <div class="lede" id="lede">Loading the engine…</div>
   </header>
 
-  <p class="lede">This is the RILLE <b>from a day ago</b> (before the recomposition) — the sound
-  you like. What's still "doofy": the short <b>passing-major chords</b> — a quick rising
-  <b>major-triad glint</b> (<code>MAJ_SHAPE = root · maj 3rd · fifth</code>)
-  on the major degrees. Below are replacement voicings for it. <b>Play</b> one (it takes effect at the
-  next bar), hear it in context, then <b>judge</b>. Only this glint is swapped — the groove, the hover,
-  the cadence and the resolving leading tone stay exactly as they were.
-  When you're done, <b>copy the results</b> and drop them into the chat.</p>
+  <div class="moods" id="moods"><span class="lbl">MOOD (focus — optional)</span></div>
 
-  <div class="frame"><iframe id="engine" title="RILLE" allow="autoplay"
-        src="index.html?judge&amp;factory"></iframe></div>
-  <div class="hint">Kein Ton? Einmal in RILLE oben selbst auf <kbd>PLAY</kbd> tippen (Browser will eine Geste),
-    danach steuert diese Seite alles.</div>
-
-  <div class="bar transport"><span class="lbl">TRANSPORT</span>
-    <button id="play">► PLAY</button>
-    <button id="stop">■ STOP</button>
-    <button id="reseed" title="new pressing (seed)">↻ SEED</button>
+  <div class="now">
+    <div class="state" id="state">— press Next —</div>
+    <div class="id" id="nowid">&nbsp;</div>
+    <div class="sub" id="nowsub">a fresh pressing, straight into the melodic part</div>
+    <button class="next" id="next">▶ NEXT SNIPPET</button>
+    <button class="next sub" id="replay" disabled>↻ replay this one</button>
   </div>
-  <div class="bar"><span class="lbl">MOOD (Stimmung)</span><span id="moods"></span>
-    <span style="color:var(--dim);font-size:11px">SHADOW has the most passing-majors — IRON/VOID have none.</span></div>
 
-  <div id="status">Engine loading…</div>
+  <div class="verdicts">
+    <button class="yes"   id="yes"   disabled>YES<br><span style="font-weight:400;font-size:11px">ja</span></button>
+    <button class="maybe" id="maybe" disabled>MAYBE<br><span style="font-weight:400;font-size:11px">vielleicht</span></button>
+    <button class="no"    id="no"    disabled>NO<br><span style="font-weight:400;font-size:11px">nein</span></button>
+  </div>
+  <textarea class="note" id="note" rows="2" placeholder="optional note on this one (what worked / didn't)…"></textarea>
 
-  <div class="trials" id="trials"></div>
-
-  <div class="exp">
-    <h2>RESULTS (Auswertung)</h2>
-    <div class="bar" style="margin-top:0">
+  <div class="bottom">
+    <div class="tally" id="tally">nothing rated yet</div>
+    <div class="row">
       <button id="copy">⧉ COPY RESULTS</button>
-      <button id="clear" title="clear all verdicts">clear verdicts</button>
-      <span id="copied" style="color:var(--ja);font-size:12px"></span>
+      <button id="stop">■ silence</button>
+      <button id="clear">clear</button>
     </div>
-    <textarea id="dump" readonly spellcheck="false"></textarea>
-  </div>
-
-  <div class="foot">
-    A backstage tool (like <a href="../officina/">officina</a>), not an op. ·
-    changes only <code>MAJ_SHAPE</code> in the running engine · leaves the hover, cadence &amp; leading tone alone.<br>
-    Candidates are swappable — say the word and I'll drop in the next round
-    (e.g. leave the glint out entirely, or pull the major degrees out of the pool).
+    <div id="copied"></div>
+    <div class="foot">Rate → it jumps to the next automatically. Copy the results into the chat when you're done.<br>
+      Backstage tool, not an op. · <a href="index.html">back to RILLE</a></div>
   </div>
 </div>
 
 <script>
-/* ---- the candidates under judgment -------------------------------------
-   Each swaps MAJ_SHAPE — the passing-major glint. Values are SEMITONE offsets
-   over the chord root; the glint plays the first (up to three) ascending. AKTUELL
-   is the current factory sound (the day-ago default, the one to beat). Swap this
-   array to run a new round. */
-const TRIALS=[
-  {id:'aktuell', name:'CURRENT (Aktuell)', voic:'0 · 4 · 7', tag:'major triad (root · maj 3rd · fifth)',
-   ref:true, maj:[0,4,7],
-   desc:"What plays now: the rising major sparkle. The 'doofy' bright moment we want to tame."},
-  {id:'quinte', name:'FIFTH (Quinte)', voic:'0 · 7', tag:'bare fifth',
-   maj:[0,7],
-   desc:'Root and fifth only, no third. Open but not major — no bright tipping point.'},
-  {id:'septime', name:'SEVENTH (Septime)', voic:'0 · 7 · 10', tag:'fifth + ♭7',
-   maj:[0,7,10],
-   desc:'Fifth plus the harmonic seventh instead of the major third. Dark-open, more pull, no shine.'},
-  {id:'quartal', name:'QUARTAL', voic:'0 · 5 · 7', tag:'suspended fourth',
-   maj:[0,5,7],
-   desc:'Fourth instead of third — a floating sus sound. Neutral, neither bright nor dark.'},
-  {id:'none9', name:'FIFTH+NINTH', voic:'0 · 7 · 14', tag:'fifth + ninth (thirdless)',
-   maj:[0,7,14],
-   desc:'Root·fifth·ninth — thirdless, open. (This is how the recomposition sounded; here on the old engine.)'},
-  {id:'grundton', name:'ROOT ONLY (Grundton)', voic:'0', tag:'root only',
-   maj:[0],
-   desc:"Colour almost gone: a single tone on the degree. Close to 'leave the glint out'."},
-];
-
-/* moods mirror the machine's MOODS order/names; EISEN (tonic only) and LEERE
-   (i/iv, both minor) have no passing-major bars, so they are dimmed. */
 const MOODS=[
-  {i:0,en:'DARKNESS',name:'FINSTERNIS'},{i:1,en:'SHADOW',name:'SCHATTEN'},{i:2,en:'TEARS',name:'TRÄNEN'},
-  {i:3,en:'IRON',name:'EISEN',none:true},{i:4,en:'DAWN',name:'DÄMMERUNG'},{i:5,en:'VOID',name:'LEERE',none:true},{i:6,en:'UNDERTOW',name:'SOG'}];
-const LS='opvscvla.rille.urteil.v2';
-
-const engine=document.getElementById('engine');
-const post=m=>{try{engine.contentWindow.postMessage(Object.assign({rilleJudge:1},m),'*')}catch(e){}};
+ {i:0,en:'DARKNESS',de:'Finsternis'},{i:1,en:'SHADOW',de:'Schatten'},{i:2,en:'TEARS',de:'Tränen'},
+ {i:3,en:'IRON',de:'Eisen'},{i:4,en:'DAWN',de:'Dämmerung'},{i:5,en:'VOID',de:'Leere'},{i:6,en:'UNDERTOW',de:'Sog'}];
+const LS='opvscvla.rille.urteil.v3';
 const $=id=>document.getElementById(id);
+const engine=$('engine');
+const post=m=>{try{engine.contentWindow.postMessage(Object.assign({rilleJudge:1},m),'*')}catch(e){}};
 
-let ready=false, playing=false, active='aktuell';
-let ctx={mood:1, seed:null};                            // default: SCHATTEN (most passing-major bars)
-let ratings=load();
+let ready=false, moodPick=null, cur=null, log=load();
 
-function load(){try{const o=JSON.parse(localStorage.getItem(LS));if(o&&o.ratings){if(o.ctx)ctx=Object.assign(ctx,o.ctx);return o.ratings}}catch(e){}return {}}
-function save(){try{localStorage.setItem(LS,JSON.stringify({ratings,ctx,ts:Date.now()}))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(LS))||[]}catch(e){return []}}
+function save(){try{localStorage.setItem(LS,JSON.stringify(log))}catch(e){}}
+const hex=s=>'#'+(s>>>0).toString(16).slice(0,4);
 
-/* ---- mood chip row ---- */
-function chips(){
-  const el=$('moods'); el.innerHTML='';
-  MOODS.forEach(o=>{
-    const b=document.createElement('button');
-    b.textContent=o.en+" ("+o.name+")"; if(o.none)b.style.opacity=.5;
-    b.classList.toggle('on',ctx.mood===o.i);
-    b.onclick=()=>{ctx.mood=o.i;save();chips();reapply(playing)};
-    el.appendChild(b);
-  });
+/* mood focus chips: "Any" (random) + the seven moods */
+(function(){
+  const el=$('moods');
+  const add=(label,val)=>{const b=document.createElement('button');b.textContent=label;
+    b.classList.toggle('on', (val==='ANY'?moodPick==null:moodPick===val));
+    b.onclick=()=>{moodPick=(val==='ANY'?null:val);
+      [...el.querySelectorAll('button')].forEach(x=>x.classList.remove('on'));b.classList.add('on');};
+    el.appendChild(b);};
+  add('Any','ANY');
+  MOODS.forEach(m=>add(m.en,m.i));
+})();
+
+function next(){
+  if(!ready)return;
+  const mood=(moodPick==null)?(Math.random()*7|0):moodPick;
+  const seed=(Math.random()*0xffffffff)>>>0;
+  cur={mood,seed};
+  post({op:'snippet',mood,seed});
+  $('state').textContent='▶ now playing';
+  $('nowid').innerHTML='<b>'+MOODS[mood].en+'</b> · '+hex(seed);
+  $('nowsub').textContent=MOODS[mood].de+' · a fresh pressing';
+  ['yes','maybe','no','replay'].forEach(id=>$(id).disabled=false);
 }
+function replay(){ if(cur)post({op:'snippet',mood:cur.mood,seed:cur.seed}); }
+function rate(v){
+  if(!cur)return;
+  log.push({mood:MOODS[cur.mood].en,de:MOODS[cur.mood].de,seed:cur.seed.toString(16),
+            verdict:v,note:$('note').value.trim(),ts:new Date().toISOString()});
+  save(); $('note').value=''; tally(); next();     // auto-advance = the fast loop
+}
+function tally(){
+  const c={yes:0,maybe:0,no:0}; log.forEach(r=>c[r.verdict]!==undefined&&c[r.verdict]++);
+  $('tally').innerHTML = log.length ? ('rated <b>'+log.length+'</b> — 👍 '+c.yes+' · 🤔 '+c.maybe+' · 👎 '+c.no) : 'nothing rated yet';
+}
+function copyOut(){
+  const out={machine:'rille',what:'quick audition — rate generated melodic snippets',rated:log,ts:new Date().toISOString()};
+  const t=JSON.stringify(out,null,2);
+  navigator.clipboard.writeText(t).then(()=>flash('copied ✓')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy');flash('copied ✓')}catch(e){flash('copy failed')}ta.remove();});
+}
+function flash(s){$('copied').textContent=s;setTimeout(()=>$('copied').textContent='',1800);}
 
-/* ---- the trial list ---- */
-function drawTrials(){
-  const box=$('trials'); box.innerHTML='';
-  TRIALS.forEach(T=>{
-    const r=ratings[T.id]||{};
-    const row=document.createElement('div');
-    row.className='trial'+(T.id===active?' active':'');
-    row.innerHTML=
-      '<div><div class="name">'+T.name+(T.ref?'<span class="ref">REFERENCE</span>':'')+'</div>'+
-        '<div class="voic">'+T.voic+' &nbsp;·&nbsp; '+T.tag+'</div>'+
-        '<div class="desc">'+T.desc+'</div></div>'+
-      '<div class="right"><button class="hoeren">'+(T.id===active&&playing?'▮ playing':'► hear')+'</button>'+
-        '<div class="verdicts">'+
-          '<button class="ja'+(r.verdict==='yes'?' set':'')+'">YES</button>'+
-          '<button class="viel'+(r.verdict==='maybe'?' set':'')+'">?</button>'+
-          '<button class="nein'+(r.verdict==='no'?' set':'')+'">NO</button>'+
-        '</div></div>'+
-      '<textarea placeholder="Note on '+T.name+' (optional)…">'+(r.note||'')+'</textarea>';
-    const [ja,viel,nein]=row.querySelectorAll('.verdicts button');
-    ja.onclick=()=>setVerdict(T.id,'yes');
-    viel.onclick=()=>setVerdict(T.id,'maybe');
-    nein.onclick=()=>setVerdict(T.id,'no');
-    row.querySelector('.hoeren').onclick=()=>{active=T.id;reapply(true);drawTrials()};
-    const ta=row.querySelector('textarea');
-    ta.oninput=()=>{const o=ratings[T.id]||(ratings[T.id]={});o.note=ta.value;save();dump()};
-    box.appendChild(row);
-  });
-}
-function setVerdict(id,v){
-  const o=ratings[id]||(ratings[id]={});
-  o.verdict=(o.verdict===v)?null:v;                       // click again to clear
-  save();drawTrials();dump();
-}
-
-/* ---- drive the engine ---- */
-function trial(){return TRIALS.find(t=>t.id===active)||TRIALS[0]}
-function reapply(play){
-  const T=trial();
-  post({op:'apply',maj:T.maj,mood:ctx.mood,seed:ctx.seed,play:!!play});
-  if(play)playing=true;
-}
-function status(){
-  const T=trial(), m=MOODS[ctx.mood].en,
-        s=ctx.seed==null?'—':('#'+(ctx.seed>>>0).toString(16).slice(0,4));
-  $('status').innerHTML=(playing?'► ':'■ ')+'<b>'+m+'</b> · '+s+' · voice <b>'+T.name+'</b>';
-}
-
-/* ---- export ---- */
-function dump(){
-  const out={
-    machine:'rille', base:'e9846ec (pre-recomposition)',
-    concern:'passing-major glint (MAJ_SHAPE) — “too many major chords”',
-    context:{mood:MOODS[ctx.mood].en, seed:ctx.seed},
-    verdicts:TRIALS.map(T=>{const r=ratings[T.id]||{};return{
-      id:T.id, name:T.name, maj:T.maj, verdict:r.verdict||null, note:r.note||''};}),
-    ts:new Date().toISOString()
-  };
-  $('dump').value=JSON.stringify(out,null,2);
-  return out;
-}
-
-/* ---- wiring ---- */
-$('play').onclick=()=>reapply(true);
-$('stop').onclick=()=>{post({op:'stop'});playing=false;status();drawTrials()};
-$('reseed').onclick=()=>{ctx.seed=(Math.random()*0xffffffff)>>>0;save();reapply(playing);status()};
-$('copy').onclick=async()=>{
-  dump();const t=$('dump');
-  try{await navigator.clipboard.writeText(t.value);flash('copied ✓')}
-  catch(e){t.focus();t.select();try{document.execCommand('copy');flash('copied ✓')}catch(_){flash('selected — ⌘/Ctrl-C')}}
-};
-$('clear').onclick=()=>{if(confirm('Clear all verdicts?')){ratings={};save();drawTrials();dump()}};
-function flash(s){const e=$('copied');e.textContent=s;setTimeout(()=>e.textContent='',1800)}
+$('next').onclick=next;
+$('replay').onclick=replay;
+$('yes').onclick=()=>rate('yes');
+$('maybe').onclick=()=>rate('maybe');
+$('no').onclick=()=>rate('no');
+$('stop').onclick=()=>{post({op:'stop'});$('state').textContent='— silenced —';};
+$('copy').onclick=copyOut;
+$('clear').onclick=()=>{if(confirm('Clear all ratings?')){log=[];save();tally();}};
 
 window.addEventListener('message',ev=>{
   const m=ev.data; if(!m||m.rilleJudge!==1)return;
-  if(m.op==='ready'){ready=true;$('status').innerHTML='Engine ready — pick a voice and ► hear.';}
-  if(m.op==='applied'){ctx.seed=m.seed;status();}
+  if(m.op==='ready'){ready=true;$('lede').textContent='Hit Next — a fresh RILLE pressing drops in on the melodic part (no intro build). Rate it and the next plays automatically.';}
 });
-engine.addEventListener('load',()=>{let n=0;const t=setInterval(()=>{post({op:'hello'});if(ready||++n>20)clearInterval(t)},250)});
-
-chips();drawTrials();status();dump();
+engine.addEventListener('load',()=>{let n=0;const t=setInterval(()=>{post({op:'hello'});if(ready||++n>24)clearInterval(t);},250);});
+tally();
 </script>
 </body>
 </html>

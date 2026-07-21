@@ -320,9 +320,20 @@ tonal content reverts, per the ⚠ marker below).
   trimmed by mood density, `dir` sets climb/fall/arch, transposes over the i→iv
   changes. Added optional **per-note length** (`a.len`, engine + `vArpN`; default
   2.4 = old behaviour) so the resolve can sustain; nudged `arp.lvl` .24→.3.
-- **Passing-major knob** (URTEIL harness, still available): `?judge` bridge swaps
-  `MAJ_SHAPE` live (the `kind:'maj'` glint), length-safe. The resolving 5/4
-  leading tone stays. `judge.html` iframes the real machine for by-ear rating.
+- **URTEIL training tool — simplified to a rapid rate-loop** (maintainer: "too
+  complicated… make it more immediate. Just generate parts I can rate… start at
+  the melodic section, no lead-in every time"). `judge.html` no longer shows the
+  full machine (the engine iframe is hidden offscreen); it's now Next → rate
+  (YES/MAYBE/NO, auto-advances) with an optional mood focus + note, results
+  copyable as JSON (localStorage `…urteil.v3`). Each snippet is a fresh random
+  pressing that **starts already-full** — new `?judge` bridge op `snippet` sets
+  `JUDGE_FULL=true`, which `startPlay` reads to force `arr.active` full / section
+  VOLL from bar 0, so it drops into the melodic part with no intro build.
+  `JUDGE_FULL` stays false for normal play (verified: intro preserved). Also
+  linked from RILLE's colophon ("urteil · training" → `judge.html`).
+- **Passing-major knob** (still available via the `apply` bridge op): swaps
+  `MAJ_SHAPE` live (the `kind:'maj'` glint), length-safe; the resolving 5/4
+  leading tone stays.
 - **Chat-based training:** short A/B WAVs rendered via RILLE's offline path
   (`scratchpad/render-*.mjs`) — soloed arp before/after, and MAJ_SHAPE candidates
   — sent for by-ear verdicts (the deployed judge tool is the better path now that
