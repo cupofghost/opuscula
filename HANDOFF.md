@@ -246,6 +246,46 @@ Conventions when touching this layer:
 
 Newest first.
 
+### RILLE — reverted to pre-recomposition · English-first UI · reworked arp · URTEIL harness
+**Branch:** `claude/rille-major-chords-a6pm9r` · **Files:** `rille/index.html`
+(reverted to `e9846ec` + judge bridge + English-first UI + reworked arp + the
+cohesion sweeps' icon links & officina pill grafted back), `rille/judge.html`
+(new, backstage — like `officina`, NOT an op.). **Status:** done + verified
+headless; **landed on `main`** (rebuilt on latest main so tessera/khoomei/fadó/
+germen and the icon+pause+officina-pill sweeps are all preserved — only RILLE's
+tonal content reverts, per the ⚠ marker below).
+
+- **Revert:** the recomposition (`c685fc6`) + its dub-techno-stabs follow-up
+  (`a271100`) were judged worse than the version before them; RILLE's tonal
+  content is back at `e9846ec`. Both stay in git, recoverable.
+- **English-first UI** (maintainer: "make everything English, keep the German in
+  parens underneath"): mood names via `MOOD_EN` (DARKNESS (Finsternis)…), modes
+  via `MODE_EN` (Phrygian/Aeolian/Dorian), sections via `SEC_EN`, every control
+  label / ledger / cut-note / hint / keys line. Code ids/keys stay original; the
+  German `name` still drives WAV filenames + the parenthetical. Strip is
+  English-only (too small). `judge.html` translated; verdict tokens yes/maybe/no.
+- **Arp rework** (maintainer: "aimless, no emotional weight, no good resolve"):
+  the old generator walked chord tones in a fixed dir and dropped notes at random
+  (no motif, nothing landed). Now a SHAPED 2-bar figure — arc to a peak, sigh
+  home, **resolve to the root on a long held note** — deterministic rhythm grid
+  trimmed by mood density, `dir` sets climb/fall/arch, transposes over the i→iv
+  changes. Added optional **per-note length** (`a.len`, engine + `vArpN`; default
+  2.4 = old behaviour) so the resolve can sustain; nudged `arp.lvl` .24→.3.
+- **Passing-major knob** (URTEIL harness, still available): `?judge` bridge swaps
+  `MAJ_SHAPE` live (the `kind:'maj'` glint), length-safe. The resolving 5/4
+  leading tone stays. `judge.html` iframes the real machine for by-ear rating.
+- **Chat-based training:** short A/B WAVs rendered via RILLE's offline path
+  (`scratchpad/render-*.mjs`) — soloed arp before/after, and MAJ_SHAPE candidates
+  — sent for by-ear verdicts (the deployed judge tool is the better path now that
+  it's on main).
+- **Open feedback:** maintainer still dialing the arp by ear (first shaped
+  version may resolve too predictably / want more climb, space, or darkness — all
+  now adjustable via the grid/shape arrays + `len`). Verified headless
+  (`scratchpad/verify-i18n.mjs`, `verify-judge2.mjs`, `verify-plain2.mjs`): plays
+  clean, English+German labels render, judge bridge inert without `?judge`,
+  MAJ_SHAPE swap live, arp is a 9-note shaped figure. Registry files
+  (landing/README/officina) untouched.
+
 ### FADÓ — bugfix pass on op. XXII (the initial build didn't actually run)
 **Branch:** `claude/niche-musical-machine-yolbzs` · **File:** `fado/index.html` ·
 **Status:** done, verified headless (Chromium, playwright-core against the bundled `chromium-1194/chrome-linux/chrome`). No registry changes — same op., same file.
@@ -1058,6 +1098,11 @@ the subharmonic mirror no existing machine touches.
   the strongest rejected alternative — a candidate for a future op.
 
 ### RILLE — tonal recomposition IMPLEMENTED (from `rille/HARMONIA.md`, now deleted)
+**⚠ REVERTED** — the maintainer judged this "worse than a day ago"; RILLE was
+reverted to `e9846ec` (pre-recomposition) on `claude/rille-major-chords-a6pm9r`
+(see the top RILLE thread). Both the recomposition (`c685fc6`) and the parallel
+dub-techno-stabs follow-up (`a271100`) are kept in git, recoverable. The
+write-ups here are the record of what was tried.
 **Branch:** `claude/harmonia-handoff-tlncw8` · **File:** `rille/index.html` ·
 **Status:** done, verified (Node structural sweep + headless Chromium smoke);
 pushed. The self-contained brief `rille/HARMONIA.md` was the spec; it's deleted
