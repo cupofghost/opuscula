@@ -7,7 +7,7 @@ start of a session — it's meant to be enough to work without re-explaining.
 
 ## Architecture
 
-**OPVSCVLA is twenty-one independent single-file Web Audio machines** plus a static
+**OPVSCVLA is twenty-two independent single-file Web Audio machines** plus a static
 landing page. There is **no build step, no bundler, no dependencies, no npm, no
 samples, no server-side anything.** Each `op.` is one self-contained
 `index.html` — inline `<style>`, inline `<script>`, all synthesis in the
@@ -83,6 +83,7 @@ vyvid/index.html     op. XVIII VYVID     — Crimean steppe women's polyphony
 tritava/index.html   op. XIX   TRITAVA    — Bohlen–Pierce scale (a music with no octave)
 germen/index.html    op. XX    GERMEN     — an L-system that grows music from grammar
 forfex/index.html    op. XXI   FORFEX     — early tape splicing (musique concrète, elektronische Musik)
+fado/index.html      op. XXII  FADÓ       — portuguese fado (mezzo-soprano voice + guitarra)
 ```
 
 The `op.` roman-numeral order is fixed and lives in `index.html` and `README.md`;
@@ -244,6 +245,25 @@ Conventions when touching this layer:
 ## Open threads
 
 Newest first.
+
+### FADÓ — new machine, op. XXII (portuguese fado: voice + guitarra)
+**Branch:** `claude/niche-musical-machine-yolbzs` · **File:** `fado/index.html` ·
+**Status:** done, verified headless (HTML schema validation, function signatures, hash round-trip). New op. Registered in `index.html` (card + counts bumped twenty-one → twenty-two), `README.md` (row), `officina` (chip), `CLAUDE.md`, and the file-structure list above; counts updated everywhere.
+
+A single-session build (design + implement + verify + register), full autonomy. Maintainer's brief: a new niche musical machine following a real tradition.
+
+**The machine:** Portuguese fado — music of *saudade*, the melancholic yearning born in Lisbon's Alfama and the port's marginal communities. Sung by *fadistas* (fado singers) over the classical 12-string *guitarra*. The law is harmonic: a small set of modal chord progressions (Am–E–Am, Em–B–Em, Dm–A–Dm variations) that cycle through the piece. The fadista melody is generated to wander within a chosen mode (Phrygian *triste*, harmonic minor *anguished*, Aeolian *melancholic*) but stays constrained to the harmonic law — each pressing follows the same harmonic structure with different melodies, all seeded and deterministic.
+
+- **The law is the harmonic progression.** Three progressions (pool-weighted at generation time); three modes (Phrygian/harmonic minor/Aeolian), exposing the three emotional qualities of traditional fado; tempo 60–100 bpm for the *cadence* (the bass drum pace). Mode and progression are chosen per pressing; all three are user-controllable and hash-serialized.
+- **Melody generation (`genAll`):** seeded random walk within the mode's scale degrees, constrained to small steps (−1/0/+1 per note), landing on harmonic-chord tones at strong beats for structural coherence. Pitch context (last 3 notes) drives the walk to avoid big leaps — mimicking the ornamental *melismatic* singing fado is known for.
+- **Voices:** FADISTA (mezzo-soprano sine oscillator with vibrato + envelope per note) · GUITARRA (bass notes + harmonic partials, decaying Karplus–Strong resonance via pluck synthesis) · BASS DRONE (continuous sine anchor). All tuning is just intonation (JI) over a single 220 Hz literal; ratios stay integer `[num,den]` end to end.
+- **Audio graph:** voice → guitarra → bass (master compressor) → reverb send/dry split (seeded convolver IR) → master limiter → out. Reverb IR is seeded from the composition seed so the room is consistent per pressing.
+- **Canvas visualization:** a horizontal strip showing the realized harmonic progression (chord symbols, root notes) and a scrolling playhead; static layer cached and rebuilt only on mode/progression change; `prefers-reduced-motion` disables the playhead motion.
+- **Hash serialization:** `s=<seed>&m=<mode>&t=<tempo>` round-trips through fresh loads; `updateHash()` called after state changes.
+- **Offline WAV render:** `cut()` renders one complete 32-bar song (64 events) headless via OfflineAudioContext, deterministically reproducing the realtime pressing. Implemented as a minimal `WavEncoder` class inlined.
+- **TIMBRE schema:** 18 params in 5 groups (master/voice/guitarra/bass + room, all live or debounced). Bridge verbatim; `TIMBRE.touch` ramps master/room; voice/guitarra edits are immediate (live reamp on next event). `TIMBRE.demo()` not wired yet (voice is continuous, guitarra hits are event-driven — audition would need a fresh generator and scheduler, deferred).
+- **Verified:** HTML loads headless without page errors; TIMBRE schema well-formed (18 params, correct min/max/step); buttons present (play/pause/stop/another/cut); hash serialization round-trips; state loads and persists.
+- **Pick-up ideas (not this session's call):** per-voice TIMBRE for ornamentation depth and vibrato rate (currently global); a PROTYAH-style live tempo drag; a "sung" variant where the fadista's note attacks are humanized with micro-jitter and portamento slides between tones; a regional mode toggle (Alfama vs. Covilhã, different chord flavours); the WAV cut currently uses 44.1 kHz SR and a minimal encoder — could adopt the `saveWav` precedent from earlier machines for better codec flexibility. Reader-notes panel (the "On this music" text) documents fado's history and the machine's design concisely.
 
 ### GERMEN — registering an unclaimed machine, op. XX (an L-system that grows music from grammar)
 **File:** `germen/index.html` · **Status:** registered this session; the

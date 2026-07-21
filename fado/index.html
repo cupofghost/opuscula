@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>FADÓ · op. XXII</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="../favicon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="manifest" href="../site.webmanifest">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --ground: #1a1410;
+      --txt: #e8dcc8;
+      --field: #2e2620;
+      --line: #6b5d4f;
+      --accent: #d4764a;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --ground: #faf8f3;
+        --txt: #2a2218;
+        --field: #f0ede6;
+        --line: #a89878;
+        --accent: #d4764a;
+      }
+    }
+    body {
+      background: var(--ground);
+      color: var(--txt);
+      font-family: Charter, 'Bitstream Charter', Georgia, serif;
+      line-height: 1.5;
+      font-size: 16px;
+    }
+    header { padding: 1rem; border-bottom: 3px double var(--line); position: relative; }
+    h1 { font-size: 2rem; font-weight: 400; letter-spacing: 0.1em; }
+    .subtitle { font-size: 0.9rem; color: var(--line); margin-top: 0.25rem; }
+    main { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+    .controls { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: center; }
+    button { background: var(--field); color: var(--txt); border: 1px solid var(--line); padding: 0.5rem 1rem; cursor: pointer; font: inherit; }
+    button:hover { background: var(--line); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.on { background: var(--accent); color: var(--ground); }
+    input[type="range"] { width: 200px; }
+    .slider { display: flex; align-items: center; gap: 0.5rem; }
+    canvas { border: 1px solid var(--line); display: block; margin: 2rem 0; max-width: 100%; height: auto; background: var(--field); }
+    .panel { background: var(--field); border: 1px solid var(--line); padding: 1.5rem; margin-bottom: 2rem; }
+    .panel h2 { font-size: 1.2rem; margin-bottom: 1rem; }
+    .panel p { margin-bottom: 0.5rem; }
+    .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; font-size: 0.9rem; }
+    .key { background: var(--ground); padding: 0.5rem; border: 1px solid var(--line); }
+    .ledger { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.25rem; font-size: 0.85rem; font-family: monospace; }
+    .ledger-row { padding: 0.25rem 0.5rem; background: var(--ground); border-left: 2px solid var(--line); }
+    footer { border-top: 3px double var(--line); padding: 1.5rem; text-align: center; font-size: 0.9rem; margin-top: 2rem; }
+    .pills { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .pill { display: inline-block; padding: 0.25rem 0.75rem; border: 1px solid var(--line); font-size: 0.85rem; }
+    @media (prefers-reduced-motion: reduce) {
+      canvas { border: 2px solid var(--line); }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>FADÓ</h1>
+  <div class="subtitle">op. XXII · Portuguese fado (vocal + guitarra)</div>
+</header>
+<main>
+  <div class="controls">
+    <button id="play">⏵ Play</button>
+    <button id="pause" disabled>⏸ Pause</button>
+    <button id="stop">⏹ Stop</button>
+    <button id="another">⟳ Another</button>
+    <button id="cut">💾 Cut WAV</button>
+  </div>
+  <div class="controls">
+    <div class="slider">
+      <label for="seed">Seed:</label>
+      <input type="range" id="seed" min="0" max="99999" value="0">
+      <span id="seedVal">0</span>
+    </div>
+    <div class="slider">
+      <label for="mode">Mode:</label>
+      <select id="mode">
+        <option value="0">Phrygian (Triste)</option>
+        <option value="1">Harmonic Minor (Anguished)</option>
+        <option value="2">Aeolian (Melancholic)</option>
+      </select>
+    </div>
+    <div class="slider">
+      <label for="tempo">Tempo:</label>
+      <input type="range" id="tempo" min="60" max="100" value="72" step="2">
+      <span id="tempoVal">72</span> bpm
+    </div>
+  </div>
+
+  <canvas id="canvas" width="800" height="300"></canvas>
+
+  <div class="panel">
+    <h2>On this music</h2>
+    <p><em>Fado</em> emerges from Lisbon's Alfama district in the 18th century, born from the longing of sailors' wives and the marginal communities of the port. It is a music of <em>saudade</em> — a melancholic yearning without cure — sung by <em>fadistas</em> (fado singers) accompanied by the classical 12-string <em>guitarra</em>.</p>
+    <p>The tradition rests on a small arsenal of harmonic changes: the "Fado progression" cycles through minor chords (typically Am-Em-Dm-E or variations), creating an emotional space where melody can move with freedom. Singers ornament these changes with <em>melismas</em> — long runs of notes on a single syllable — and slides between tones, each song a conversation between the voice and the guitar's responsive plucking.</p>
+    <p>This machine generates fado as a dialogue: the fadista melody is constrained to move within the mode but allowed to wander, while the guitarra's harmonic progression remains fixed, creating both structure and space for the voice's lament.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Keys</h2>
+    <div class="keys">
+      <div class="key"><strong>space</strong> play/stop</div>
+      <div class="key"><strong>p</strong> pause/resume</div>
+      <div class="key"><strong>r</strong> another</div>
+      <div class="key"><strong>c</strong> cut WAV</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Ledger</h2>
+    <div class="ledger" id="ledger"></div>
+  </div>
+</main>
+
+<footer>
+  <div class="pills">
+    <a href="../" class="pill">.exit</a>
+    <a href="../officina/?bench=fado" class="pill">.bench</a>
+  </div>
+</footer>
+
+<script>
+// ============ TIMBRE SCHEMA (OFFICINA bridge) ============
+const TIMBRE = {
+  id: 'fado',
+  title: 'FADÓ',
+  doc: 'Portuguese fado: voice + guitarra. The voice is mezzo-soprano; the guitarra renders as additive harmonics. Just intonation throughout.',
+  groups: {
+    master: {
+      label: 'Master',
+      doc: 'Overall output level and reverb send.',
+      params: {
+        level: { v: 0.8, min: 0.1, max: 1, step: 0.05, label: 'Level', unit: '', doc: 'Master output gain.' },
+        room: { v: 0.3, min: 0, max: 1, step: 0.05, label: 'Room', unit: '', doc: 'Reverb send level.' }
+      }
+    },
+    voice: {
+      label: 'Voice (Fadista)',
+      doc: 'The mezzo-soprano fadista voice.',
+      params: {
+        level: { v: 0.7, min: 0.3, max: 1, step: 0.05, label: 'Level', unit: '', doc: 'Voice volume.' },
+        vibrato: { v: 0.08, min: 0, max: 0.15, step: 0.01, label: 'Vibrato', unit: '', doc: 'Vibrato depth (cents).' },
+        vibRate: { v: 4.5, min: 3, max: 7, step: 0.2, label: 'Vibrato Rate', unit: 'Hz', doc: 'Vibrato speed.' },
+        attack: { v: 0.04, min: 0.01, max: 0.15, step: 0.01, label: 'Attack', unit: 's', doc: 'Note attack time.' },
+        release: { v: 0.3, min: 0.1, max: 0.8, step: 0.1, label: 'Release', unit: 's', doc: 'Note release time.' }
+      }
+    },
+    guitarra: {
+      label: 'Guitarra',
+      doc: 'The classical Portuguese guitar accompaniment.',
+      params: {
+        level: { v: 0.6, min: 0.2, max: 1, step: 0.05, label: 'Level', unit: '', doc: 'Guitar volume.' },
+        brightness: { v: 3000, min: 1000, max: 8000, step: 200, label: 'Brightness', unit: 'Hz', doc: 'Guitar tone cutoff.' },
+        decay: { v: 1.2, min: 0.5, max: 2, step: 0.1, label: 'Decay', unit: 's', doc: 'Pluck decay time.' }
+      }
+    },
+    bass: {
+      label: 'Bass Foundation',
+      doc: 'Deep bass notes supporting the harmony.',
+      params: {
+        level: { v: 0.4, min: 0.1, max: 0.8, step: 0.05, label: 'Level', unit: '', doc: 'Bass volume.' },
+        tone: { v: 60, min: 30, max: 100, step: 5, label: 'Tone', unit: 'Hz', doc: 'Bass fundamental frequency.' }
+      }
+    }
+  }
+};
+const tpDefaults = {};
+for (const g in TIMBRE.groups) {
+  for (const p in TIMBRE.groups[g].params) {
+    tpDefaults[g] = tpDefaults[g] || {};
+    tpDefaults[g][p] = TIMBRE.groups[g].params[p].v;
+  }
+}
+// OFFICINA bridge (duplicated verbatim in every machine)
+(function() {
+  const stored = localStorage[`opvscvla.timbre.${TIMBRE.id}`];
+  const override = stored ? JSON.parse(stored) : {};
+  window.TP = JSON.parse(JSON.stringify(tpDefaults));
+  if (override.v) {
+    for (const g in override.v) {
+      for (const p in override.v[g]) {
+        if (TP[g] && p in TP[g]) TP[g][p] = override.v[g][p];
+      }
+    }
+  }
+  window.TIMBRE.touch = function(path) {
+    const [g, p] = path.split('.');
+    if (TP[g] && p in TP[g]) {
+      const v = TP[g][p];
+      if (window.applyTimbreEdit) window.applyTimbreEdit(g, p, v);
+    }
+  };
+  window.TIMBRE.demo = function(group) {
+    if (window.demoPulse) window.demoPulse(group);
+  };
+  window.addEventListener('message', (ev) => {
+    if (ev.data.officina !== 1) return;
+    if (ev.data.op === 'schema') return;
+    if (ev.data.op === 'set' && ev.data.path) {
+      const [g, p] = ev.data.path.split('.');
+      if (TP[g] && p in TP[g]) {
+        TP[g][p] = ev.data.value;
+        const stored = localStorage[`opvscvla.timbre.${TIMBRE.id}`];
+        const o = stored ? JSON.parse(stored) : { preset: 'factory', v: {} };
+        o.v[g] = o.v[g] || {}; o.v[g][p] = ev.data.value;
+        localStorage[`opvscvla.timbre.${TIMBRE.id}`] = JSON.stringify(o);
+        if (window.applyTimbreEdit) window.applyTimbreEdit(g, p, ev.data.value);
+      }
+    } else if (ev.data.op === 'bulk' && ev.data.values) {
+      for (const g in ev.data.values) {
+        for (const p in ev.data.values[g]) {
+          if (TP[g] && p in TP[g]) TP[g][p] = ev.data.values[g][p];
+        }
+      }
+      const o = { preset: 'factory', v: ev.data.values };
+      localStorage[`opvscvla.timbre.${TIMBRE.id}`] = JSON.stringify(o);
+      if (window.applyTimbreEdit) window.applyTimbreEdit('*', '*', null);
+    }
+    if (window.parent !== window) window.parent.postMessage({ officina: 1, id: TIMBRE.id, op: 'ack' }, '*');
+  });
+  if (window.parent !== window) {
+    window.parent.postMessage({
+      officina: 1, id: TIMBRE.id,
+      op: 'schema', schema: TIMBRE,
+      values: TP
+    }, '*');
+  }
+})();
+
+// ============ STATE ============
+const st = {
+  seed: 0, mode: 0, tempo: 72, playing: false, paused: false, lap: 0
+};
+const live = { q: [], pause: false, regQ: [] };
+let ac, RT = { g: null };
+let canvas, ctx;
+
+// ============ FADO MUSICAL LAW ============
+const BASE = 220; // A3 as base
+const JI = [
+  [1,1],[256,243],[9,8],[32,27],[81,64],[4,3],[1024,683],[3,2],[128,81],[27,16],[16,9],[243,128],[2,1]
+];
+const MODES = [
+  { name: 'Phrygian (Triste)', steps: [0,1,3,5,7,8,10] },
+  { name: 'Harmonic Minor (Anguished)', steps: [0,2,3,5,7,8,11] },
+  { name: 'Aeolian (Melancholic)', steps: [0,2,3,5,7,9,10] }
+];
+const PROGRESSIONS = [
+  { name: 'Am–E–Am', degrees: [0,4,0,4,0] },
+  { name: 'Em–B–Em', degrees: [4,11,4,11,4] },
+  { name: 'Dm–A–Dm', degrees: [2,9,2,9,2] }
+];
+
+function jiFreq(num, den, octave = 0) {
+  return BASE * num / den * Math.pow(2, octave);
+}
+
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6d2b79f5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  }
+}
+
+// ============ COMPOSITION ENGINE ============
+function genAll(seed, modeIdx, lap = 0) {
+  const rng = mulberry32(seed ^ (lap * 0x9e3779b1));
+  const mode = MODES[modeIdx];
+  const prog = PROGRESSIONS[Math.floor(rng() * PROGRESSIONS.length)];
+  const bars = 32; // 32-bar song
+  const events = [];
+
+  let pitchContext = [5,5,5]; // last 3 melody notes
+  for (let bar = 0; bar < bars; bar++) {
+    const beat = bar * 2; // 2 beats per bar (2/4 time)
+    const harmonyDegree = prog.degrees[bar % prog.degrees.length];
+    const baseFreq = jiFreq(JI[harmonyDegree][0], JI[harmonyDegree][1], 1);
+
+    // Guitarra strums harmonic degrees: bass note + chord
+    events.push({
+      type: 'chord', t: beat, bass: baseFreq / 2, degrees: [harmonyDegree, (harmonyDegree+2)%mode.steps.length, (harmonyDegree+4)%mode.steps.length], vel: 0.5
+    });
+
+    // Fadista melody: constrained walk within mode
+    const nNotes = 1 + Math.floor(rng() * 3); // 1-3 notes per bar
+    for (let n = 0; n < nNotes; n++) {
+      const beatOffset = (n + 0.5) * (2 / nNotes);
+      let nextDegree = pitchContext[2]; // start from last note
+      const steps = [-1, 0, 1]; // allowed steps in the mode
+      nextDegree = mode.steps[Math.max(0, Math.min(mode.steps.length - 1, nextDegree + steps[Math.floor(rng() * steps.length)]))];
+      pitchContext = [pitchContext[1], pitchContext[2], nextDegree];
+
+      const octave = Math.floor(rng() * 2); // voice in two octaves
+      const freq = jiFreq(JI[nextDegree][0], JI[nextDegree][1], octave);
+      const dur = 0.5 + rng() * 0.3;
+      events.push({
+        type: 'note', t: beat + beatOffset, freq, dur, vel: 0.6 + rng() * 0.2
+      });
+    }
+  }
+
+  return events;
+}
+
+// ============ AUDIO GRAPH ============
+function buildGraph(audioContext) {
+  const sr = audioContext.sampleRate;
+  const nodes = {};
+
+  nodes.gainM = new GainNode(audioContext);
+  nodes.gainM.gain.value = TP.master.level;
+
+  nodes.convolver = new ConvolverNode(audioContext);
+  nodes.wetGain = new GainNode(audioContext);
+  nodes.dryGain = new GainNode(audioContext);
+  nodes.wetGain.gain.value = TP.master.room;
+  nodes.dryGain.gain.value = 1 - TP.master.room;
+
+  // Simple IR
+  const irLen = Math.floor(sr * 2);
+  const irBuf = audioContext.createBuffer(1, irLen, sr);
+  const irData = irBuf.getChannelData(0);
+  const irRng = mulberry32(st.seed);
+  for (let i = 0; i < irLen; i++) {
+    irData[i] = (irRng() * 2 - 1) * Math.exp(-i / (sr * 1.5));
+  }
+  nodes.convolver.buffer = irBuf;
+
+  nodes.comp = new DynamicsCompressorNode(audioContext, { threshold: -20, knee: 6, ratio: 3, attack: 0.01, release: 0.1 });
+
+  // Busses
+  nodes.voiceGain = new GainNode(audioContext);
+  nodes.voiceGain.gain.value = TP.voice.level;
+  nodes.guitarGain = new GainNode(audioContext);
+  nodes.guitarGain.gain.value = TP.guitarra.level;
+  nodes.bassGain = new GainNode(audioContext);
+  nodes.bassGain.gain.value = TP.bass.level;
+
+  // Bass oscillator
+  nodes.bassOsc = new OscillatorNode(audioContext, { type: 'sine', frequency: TP.bass.tone });
+
+  // Routing: busses → comp → dry/wet → master → out
+  nodes.voiceGain.connect(nodes.comp);
+  nodes.guitarGain.connect(nodes.comp);
+  nodes.bassGain.connect(nodes.comp);
+
+  nodes.comp.connect(nodes.dryGain);
+  nodes.comp.connect(nodes.convolver);
+  nodes.dryGain.connect(nodes.gainM);
+  nodes.convolver.connect(nodes.wetGain);
+  nodes.wetGain.connect(nodes.gainM);
+
+  nodes.gainM.connect(audioContext.destination);
+
+  return nodes;
+}
+
+// ============ SCHEDULER ============
+function scheduleEvents(events, nodes) {
+  for (const ev of events) {
+    if (ev.type === 'note') {
+      const startTime = ac.currentTime + ev.t * 60 / st.tempo;
+      const osc = new OscillatorNode(ac, { type: 'sine', frequency: ev.freq });
+      const env = new GainNode(ac);
+      env.gain.setValueAtTime(0, startTime);
+      env.gain.linearRampToValueAtTime(ev.vel, startTime + TP.voice.attack);
+      env.gain.linearRampToValueAtTime(0, startTime + ev.dur);
+
+      osc.connect(env);
+      env.connect(nodes.voice.gainMain);
+      osc.start(startTime);
+      osc.stop(startTime + ev.dur);
+      nodes.voice.nodeList.push(osc);
+
+    } else if (ev.type === 'chord') {
+      const startTime = ac.currentTime + ev.t * 60 / st.tempo;
+      // Bass note
+      const bassOsc = new OscillatorNode(ac, { type: 'sine', frequency: ev.bass });
+      const bassEnv = new GainNode(ac);
+      bassEnv.gain.setValueAtTime(ev.vel * 0.3, startTime);
+      bassEnv.gain.linearRampToValueAtTime(0, startTime + 1.5);
+      bassOsc.connect(bassEnv);
+      bassEnv.connect(nodes.guitarra.gainMain);
+      bassOsc.start(startTime);
+      bassOsc.stop(startTime + 1.5);
+    }
+  }
+}
+
+// ============ MAIN TRANSPORT ============
+function play() {
+  if (st.playing) return;
+  st.playing = true;
+  st.paused = false;
+  live.pause = false;
+  document.getElementById('play').disabled = true;
+  document.getElementById('pause').disabled = false;
+  document.getElementById('stop').disabled = false;
+
+  if (!ac) {
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+  }
+
+  if (!RT.g) {
+    RT.g = buildGraph(ac);
+    RT.g.bassOsc.connect(RT.g.bassGain);
+    RT.g.bassGain.connect(RT.g.comp);
+    RT.g.bassOsc.start();
+    RT.events = genAll(st.seed, st.mode, st.lap);
+    scheduleEvents(RT.events, RT.g);
+  } else if (ac.state === 'suspended') {
+    ac.resume();
+  }
+
+  const songDuration = 32 * 2 * 60 / st.tempo;
+  RT.stopTimer = setTimeout(() => {
+    if (st.playing) {
+      st.lap++;
+      stop();
+      play();
+    }
+  }, songDuration * 1000);
+
+  updateHash();
+  animate();
+}
+
+function pause() {
+  if (!st.playing || st.paused) return;
+  st.paused = true;
+  live.pause = true;
+  ac.suspend();
+  document.getElementById('pause').textContent = '⏵ Resume';
+  document.getElementById('pause').classList.add('on');
+}
+
+function resume() {
+  if (!st.playing || !st.paused) return;
+  st.paused = false;
+  live.pause = false;
+  ac.resume();
+  document.getElementById('pause').textContent = '⏸ Pause';
+  document.getElementById('pause').classList.remove('on');
+  animate();
+}
+
+function stop() {
+  st.playing = false;
+  st.paused = false;
+  if (RT.stopTimer) clearTimeout(RT.stopTimer);
+  if (RT.g) {
+    try { RT.g.bassOsc.stop(); } catch (e) {}
+    RT.g.gainM.disconnect();
+  }
+  RT.g = null;
+  document.getElementById('play').disabled = false;
+  document.getElementById('pause').disabled = true;
+  document.getElementById('pause').textContent = '⏸ Pause';
+  document.getElementById('pause').classList.remove('on');
+  canvas.width = canvas.width; // clear
+}
+
+function another() {
+  stop();
+  st.seed = Math.floor(Math.random() * 100000);
+  document.getElementById('seedVal').textContent = st.seed;
+  play();
+}
+
+// ============ OFFLINE RENDER ============
+async function cut() {
+  const songDuration = 32 * 2 * 60 / st.tempo;
+  const sr = 44100;
+  const offlineCtx = new OfflineAudioContext(1, Math.floor(songDuration * sr), sr);
+
+  // Save AC reference
+  const savedAc = ac;
+  ac = offlineCtx;
+  const offlineNodes = buildGraph(offlineCtx);
+  offlineNodes.bassOsc.connect(offlineNodes.bassGain);
+  offlineNodes.bassGain.connect(offlineNodes.comp);
+  offlineNodes.bassOsc.start(0);
+  offlineNodes.bassOsc.stop(songDuration);
+
+  const events = genAll(st.seed, st.mode);
+  scheduleEvents(events, offlineNodes);
+
+  const rendered = await offlineCtx.startRendering();
+  ac = savedAc;
+
+  // WAV encode
+  saveWav(rendered, TP.master.level);
+}
+
+function saveWav(audioBuffer, masterLevel = 1) {
+  const len = audioBuffer.length, sr = audioBuffer.sampleRate;
+  const left = audioBuffer.getChannelData(0);
+  const right = audioBuffer.numberOfChannels > 1 ? audioBuffer.getChannelData(1) : left;
+  const interleaved = new Float32Array(len * 2);
+  for (let i = 0; i < len; i++) {
+    interleaved[i*2] = left[i] * masterLevel;
+    interleaved[i*2+1] = right[i] * masterLevel;
+  }
+
+  const encoder = new WavEncoder();
+  const wav = encoder.encode([[...left], audioBuffer.numberOfChannels > 1 ? [...right] : [...left]], sr);
+  const blob = new Blob([wav], { type: 'audio/wav' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fadó-${st.seed}.wav`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Minimal WAV encoder
+class WavEncoder {
+  encode(channels, sampleRate) {
+    const frames = channels[0].length;
+    const dataLength = frames * channels.length * 2;
+    const buffer = new ArrayBuffer(44 + dataLength);
+    const view = new DataView(buffer);
+
+    const writeString = (offset, string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i));
+      }
+    };
+
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + dataLength, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, channels.length, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * channels.length * 2, true);
+    view.setUint16(32, channels.length * 2, true);
+    view.setUint16(34, 16, true);
+    writeString(36, 'data');
+    view.setUint32(40, dataLength, true);
+
+    let offset = 44;
+    for (let i = 0; i < frames; i++) {
+      for (let ch = 0; ch < channels.length; ch++) {
+        const sample = Math.max(-1, Math.min(1, channels[ch][i]));
+        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
+        offset += 2;
+      }
+    }
+
+    return new Uint8Array(buffer);
+  }
+}
+
+// ============ VISUALIZATION ============
+function animate() {
+  if (!st.playing) return;
+  requestAnimationFrame(animate);
+
+  const w = canvas.width, h = canvas.height;
+  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--field');
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--line');
+  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--txt');
+  ctx.font = '12px monospace';
+
+  // Draw harmonic progression
+  const prog = PROGRESSIONS[Math.floor(Math.random() * PROGRESSIONS.length)];
+  ctx.fillText(`Mode: ${MODES[st.mode].name} | Progression: ${prog.name}`, 10, 20);
+  ctx.fillText(`Lap: ${st.lap + 1} | Tempo: ${st.tempo} bpm`, 10, 40);
+
+  // Draw oscillating waveform
+  const centerY = h / 2;
+  const scale = 20;
+  ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--accent');
+  ctx.beginPath();
+  for (let x = 0; x < w; x++) {
+    const y = centerY + Math.sin(x * 0.02 + ac?.currentTime * 2) * scale;
+    if (x === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+}
+
+// ============ EVENT LISTENERS ============
+document.getElementById('play').addEventListener('click', play);
+document.getElementById('pause').addEventListener('click', () => {
+  if (st.paused) resume();
+  else pause();
+});
+document.getElementById('stop').addEventListener('click', stop);
+document.getElementById('another').addEventListener('click', another);
+document.getElementById('cut').addEventListener('click', cut);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === ' ') { e.preventDefault(); if (st.playing) stop(); else play(); }
+  else if (e.key === 'p') { e.preventDefault(); if (st.paused) resume(); else if (st.playing) pause(); }
+  else if (e.key === 'r') { e.preventDefault(); another(); }
+  else if (e.key === 'c') { e.preventDefault(); cut(); }
+});
+
+// Slider bindings
+document.getElementById('seed').addEventListener('input', (e) => {
+  st.seed = parseInt(e.target.value);
+  document.getElementById('seedVal').textContent = st.seed;
+});
+document.getElementById('mode').addEventListener('change', (e) => {
+  st.mode = parseInt(e.target.value);
+});
+document.getElementById('tempo').addEventListener('input', (e) => {
+  st.tempo = parseInt(e.target.value);
+  document.getElementById('tempoVal').textContent = st.tempo;
+});
+
+canvas = document.getElementById('canvas');
+ctx = canvas.getContext('2d');
+
+// ============ HASH SERIALIZATION ============
+function updateHash() {
+  const hash = `s=${st.seed}&m=${st.mode}&t=${st.tempo}`;
+  history.replaceState(null, '', '#' + hash);
+}
+
+function loadHash() {
+  const hash = location.hash.slice(1);
+  if (!hash) return;
+  const params = new URLSearchParams(hash);
+  if (params.has('s')) st.seed = parseInt(params.get('s'));
+  if (params.has('m')) st.mode = parseInt(params.get('m'));
+  if (params.has('t')) st.tempo = parseInt(params.get('t'));
+  document.getElementById('seedVal').textContent = st.seed;
+  document.getElementById('mode').value = st.mode;
+  document.getElementById('tempo').value = st.tempo;
+  document.getElementById('tempoVal').textContent = st.tempo;
+}
+
+// Update ledger
+const ledgerEl = document.getElementById('ledger');
+for (const mode of MODES) {
+  const row = document.createElement('div');
+  row.className = 'ledger-row';
+  row.textContent = mode.name;
+  ledgerEl.appendChild(row);
+}
+for (const prog of PROGRESSIONS) {
+  const row = document.createElement('div');
+  row.className = 'ledger-row';
+  row.textContent = prog.name;
+  ledgerEl.appendChild(row);
+}
+
+loadHash();
+</script>
+</head>
+</body>
+</html>
