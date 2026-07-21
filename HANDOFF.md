@@ -246,11 +246,12 @@ Conventions when touching this layer:
 
 Newest first.
 
-### Lock-screen playback via Media Session API — sweep in progress (PAS SALÉ, SCALA done)
+### Lock-screen playback via Media Session API — sweep in progress (PAS SALÉ, SCALA, GRADUS done)
 **Branch:** `claude/app-link-request-vj8sml` · **Files done:** `pas-sale/index.html`
-(op. I), `scala/index.html` (op. II) · **Status:** in progress, going down the
-op. list in order; each machine verified headless (Chromium) as it lands.
-Maintainer-requested: listen with the phone locked/backgrounded.
+(op. I), `scala/index.html` (op. II), `gradus/index.html` (op. III) ·
+**Status:** in progress, going down the op. list in order; each machine
+verified headless (Chromium) as it lands. Maintainer-requested: listen with
+the phone locked/backgrounded.
 
 - **`__iosAudio`'s hide-suspend removed** in each machine touched so far: it
   used to deliberately `ac.suspend()` on `visibilitychange`→hidden (comment:
@@ -263,28 +264,29 @@ Maintainer-requested: listen with the phone locked/backgrounded.
 - **Media Session added** (`__mediaSessionInit`/`__mediaSessionUpdate`):
   wires lock-screen/notification-shade play/pause/stop to each machine's own
   start/stop/pause functions; next-track maps to whatever that machine calls
-  "another take" (PAS SALÉ's `encore()`, SCALA's next-preset cycle via the
-  `r` key). Metadata (title/op. number/current-take-as-album) refreshes on
-  every start/stop/pause-toggle/take-change.
+  "another take" (PAS SALÉ's `encore()`, SCALA's next-preset cycle, GRADUS's
+  `regenerate(true)`/ALIUD). Metadata (title/op. number/current-take-as-album)
+  refreshes on every start/stop/pause-toggle/take-change.
 - **Silent looping `<audio>` anchor** (`__silStart`/`__silStop`, `__SILENCE`
   data-URI, 8kHz/8-bit/50ms, identical in both files so far): pure Web Audio
   doesn't reliably surface an OS "now playing" session or stay exempt from
   background tab-timer throttling; a real (silent) `<audio>` element playing
   alongside does both. Starts/stops with the transport.
-- **Verified headless** for both machines: `ctx.state`/`RT.ctx.state` stays
-  `'running'` after a simulated `visibilitychange`→hidden (previously
-  suspended); Media Session metadata/`playbackState` update correctly; the
-  silence anchor plays while the transport runs; SCALA's manual MORA pause
-  still suspends/resumes correctly under the new visibility logic. Scripts
-  `scratchpad/verify_pas_sale.js`, `scratchpad/verify_scala.js` (scratch, not
+- **Verified headless** for all three machines: `ctx.state`/`RT.ctx.state`/
+  `RT.ac.state` stays `'running'` after a simulated `visibilitychange`→hidden
+  (previously suspended); Media Session metadata/`playbackState` update
+  correctly; the silence anchor plays while the transport runs; SCALA's and
+  GRADUS's manual MORA/PERGE pause still suspends/resumes correctly under the
+  new visibility logic. Scripts `scratchpad/verify_pas_sale.js`,
+  `scratchpad/verify_scala.js`, `scratchpad/verify_gradus.js` (scratch, not
   committed).
 - **Pattern is a copy-adapt, not a literal duplicate-verbatim** like the
   OFFICINA bridge — each machine's metadata title/op. number, transport
   function names, and "another take" equivalent differ, so every machine
   needs its own look before wiring in the three pieces (suspend-removal,
   Media Session, silence anchor).
-- **Pick-up:** continue down the op. list (next: GRADUS, op. III) on this same
-  branch until all seventeen are done, or until told to stop/reassess.
+- **Pick-up:** continue down the op. list (next: RILLE, op. IV) on this same
+  branch until all machines are done, or until told to stop/reassess.
 
 ### RILLE — reverted to pre-recomposition · English-first UI · reworked arp · URTEIL harness
 **Branch:** `claude/rille-major-chords-a6pm9r` · **Files:** `rille/index.html`
