@@ -248,6 +248,63 @@ Conventions when touching this layer:
 
 Newest first.
 
+### RICERCAR — audit + bugfix pass by the brief's author (post-implementation)
+**Branch:** `claude/geb-musical-machine-plan-mu1af8` · **File:**
+`ricercar/index.html` (4 contained fixes) + two TIMBRE doc strings ·
+**Status:** done, verified headless (Chromium, 24 checks, zero page errors,
+`genAll` cold ≤ 1.9 s). The session that wrote `ricercar/GEB.md` audited the
+implementation below against the brief's §15 gauntlet, independently
+re-measuring rather than re-running the implementer's suite.
+
+**Audit findings** (the implementation's mechanism — tuning, cipher, rules,
+loop math, determinism, transport, render, bridge — all verified correct;
+these are the four things that didn't match intent):
+- **The "17% level 0" was all THEMA.** Movement-resolved measurement: every
+  real canon movement (2–6) bottomed at licentia level 3 for 30/30 seeds;
+  the level-0 hits were exclusively the trivially-solo movement 1. The
+  ceiling itself is real (frozen cipher + all-voices-derived + strict
+  triadic truth is over-constrained; confirmed by prototyping delay/axis
+  search and a theme-space hill climb — neither moved the distribution),
+  but two of its causes were fixable bugs, below.
+- **The search played the LAST candidate, not the best.** `searchMovement`/
+  `searchPerTonos` returned the most recent random attempt when nothing
+  verified — i.e. essentially always. Fixed: both now track and return the
+  least-bad candidate seen anywhere, ranked by `audibleBadness` (parallels
+  3 · strong-beat clash 2 · other 1) at the strict predicate. First
+  verification still wins immediately (ladder semantics unchanged); rng
+  consumption order unchanged, so verified movements are byte-identical.
+- **The per-tonos bass was structurally false.** The theme rhythm-doubled
+  voice 1 two octaves down — constant parallel octaves (~15/lap, every
+  seed) that the never-waived floor can never accept, and octave flips
+  can't fix (mod-12). Replaced with a **composed per-bar pedal-bass** on
+  the lap's own tonic/dominant (the implementer's own SIMPLEX/CONTRARIUM
+  pedal construction; pivot bar anticipates the next key), which also makes
+  the six-lap climb audible in the bass line. The theme remains present at
+  pitch in voice 1. `RANGE.bass6` widened to [−40,−2] for the climb.
+- **Suspensions were mis-filed (brief's own error).** §5.3 allowed
+  suspensions on weak beats only; the textbook Fux suspension is a
+  *strong*-beat event. `checkPredicate` now excuses a prepared,
+  down-by-step-resolving suspension on strong beats at every level.
+- **`RT.t0` was read but never assigned** — `currentMovementIndex()` always
+  returned 0, so OMNIA's canvas sat on THEMA's display (and re-built the
+  whole event list every frame). `runLap` now stamps `RT.t0` +
+  `RT.boundariesBeats`; the canvas tracks movements from those.
+- Also corrected the `repairOctaves` comment: ±1200¢ flips are invisible to
+  a mod-12 predicate, so the pass repairs **range violations only** — it
+  never could make §15.4 reachable, which explains the implementer's
+  "raising the cap didn't help" measurement.
+- **Measured effect on the final audible output** (strong-beat dissonance,
+  10 seeds, before → after): AUGMENTATIONEM 42.8 → 20.6% · CANCRIZANS
+  30.3 → 16.9% · CONTRARIUM 24.5 → 17.9% · PER TONOS 27.2 → 17.4% (and
+  structural parallels ~15/lap → <1/lap) · SIMPLEX 28.1 → 25.2%. Level
+  distribution is essentially unchanged (levels measure verification, and
+  the ceiling stands) — the *licentia III* label is now honest about
+  markedly less-bad music.
+- **Still open, unchanged from the thread below:** the real fix for the
+  level-0 gap is a constructive/backtracking rhythm search (build the
+  rhythm to fit the transformation instead of generate-and-test). SIMPLEX
+  is now the most dissonant movement and would benefit first.
+
 ### RICERCAR — new machine, op. XXIII (implemented from the GEB.md brief)
 **Branch:** `claude/ricecar-instructions-qqwaj3` · **File:** `ricercar/index.html`
 (new, ~1500 lines) · `ricercar/GEB.md` deleted per its own instruction, outcome
