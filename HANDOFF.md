@@ -257,11 +257,24 @@ Newest first.
 verified headless. Three complaints, all confirmed real:
 
 - **Portamento too prominent, reads as dissonant.** `scheduleSingerChain`'s
-  legato note-to-note glide (`xfade`) was 30ms — long enough that quick
-  melismatic runs spent audible time sliding through the interval between
-  two lawful pitches, landing as passing dissonance against the other
-  voices rather than a clean attack. Cut to 12ms — still glides (no
-  zipper-noise jump), but short enough not to linger on the in-between.
+  legato note-to-note transition used `linearRampToValueAtTime` on the
+  oscillator frequency — that is a glissando *by construction*, so quick
+  melismatic runs slid audibly through the interval between two lawful
+  pitches, landing as passing dissonance. First pass only shortened the
+  ramp (`xfade` 30ms→12ms); the maintainer confirmed it was still too much
+  glide — shortening a slide doesn't stop it being a slide. **Real fix:
+  step the pitch instantly.** An `OscillatorNode` frequency change is
+  phase-continuous (the spec keeps internal phase), so the waveform value
+  never jumps and an instant `setValueAtTime` pitch change is click-free —
+  which is what a choir does: each note re-sounds, singers don't slide
+  between pitches. Only the formant biquads keep a short `setTargetAtTime`
+  smoothing (a filter-coefficient jump *can* click, and a vowel morph
+  gliding is natural — it isn't pitch glide). Added a gentle click-free
+  amplitude re-articulation per legato note (dip to 0.84·peak and back over
+  ≤28ms, ramps only) so each melisma note has its own onset instead of one
+  flat slur. `xfade` removed. Verified headless: a scheduling spy proves
+  **zero** linear ramps on any oscillator frequency across a full render
+  (1285 instant pitch steps instead), render clean/non-clipping.
 - **Vibrato was unified across singers.** Every singer in a part shared
   the exact `TP.capella.vibRate`, so cantores>1 produced one synchronized
   wobble instead of individual voices — real choirs don't lock vibrato

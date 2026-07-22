@@ -1524,7 +1524,7 @@ function scheduleSingerChain(ctx,dest,voice,singerIdx,notes,tactus,startTime,see
   const lfoGain=ctx.createGain(); lfoGain.gain.value=0;
   lfo.connect(lfoGain); lfoGain.connect(osc.detune);
 
-  const atk=0.035, rel=0.12, gapThresh=0.06, xfade=0.012, peak=0.5;
+  const atk=0.035, rel=0.12, gapThresh=0.06, peak=0.5;
   let lastEnd=-Infinity, firstT=Infinity, lastStop=startTime;
   for(let i=0;i<notes.length;i++){
     const ev=notes[i];
@@ -1548,10 +1548,21 @@ function scheduleSingerChain(ctx,dest,voice,singerIdx,notes,tactus,startTime,see
         lfoGain.gain.linearRampToValueAtTime(TP.capella.vibDepth,vOnset+0.15);
       }
     } else {
-      osc.frequency.linearRampToValueAtTime(hz,t0+xfade);
-      for(let k=0;k<3;k++) bps[k].frequency.linearRampToValueAtTime(vf[k]*sc,t0+xfade);
-      breathBP.frequency.linearRampToValueAtTime(vf[0]*sc,t0+xfade);
+      // Legato within a melisma: step the pitch cleanly — NO glissando. An
+      // oscillator frequency change is phase-continuous, so the waveform value
+      // never jumps; the pitch can move instantly without a click, which is what
+      // a choir actually does (each note re-sounds; singers don't slide between
+      // pitches). Only the formant filters keep a short ramp — a biquad
+      // coefficient jump can click, and a vowel/timbre morph gliding is natural.
+      osc.frequency.setValueAtTime(hz,t0);
+      for(let k=0;k<3;k++) bps[k].frequency.setTargetAtTime(vf[k]*sc,t0,0.006);
+      breathBP.frequency.setTargetAtTime(vf[0]*sc,t0,0.006);
+      // A gentle re-articulation so each melisma note has its own onset instead
+      // of one flat slur (ramps only — click-free). Scales down for short notes.
+      const artT=Math.min(0.028,dur*0.4);
       amp.gain.setValueAtTime(peak,t0);
+      amp.gain.linearRampToValueAtTime(peak*0.84,t0+artT*0.4);
+      amp.gain.linearRampToValueAtTime(peak,t0+artT);
     }
     lastEnd=t0+dur;
   }
