@@ -1,176 +1,401 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>FADÓ · op. XXII</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="../favicon-32.png" sizes="32x32">
-  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
-  <link rel="manifest" href="../site.webmanifest">
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    :root {
-      --ground: #1a1410;
-      --txt: #e8dcc8;
-      --field: #2e2620;
-      --line: #6b5d4f;
-      --accent: #d4764a;
-    }
-    @media (prefers-color-scheme: light) {
-      :root {
-        --ground: #faf8f3;
-        --txt: #2a2218;
-        --field: #f0ede6;
-        --line: #a89878;
-        --accent: #d4764a;
-      }
-    }
-    body {
-      background: var(--ground);
-      color: var(--txt);
-      font-family: Charter, 'Bitstream Charter', Georgia, serif;
-      line-height: 1.5;
-      font-size: 16px;
-    }
-    header { padding: 1rem; border-bottom: 3px double var(--line); position: relative; }
-    h1 { font-size: 2rem; font-weight: 400; letter-spacing: 0.1em; }
-    .subtitle { font-size: 0.9rem; color: var(--line); margin-top: 0.25rem; }
-    main { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
-    .controls { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: center; }
-    button { background: var(--field); color: var(--txt); border: 1px solid var(--line); padding: 0.5rem 1rem; cursor: pointer; font: inherit; }
-    button:hover { background: var(--line); }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    button.on { background: var(--accent); color: var(--ground); }
-    input[type="range"] { width: 200px; }
-    .slider { display: flex; align-items: center; gap: 0.5rem; }
-    canvas { border: 1px solid var(--line); display: block; margin: 2rem 0; max-width: 100%; height: auto; background: var(--field); }
-    .panel { background: var(--field); border: 1px solid var(--line); padding: 1.5rem; margin-bottom: 2rem; }
-    .panel h2 { font-size: 1.2rem; margin-bottom: 1rem; }
-    .panel p { margin-bottom: 0.5rem; }
-    .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; font-size: 0.9rem; }
-    .key { background: var(--ground); padding: 0.5rem; border: 1px solid var(--line); }
-    .ledger { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.25rem; font-size: 0.85rem; font-family: monospace; }
-    .ledger-row { padding: 0.25rem 0.5rem; background: var(--ground); border-left: 2px solid var(--line); }
-    footer { border-top: 3px double var(--line); padding: 1.5rem; text-align: center; font-size: 0.9rem; margin-top: 2rem; }
-    .pills { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .pill { display: inline-block; padding: 0.25rem 0.75rem; border: 1px solid var(--line); font-size: 0.85rem; }
-    @media (prefers-reduced-motion: reduce) {
-      canvas { border: 2px solid var(--line); }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#141013">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FADÓ">
+<title>FADÓ — Portuguese fado (voice, guitarra & viola)</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   FADÓ — Portuguese fado. A dim tavern in Alfama, one voice and the
+   guitarra. Warm night #141013 · wine #a8324a · guitarra brass #c99a54 ·
+   lace/lyric bone #ece0cf · dim #8c8175. Named in Portuguese, the
+   collection's mother-tongue-per-genre rule (PAS SALÉ French, FOLI Malinke,
+   VYVID Ukrainian). The look is the fadista's stage: the guitarra
+   portuguesa at the left, and the strophe drawn as a lit staff — the voice
+   a rising-then-sighing line, the guitarra's baixaria answering beneath.
+   ===================================================================== */
+:root{
+  color-scheme:dark;
+  --ground:#141013; --panel:#0e0b0d; --bone:#ece0cf;
+  --wine:#a8324a; --brass:#c99a54; --dim:#8c8175;
+  --txt:#ece0cf; --hair:rgba(201,154,84,.20); --hair2:rgba(201,154,84,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;background:var(--ground)}
+body{
+  background:var(--ground);
+  background-image:radial-gradient(120% 80% at 50% -8%, rgba(168,50,74,.10), transparent 55%),
+                   radial-gradient(90% 60% at 50% 112%, rgba(201,154,84,.06), transparent 60%);
+  color:var(--txt);font-family:'EB Garamond',Georgia,serif;
+  min-height:100vh;display:flex;justify-content:center;
+  padding:max(14px,env(safe-area-inset-top)) 14px calc(22px + env(safe-area-inset-bottom));
+}
+.pit{
+  width:100%;max-width:600px;background:var(--panel);
+  border:1.5px solid var(--brass);
+  box-shadow:0 0 0 5px var(--ground),0 0 0 6.5px var(--hair),inset 0 0 70px rgba(0,0,0,.6);
+  display:flex;flex-direction:column;padding:0 0 18px;
+}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:14px 0 0 14px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#ece0cf;background:rgba(14,11,13,.5);border:1px solid rgba(236,224,207,.24);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench{position:fixed;top:max(6px,env(safe-area-inset-top));right:max(6px,env(safe-area-inset-right));z-index:100;display:flex;width:-moz-fit-content;width:fit-content;align-items:center;gap:.55em;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#ece0cf;background:rgba(14,11,13,.5);border:1px solid rgba(236,224,207,.24);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench:hover,.bench:focus-visible{color:#fff;border-color:rgba(236,224,207,.72);background:rgba(10,8,10,.8);outline:none}
+.bench:active{transform:translateY(1px)}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(236,224,207,.7);background:rgba(14,11,13,.82);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+@media(prefers-reduced-motion:reduce){.bench,.exit{transition:none}}
+
+header{padding:14px 20px 12px}
+.eyebrow{font-family:'IBM Plex Mono',monospace;font-size:.62rem;letter-spacing:.3em;color:var(--wine);text-transform:uppercase}
+h1{font-family:'Cormorant SC',serif;font-weight:700;font-size:clamp(2.8rem,14vw,4.4rem);
+  letter-spacing:.16em;line-height:1;color:var(--txt);margin:6px 0 8px;text-indent:.16em;
+  text-shadow:0 1px 0 rgba(168,50,74,.28)}
+.sub{font-style:italic;font-size:1rem;color:var(--txt);line-height:1.45}
+.sub b{font-style:normal;color:var(--brass)}
+.credit{font-family:'IBM Plex Mono',monospace;font-size:.58rem;color:var(--dim);letter-spacing:.06em;margin-top:9px;text-transform:uppercase}
+
+.plate{position:relative;margin:2px 14px 0;border:1px solid var(--hair);background:var(--ground)}
+.plate canvas{display:block;width:100%;height:auto}
+.plate .tag{position:absolute;top:7px;left:10px;font-family:'IBM Plex Mono',monospace;font-size:.56rem;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.plate .tagr{left:auto;right:10px;text-align:right}
+.plate .tag b{color:var(--brass)}
+
+.controls{padding:14px 20px 0;display:flex;flex-direction:column;gap:14px}
+.lab{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.26em;color:var(--brass);text-transform:uppercase;margin-bottom:7px;display:flex;justify-content:space-between;gap:1em}
+.lab .rd{color:var(--txt);letter-spacing:.05em;text-align:right}
+
+button{font-family:'EB Garamond',serif;color:var(--txt);background:transparent;
+  border:1px solid var(--hair);cursor:pointer;touch-action:manipulation;letter-spacing:.05em}
+button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+button:active{transform:translateY(1px)}
+button,canvas{-webkit-user-select:none;user-select:none}
+
+.pick{width:100%;padding:16px;font-family:'Cormorant SC',serif;font-weight:600;
+  font-size:1.25rem;letter-spacing:.3em;text-transform:uppercase;border-width:1.5px;
+  border-color:var(--brass);transition:background .15s,color .15s,border-color .15s}
+.pick.on{background:var(--wine);border-color:var(--wine);color:#1a0f08}
+.pick:disabled{opacity:.4;cursor:default}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chips button{padding:8px 11px;font-family:'IBM Plex Mono',monospace;font-size:.68rem;color:var(--dim);letter-spacing:.04em}
+.chips button.on{background:var(--wine);color:#f4e7d6;border-color:var(--wine)}
+.chips button small{display:block;font-size:.82em;opacity:.7;letter-spacing:0;text-transform:none}
+.chips button.on small{opacity:.85}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--hair)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;margin-top:-9px;border-radius:50%;background:var(--panel);border:2px solid var(--brass);box-shadow:0 0 7px rgba(201,154,84,.4)}
+input[type=range]::-moz-range-track{height:2px;background:var(--hair)}
+input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--panel);border:2px solid var(--brass)}
+
+.cut{width:100%;padding:13px;font-family:'IBM Plex Mono',monospace;font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;border-style:dashed;border-color:var(--hair)}
+.cut:disabled{opacity:.45;cursor:default}
+.cutnote{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--dim);text-align:center;margin-top:7px;min-height:1em;letter-spacing:.05em}
+
+.foot{margin:16px 20px 0;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:.62rem;
+  letter-spacing:.2em;color:var(--dim);text-transform:uppercase;line-height:1.9;border-top:1px solid var(--hair2);padding-top:12px}
+.foot a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
+</style>
 </head>
 <body>
-<header>
-  <h1>FADÓ</h1>
-  <div class="subtitle">op. XXII · Portuguese fado (vocal + guitarra)</div>
-</header>
-<main>
+<div class="pit">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+  <a class="bench" href="../officina/#m=fado" aria-label="Open in officina — the voicing bench" title="officina">officina</a>
+
+  <header>
+    <div class="eyebrow">op. XXII · fado de Lisboa</div>
+    <h1>Fadó</h1>
+    <div class="sub"><b>The song of Lisbon, and of longing.</b> In the taverns of the Alfama and the Mouraria a single voice sings over the ringing <em>guitarra portuguesa</em> and a plain <em>viola</em> — of the sea, of the poor, of <em>saudade</em>, the ache for what is gone and won't return. Fado is not a set of songs but a handful of shared frameworks: fixed chord-and-tempo skeletons a singer decorates freely. This machine sings one — the fadista's line generated fresh each verse, the guitarra answering in the gaps with its running <em>baixaria</em>.</div>
+    <div class="credit">fado menor · corrido · mouraria — the traditional templates · voice, guitarra portuguesa (12 strings) & viola, all synthesized · 5-limit just intonation over one 220 Hz reference · no samples, no equal temperament in the notes</div>
+  </header>
+
+  <div class="plate">
+    <canvas id="cv" width="920" height="520" aria-label="A dim stage: the twelve-stringed guitarra portuguesa at the left with its fan of tuners, and at the right the verse drawn as a lit staff — the chord frame along the top, the fadista's voice a rising-then-sighing line, the guitarra's baixaria a run of marks answering beneath, a playhead reading across"></canvas>
+    <div class="tag">FADO · <b id="fadoTag">menor</b></div>
+    <div class="tag tagr"><span id="statusTag">READY</span></div>
+  </div>
+
   <div class="controls">
-    <button id="play">⏵ Play</button>
-    <button id="pause" disabled>⏸ Pause</button>
-    <button id="stop">⏹ Stop</button>
-    <button id="another">⟳ Another</button>
-    <button id="cut">💾 Cut WAV</button>
-  </div>
-  <div class="controls">
-    <div class="slider">
-      <label for="seed">Seed:</label>
-      <input type="range" id="seed" min="0" max="99999" value="0">
-      <span id="seedVal">0</span>
-    </div>
-    <div class="slider">
-      <label for="mode">Mode:</label>
-      <select id="mode">
-        <option value="0">Phrygian (Triste)</option>
-        <option value="1">Harmonic Minor (Anguished)</option>
-        <option value="2">Aeolian (Melancholic)</option>
-      </select>
-    </div>
-    <div class="slider">
-      <label for="tempo">Tempo:</label>
-      <input type="range" id="tempo" min="60" max="100" value="72" step="2">
-      <span id="tempoVal">72</span> bpm
-    </div>
-  </div>
 
-  <canvas id="canvas" width="800" height="300"></canvas>
+    <div style="display:flex;gap:10px">
+      <button class="pick" id="pick" style="flex:1">Tocar</button>
+      <button class="pick" id="pause" style="flex:0 0 34%" disabled>Pausar</button>
+    </div>
 
-  <div class="panel">
-    <h2>On this music</h2>
-    <p><em>Fado</em> emerges from Lisbon's Alfama district in the 18th century, born from the longing of sailors' wives and the marginal communities of the port. It is a music of <em>saudade</em> — a melancholic yearning without cure — sung by <em>fadistas</em> (fado singers) accompanied by the classical 12-string <em>guitarra</em>.</p>
-    <p>The tradition rests on a small arsenal of harmonic changes: a minor tonic moving to a second chord and back — the dominant a fifth above, the subdominant a fourth above, or the flattened seventh a whole tone below the octave — creating an emotional space where melody can move with freedom. Singers ornament these changes with <em>melismas</em> — long runs of notes on a single syllable — and slides between tones, each song a conversation between the voice and the guitar's responsive plucking.</p>
-    <p>This machine generates fado as a dialogue: the fadista melody is constrained to move within the mode but allowed to wander, while the guitarra's harmonic progression remains fixed, creating both structure and space for the voice's lament.</p>
-  </div>
+    <div class="fld">
+      <div class="lab">Fado <span class="rd" id="fadord">menor · the lament</span></div>
+      <div class="chips" id="fado"></div>
+    </div>
 
-  <div class="panel">
-    <h2>Keys</h2>
-    <div class="keys">
-      <div class="key"><strong>space</strong> play/stop</div>
-      <div class="key"><strong>p</strong> pause/resume</div>
-      <div class="key"><strong>r</strong> another</div>
-      <div class="key"><strong>c</strong> cut WAV</div>
+    <div class="fld">
+      <div class="lab">Tom <span class="rd" id="tomrd">médio</span></div>
+      <div class="chips" id="tom"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Sentimento <span class="rd" id="sentird">sentido · heartfelt</span></div>
+      <div class="chips" id="senti"></div>
+    </div>
+
+    <div class="fld">
+      <div class="lab">Andamento <span class="rd" id="tempord">70 / min</span></div>
+      <input type="range" id="tempo" min="52" max="132" value="70" aria-label="The tempo of the verse, in beats per minute">
+    </div>
+
+    <div class="fld">
+      <button class="cut" id="cut">Gravar um disco · 16-bit WAV</button>
+      <div class="cutnote" id="cutnote">renders two whole verses</div>
     </div>
   </div>
 
-  <div class="panel">
-    <h2>Ledger</h2>
-    <div class="ledger" id="ledger"></div>
-  </div>
-</main>
+  <details class="reader">
+    <summary>On this music · the song of Lisbon</summary>
+    <div class="rbody">
+      <h4>What you're hearing</h4>
+      <p>A generated <em>fado</em> — the urban folk song of Lisbon. One synthesized voice, the <b>fadista</b>, sings a melody invented fresh each verse; under it the twelve-stringed <b>guitarra portuguesa</b> rings and the six-stringed <b>viola</b> (an ordinary acoustic guitar, as fado calls it) keeps the harmony and the beat. In the pauses between the singer's phrases the guitarra runs its <b>baixaria</b> — a bass counter-melody that answers the voice, the sound everyone knows even if they don't know its name. The whole piece is built from a small fixed frame; the machine fills that frame differently every time, so a link or a cut disc reproduces one exact performance.</p>
+      <h4>Fado is a frame, not a tune</h4>
+      <p>This is the part outsiders miss. A <em>fado</em>, to a Lisbon singer, is usually not a song but a <b>template</b>: a fixed chord sequence and rhythmic skeleton, named and shared, over which countless different poems are sung. The oldest and most important are the <b>Fado Menor</b> (in a minor key — slow, dark, the pure lament), the <b>Fado Corrido</b> (major, quick, the vehicle for satire and news), and the <b>Fado Mouraria</b> (named for the old Moorish quarter, major and moderate). A fadista knows the frame by heart and pours a poem into it, bending the melody to the words. That is exactly the machine's law: you choose the frame, and it composes a singer's line to fit — the same relationship, mechanised. Change the frame and the harmony, tempo and feel all change with it.</p>
+      <h4>The guitarra, and the baixaria</h4>
+      <p>The <b>guitarra portuguesa</b> is a pear-shaped, twelve-string instrument — six courses of paired steel strings — with a bright, shivering, almost harpsichord-like ring and a fan of watch-key tuners that give it its unmistakable silhouette. It doesn't just accompany: it converses. While the voice sings, it shadows; when the voice rests at the end of a line, it fills the silence with the <b>baixaria</b>, a quick melodic run in the lower strings that carries the ear to the next phrase. Here that call-and-response is built into the composition — the singer sings a phrase, then falls silent while the guitarra answers, verse after verse.</p>
+      <h4>Saudade</h4>
+      <p>Fado grew in the 1800s in the poorest quarters of Lisbon — the Alfama, the Mouraria — among sailors, dockworkers and the women who waited for them. Its subject is <em>saudade</em>: a Portuguese word with no clean translation, a longing for someone or something absent, a grief that is also almost sweet. The music is built to carry it — the minor mode, the sighing descent at the end of each line, the held notes that swell and break with vibrato, the singer leaning into a note a hair sharp or flat for the ache of it. In 2011 UNESCO listed fado as intangible cultural heritage of humanity.</p>
+      <h4>How the voice is made</h4>
+      <p>There is no recording of anyone. The fadista is <b>synthesized</b>: a buzzing glottal tone — the sound of vocal folds — is passed through <em>formants</em>, the resonances of the throat and mouth that turn a buzz into a vowel, and those resonances move as the "words" change. The line slides between notes (<em>portamento</em>, fado's constant sigh), decorates long syllables with quick runs (<em>melisma</em>), leans on a neighbouring note before the true one (the <em>appoggiatura</em>), and lets held notes bloom into vibrato. How much of all this you hear is the <b>Sentimento</b> control — from <em>contido</em>, restrained, to <em>rasgado</em>, torn open.</p>
+      <h4>Why the tuning is just</h4>
+      <p>Like the rest of this collection the notes use <b>just intonation</b> — intervals built from small whole-number ratios (a fifth is exactly 3:2, a major third exactly 5:4), tuned to a single 220 Hz reference, never the compromise of the piano's equal temperament. A real fado trio has no keyboard; it is a tight ensemble tuning to itself by ear, and a singer bends freely toward pure intervals — so just intonation is truer to how it actually sounds than the tempered frets would suggest. The one Hz number in the whole machine is that 220; every other pitch is a whole-number ratio of it, folded by octaves into each instrument's range.</p>
+      <h4>The controls</h4>
+      <p><b>Fado</b> chooses the frame — menor, corrido or mouraria — and with it the mode, the chords, the tempo and the feel. <b>Tom</b> sets the key, low, middle or high. <b>Sentimento</b> sets how much the singer ornaments and how busy the guitarra's answer is. <b>Andamento</b> is the tempo, and it can be moved while it plays — the next bar takes it up. <b>Tocar</b> begins; each verse is composed anew as it goes, so it never quite repeats. The name is Portuguese, this collection's rule of naming each machine in its music's own tongue.</p>
+    </div>
+  </details>
 
-<footer>
-  <div class="pills">
-    <a href="../" class="pill">.exit</a>
-    <a href="../officina/?bench=fado" class="pill">.bench</a>
+  <div class="foot">
+    op. XXII · <a href="../">opvscvla</a> · keys: space=play · p=pause · r=another · c=cut
   </div>
-</footer>
+</div>
 
 <script>
-// ============ TIMBRE SCHEMA (OFFICINA bridge) ============
-const TIMBRE = {
-  id: 'fado',
-  title: 'FADÓ',
-  doc: 'Portuguese fado: voice + guitarra. The voice is mezzo-soprano; the guitarra renders as additive harmonics. Just intonation throughout.',
-  groups: {
-    master: {
-      label: 'Master',
-      doc: 'Overall output level and reverb send.',
-      params: {
-        level: { v: 0.8, min: 0.1, max: 1, step: 0.05, label: 'Level', unit: '', doc: 'Master output gain.' },
-        room: { v: 0.3, min: 0, max: 1, step: 0.05, label: 'Room', unit: '', doc: 'Reverb send level.' }
-      }
-    },
-    voice: {
-      label: 'Voice (Fadista)',
-      doc: 'The mezzo-soprano fadista voice. Level rides live; vibrato/attack/release are baked per note and apply at the next Play/Another.',
-      params: {
-        level: { v: 0.7, min: 0.3, max: 1, step: 0.05, label: 'Level', unit: '', doc: 'Voice volume (live).' },
-        vibrato: { v: 0.08, min: 0, max: 0.15, step: 0.01, label: 'Vibrato', unit: '', doc: 'Vibrato depth, cents/100 (applies next Play/Another).' },
-        vibRate: { v: 4.5, min: 3, max: 7, step: 0.2, label: 'Vibrato Rate', unit: 'Hz', doc: 'Vibrato speed (applies next Play/Another).' },
-        attack: { v: 0.04, min: 0.01, max: 0.15, step: 0.01, label: 'Attack', unit: 's', doc: 'Note attack time (applies next Play/Another).' },
-        release: { v: 0.3, min: 0.1, max: 0.8, step: 0.1, label: 'Release', unit: 's', doc: 'Note release time (applies next Play/Another).' }
-      }
-    },
-    guitarra: {
-      label: 'Guitarra',
-      doc: 'The classical Portuguese guitar accompaniment. Level rides live; brightness/decay are baked per strum and apply at the next Play/Another.',
-      params: {
-        level: { v: 0.6, min: 0.2, max: 1, step: 0.05, label: 'Level', unit: '', doc: 'Guitar volume (live).' },
-        brightness: { v: 3000, min: 1000, max: 8000, step: 200, label: 'Brightness', unit: 'Hz', doc: 'Strum lowpass cutoff (applies next Play/Another).' },
-        decay: { v: 1.2, min: 0.5, max: 2, step: 0.1, label: 'Decay', unit: 's', doc: 'Pluck decay time (applies next Play/Another).' }
-      }
-    },
-    bass: {
-      label: 'Bass Foundation',
-      doc: 'Deep bass notes supporting the harmony.',
-      params: {
-        level: { v: 0.4, min: 0.1, max: 0.8, step: 0.05, label: 'Level', unit: '', doc: 'Bass volume.' },
-        tone: { v: 60, min: 30, max: 100, step: 5, label: 'Tone', unit: 'Hz', doc: 'Bass fundamental frequency.' }
-      }
-    }
-  }
+'use strict';
+/* =====================================================================
+   READER'S GUIDE — FADÓ (op. XXII)
+   ---------------------------------------------------------------------
+   Portuguese fado as a generative trio: fadista (formant voice) +
+   guitarra portuguesa + viola, over one of three real fado TEMPLATES.
+
+   THE LAW (tables, never in TIMBRE):
+     FADOS  — menor/corrido/mouraria: mode + an 8-bar chord grid +
+              default tempo + accompaniment feel. The "frame" a real
+              fadista fills.
+     SCALE  — the mode's degrees as exact JI ratios over the tonic.
+     CHORD/ROOTR — chord-tone and chord-root ratios (all JI, 5-limit,
+              the dominant taking the just 7/4).
+     TOM    — key/register (a JI transposition of the one 220 Hz ref).
+     SENTI  — ornamentation/answer density (contido/sentido/rasgado).
+
+   genAll(seed,lap) composes one deterministic VERSE: per bar, the viola
+   accompaniment (feel-dependent), the fadista phrase (a shaped, mostly
+   descending line with portamento/appoggiatura/melisma/vibrato, landing
+   on a chord tone), and the guitarra baixaria answering in the rests.
+
+   SYNTHESIS: one persistent glottal+formant voice (per-note freq/vowel/
+   env automation); guitarra & viola are cached Karplus–Strong plucks.
+   Master: shaper → glue comp → brick limiter → trim, + a seeded tavern
+   room. Identical graph for realtime and the offline WAV, so a cut
+   reproduces exactly. Scheduler is bar-by-bar (schedTick) so Andamento
+   rides live; Fado/Tom/Sentimento regenerate and hand to the running
+   transport at the next verse.
+
+   KEYS: space=play/stop · p=pause/resume · r=another · c=cut a WAV
+   ===================================================================== */
+
+const $=id=>document.getElementById(id);
+function clamp(x,a,b){return x<a?a:x>b?b:x;}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};}
+const pick=(rng,arr)=>arr[(rng()*arr.length)|0];
+
+/* ---- iOS audio unlock: playback session, gesture resume, suspend on hidden ---- */
+function __hint(msg){
+  try{
+    const p=$('pick')||document.querySelector('button');
+    if(!p||!p.parentElement)return;
+    let h=$('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin:8px 20px 0;font-style:italic;letter-spacing:.04em';
+      p.parentElement.insertAdjacentElement('afterend',h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{
+    if(document.visibilityState==='visible')kick();
+    else if(ac.state==='running')ac.suspend().catch(()=>{});
+  }catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else if(document.visibilityState==='visible')setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('audio suspended — tap Tocar again · if still silent, check the ring/silent switch');}catch(e){}},450);
+}
+
+/* ============================ THE LAW ==================================
+   Ratios stay integer [num,den] pairs; the ONLY Hz literal is TONIC.
+   Never move any of this into TIMBRE — it is the music, not the voice. */
+const SR=44100;
+const TONIC=220;                                   // the one Hz literal (A)
+
+// scale degrees (index 0..6) as JI ratios over the tonic
+const SCALE={
+  minor:[[1,1],[9,8],[6,5],[4,3],[3,2],[8,5],[9,5]],   // natural minor
+  major:[[1,1],[9,8],[5,4],[4,3],[3,2],[5,3],[15,8]],  // major (Ionian)
+};
+const LEADING=[15,8];                                  // raised 7 over the V (harmonic-minor colour)
+// chord-tone ratios over the chord's own root
+const CHORD={
+  M:[[1,1],[5,4],[3,2]],            // major triad 4:5:6
+  m:[[1,1],[6,5],[3,2]],            // minor triad 10:12:15
+  '7':[[1,1],[5,4],[3,2],[7,4]],    // dominant seventh 4:5:6:7 (just, mellow)
+};
+// chord-root ratio over the tonic, by semitone degree of the root
+const ROOTR={0:[1,1],2:[9,8],5:[4,3],7:[3,2],9:[5,3]};
+
+// The three templates. grid = 8 bars of [rootDegree, quality]; the frame
+// a fadista fills. roman = display label per cell.
+const FADOS={
+  menor:{label:'Menor',sub:'the lament · minor',mode:'minor',beat:70,feel:'rubato',
+    grid:[[0,'m'],[7,'7'],[0,'m'],[7,'7'],[5,'m'],[0,'m'],[7,'7'],[0,'m']]},
+  corrido:{label:'Corrido',sub:'the quick one · major',mode:'major',beat:116,feel:'driving',
+    grid:[[0,'M'],[7,'7'],[0,'M'],[0,'M'],[5,'M'],[0,'M'],[7,'7'],[0,'M']]},
+  mouraria:{label:'Mouraria',sub:'the Moorish quarter · major',mode:'major',beat:96,feel:'moderato',
+    grid:[[0,'M'],[5,'M'],[7,'7'],[0,'M'],[9,'m'],[5,'M'],[7,'7'],[0,'M']]},
+};
+const FADO_ORDER=['menor','corrido','mouraria'];
+const ROMAN={0:'I',2:'II',5:'IV',7:'V',9:'VI'};
+function chordLabel(cell){let r=ROMAN[cell[0]]||'?';if(cell[1]==='m')r=r.toLowerCase();if(cell[1]==='7')r+='7';return r;}
+
+// key / register — a JI transposition of the one reference
+const TOM={
+  grave:{label:'Grave',sub:'low',r:[2,3]},        // down a fifth
+  medio:{label:'Médio',sub:'middle',r:[1,1]},
+  agudo:{label:'Agudo',sub:'high',r:[4,3]},        // up a fourth
+};
+const TOM_ORDER=['grave','medio','agudo'];
+
+// sentimento — ornamentation & answer density
+const SENTI={
+  contido:{label:'Contido',sub:'restrained',orn:0.18,melisma:2,vib:0.6,baix:0.55,notes:5},
+  sentido:{label:'Sentido',sub:'heartfelt',orn:0.42,melisma:3,vib:1.0,baix:0.8,notes:7},
+  rasgado:{label:'Rasgado',sub:'torn open',orn:0.7,melisma:4,vib:1.35,baix:1.0,notes:9},
+};
+const SENTI_ORDER=['contido','sentido','rasgado'];
+
+// Portuguese-ish vowel formants (mezzo), [F1,F2,F3] Hz
+const VOWELS={a:[800,1150,2800],e:[500,1800,2600],i:[320,2200,3000],o:[520,900,2500],u:[330,760,2400]};
+const VOWEL_SEQ=['a','e','i','o','u'];
+
+/* ---- exact-ratio helpers (keep the pitched path integer until the last mul) */
+function gcdI(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=b;b=a%b;a=t;}return a||1;}
+function redPair(p){const g=gcdI(p[0],p[1]);return[p[0]/g,p[1]/g];}
+function mulPair(a,b){return redPair([a[0]*b[0],a[1]*b[1]]);}
+// fold a ratio (over TONIC) by octaves until TONIC*ratio sits in [lo,hi] Hz
+function foldPair(p,lo,hi){
+  p=redPair([p[0],p[1]]);
+  let guard=0;
+  while(TONIC*p[0]/p[1]<lo&&guard++<24)p=redPair([p[0]*2,p[1]]);
+  guard=0;
+  while(TONIC*p[0]/p[1]>hi&&guard++<24)p=redPair([p[0],p[1]*2]);
+  return p;
+}
+function hzOf(p){return TONIC*p[0]/p[1];}
+// degree (0..6, may exceed with +7 octave wraps) → ratio pair over tonic
+function degPair(mode,deg){
+  const sc=SCALE[mode];let oct=0,d=deg;
+  while(d>=sc.length){d-=sc.length;oct++;}
+  while(d<0){d+=sc.length;oct--;}
+  let p=sc[d].slice();
+  if(oct>0)p=[p[0]*(1<<oct),p[1]];else if(oct<0)p=[p[0],p[1]*(1<<(-oct))];
+  return redPair(p);
+}
+
+/* ============================ TIMBRE ==================================
+   The VOICE, not the law: how the fadista, guitarra and viola sound.
+   Modes/chords/templates/ornament rules stay in the code above. */
+const TIMBRE={
+  id:'fado',title:'FADÓ',
+  doc:'A fado trio, synthesized. The FADISTA is one glottal tone (a buzzing periodic wave) through three parallel formant bandpasses whose frequencies follow the vowel being sung, with portamento, per-note vibrato and a soft breath. The GUITARRA PORTUGUESA and the VIOLA are Karplus–Strong plucked strings (a burst of noise fed through a tuned, damped feedback loop) — the guitarra bright and shivering, the viola warm — baked and cached per pitch so repeats are cheap and the offline render matches. Everything meets a warmth shaper → glue compressor → brick-wall limiter (−1.5 dB, 20:1) → trim, with a seeded intimate-room reverb send. The MODE, chords, templates and ornament rules are the LAW and live in the code, not here.',
+  groups:{
+    master:{label:'master',doc:'The room out. Shaper adds warmth, the limiter holds the ceiling.',params:{
+      gain:{v:0.82,min:0,max:1,step:.01,label:'out',doc:'final output trim'},
+      wet:{v:0.20,min:0,max:.6,step:.01,label:'room',doc:'reverb send into the master'},
+      drive:{v:0.10,min:0,max:.6,step:.01,label:'warmth',doc:'gentle tanh shaper — warmth, not fuzz'},
+    }},
+    room:{label:'room',doc:'The tavern. A short, close reverb — not a cathedral.',params:{
+      size:{v:1.05,min:.4,max:2.2,step:.05,unit:'s',label:'size',doc:'reverb tail length'},
+      decay:{v:2.4,min:1,max:4,step:.1,label:'decay',doc:'how fast the tail dies (higher = drier)'},
+    }},
+    voz:{label:'fadista',doc:'The singing voice — one glottal buzz through moving formants.',params:{
+      level:{v:0.9,min:0,max:1.4,step:.02,label:'level',doc:'voice volume'},
+      tilt:{v:1.7,min:1,max:3,step:.05,label:'tone',doc:'spectral tilt of the glottal buzz — lower is brighter/harsher'},
+      formantScale:{v:1.0,min:.85,max:1.15,step:.005,label:'formants',doc:'scales the vowel formants — the size of the throat'},
+      vibDepth:{v:0.35,min:0,max:.9,step:.02,label:'vibrato',doc:'peak vibrato depth on held notes (× Sentimento)'},
+      vibRate:{v:5.2,min:4,max:7,step:.1,unit:'Hz',label:'vib rate',doc:'vibrato speed'},
+      porta:{v:0.09,min:0,max:.25,step:.01,unit:'s',label:'portamento',doc:'glide time between slurred notes'},
+      breath:{v:0.06,min:0,max:.25,step:.01,label:'breath',doc:'aspiration noise under the tone'},
+    }},
+    guitarra:{label:'guitarra',doc:'The 12-string guitarra portuguesa — bright, shivering plucks and the baixaria.',params:{
+      level:{v:0.62,min:0,max:1.2,step:.02,label:'level',doc:'guitarra volume'},
+      bright:{v:0.52,min:.2,max:.85,step:.01,label:'bright',doc:'string brightness (Karplus–Strong loop damping)'},
+      decay:{v:0.9,min:.4,max:1.6,step:.05,unit:'s',label:'ring',doc:'how long a struck string rings'},
+      tremolo:{v:11,min:6,max:16,step:.5,unit:'Hz',label:'tremolo',doc:'re-pluck rate of sustained/cadence notes'},
+    }},
+    viola:{label:'viola',doc:'The accompaniment guitar — warm chords and a bass.',params:{
+      level:{v:0.5,min:0,max:1.1,step:.02,label:'level',doc:'viola volume'},
+      bright:{v:0.4,min:.2,max:.7,step:.01,label:'bright',doc:'string brightness'},
+      decay:{v:1.1,min:.5,max:2,step:.05,unit:'s',label:'ring',doc:'string ring time'},
+      bass:{v:0.7,min:0,max:1.3,step:.02,label:'bass',doc:'level of the viola bass root'},
+    }},
+  },
 };
 /* ---- OFFICINA bridge (identical in every machine) ------------------------ */
 const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
@@ -193,513 +418,611 @@ const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.g
   hello();
 })();
 
-// ============ STATE ============
-const st = {
-  seed: 0, mode: 0, tempo: 72, playing: false, paused: false, lap: 0
+/* ============================ STATE ================================== */
+const st={fado:'menor',tom:'medio',senti:'sentido',tempo:70,seed:1,playing:false,paused:false};
+let RT=null;                                        // realtime {ctx,G,song,...}
+
+/* ========================= COMPOSITION ==============================
+   genAll(seed) → one deterministic verse: {bars:[{cell,label,ev:[...]}],
+   barBeats, stropheBeats}. Each event {v:'voz'|'guitarra'|'viola'|'baixo',
+   bar, at (beat in bar), ...}. Voice notes carry from/porta/vib/vowel and
+   a release flag; the scheduler just plays them. */
+const BARBEATS=4, NBARS=8, PHRASES=4;               // 8 bars, phrase every 2 bars
+// register bands (Hz) per role — folding keeps ratios exact (×2^k)
+const BAND={voz:[196,660],guit:[175,560],guitHi:[520,1500],viola:[150,520],baixo:[70,175]};
+
+function chordFreqs(mode,cell){
+  const root=ROOTR[cell[0]]||[1,1], tones=CHORD[cell[1]]||CHORD.M;
+  return tones.map(ct=>mulPair(mulPair(TOM[st.tom].r,root),ct));   // ratio pairs over TONIC
+}
+function bassPair(cell){return mulPair(TOM[st.tom].r,ROOTR[cell[0]]||[1,1]);}
+
+function genAll(seed){
+  const rng=mulberry32(seed>>>0);
+  const F=FADOS[st.fado], mode=F.mode, S=SENTI[st.senti];
+  const bars=[];
+  for(let b=0;b<NBARS;b++)bars.push({cell:F.grid[b],label:chordLabel(F.grid[b]),ev:[]});
+
+  // ---- viola: harmonic bed, pattern by feel ----
+  for(let b=0;b<NBARS;b++){
+    const cell=F.grid[b], ch=chordFreqs(mode,cell), bassP=bassPair(cell);
+    const bassF=hzOf(foldPair(bassP,BAND.baixo[0],BAND.baixo[1]));
+    const chF=ch.map(p=>hzOf(foldPair(p,BAND.viola[0],BAND.viola[1])));
+    const push=(at,freq,role,vel)=>bars[b].ev.push({v:role,bar:b,at,freq,vel});
+    if(F.feel==='driving'){                          // corrido: bass 0/2, strums 1,2,3
+      push(0,bassF,'baixo',0.95);push(2,bassF,'baixo',0.8);
+      [1,2,3].forEach(bt=>chF.forEach((f,i)=>bars[b].ev.push({v:'viola',bar:b,at:bt+i*0.012,freq:f,vel:0.42})));
+    }else if(F.feel==='moderato'){                   // mouraria: bass 0/2, chord stabs off-beats
+      push(0,bassF,'baixo',0.95);push(2,bassF,'baixo',0.75);
+      [1,3].forEach(bt=>chF.forEach((f,i)=>bars[b].ev.push({v:'viola',bar:b,at:bt+i*0.02,freq:f,vel:0.5})));
+    }else{                                           // rubato menor: bass 0, gentle broken chord
+      push(0,bassF,'baixo',0.95);
+      const arp=[1,2,3,3.5], seq=[0,2,1,2];
+      arp.forEach((bt,i)=>bars[b].ev.push({v:'viola',bar:b,at:bt,freq:chF[seq[i]%chF.length],vel:0.4}));
+    }
+  }
+
+  // ---- fadista: 4 phrases, each 2 bars (sing ~5.5 beats, rest ~2.5) ----
+  // shaped contour: rise from the fifth, arch, then sigh down to the tonic.
+  const startDeg=[4,4,5,2], endDeg=[4,5,2,0];        // scale-degree targets per phrase
+  let prevF=0;
+  for(let ph=0;ph<PHRASES;ph++){
+    const b0=ph*2, sungBeats=5.5;
+    const nNotes=Math.max(3,(S.notes+((rng()*3)|0)-1));
+    let d=startDeg[ph]+(rng()<0.4?1:0);
+    const target=endDeg[ph];
+    // durations: a small rhythm summing to sungBeats, last note held
+    const durs=[];let acc=0;
+    for(let i=0;i<nNotes;i++){
+      const last=i===nNotes-1;
+      let du=last?Math.max(0.9,sungBeats-acc):pick(rng,[0.5,0.5,0.75,1,0.25]);
+      if(!last&&acc+du>sungBeats-0.9)du=Math.max(0.25,sungBeats-0.9-acc);
+      durs.push(du);acc+=du;if(acc>=sungBeats-0.9&&!last){/*fill rest as final*/}
+    }
+    // pitches: walk toward target with downward bias, scale steps
+    let tBeat=b0*BARBEATS;
+    for(let i=0;i<nNotes;i++){
+      const last=i===nNotes-1;
+      if(last)d=target; else{
+        const bias=(d>target?-1:(d<target-1?1:0));
+        const step=pick(rng,[-1,0,1,bias,bias]);
+        d=clamp(d+step,-1,7);
+      }
+      // land the last note on a chord tone of its bar
+      const barIdx=Math.min(NBARS-1,(tBeat/BARBEATS)|0);
+      // over the dominant in minor, raise the 7th to the just leading tone (15/8)
+      let pair=(mode==='minor'&&FADOS[st.fado].grid[barIdx][1]==='7'&&d>=6)?LEADING.slice():degPair(mode,d);
+      pair=mulPair(TOM[st.tom].r,pair);
+      pair=foldPair(pair,BAND.voz[0],BAND.voz[1]);
+      const freq=hzOf(pair);
+      const vowel=VOWEL_SEQ[(i+ph)%VOWEL_SEQ.length];
+      const du=durs[i];
+      const porta=(i>0&&rng()<0.5)?TP.voz.porta:0;
+      const vib=last?1:(du>=0.9?0.7:0);
+      // appoggiatura: a quick grace a step above, slurring down into this note
+      if(!last&&i>0&&rng()<S.orn*0.6){
+        const gp=foldPair(mulPair(TOM[st.tom].r,degPair(mode,d+1)),BAND.voz[0],BAND.voz[1]);
+        bars[barIdx].ev.push({v:'voz',bar:barIdx,at:(tBeat%BARBEATS),freq:hzOf(gp),dur:0.22,from:prevF,porta:0,vib:0,vowel,release:false,grace:true});
+        prevF=hzOf(gp);
+        bars[barIdx].ev.push({v:'voz',bar:barIdx,at:((tBeat+0.22)%BARBEATS),freq,dur:Math.max(0.3,du-0.22),from:prevF,porta:TP.voz.porta,vib,vowel,release:false});
+        prevF=freq;tBeat+=du;continue;
+      }
+      const barI2=Math.min(NBARS-1,(tBeat/BARBEATS)|0);
+      // melisma on the final syllable: quick neighbour notes before the landing
+      if(last&&rng()<S.orn){
+        const mel=Math.min(S.melisma,4);let mt=tBeat, md=Math.min(0.28,du/(mel+1));
+        for(let m=0;m<mel;m++){
+          const nd=d+(m%2?1:-1);
+          const mp=foldPair(mulPair(TOM[st.tom].r,degPair(mode,nd)),BAND.voz[0],BAND.voz[1]);
+          const bi=Math.min(NBARS-1,(mt/BARBEATS)|0);
+          bars[bi].ev.push({v:'voz',bar:bi,at:(mt%BARBEATS),freq:hzOf(mp),dur:md,from:prevF,porta:TP.voz.porta,vib:0,vowel,release:false});
+          prevF=hzOf(mp);mt+=md;
+        }
+        const bi=Math.min(NBARS-1,(mt/BARBEATS)|0);
+        bars[bi].ev.push({v:'voz',bar:bi,at:(mt%BARBEATS),freq,dur:Math.max(0.6,tBeat+du-mt),from:prevF,porta:TP.voz.porta,vib:1,vowel,release:true});
+        prevF=freq;tBeat+=du;continue;
+      }
+      bars[barI2].ev.push({v:'voz',bar:barI2,at:(tBeat%BARBEATS),freq,dur:du,from:prevF,porta,vib,vowel,release:last});
+      prevF=freq;tBeat+=du;
+    }
+
+    // ---- guitarra baixaria: answers in the phrase's rest (beats 5.5..8) ----
+    const restStart=b0*BARBEATS+sungBeats, restLen=(2*BARBEATS)-sungBeats;
+    const nb=Math.max(2,Math.round((S.baix*restLen)/0.35));
+    const nextCell=F.grid[Math.min(NBARS-1,b0+2)]||F.grid[0];
+    const fromRoot=ROOTR[F.grid[Math.min(NBARS-1,b0+1)][0]]||[1,1];
+    const toRoot=ROOTR[nextCell[0]]||[1,1];
+    let bt=restStart, step=restLen/nb;
+    for(let i=0;i<nb;i++){
+      const frac=i/Math.max(1,nb-1);
+      // a scalar run gliding from the current chord root toward the next
+      const deg=Math.round((mode==='minor'?[0,2,3,5,4,3,2,0][i%8]:[0,4,2,0,-3,-1,0,2][i%8]));
+      let pr=mulPair(TOM[st.tom].r, degPair(mode, (i%2?deg:deg-3)));
+      pr=foldPair(pr,BAND.guit[0],BAND.guit[1]);
+      const bi=Math.min(NBARS-1,(bt/BARBEATS)|0);
+      bars[bi].ev.push({v:'guitarra',bar:bi,at:(bt%BARBEATS),freq:hzOf(pr),vel:0.55,orn:true});
+      bt+=step;
+    }
+    // a high answering flourish on the heartfelt/torn settings
+    if(S.orn>0.3&&rng()<0.6){
+      const fp=foldPair(mulPair(TOM[st.tom].r,degPair(mode,pick(rng,[4,5,7]))),BAND.guitHi[0],BAND.guitHi[1]);
+      const bi=Math.min(NBARS-1,((restStart+restLen*0.5)/BARBEATS)|0);
+      bars[bi].ev.push({v:'guitarra',bar:bi,at:((restStart+restLen*0.5)%BARBEATS),freq:hzOf(fp),vel:0.4,orn:false});
+    }
+  }
+
+  // ---- final cadence: a guitarra tremolo on the tonic chord over bar 7 ----
+  {
+    const ch=chordFreqs(mode,F.grid[NBARS-1]).map(p=>hzOf(foldPair(p,BAND.guit[0],BAND.guit[1])));
+    const trem=TP.guitarra.tremolo, spb=60/st.tempo, per=1/(trem*spb); // beats per re-pluck
+    for(let bt=1.0;bt<BARBEATS-0.05;bt+=per){
+      const f=ch[(Math.round(bt/per))%ch.length];
+      bars[NBARS-1].ev.push({v:'guitarra',bar:NBARS-1,at:bt,freq:f,vel:0.3,orn:false});
+    }
+  }
+
+  bars.forEach(bar=>bar.ev.sort((a,b)=>a.at-b.at));
+  return {bars,barBeats:BARBEATS,stropheBeats:NBARS*BARBEATS,cfg:F};
+}
+
+/* ========================= SYNTHESIS ================================ */
+function noiseBuffer(ctx,secs){
+  const n=Math.max(1,Math.floor(secs*ctx.sampleRate)),b=ctx.createBuffer(1,n,ctx.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=Math.random()*2-1;
+  return b;
+}
+function glottalWave(ctx,tilt){
+  const N=40, real=new Float32Array(N), imag=new Float32Array(N);
+  for(let n=1;n<N;n++)imag[n]=1/Math.pow(n,tilt);
+  return ctx.createPeriodicWave(real,imag,{disableNormalization:false});
+}
+function makeRoomIR(ctx,sec,exp){
+  const rng=mulberry32(0x7A17E9C3);                  // fixed seed → deterministic WAV
+  const len=Math.max(1,Math.floor(sec*ctx.sampleRate)),b=ctx.createBuffer(2,len,ctx.sampleRate);
+  for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,exp);lp+=0.24*((rng()*2-1)-lp);d[i]=lp*e*1.5;}}
+  return b;
+}
+function makeShaperCurve(drive){
+  const n=1024,c=new Float32Array(n),k=Math.max(0.0001,drive)*6,norm=Math.tanh(1+k);
+  for(let i=0;i<n;i++){const x=i/(n-1)*2-1;c[i]=Math.tanh(x*(1+k))/norm;}
+  return c;
+}
+/* Karplus–Strong plucked string, baked to a buffer and cached per pitch/voice.
+   Deterministic (seeded), so the offline render matches the live one. */
+const ksCache=new Map();
+function ksBuffer(ctx,freq,role){
+  const T=TP[role], bright=T.bright, decay=T.decay;
+  const key=role+'|'+Math.round(freq*4)+'|'+bright.toFixed(3)+'|'+decay.toFixed(3);
+  let buf=ksCache.get(key); if(buf)return buf;
+  const sr=ctx.sampleRate, N=Math.max(2,Math.round(sr/freq)), total=Math.max(N+4,Math.round(decay*sr));
+  buf=ctx.createBuffer(1,total,sr); const d=buf.getChannelData(0);
+  const rng=mulberry32((Math.round(freq*7)^(role==='guitarra'?0x9E37:0x85EB))>>>0);
+  const ring=new Float32Array(N); for(let i=0;i<N;i++)ring[i]=rng()*2-1;
+  // brief pluck window so the burst isn't a full click
+  const fb=0.494+0.006*bright;                       // feedback ~0.5 (KS), a touch under for finite ring
+  const lpc=clamp(bright,0.05,0.95);                  // one-pole brightness of the loop
+  let idx=0, lp=0, peak=0;
+  for(let n=0;n<total;n++){
+    const cur=ring[idx], nxt=ring[(idx+1)%N];
+    d[n]=cur; if(Math.abs(cur)>peak)peak=Math.abs(cur);
+    const avg=fb*(cur+nxt);
+    lp+=lpc*(avg-lp);
+    ring[idx]=lp;
+    idx=(idx+1)%N;
+  }
+  // normalise + a soft tail so it ends clean
+  const k=peak>0?0.9/peak:1;
+  for(let n=0;n<total;n++){let e=1; const tl=total-n; if(tl<400)e=tl/400; d[n]*=k*e;}
+  ksCache.set(key,buf); return buf;
+}
+
+function buildGraph(ctx){
+  const G={ctx};
+  // master: pre → shaper → glue comp → limiter → trim → out
+  G.pre=ctx.createGain(); G.pre.gain.value=1;
+  G.shaper=ctx.createWaveShaper(); G.shaper.curve=makeShaperCurve(TP.master.drive); G.shaper.oversample='2x';
+  G.comp=ctx.createDynamicsCompressor();
+  G.comp.threshold.value=-18;G.comp.knee.value=6;G.comp.ratio.value=2.4;G.comp.attack.value=0.006;G.comp.release.value=0.16;
+  G.lim=ctx.createDynamicsCompressor();
+  G.lim.threshold.value=-1.5;G.lim.knee.value=0;G.lim.ratio.value=20;G.lim.attack.value=0.002;G.lim.release.value=0.1;
+  G.trim=ctx.createGain(); G.trim.gain.value=TP.master.gain;
+  G.pre.connect(G.shaper);G.shaper.connect(G.comp);G.comp.connect(G.lim);G.lim.connect(G.trim);G.trim.connect(ctx.destination);
+  // room send
+  G.verb=ctx.createConvolver(); G.verb.buffer=makeRoomIR(ctx,TP.room.size,TP.room.decay);
+  G.wet=ctx.createGain(); G.wet.gain.value=TP.master.wet; G.verb.connect(G.wet); G.wet.connect(G.pre);
+  G.noiseBuf=noiseBuffer(ctx,2.5);
+  // instrument buses
+  G.gVoz=ctx.createGain(); G.gVoz.gain.value=TP.voz.level;
+  G.gGuit=ctx.createGain(); G.gGuit.gain.value=TP.guitarra.level;
+  G.gViola=ctx.createGain(); G.gViola.gain.value=TP.viola.level;
+  [G.gVoz,G.gGuit,G.gViola].forEach(g=>{g.connect(G.pre);const s=ctx.createGain();s.gain.value=0.3;g.connect(s);s.connect(G.verb);});
+
+  // the persistent fadista voice (one glottal osc → 3 formants + direct → env → level)
+  const v={};
+  v.osc=ctx.createOscillator(); v.osc.setPeriodicWave(glottalWave(ctx,TP.voz.tilt)); v.osc.frequency.value=TONIC;
+  v.bp=[];v.bpG=[]; const q=[8,10,11], g0=[0,-6,-11];
+  for(let i=0;i<3;i++){
+    const f=ctx.createBiquadFilter();f.type='bandpass';f.Q.value=q[i];f.frequency.value=VOWELS.a[i]*TP.voz.formantScale;
+    const g=ctx.createGain();g.gain.value=Math.pow(10,g0[i]/20);
+    v.osc.connect(f);f.connect(g);v.bp.push(f);v.bpG.push(g);
+  }
+  v.direct=ctx.createBiquadFilter();v.direct.type='lowpass';v.direct.frequency.value=1100;v.direct.Q.value=0.6;
+  v.dG=ctx.createGain();v.dG.gain.value=0.16; v.osc.connect(v.direct);v.direct.connect(v.dG);
+  v.sum=ctx.createGain();v.sum.gain.value=1; v.bpG.forEach(g=>g.connect(v.sum));v.dG.connect(v.sum);
+  v.env=ctx.createGain();v.env.gain.value=0.0001; v.sum.connect(v.env); v.env.connect(G.gVoz);
+  v.vibLFO=ctx.createOscillator();v.vibLFO.type='sine';v.vibLFO.frequency.value=TP.voz.vibRate;
+  v.vibG=ctx.createGain();v.vibG.gain.value=0; v.vibLFO.connect(v.vibG);v.vibG.connect(v.osc.detune);
+  // breath under the voice, on the same env
+  v.asp=ctx.createBufferSource();v.asp.buffer=G.noiseBuf;v.asp.loop=true;
+  v.aspBP=ctx.createBiquadFilter();v.aspBP.type='bandpass';v.aspBP.frequency.value=1700*TP.voz.formantScale;v.aspBP.Q.value=1.1;
+  v.aspG=ctx.createGain();v.aspG.gain.value=TP.voz.breath; v.asp.connect(v.aspBP);v.aspBP.connect(v.aspG);v.aspG.connect(v.env);
+  G.voice=v;
+  return G;
+}
+function startGraph(G,t0){ G.voice.osc.start(t0); G.voice.vibLFO.start(t0); G.voice.asp.start(t0); }
+
+// schedule one plucked string (guitarra/viola/baixo)
+function pluck(G,role,freq,t,vel,pan){
+  const ctx=G.ctx, bus=role==='viola'?G.gViola:role==='baixo'?G.gViola:G.gGuit;
+  const buf=ksBuffer(ctx,freq,role==='guitarra'?'guitarra':'viola');
+  const s=ctx.createBufferSource();s.buffer=buf;
+  const g=ctx.createGain();
+  const lvl=(role==='baixo'?TP.viola.bass:1)*vel;
+  g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(lvl,t+0.004);
+  s.connect(g);
+  if(pan&&ctx.createStereoPanner){const p=ctx.createStereoPanner();p.pan.value=pan;g.connect(p);p.connect(bus);}
+  else g.connect(bus);
+  s.start(t);
+}
+// schedule one sung note on the persistent voice
+function singNote(G,ev,t,spb){
+  const v=G.voice, dur=ev.dur*spb, F=ev.freq;
+  // pitch: glide from previous if slurred, else jump
+  if(ev.porta>0&&ev.from>0){v.osc.frequency.setValueAtTime(ev.from,t);v.osc.frequency.linearRampToValueAtTime(F,t+Math.min(ev.porta,dur*0.6));}
+  else v.osc.frequency.setValueAtTime(F,t);
+  // vowel formants glide in
+  const vw=VOWELS[ev.vowel]||VOWELS.a, sc=TP.voz.formantScale;
+  for(let i=0;i<3;i++)v.bp[i].frequency.setTargetAtTime(vw[i]*sc,t,0.03);
+  // envelope: soft attack, hold; release only at phrase end (legato within a phrase)
+  const atk=Math.min(0.05,dur*0.4), lvl=0.9;
+  v.env.gain.setValueAtTime(Math.max(0.0001,v.env.gain.value),t);
+  v.env.gain.linearRampToValueAtTime(lvl,t+atk);
+  if(ev.release){const rel=Math.min(0.3,dur*0.5);v.env.gain.setValueAtTime(lvl,t+dur-rel);v.env.gain.linearRampToValueAtTime(0.0001,t+dur);}
+  // vibrato: fade in on long/held notes, depth by Sentimento
+  const depth=TP.voz.vibDepth*SENTI[st.senti].vib*100;
+  if(ev.vib>0&&dur>0.4){v.vibG.gain.setTargetAtTime(depth*ev.vib,t+dur*0.35,0.12);v.vibG.gain.setTargetAtTime(0,t+dur-0.05,0.06);}
+  else v.vibG.gain.setTargetAtTime(0,t,0.05);
+}
+
+/* ========================= SCHEDULER =============================== */
+function spbNow(){return 60/st.tempo;}
+function schedTick(){
+  if(!RT)return;
+  const ahead=RT.ctx.currentTime+0.4, spb=spbNow();
+  while(RT.nextBarT<ahead){
+    const bar=RT.song.bars[RT.barIdx];
+    const t0=RT.nextBarT;
+    for(const ev of bar.ev){
+      const t=t0+ev.at*spb;
+      if(ev.v==='voz')singNote(RT.G,ev,t,spb);
+      else pluck(RT.G,ev.v,ev.freq,t,ev.vel||0.5,ev.v==='guitarra'?0.14:-0.1);
+    }
+    RT.nextBarT+=RT.song.barBeats*spb;
+    RT.barIdx++;
+    if(RT.barIdx>=RT.song.bars.length){RT.barIdx=0;RT.lap++;RT.song=genAll((st.seed+RT.lap*0x9E3779B1)|0);}
+  }
+}
+
+/* ========================= TRANSPORT =============================== */
+function play(){
+  if(RT){stop();return;}
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ctx);
+  const G=buildGraph(ctx);
+  startGraph(G,ctx.currentTime+0.06);
+  RT={ctx,G,song:genAll(st.seed),barIdx:0,lap:0,nextBarT:ctx.currentTime+0.15,t0:ctx.currentTime+0.15,timer:0};
+  RT.timer=setInterval(schedTick,50); schedTick();
+  st.playing=true;st.paused=false;
+  $('pick').textContent='Parar';$('pick').classList.add('on');$('statusTag').textContent='A CANTAR';
+  $('pause').disabled=false;$('pause').textContent='Pausar';$('pause').classList.remove('on');
+}
+function stop(){
+  if(!RT)return;
+  const t=RT.ctx.currentTime;
+  try{RT.G.voice.env.gain.cancelScheduledValues(t);RT.G.voice.env.gain.setTargetAtTime(0.0001,t,0.1);}catch(e){}
+  clearInterval(RT.timer);
+  const c=RT.ctx;setTimeout(()=>{try{c.close();}catch(e){}},400);
+  RT=null;st.playing=false;st.paused=false;
+  $('pick').textContent='Tocar';$('pick').classList.remove('on');$('statusTag').textContent='READY';
+  $('pause').disabled=true;$('pause').textContent='Pausar';$('pause').classList.remove('on');
+}
+function togglePause(){
+  if(!RT||!st.playing)return;
+  if(st.paused){st.paused=false;RT.ctx.resume();$('pause').textContent='Pausar';$('pause').classList.remove('on');$('statusTag').textContent='A CANTAR';}
+  else{st.paused=true;RT.ctx.suspend();$('pause').textContent='Continuar';$('pause').classList.add('on');$('statusTag').textContent='PAUSA';}
+}
+// regenerate + hand to a running transport at the next verse (change-while-playing)
+function reVibe(){
+  writeHash();syncReadouts();buildStatic();
+  if(RT){RT.song=genAll((st.seed+RT.lap*0x9E3779B1)|0);}   // next bars pick it up; boundaries keep it clean
+  draw();
+}
+
+/* ========================= CUT · WAV =============================== */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(14,11,13,.94);color:#ece0cf;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#ece0cf;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
+function encodeWav(L,R,sr){
+  const n=L.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');d.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  ws(36,'data');d.setUint32(40,n*4,true);
+  let o=44;for(let i=0;i<n;i++){d.setInt16(o,clamp(L[i],-1,1)*32767,true);o+=2;d.setInt16(o,clamp(R[i],-1,1)*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+async function cut(){
+  const btn=$('cut'),note=$('cutnote');btn.disabled=true;note.textContent='gravando…';
+  try{
+    const spb=spbNow(), verses=2;
+    const total=verses*NBARS*BARBEATS*spb+2.0;
+    const ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
+    const G=buildGraph(ctx);startGraph(G,0.03);
+    let barT=0.1, lap=0, song=genAll(st.seed);
+    for(let vb=0;vb<verses*NBARS;vb++){
+      const bi=vb%NBARS;
+      if(vb>0&&bi===0){lap++;song=genAll((st.seed+lap*0x9E3779B1)|0);}
+      const bar=song.bars[bi];
+      for(const ev of bar.ev){const t=barT+ev.at*spb;
+        if(ev.v==='voz')singNote(G,ev,t,spb);
+        else pluck(G,ev.v,ev.freq,t,ev.vel||0.5,ev.v==='guitarra'?0.14:-0.1);}
+      barT+=BARBEATS*spb;
+    }
+    try{G.voice.env.gain.setValueAtTime(0.0001,barT);}catch(e){}
+    G.trim.gain.setValueAtTime(TP.master.gain,barT);
+    G.trim.gain.linearRampToValueAtTime(0.0001,barT+1.6);
+    const rb=await ctx.startRendering();
+    let L=rb.getChannelData(0),R=rb.getChannelData(1);
+    let mx=0;for(let i=0;i<L.length;i++){const a=Math.abs(L[i]);if(a>mx)mx=a;const b=Math.abs(R[i]);if(b>mx)mx=b;}
+    if(mx>0){const k=0.9/mx;for(let i=0;i<L.length;i++){L[i]*=k;R[i]*=k;}}
+    saveWav(encodeWav(L,R,SR),`fado_${st.fado}_${st.tom}_${st.seed}.wav`);
+    note.textContent=`cut · ${FADOS[st.fado].label.toLowerCase()} · ${TOM[st.tom].label.toLowerCase()}`;
+  }catch(e){note.textContent='render failed — '+e.message;}
+  btn.disabled=false;
+}
+
+/* ========================= CANVAS ================================= */
+const cv=$('cv'),cx=cv.getContext('2d'),CW=cv.width,CH=cv.height;
+const oc=document.createElement('canvas');oc.width=CW;oc.height=CH;const ox=oc.getContext('2d');
+const EMB_W=286;                                    // guitarra emblem region width
+const BX0=EMB_W+30, BX1=CW-28, BW=BX1-BX0;          // band region
+const CY0=64, CY1=118;                              // chord-cell row
+const SY0=140, SY1=430;                             // voice staff
+const LY=468;                                       // baixaria line
+let shownSong=null, vozPts=[], baixPts=[];
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+function pitchY(freq){const lo=Math.log2(170),hi=Math.log2(720);const f=clamp((Math.log2(freq)-lo)/(hi-lo),0,1);return SY1-f*(SY1-SY0);}
+function beatX(beat){return BX0+(beat/(NBARS*BARBEATS))*BW;}
+
+function drawGuitarra(){
+  // pear-shaped body, rosette, headstock fan of tuners, six courses of strings
+  const cxp=EMB_W*0.5, topY=70, botY=430;
+  ox.save();
+  // body (two stacked circles → teardrop)
+  ox.fillStyle='#231913';ox.strokeStyle='rgba(201,154,84,.55)';ox.lineWidth=2;
+  ox.beginPath();
+  ox.moveTo(cxp,topY+150);
+  ox.bezierCurveTo(cxp-96,topY+150,cxp-96,botY,cxp,botY);
+  ox.bezierCurveTo(cxp+96,botY,cxp+96,topY+150,cxp,topY+150);
+  ox.closePath();ox.fill();ox.stroke();
+  // rosette
+  const rcx=cxp,rcy=topY+250;
+  ox.fillStyle='#0c0908';ox.beginPath();ox.arc(rcx,rcy,40,0,7);ox.fill();
+  ox.strokeStyle='rgba(201,154,84,.45)';ox.lineWidth=1.2;
+  for(let r=44;r<=58;r+=5){ox.beginPath();ox.arc(rcx,rcy,r,0,7);ox.stroke();}
+  // neck
+  ox.fillStyle='#2a1e15';ox.fillRect(cxp-22,topY+40,44,120);
+  ox.strokeStyle='rgba(201,154,84,.4)';ox.strokeRect(cxp-22,topY+40,44,120);
+  // headstock fan (watch-key tuners) — the guitarra's signature silhouette
+  ox.strokeStyle='rgba(201,154,84,.6)';ox.lineWidth=1.6;
+  for(let i=-3;i<=3;i++){if(i===0)continue;
+    const a=-Math.PI/2+i*0.28;
+    ox.beginPath();ox.moveTo(cxp,topY+42);ox.lineTo(cxp+Math.cos(a)*54,topY+42+Math.sin(a)*54);ox.stroke();
+    ox.fillStyle='#c99a54';ox.beginPath();ox.arc(cxp+Math.cos(a)*54,topY+42+Math.sin(a)*54,3.2,0,7);ox.fill();
+  }
+  ox.restore();
+}
+function buildStatic(){
+  shownSong=genAll(st.seed);
+  ox.clearRect(0,0,CW,CH);
+  ox.fillStyle='#100c0e';ox.fillRect(0,0,CW,CH);
+  // faint spotlight behind the singer
+  const sg=ox.createRadialGradient(EMB_W+BW*0.35,SY0-10,20,EMB_W+BW*0.35,SY0-10,420);
+  sg.addColorStop(0,'rgba(168,50,74,.10)');sg.addColorStop(1,'rgba(0,0,0,0)');ox.fillStyle=sg;ox.fillRect(0,0,CW,CH);
+  drawGuitarra();
+  ox.font='500 11px "IBM Plex Mono",monospace';ox.fillStyle='rgba(140,129,117,.8)';ox.textAlign='center';
+  ox.fillText('guitarra portuguesa',EMB_W*0.5,458);
+  // chord frame cells
+  ox.textAlign='left';
+  for(let b=0;b<NBARS;b++){
+    const x=beatX(b*BARBEATS),w=BW/NBARS;
+    ox.strokeStyle='rgba(201,154,84,.16)';ox.lineWidth=1;ox.strokeRect(x,CY0,w-2,CY1-CY0);
+    ox.font='600 15px "Cormorant SC",serif';ox.fillStyle='rgba(201,154,84,.85)';ox.textAlign='center';
+    ox.fillText(shownSong.bars[b].label,x+w/2,CY0+34);
+  }
+  // staff frame + baixaria baseline
+  ox.strokeStyle='rgba(201,154,84,.12)';ox.lineWidth=1;
+  ox.beginPath();ox.moveTo(BX0,SY1);ox.lineTo(BX1,SY1);ox.stroke();
+  ox.beginPath();ox.moveTo(BX0,LY);ox.lineTo(BX1,LY);ox.stroke();
+  for(let b=0;b<=NBARS;b++){const x=beatX(b*BARBEATS);ox.strokeStyle='rgba(201,154,84,.08)';ox.beginPath();ox.moveTo(x,SY0);ox.lineTo(x,LY);ox.stroke();}
+  ox.font='500 10px "IBM Plex Mono",monospace';ox.fillStyle='rgba(140,129,117,.7)';ox.textAlign='left';
+  ox.fillText('a voz',BX0,SY0-6);ox.fillText('baixaria',BX0,LY+16);
+  // precompute the verse's points for the dynamic pass
+  vozPts=[];baixPts=[];
+  shownSong.bars.forEach(bar=>bar.ev.forEach(ev=>{
+    const beat=ev.bar*BARBEATS+ev.at;
+    if(ev.v==='voz'&&!ev.grace)vozPts.push({x:beatX(beat),y:pitchY(ev.freq),beat});
+    else if(ev.v==='guitarra'&&ev.orn)baixPts.push({x:beatX(beat),beat});
+  }));
+  vozPts.sort((a,b)=>a.beat-b.beat);
+}
+function draw(){
+  cx.clearRect(0,0,CW,CH);cx.drawImage(oc,0,0);
+  const playing=!!RT&&!st.paused;
+  let frac=0;
+  if(RT){const el=(RT.ctx.currentTime-RT.t0)/spbNow();frac=((el%(NBARS*BARBEATS))+(NBARS*BARBEATS))%(NBARS*BARBEATS)/(NBARS*BARBEATS);}
+  const nowBeat=frac*NBARS*BARBEATS;
+  // current chord cell lit
+  if(RT){const cb=Math.min(NBARS-1,(nowBeat/BARBEATS)|0),x=beatX(cb*BARBEATS),w=BW/NBARS;
+    cx.fillStyle='rgba(168,50,74,.16)';cx.fillRect(x,CY0,w-2,CY1-CY0);
+    cx.strokeStyle='rgba(201,154,84,.5)';cx.lineWidth=1.4;cx.strokeRect(x,CY0,w-2,CY1-CY0);}
+  // voice contour — drawn up to the playhead (revealed as it's sung), glowing at now
+  if(vozPts.length){
+    cx.lineJoin='round';cx.lineWidth=2.4;
+    cx.strokeStyle=RM?'rgba(236,224,207,.8)':'rgba(236,224,207,.5)';
+    cx.beginPath();let started=false;
+    for(const p of vozPts){const vis=RM||!RT||p.beat<=nowBeat+0.01;if(!vis)break;
+      if(!started){cx.moveTo(p.x,p.y);started=true;}else cx.lineTo(p.x,p.y);}
+    cx.stroke();
+    // note dots
+    for(const p of vozPts){const vis=RM||!RT||p.beat<=nowBeat+0.01;if(!vis)break;
+      const near=RT&&Math.abs(p.beat-nowBeat)<0.4;
+      cx.fillStyle=near?'#a8324a':'rgba(236,224,207,.7)';
+      cx.beginPath();cx.arc(p.x,p.y,near?4.5:2.4,0,7);cx.fill();}
+  }
+  // baixaria marks
+  for(const p of baixPts){const vis=RM||!RT||p.beat<=nowBeat+0.01;if(!vis)continue;
+    const near=RT&&Math.abs(p.beat-nowBeat)<0.4;
+    cx.fillStyle=near?'#c99a54':'rgba(201,154,84,.5)';
+    cx.fillRect(p.x-2,LY-8,4,8);}
+  // guitarra strings shimmer when it plays
+  const guitLit=RT&&baixPts.some(p=>Math.abs(p.beat-nowBeat)<0.35);
+  const cxp=EMB_W*0.5;
+  for(let i=-2.5;i<=2.5;i++){
+    const x=cxp+i*7;
+    cx.strokeStyle=(guitLit&&!RM)?'rgba(201,154,84,.85)':'rgba(201,154,84,.3)';
+    cx.lineWidth=guitLit?1.3:0.8;cx.beginPath();cx.moveTo(x,112);cx.lineTo(x,410);cx.stroke();
+  }
+  // playhead
+  if(RT){const x=beatX(nowBeat);
+    cx.strokeStyle='rgba(236,224,207,.9)';cx.lineWidth=1.6;
+    cx.beginPath();cx.moveTo(x,CY0-4);cx.lineTo(x,LY+6);cx.stroke();
+    cx.fillStyle='#ece0cf';cx.beginPath();cx.moveTo(x-4,CY0-4);cx.lineTo(x+4,CY0-4);cx.lineTo(x,CY0+3);cx.closePath();cx.fill();}
+  $('fadoTag').textContent=FADOS[st.fado].label.toLowerCase();
+}
+let needsDraw=true;
+function loop(){
+  const playing=!!RT&&!st.paused;
+  if(playing||needsDraw){draw();if(!playing)needsDraw=false;}
+  setTimeout(()=>requestAnimationFrame(loop),playing?(RM?120:55):220);
+}
+requestAnimationFrame(loop);
+
+/* ========================= CONTROLS =============================== */
+function chipRow(host,items,current,onPick){
+  host.innerHTML='';
+  items.forEach(([val,label,sub])=>{
+    const b=document.createElement('button');b.dataset.v=String(val);
+    b.innerHTML=sub?(label+'<small>'+sub+'</small>'):label;
+    if(String(val)===String(current))b.classList.add('on');
+    b.onclick=()=>{host.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');onPick(val);};
+    host.appendChild(b);
+  });
+}
+function syncReadouts(){
+  $('fadord').textContent=FADOS[st.fado].label.toLowerCase()+' · '+FADOS[st.fado].sub.split(' · ')[0];
+  $('tomrd').textContent=TOM[st.tom].label.toLowerCase();
+  $('sentird').textContent=SENTI[st.senti].label.toLowerCase()+' · '+SENTI[st.senti].sub;
+  $('tempord').textContent=st.tempo+' / min';
+}
+chipRow($('fado'),FADO_ORDER.map(k=>[k,FADOS[k].label,FADOS[k].sub.split(' · ')[1]]),st.fado,v=>{
+  st.fado=v;st.tempo=FADOS[v].beat;$('tempo').value=st.tempo;reVibe();});
+chipRow($('tom'),TOM_ORDER.map(k=>[k,TOM[k].label,TOM[k].sub]),st.tom,v=>{st.tom=v;reVibe();});
+chipRow($('senti'),SENTI_ORDER.map(k=>[k,SENTI[k].label,SENTI[k].sub]),st.senti,v=>{st.senti=v;reVibe();});
+$('tempo').value=st.tempo;
+$('tempo').addEventListener('input',e=>{st.tempo=+e.target.value;$('tempord').textContent=st.tempo+' / min';});
+$('tempo').addEventListener('change',writeHash);
+$('pick').addEventListener('click',()=>st.playing?stop():play());
+$('pause').addEventListener('click',togglePause);
+$('cut').addEventListener('click',cut);
+
+/* --------------------- shared: hash · keys · another --------------------- */
+let __applying=false;
+function writeHash(){if(__applying)return;
+  try{const o={f:st.fado,t:st.tom,s:st.senti,b:st.tempo,sd:st.seed};
+    history.replaceState(null,'','#'+Object.entries(o).map(([k,v])=>k+'='+v).join('&'));}catch(e){}}
+function readHash(){const h=location.hash.slice(1);if(!h)return null;const o={};
+  for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));}return o;}
+function applyHash(o){
+  if(o.f&&FADOS[o.f])st.fado=o.f;
+  if(o.t&&TOM[o.t])st.tom=o.t;
+  if(o.s&&SENTI[o.s])st.senti=o.s;
+  if(o.b){st.tempo=clamp(+o.b|0,52,132);}
+  if(o.sd!==undefined){const sd=+o.sd;if(Number.isFinite(sd))st.seed=sd>>>0;}
+  chipRow($('fado'),FADO_ORDER.map(k=>[k,FADOS[k].label,FADOS[k].sub.split(' · ')[1]]),st.fado,v=>{st.fado=v;st.tempo=FADOS[v].beat;$('tempo').value=st.tempo;reVibe();});
+  chipRow($('tom'),TOM_ORDER.map(k=>[k,TOM[k].label,TOM[k].sub]),st.tom,v=>{st.tom=v;reVibe();});
+  chipRow($('senti'),SENTI_ORDER.map(k=>[k,SENTI[k].label,SENTI[k].sub]),st.senti,v=>{st.senti=v;reVibe();});
+  $('tempo').value=st.tempo;
+}
+function another(){
+  if(RT)stop();
+  st.seed=1+((Math.random()*1e6)|0);
+  st.fado=FADO_ORDER[(Math.random()*FADO_ORDER.length)|0];
+  st.tempo=FADOS[st.fado].beat;
+  applyHash({f:st.fado,t:st.tom,s:st.senti,b:st.tempo,sd:st.seed});
+  syncReadouts();writeHash();buildStatic();play();
+}
+addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT')return;
+  if(e.code==='Space'){e.preventDefault();$('pick').click();}
+  else if(e.key==='p'||e.key==='P')togglePause();
+  else if(e.key==='r'||e.key==='R'){e.preventDefault();another();}
+  else if(e.key==='c'||e.key==='C')$('cut').click();
+});
+
+(function init(){const o=readHash();
+  if(o){__applying=true;try{applyHash(o);}catch(e){}__applying=false;}
+  syncReadouts();writeHash();buildStatic();needsDraw=true;
+})();
+
+/* ---- OFFICINA live edit + audition (► HEAR) ---- */
+TIMBRE.touch=(path)=>{
+  if(!RT)return;const G=RT.G,t=RT.ctx.currentTime,tau=0.05;
+  G.trim.gain.setTargetAtTime(TP.master.gain,t,tau);
+  G.wet.gain.setTargetAtTime(TP.master.wet,t,tau);
+  G.gVoz.gain.setTargetAtTime(TP.voz.level,t,tau);
+  G.gGuit.gain.setTargetAtTime(TP.guitarra.level,t,tau);
+  G.gViola.gain.setTargetAtTime(TP.viola.level,t,tau);
+  G.voice.vibLFO.frequency.setTargetAtTime(TP.voz.vibRate,t,tau);
+  G.voice.aspG.gain.setTargetAtTime(TP.voz.breath,t,tau);
+  // string/room edits re-bake: clear the pluck cache so new plucks pick them up
+  if(!path||/guitarra|viola/.test(path))ksCache.clear();
 };
-let ac, RT = { g: null };
-let canvas, ctx;
-
-// ============ FADO MUSICAL LAW ============
-const BASE = 220; // A3 as base
-// Pythagorean (3-limit) chromatic ladder, stacked fifths reduced to the octave.
-const JI = [
-  [1,1],[256,243],[9,8],[32,27],[81,64],[4,3],[729,512],[3,2],[128,81],[27,16],[16,9],[243,128],[2,1]
-];
-const MODES = [
-  { name: 'Phrygian (Triste)', steps: [0,1,3,5,7,8,10] },
-  { name: 'Harmonic Minor (Anguished)', steps: [0,2,3,5,7,8,11] },
-  { name: 'Aeolian (Melancholic)', steps: [0,2,3,5,7,9,10] }
-];
-// All three progressions are in A (BASE), root degrees are JI-table semitone
-// indices (0-11) — verified against the JI ratios so the labels match what
-// actually sounds: i=0 (A), V=7 (E), iv=5 (D), bVII=10 (G).
-const PROGRESSIONS = [
-  { name: 'i–V–i', degrees: [0,7,0,7,0] },
-  { name: 'i–iv–i', degrees: [0,5,0,5,0] },
-  { name: 'i–♭VII–i', degrees: [0,10,0,10,0] }
-];
-
-function jiFreq(num, den, octave = 0) {
-  return BASE * num / den * Math.pow(2, octave);
-}
-
-function mulberry32(a) {
-  return function() {
-    a |= 0; a = a + 0x6d2b79f5 | 0;
-    let t = Math.imul(a ^ a >>> 15, 1 | a);
-    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  }
-}
-
-// ============ COMPOSITION ENGINE ============
-// Returns {events, prog} — prog is the chosen harmonic progression, kept
-// alongside the events so the canvas can show the progression actually
-// sounding rather than guessing at it.
-function genAll(seed, modeIdx, lap = 0) {
-  const rng = mulberry32(seed ^ (lap * 0x9e3779b1));
-  const mode = MODES[modeIdx];
-  const prog = PROGRESSIONS[Math.floor(rng() * PROGRESSIONS.length)];
-  const bars = 32; // 32-bar song
-  const events = [];
-
-  let stepIdx = Math.floor(mode.steps.length / 2); // scale-step index, persists across bars
-  for (let bar = 0; bar < bars; bar++) {
-    const beat = bar * 2; // 2 beats per bar (2/4 time)
-    const rootDeg = prog.degrees[bar % prog.degrees.length]; // JI-table semitone index (0–11)
-    const fifthDeg = (rootDeg + 7) % 12;
-    const rootFreq = jiFreq(JI[rootDeg][0], JI[rootDeg][1], 0);
-    const fifthFreq = jiFreq(JI[fifthDeg][0], JI[fifthDeg][1], 0);
-
-    // Guitarra strums root + fifth + octave, plus a low bass string.
-    events.push({
-      type: 'chord', t: beat,
-      bass: rootFreq / 2,
-      strings: [rootFreq, fifthFreq, rootFreq * 2],
-      vel: 0.5
-    });
-
-    // Fadista melody: constrained walk within the mode's scale steps.
-    const nNotes = 1 + Math.floor(rng() * 3); // 1-3 notes per bar
-    for (let n = 0; n < nNotes; n++) {
-      const beatOffset = (n + 0.5) * (2 / nNotes);
-      const delta = [-1, 0, 1][Math.floor(rng() * 3)];
-      stepIdx = Math.max(0, Math.min(mode.steps.length - 1, stepIdx + delta));
-      const semitone = mode.steps[stepIdx];
-
-      const octave = Math.floor(rng() * 2); // voice in two octaves
-      const freq = jiFreq(JI[semitone][0], JI[semitone][1], octave);
-      const dur = 0.5 + rng() * 0.3;
-      events.push({
-        type: 'note', t: beat + beatOffset, freq, dur, vel: 0.6 + rng() * 0.2
-      });
-    }
-  }
-
-  return { events, prog };
-}
-
-// ============ AUDIO GRAPH ============
-function buildGraph(audioContext) {
-  const sr = audioContext.sampleRate;
-  const nodes = {};
-
-  nodes.gainM = new GainNode(audioContext);
-  nodes.gainM.gain.value = TP.master.level;
-
-  nodes.convolver = new ConvolverNode(audioContext);
-  nodes.wetGain = new GainNode(audioContext);
-  nodes.dryGain = new GainNode(audioContext);
-  nodes.wetGain.gain.value = TP.master.room;
-  nodes.dryGain.gain.value = 1 - TP.master.room;
-
-  // Simple IR
-  const irLen = Math.floor(sr * 2);
-  const irBuf = audioContext.createBuffer(1, irLen, sr);
-  const irData = irBuf.getChannelData(0);
-  const irRng = mulberry32(st.seed);
-  for (let i = 0; i < irLen; i++) {
-    irData[i] = (irRng() * 2 - 1) * Math.exp(-i / (sr * 1.5));
-  }
-  nodes.convolver.buffer = irBuf;
-
-  nodes.comp = new DynamicsCompressorNode(audioContext, { threshold: -20, knee: 6, ratio: 3, attack: 0.01, release: 0.1 });
-
-  // Busses
-  nodes.voiceGain = new GainNode(audioContext);
-  nodes.voiceGain.gain.value = TP.voice.level;
-  nodes.guitarGain = new GainNode(audioContext);
-  nodes.guitarGain.gain.value = TP.guitarra.level;
-  nodes.bassGain = new GainNode(audioContext);
-  nodes.bassGain.gain.value = TP.bass.level;
-
-  // Bass oscillator
-  nodes.bassOsc = new OscillatorNode(audioContext, { type: 'sine', frequency: TP.bass.tone });
-  nodes.bassOsc.connect(nodes.bassGain);
-
-  // Routing: busses → comp → dry/wet → master → out
-  nodes.voiceGain.connect(nodes.comp);
-  nodes.guitarGain.connect(nodes.comp);
-  nodes.bassGain.connect(nodes.comp);
-
-  nodes.comp.connect(nodes.dryGain);
-  nodes.comp.connect(nodes.convolver);
-  nodes.dryGain.connect(nodes.gainM);
-  nodes.convolver.connect(nodes.wetGain);
-  nodes.wetGain.connect(nodes.gainM);
-
-  nodes.gainM.connect(audioContext.destination);
-
-  return nodes;
-}
-
-// ============ SCHEDULER ============
-const STRUM_STAGGER = 0.012; // seconds between successive struck strings
-
-function scheduleEvents(events, nodes) {
-  for (const ev of events) {
-    if (ev.type === 'note') {
-      const startTime = ac.currentTime + ev.t * 60 / st.tempo;
-      const osc = new OscillatorNode(ac, { type: 'sine', frequency: ev.freq });
-
-      const vibDepth = TP.voice.vibrato * 100; // cents
-      if (vibDepth > 0) {
-        const vibLFO = new OscillatorNode(ac, { type: 'sine', frequency: TP.voice.vibRate });
-        const vibGain = new GainNode(ac);
-        vibGain.gain.value = vibDepth;
-        vibLFO.connect(vibGain);
-        vibGain.connect(osc.detune);
-        vibLFO.start(startTime);
-        vibLFO.stop(startTime + ev.dur);
-      }
-
-      const env = new GainNode(ac);
-      const rel = Math.min(TP.voice.release, ev.dur * 0.6);
-      const sustainEnd = startTime + Math.max(TP.voice.attack, ev.dur - rel);
-      env.gain.setValueAtTime(0, startTime);
-      env.gain.linearRampToValueAtTime(ev.vel, startTime + TP.voice.attack);
-      env.gain.setValueAtTime(ev.vel, sustainEnd);
-      env.gain.linearRampToValueAtTime(0, startTime + ev.dur);
-
-      osc.connect(env);
-      env.connect(nodes.voiceGain);
-      osc.start(startTime);
-      osc.stop(startTime + ev.dur);
-
-    } else if (ev.type === 'chord') {
-      const startTime = ac.currentTime + ev.t * 60 / st.tempo;
-      const decay = TP.guitarra.decay;
-
-      // Low bass string
-      const bassOsc = new OscillatorNode(ac, { type: 'sine', frequency: ev.bass });
-      const bassEnv = new GainNode(ac);
-      bassEnv.gain.setValueAtTime(ev.vel * 0.3, startTime);
-      bassEnv.gain.linearRampToValueAtTime(0, startTime + decay);
-      bassOsc.connect(bassEnv);
-      bassEnv.connect(nodes.guitarGain);
-      bassOsc.start(startTime);
-      bassOsc.stop(startTime + decay);
-
-      // Strummed upper strings (root, fifth, octave), lightly staggered.
-      ev.strings.forEach((freq, i) => {
-        const t0 = startTime + i * STRUM_STAGGER;
-        const strOsc = new OscillatorNode(ac, { type: 'sawtooth', frequency: freq });
-        const strFilt = new BiquadFilterNode(ac, { type: 'lowpass', frequency: TP.guitarra.brightness, Q: 0.7 });
-        const strEnv = new GainNode(ac);
-        strEnv.gain.setValueAtTime(ev.vel * 0.35, t0);
-        strEnv.gain.exponentialRampToValueAtTime(0.001, t0 + decay);
-        strOsc.connect(strFilt);
-        strFilt.connect(strEnv);
-        strEnv.connect(nodes.guitarGain);
-        strOsc.start(t0);
-        strOsc.stop(t0 + decay);
-      });
-    }
-  }
-}
-
-// ============ MAIN TRANSPORT ============
-function play() {
-  if (st.playing) return;
-  st.playing = true;
-  st.paused = false;
-  document.getElementById('play').disabled = true;
-  document.getElementById('pause').disabled = false;
-  document.getElementById('stop').disabled = false;
-
-  if (!ac) {
-    ac = new (window.AudioContext || window.webkitAudioContext)();
-  }
-
-  if (!RT.g) {
-    RT.g = buildGraph(ac);
-    RT.g.bassOsc.start();
-    const gen = genAll(st.seed, st.mode, st.lap);
-    RT.events = gen.events;
-    RT.prog = gen.prog;
-    scheduleEvents(RT.events, RT.g);
-  } else if (ac.state === 'suspended') {
-    ac.resume();
-  }
-
-  const songDuration = 32 * 2 * 60 / st.tempo;
-  RT.stopTimer = setTimeout(() => {
-    if (st.playing) {
-      st.lap++;
-      stop();
-      play();
-    }
-  }, songDuration * 1000);
-
-  updateHash();
-  animate();
-}
-
-function pause() {
-  if (!st.playing || st.paused) return;
-  st.paused = true;
-  ac.suspend();
-  document.getElementById('pause').textContent = '⏵ Resume';
-  document.getElementById('pause').classList.add('on');
-}
-
-function resume() {
-  if (!st.playing || !st.paused) return;
-  st.paused = false;
-  ac.resume();
-  document.getElementById('pause').textContent = '⏸ Pause';
-  document.getElementById('pause').classList.remove('on');
-  animate();
-}
-
-function stop() {
-  st.playing = false;
-  st.paused = false;
-  if (RT.stopTimer) clearTimeout(RT.stopTimer);
-  if (RT.g) {
-    try { RT.g.bassOsc.stop(); } catch (e) {}
-    RT.g.gainM.disconnect();
-  }
-  RT.g = null;
-  document.getElementById('play').disabled = false;
-  document.getElementById('pause').disabled = true;
-  document.getElementById('pause').textContent = '⏸ Pause';
-  document.getElementById('pause').classList.remove('on');
-  canvas.width = canvas.width; // clear
-}
-
-function another() {
-  stop();
-  st.seed = Math.floor(Math.random() * 100000);
-  st.lap = 0;
-  document.getElementById('seedVal').textContent = st.seed;
-  play();
-}
-
-// ============ OFFLINE RENDER ============
-async function cut() {
-  const songDuration = 32 * 2 * 60 / st.tempo;
-  const sr = 44100;
-  const offlineCtx = new OfflineAudioContext(1, Math.floor(songDuration * sr), sr);
-
-  // scheduleEvents reads the shared `ac` for currentTime; swap it in for the render.
-  const savedAc = ac;
-  ac = offlineCtx;
-  const offlineNodes = buildGraph(offlineCtx);
-  offlineNodes.bassOsc.start(0);
-  offlineNodes.bassOsc.stop(songDuration);
-
-  const gen = genAll(st.seed, st.mode);
-  scheduleEvents(gen.events, offlineNodes);
-
-  const rendered = await offlineCtx.startRendering();
-  ac = savedAc;
-
-  saveWav(rendered);
-}
-
-// Master gain is already baked into `audioBuffer` by the render graph — don't reapply it.
-function saveWav(audioBuffer) {
-  const sr = audioBuffer.sampleRate;
-  const left = audioBuffer.getChannelData(0);
-  const right = audioBuffer.numberOfChannels > 1 ? audioBuffer.getChannelData(1) : left;
-
-  const encoder = new WavEncoder();
-  const wav = encoder.encode([Array.from(left), Array.from(right)], sr);
-  const blob = new Blob([wav], { type: 'audio/wav' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `fado-${st.seed}.wav`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-// Minimal WAV encoder
-class WavEncoder {
-  encode(channels, sampleRate) {
-    const frames = channels[0].length;
-    const dataLength = frames * channels.length * 2;
-    const buffer = new ArrayBuffer(44 + dataLength);
-    const view = new DataView(buffer);
-
-    const writeString = (offset, string) => {
-      for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
-      }
-    };
-
-    writeString(0, 'RIFF');
-    view.setUint32(4, 36 + dataLength, true);
-    writeString(8, 'WAVE');
-    writeString(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, channels.length, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * channels.length * 2, true);
-    view.setUint16(32, channels.length * 2, true);
-    view.setUint16(34, 16, true);
-    writeString(36, 'data');
-    view.setUint32(40, dataLength, true);
-
-    let offset = 44;
-    for (let i = 0; i < frames; i++) {
-      for (let ch = 0; ch < channels.length; ch++) {
-        const sample = Math.max(-1, Math.min(1, channels[ch][i]));
-        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
-        offset += 2;
-      }
-    }
-
-    return new Uint8Array(buffer);
-  }
-}
-
-// ============ OFFICINA LIVE EDIT / AUDITION ============
-// Bus levels and the bass drone ride live. Per-note params (vibrato, attack,
-// release, guitarra brightness/decay) are baked into events at schedule time —
-// like GRADUS/NENIA, edits to those take effect on the next Play/Another.
-function applyTimbreEdit(g, p, v) {
-  if (!RT.g || !ac) return;
-  const now = ac.currentTime;
-  const tau = 0.05;
-  if (g === '*') {
-    RT.g.gainM.gain.setTargetAtTime(TP.master.level, now, tau);
-    RT.g.wetGain.gain.setTargetAtTime(TP.master.room, now, tau);
-    RT.g.dryGain.gain.setTargetAtTime(1 - TP.master.room, now, tau);
-    RT.g.voiceGain.gain.setTargetAtTime(TP.voice.level, now, tau);
-    RT.g.guitarGain.gain.setTargetAtTime(TP.guitarra.level, now, tau);
-    RT.g.bassGain.gain.setTargetAtTime(TP.bass.level, now, tau);
-    RT.g.bassOsc.frequency.setTargetAtTime(TP.bass.tone, now, tau);
-    return;
-  }
-  if (g === 'master' && p === 'level') RT.g.gainM.gain.setTargetAtTime(v, now, tau);
-  else if (g === 'master' && p === 'room') {
-    RT.g.wetGain.gain.setTargetAtTime(v, now, tau);
-    RT.g.dryGain.gain.setTargetAtTime(1 - v, now, tau);
-  } else if (g === 'voice' && p === 'level') RT.g.voiceGain.gain.setTargetAtTime(v, now, tau);
-  else if (g === 'guitarra' && p === 'level') RT.g.guitarGain.gain.setTargetAtTime(v, now, tau);
-  else if (g === 'bass' && p === 'level') RT.g.bassGain.gain.setTargetAtTime(v, now, tau);
-  else if (g === 'bass' && p === 'tone') RT.g.bassOsc.frequency.setTargetAtTime(v, now, tau);
-  // else: baked param, applies next Play/Another (documented in its TIMBRE doc string)
-}
-
-// ► HEAR convention for a continuous/looping machine: start the transport if idle.
-function demoPulse(group) {
-  if (!st.playing) play();
-}
-
-TIMBRE.touch = (path) => {
-  if (!path) { applyTimbreEdit('*', '*', null); return; }
-  const i = path.indexOf('.'), g = path.slice(0, i), p = path.slice(i + 1);
-  applyTimbreEdit(g, p, TP[g][p]);
-};
-TIMBRE.demo = (group) => demoPulse(group);
-
-// ============ VISUALIZATION ============
-function animate() {
-  if (!st.playing) return;
-  requestAnimationFrame(animate);
-
-  const w = canvas.width, h = canvas.height;
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--field');
-  ctx.fillRect(0, 0, w, h);
-
-  ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--line');
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--txt');
-  ctx.font = '12px monospace';
-
-  // Draw the harmonic progression actually sounding this lap.
-  const progName = RT.prog ? RT.prog.name : '—';
-  ctx.fillText(`Mode: ${MODES[st.mode].name} | Progression: ${progName}`, 10, 20);
-  ctx.fillText(`Lap: ${st.lap + 1} | Tempo: ${st.tempo} bpm`, 10, 40);
-
-  // Draw oscillating waveform
-  const centerY = h / 2;
-  const scale = 20;
-  ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--accent');
-  ctx.beginPath();
-  for (let x = 0; x < w; x++) {
-    const y = centerY + Math.sin(x * 0.02 + ac?.currentTime * 2) * scale;
-    if (x === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-  ctx.stroke();
-}
-
-// ============ EVENT LISTENERS ============
-document.getElementById('play').addEventListener('click', play);
-document.getElementById('pause').addEventListener('click', () => {
-  if (st.paused) resume();
-  else pause();
-});
-document.getElementById('stop').addEventListener('click', stop);
-document.getElementById('another').addEventListener('click', another);
-document.getElementById('cut').addEventListener('click', cut);
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === ' ') { e.preventDefault(); if (st.playing) stop(); else play(); }
-  else if (e.key === 'p') { e.preventDefault(); if (st.paused) resume(); else if (st.playing) pause(); }
-  else if (e.key === 'r') { e.preventDefault(); another(); }
-  else if (e.key === 'c') { e.preventDefault(); cut(); }
-});
-
-// Slider bindings
-document.getElementById('seed').addEventListener('input', (e) => {
-  st.seed = parseInt(e.target.value);
-  document.getElementById('seedVal').textContent = st.seed;
-  updateHash();
-});
-document.getElementById('mode').addEventListener('change', (e) => {
-  st.mode = parseInt(e.target.value);
-  updateHash();
-});
-document.getElementById('tempo').addEventListener('input', (e) => {
-  st.tempo = parseInt(e.target.value);
-  document.getElementById('tempoVal').textContent = st.tempo;
-  updateHash();
-});
-
-canvas = document.getElementById('canvas');
-ctx = canvas.getContext('2d');
-
-// ============ HASH SERIALIZATION ============
-function updateHash() {
-  const hash = `s=${st.seed}&m=${st.mode}&t=${st.tempo}`;
-  history.replaceState(null, '', '#' + hash);
-}
-
-function loadHash() {
-  const hash = location.hash.slice(1);
-  if (!hash) return;
-  const params = new URLSearchParams(hash);
-  if (params.has('s')) st.seed = parseInt(params.get('s'));
-  if (params.has('m')) st.mode = parseInt(params.get('m'));
-  if (params.has('t')) st.tempo = parseInt(params.get('t'));
-  document.getElementById('seedVal').textContent = st.seed;
-  document.getElementById('mode').value = st.mode;
-  document.getElementById('tempo').value = st.tempo;
-  document.getElementById('tempoVal').textContent = st.tempo;
-}
-
-// Update ledger
-const ledgerEl = document.getElementById('ledger');
-for (const mode of MODES) {
-  const row = document.createElement('div');
-  row.className = 'ledger-row';
-  row.textContent = mode.name;
-  ledgerEl.appendChild(row);
-}
-for (const prog of PROGRESSIONS) {
-  const row = document.createElement('div');
-  row.className = 'ledger-row';
-  row.textContent = prog.name;
-  ledgerEl.appendChild(row);
-}
-
-loadHash();
+TIMBRE.demo=(group)=>{ if(!st.playing)play(); };
+
+/* headless-verify handle (not used by the page) */
+window.__FADO={SR,TONIC,SCALE,CHORD,ROOTR,FADOS,TOM,SENTI,st,genAll,degPair,foldPair,hzOf,chordFreqs,ksBuffer,TP,
+  buildGraph,startGraph,singNote,pluck,spbNow,NBARS,BARBEATS};
 </script>
 </body>
 </html>
