@@ -8,8 +8,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SVARA">
-<meta name="description" content="SVARA — South Indian Carnatic music. Svara over the twenty-two shrutis: raga lakshana as an automaton, gamaka as the swara's own identity, a korvai that must land exactly on samam. op. XXIII of the opuscula.">
-<title>SVARA · op. XXIII · opvscvla</title>
+<meta name="description" content="SVARA — South Indian Carnatic music. Svara over the twenty-two shrutis: raga lakshana as an automaton, gamaka as the swara's own identity, a korvai that must land exactly on samam. op. XXIV of the opuscula.">
+<title>SVARA · op. XXIV · opvscvla</title>
 <link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="../icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
@@ -120,7 +120,7 @@ input[type=range]{accent-color:var(--gold);padding:0;height:34px;width:190px;bac
   <a class="bench" href="../officina/#m=svara" aria-label="Open in officina — the voicing bench" title="officina">officina</a>
 
 <header>
-  <div class="brand"><a href="../">OPVSCVLA</a> · OP. XXIII</div>
+  <div class="brand"><a href="../">OPVSCVLA</a> · OP. XXIV</div>
   <h1>SVARA</h1>
   <div class="sub">South Indian Carnatic music &middot; svara over the twenty-two shrutis</div>
   <div class="strap">the raga is the law &middot; the korvai must land</div>
@@ -194,7 +194,7 @@ input[type=range]{accent-color:var(--gold);padding:0;height:34px;width:190px;bac
 </details>
 
 <footer class="colophon">
-  op. XXIII &middot; <a href="../">opvscvla</a> &middot; keys: space=play/stop &middot; p=pause/resume &middot; r=another &middot; c=cut<br>
+  op. XXIV &middot; <a href="../">opvscvla</a> &middot; keys: space=play/stop &middot; p=pause/resume &middot; r=another &middot; c=cut<br>
   <span class="fine">turmeric &amp; kumkum, IBM Plex Mono &middot; 2026</span>
 </footer>
 
@@ -202,7 +202,7 @@ input[type=range]{accent-color:var(--gold);padding:0;height:34px;width:190px;bac
 <script>
 'use strict';
 /* =====================================================================
-   SVARA (op. XXIII) — South Indian Carnatic music: svara over the 22
+   SVARA (op. XXIV) — South Indian Carnatic music: svara over the 22
    shrutis. ENGINE (pure, DOM-free) → TIMBRE/OFFICINA → audio graph →
    schedulers → transport → hash → ledger → canvas → iOS/MediaSession →
    controls → init. See svara/LAKSHANA.md (deleted at registration) for
@@ -673,7 +673,7 @@ function encodeWav(chL,chR,sr){
    tables and the korvai identity are all law, fixed in the ENGINE band
    above. */
 const TIMBRE={
-  id:'svara', title:'SVARA · op. XXIII',
+  id:'svara', title:'SVARA · op. XXIV',
   doc:'A Carnatic concert item: ā̄lāpana over a tambura drone, a pallavi elaborated through sangati against a mridangam, a korvai cadence. TAMBURA — four plucked strings, additive harmonics with a slow “jvāri” bloom on the upper partials. VOICE — ākāram (open “aa”) singing: a sawtooth through three fixed vowel formants plus breath noise; every pitch curve (the gamaka) is exact-shruti law, only the depth of kampita’s swing is a voicing trim. MRIDANGAM — five strokes (nam/dhin/chāpu/thom/dhom), modal synthesis with the right head’s partials tuned to Sa. KRIYā — a soft tick marking the tāla. Busses meet a compressor with a modest room — Partch-style corporeal dryness, not a cathedral.',
   groups:{
     master:{label:'master & room',doc:'Output gain into the compressor; the room send.',params:{
@@ -1182,7 +1182,7 @@ function __mediaSessionInit(){
 function __mediaSessionUpdate(){
   if(!('mediaSession' in navigator))return;
   try{
-    navigator.mediaSession.metadata=new MediaMetadata({title:'SVARA',artist:'OPVSCVLA · op. XXIII',album:RAGAS[st.ragaIdx].name+' · '+seedHex()});
+    navigator.mediaSession.metadata=new MediaMetadata({title:'SVARA',artist:'OPVSCVLA · op. XXIV',album:RAGAS[st.ragaIdx].name+' · '+seedHex()});
     navigator.mediaSession.playbackState=(st.playing&&!st.paused)?'playing':'paused';
   }catch(e){}
 }

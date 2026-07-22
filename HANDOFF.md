@@ -7,7 +7,7 @@ start of a session — it's meant to be enough to work without re-explaining.
 
 ## Architecture
 
-**OPVSCVLA is twenty-three independent single-file Web Audio machines** plus a static
+**OPVSCVLA is twenty-four independent single-file Web Audio machines** plus a static
 landing page. There is **no build step, no bundler, no dependencies, no npm, no
 samples, no server-side anything.** Each `op.` is one self-contained
 `index.html` — inline `<style>`, inline `<script>`, all synthesis in the
@@ -85,6 +85,7 @@ germen/index.html    op. XX    GERMEN     — an L-system that grows music from 
 forfex/index.html    op. XXI   FORFEX     — early tape splicing (musique concrète, elektronische Musik)
 fado/index.html      op. XXII  FADÓ       — portuguese fado (mezzo-soprano voice + guitarra)
 ricercar/index.html  op. XXIII RICERCAR   — Bach's Musical Offering riddle canons as a formal system
+svara/index.html     op. XXIV  SVARA      — South Indian Carnatic music: svara over the 22 shrutis
 ```
 
 The `op.` roman-numeral order is fixed and lives in `index.html` and `README.md`;

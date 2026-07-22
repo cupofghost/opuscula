@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="OPVSCVLA">
-<meta name="description" content="opuscula — twenty-three small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum, javanese gamelan, harry partch's tonality diamond, dubstep, a self-predicting language model, crimean steppe women's polyphony, the bohlen–pierce scale (a music with no octave), an l-system that grows music from grammar, early tape splicing, portuguese fado, the riddle canons of bach's musical offering.">
+<meta name="description" content="opuscula — twenty-four small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum, javanese gamelan, harry partch's tonality diamond, dubstep, a self-predicting language model, crimean steppe women's polyphony, the bohlen–pierce scale (a music with no octave), an l-system that grows music from grammar, early tape splicing, portuguese fado, the riddle canons of bach's musical offering, south indian carnatic svara and shruti.">
 <title>OPVSCVLA — small musical machines</title>
 <link rel="icon" href="./favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
@@ -86,7 +86,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
        .wrap      the 760px column everything sits in
        .eyebrow   the "catalogvs · mmxxvi" kicker
        h1 / .sub  the title and the one-line manifesto
-       .grid      the card wall — one <a class="card"> per work (twenty-one total)
+       .grid      the card wall — one <a class="card"> per work (twenty-four total)
        .notes     the shared-keys reminder (space / r / c)
        .foot      the colophon + repo link
 
@@ -109,7 +109,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
 <div class="wrap">
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
-  <div class="sub">twenty-one small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="sub">twenty-four small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
   <div class="opxy"><a href="./opxy/"><span class="tag">new →</span> play these on a teenage engineering OP–XY · MIDI fork</a></div>
   <hr class="rule">
 
@@ -699,6 +699,34 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
         <h2>Ricercar</h2>
         <p>the riddle canons of the Musical Offering, run as a formal system</p>
         <span class="tech">a seed spelled into the royal theme (Gödel numbering) · deterministic search verifies true canons against it · Werckmeister III, six real keys · the finale folds an octave home — a strange loop</span>
+      </div>
+    </a>
+
+    <a href="./svara/" class="card" style="--bg:#1a1208">
+      <div class="emblem" aria-hidden="true">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- the 22-shruti wheel: two achala tones (Sa, Pa) larger, a needle tracing the live pitch -->
+          <circle cx="50" cy="50" r="34" fill="none" stroke="#d0a24a" stroke-width="1.4"/>
+          <g fill="#d0a24a">
+            <circle cx="50" cy="16" r="3"/>
+            <circle cx="79.4" cy="67" r="3"/>
+            <circle cx="63" cy="21" r="1.4"/><circle cx="74.5" cy="30.5" r="1.4"/>
+            <circle cx="82" cy="43" r="1.4"/><circle cx="82" cy="57" r="1.4"/>
+            <circle cx="74.5" cy="69.5" r="1.4"/><circle cx="63" cy="79" r="1.4"/>
+            <circle cx="50" cy="84" r="1.4"/><circle cx="37" cy="79" r="1.4"/>
+            <circle cx="25.5" cy="69.5" r="1.4"/><circle cx="18" cy="57" r="1.4"/>
+            <circle cx="18" cy="43" r="1.4"/><circle cx="25.5" cy="30.5" r="1.4"/>
+            <circle cx="37" cy="21" r="1.4"/>
+          </g>
+          <line x1="50" y1="50" x2="74.5" y2="30.5" stroke="#c2523a" stroke-width="2"/>
+          <circle cx="74.5" cy="30.5" r="2.4" fill="#c2523a"/>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="op">op. XXIV · MMXXVI</span>
+        <h2>Svara</h2>
+        <p>South Indian Carnatic music — svara over the twenty-two shrutis</p>
+        <span class="tech">raga lakshana as a directed automaton · gamaka curves whose every turning point is an exact shruti · a korvai solved exactly, 3T+2g=span · zero equal temperament</span>
       </div>
     </a>
 
