@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="OPVSCVLA">
-<meta name="description" content="opuscula — twenty-six small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum, javanese gamelan, harry partch's tonality diamond, dubstep, a self-predicting language model, crimean steppe women's polyphony, the bohlen–pierce scale (a music with no octave), an l-system that grows music from grammar, early tape splicing, portuguese fado, the riddle canons of bach's musical offering, south indian carnatic svara and shruti, the lakota courting flute, renaissance sacred polyphony for tenebrae.">
+<meta name="description" content="opuscula — twenty-seven small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum, javanese gamelan, harry partch's tonality diamond, dubstep, a self-predicting language model, crimean steppe women's polyphony, the bohlen–pierce scale (a music with no octave), an l-system that grows music from grammar, early tape splicing, portuguese fado, the riddle canons of bach's musical offering, south indian carnatic svara and shruti, the lakota courting flute, renaissance sacred polyphony for tenebrae, the baganda royal log xylophone.">
 <title>OPVSCVLA — small musical machines</title>
 <link rel="icon" href="./favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
@@ -80,13 +80,13 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
      This file is pure HTML + CSS. No JavaScript, no audio: it is just the
      index card wall that links out to the works. Each work lives in
      its own folder as its own index.html; this page never loads them, it
-     only links to them (href="./folder/"). Twenty-six works.
+     only links to them (href="./folder/"). Twenty-seven works.
 
      Anatomy, top to bottom:
        .wrap      the 760px column everything sits in
        .eyebrow   the "catalogvs · mmxxvi" kicker
        h1 / .sub  the title and the one-line manifesto
-       .grid      the card wall — one <a class="card"> per work (twenty-six total)
+       .grid      the card wall — one <a class="card"> per work (twenty-seven total)
        .notes     the shared-keys reminder (space / r / c)
        .foot      the colophon + repo link
 
@@ -109,7 +109,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
 <div class="wrap">
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
-  <div class="sub">twenty-six small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="sub">twenty-seven small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
   <div class="opxy"><a href="./opxy/"><span class="tag">new →</span> play these on a teenage engineering OP–XY · MIDI fork</a></div>
   <hr class="rule">
 
@@ -771,6 +771,31 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
         <h2>Tenebrae</h2>
         <p>renaissance sacred polyphony, the office of shadows</p>
         <span class="tech">four-voice SATB counterpoint in strict 16th-c. style · 5-limit just intonation over an anchored bass · ficta at cadences · nine Good Friday responsories, freshly composed and seeded · one candle snuffed per pressing</span>
+      </div>
+    </a>
+
+    <a href="./amadinda/" class="card" style="--bg:#1c140d">
+      <div class="emblem" aria-hidden="true">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- twelve log slats, the interlock dots lit above them -->
+          <g stroke="#c99a5b" stroke-width="3.4" stroke-linecap="round">
+            <line x1="14" y1="66" x2="22" y2="34"/><line x1="24" y1="66" x2="31" y2="34"/>
+            <line x1="34" y1="66" x2="40" y2="34"/><line x1="44" y1="66" x2="49" y2="34"/>
+            <line x1="54" y1="66" x2="58" y2="34"/><line x1="64" y1="66" x2="67" y2="34"/>
+            <line x1="74" y1="66" x2="76" y2="34"/><line x1="84" y1="66" x2="85" y2="34"/>
+          </g>
+          <circle cx="20" cy="24" r="2.6" fill="#c99a5b"/>
+          <circle cx="38" cy="18" r="2.6" fill="#8a9c4e"/>
+          <circle cx="56" cy="22" r="2.6" fill="#c99a5b"/>
+          <circle cx="72" cy="16" r="2.6" fill="#8a9c4e"/>
+          <circle cx="84" cy="12" r="2.2" fill="#d9662c"/>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="op">op. XXVII · MMXXVI</span>
+        <h2>Amadinda</h2>
+        <p>the Baganda royal log xylophone — two parts interlock, a third is read off them</p>
+        <span class="tech">okunaga and okwawula interlock in strict alternation and parallel octaves · okukoonera is derived, never composed · exact five-tone equal temperament, the tradition's own law · the five muko transpositions recompose the emergent part</span>
       </div>
     </a>
 
