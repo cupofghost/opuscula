@@ -1062,7 +1062,8 @@ function articulate(ctx,chain,noiseBuf,dest,c,t,dur,unrel){
 function scheduleSyllable(ctx,chain,noiseBuf,dest,sy){
   const on=sy.syl.on, co=sy.syl.co, vw=sy.syl.v, t=sy.t, dur=sy.dur;
   const CONSDUR=0.045, onTime=Math.min(CONSDUR,dur*0.22);
-  let cursor=t-on.length*onTime;
+  const onsetStart=t-on.length*onTime;
+  let cursor=onsetStart;
   for(const c of on){ articulate(ctx,chain,noiseBuf,dest,c,cursor,onTime,false); cursor+=onTime; }
   const codaTime=Math.min(CONSDUR,dur*0.18);
   const vEnd=t+dur-codaTime*co.length, vDur=Math.max(0.04,vEnd-t);
@@ -1081,10 +1082,22 @@ function scheduleSyllable(ctx,chain,noiseBuf,dest,sy){
   for(let i=0;i<co.length;i++){ const c=co[i], last=i===co.length-1;
     articulate(ctx,chain,noiseBuf,dest,c,cur2,codaTime,last&&sy.un); cur2+=codaTime; }
   chain.aspG.gain.setTargetAtTime(0,cur2,0.03);
-  chain.vGain.gain.setValueAtTime(0.0001,t);
-  chain.vGain.gain.linearRampToValueAtTime(1,t+TP.voice.atk);
-  chain.vGain.gain.setValueAtTime(1,Math.max(t+TP.voice.atk,t+dur-TP.voice.rel));
+  // Voiced onset consonants (l/r/w/y/m/n and voiced-stop bars) sound through the
+  // formant chain and so through vGain; the envelope must open when voicing
+  // actually begins, not at the vowel tick, or those onsets — stolen from
+  // BEFORE the tick — are gated near-silent. Find the first voiced onset; open
+  // there. (Voiceless onsets are noise bursts that bypass vGain, so they keep
+  // voiceStart=t.) Clamp to the previous syllable's release on this shared chain
+  // so a long onset stolen into a tight preceding syllable can't rewrite its tail.
+  let voiceStart=t;
+  for(let i=0;i<on.length;i++){ const cd=CONS[on[i]]; if(cd&&cd.v){ voiceStart=onsetStart+i*onTime; break; } }
+  if(chain._lastEnd!=null && voiceStart<chain._lastEnd) voiceStart=chain._lastEnd;
+  if(voiceStart>t) voiceStart=t;
+  chain.vGain.gain.setValueAtTime(0.0001,voiceStart);
+  chain.vGain.gain.linearRampToValueAtTime(1,voiceStart+TP.voice.atk);
+  chain.vGain.gain.setValueAtTime(1,Math.max(voiceStart+TP.voice.atk,t+dur-TP.voice.rel));
   chain.vGain.gain.linearRampToValueAtTime(0.0001,t+dur);
+  chain._lastEnd=t+dur;
   if(sy.last) chain.glo.gain.setTargetAtTime(0,t+dur,0.02);
 }
 
