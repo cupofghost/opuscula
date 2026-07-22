@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a1208">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SVARA">
+<meta name="description" content="SVARA — South Indian Carnatic music. Svara over the twenty-two shrutis: raga lakshana as an automaton, gamaka as the swara's own identity, a korvai that must land exactly on samam. op. XXIII of the opuscula.">
+<title>SVARA · op. XXIII · opvscvla</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<style>
+html{background:#1a1208}
+body{background:#1a1208;color:#ecdfc4}
+:root{
+  color-scheme:dark;
+  --bg:#1a1208; --panel:#241a10; --well:#120c07;
+  --ink:#ecdfc4; --dim:#a08b62; --faint:#5e5138;
+  --gold:#d0a24a; --kum:#c2523a; --leaf:#7a8f52;
+  --line:rgba(208,162,74,.28); --hair:rgba(208,162,74,.14);
+}
+@media (prefers-color-scheme: light){
+  html{background:#faf3e4}
+  body{background:#faf3e4;color:#2c2214}
+  :root{
+    color-scheme:light;
+    --bg:#faf3e4; --panel:#f1e6cd; --well:#fffaf0;
+    --ink:#2c2214; --dim:#7a6844; --faint:#b7a684;
+    --gold:#a5701e; --kum:#a83e28; --leaf:#4d6132;
+    --line:rgba(165,112,30,.32); --hair:rgba(165,112,30,.16);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#1a1208; --panel:#241a10; --well:#120c07;
+  --ink:#ecdfc4; --dim:#a08b62; --faint:#5e5138;
+  --gold:#d0a24a; --kum:#c2523a; --leaf:#7a8f52;
+  --line:rgba(208,162,74,.28); --hair:rgba(208,162,74,.14);
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#faf3e4; --panel:#f1e6cd; --well:#fffaf0;
+  --ink:#2c2214; --dim:#7a6844; --faint:#b7a684;
+  --gold:#a5701e; --kum:#a83e28; --leaf:#4d6132;
+  --line:rgba(165,112,30,.32); --hair:rgba(165,112,30,.16);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'IBM Plex Mono',ui-monospace,'Courier New',monospace;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:0 auto;padding:30px 20px 64px}
+header{margin-bottom:20px}
+.brand{font-size:11px;letter-spacing:.4em;color:var(--dim)}
+.brand a{color:inherit;text-decoration:none;border-bottom:1px dotted var(--faint)}
+h1{font-weight:600;font-size:clamp(38px,7vw,62px);letter-spacing:.06em;margin:.1em 0 .05em;color:var(--gold)}
+.sub{font-size:14px;font-style:italic;color:var(--ink)}
+.strap{font-size:11px;letter-spacing:.16em;color:var(--dim);margin-top:6px;text-transform:uppercase}
+
+.figure{margin:18px 0 8px}
+canvas#fig{width:100%;height:auto;aspect-ratio:900/380;display:block;background:var(--well);border:1px solid var(--line)}
+.caption{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:10px;letter-spacing:.2em;color:var(--dim);margin-top:7px}
+
+.ctls{margin-top:22px;border-top:1px solid var(--hair);padding-top:18px}
+.row{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.fld{display:flex;flex-direction:column;gap:6px;user-select:none}
+.fld>span{font-size:10px;letter-spacing:.2em;color:var(--dim)}
+.fld>span b{color:var(--gold);font-weight:600}
+
+.btn{font-family:inherit;font-size:12px;letter-spacing:.14em;color:var(--ink);background:transparent;border:1px solid var(--line);padding:10px 16px;cursor:pointer;border-radius:0}
+.btn:hover{border-color:var(--gold);color:var(--gold)}
+.btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:default;transform:none}
+.btn.big{padding:12px 26px;font-size:14px}
+.btn.on{background:var(--kum);color:#1a1208;border-color:var(--kum)}
+
+select,input[type=range]{font-family:inherit;font-size:12px;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:9px 10px;border-radius:0}
+select:focus-visible,input[type=range]:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+input[type=range]{accent-color:var(--gold);padding:0;height:34px;width:190px;background:transparent;border:0}
+
+.ledger{margin-top:8px;border-top:1px solid var(--hair);padding-top:16px}
+.ledger dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 22px;margin:0;font-size:12px}
+.ledger dt{color:var(--dim);letter-spacing:.16em;font-size:10px;align-self:baseline;padding-top:2px}
+.ledger dd{margin:0;color:var(--ink)}
+
+.colophon{margin-top:34px;padding-top:14px;border-top:1px solid var(--hair);font-size:11px;letter-spacing:.12em;color:var(--dim)}
+.colophon a{color:var(--gold);text-decoration:none;border-bottom:1px dotted var(--gold)}
+.colophon .fine{font-size:10px;color:var(--faint)}
+
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:0 0 16px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench{position:fixed;top:max(6px,env(safe-area-inset-top));right:max(6px,env(safe-area-inset-right));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench:hover,.bench:focus-visible,.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.bench:active,.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+@media(prefers-reduced-motion:reduce){.bench,.exit{transition:none}}
+
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:64ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+  <a class="bench" href="../officina/#m=svara" aria-label="Open in officina — the voicing bench" title="officina">officina</a>
+
+<header>
+  <div class="brand"><a href="../">OPVSCVLA</a> · OP. XXIII</div>
+  <h1>SVARA</h1>
+  <div class="sub">South Indian Carnatic music &middot; svara over the twenty-two shrutis</div>
+  <div class="strap">the raga is the law &middot; the korvai must land</div>
+</header>
+
+<section class="figure">
+  <canvas id="fig" width="900" height="380" aria-label="Figure I: the twenty-two shruti wheel, the active raga's swaras lit, a needle tracing the voice's live pitch — kampita visible as the needle swinging between two lit points. Figure II: the tala lane, aṅga boxes with kriya symbols and a beat cursor; during the korvai a three-times countdown; during the ālāpana a stage indicator instead."></canvas>
+  <div class="caption">
+    <span>FIG. I — THE 22 ŚRUTIS · LIVE PITCH NEEDLE</span>
+    <span>FIG. II — TĀLA LANE · KRIYĀ · KORVAI COUNTDOWN</span>
+  </div>
+</section>
+
+<section class="ctls">
+  <div class="row">
+    <button id="btnPlay" class="btn big">PLAY</button>
+    <button id="btnPause" class="btn" disabled>PAUSE</button>
+    <button id="btnStop" class="btn" disabled>STOP</button>
+    <button id="btnAnother" class="btn">ANOTHER</button>
+    <button id="btnCut" class="btn">CUT · WAV</button>
+  </div>
+  <div class="row">
+    <div class="fld">
+      <span>RĀGA</span>
+      <select id="selRaga"></select>
+    </div>
+    <div class="fld">
+      <span>TĀLA</span>
+      <select id="selTala"></select>
+    </div>
+    <div class="fld">
+      <span>GATI</span>
+      <select id="selGati"></select>
+    </div>
+  </div>
+  <div class="row">
+    <div class="fld">
+      <span>TEMPO <b id="lblTempo">72</b> beats/min</span>
+      <input type="range" id="inpTempo" min="52" max="92" step="1" value="72">
+    </div>
+  </div>
+</section>
+
+<section class="ledger">
+  <dl>
+    <dt>SEED</dt><dd id="ledSeed">—</dd>
+    <dt>RĀGA</dt><dd id="ledRaga">—</dd>
+    <dt>TĀLA</dt><dd id="ledTala">—</dd>
+    <dt>ŚRUTI BASE</dt><dd>Sa = 196 Hz &middot; twenty-two śrutis, ten comma pairs at exactly 81/80</dd>
+    <dt>KORVAI</dt><dd id="ledKorvai">—</dd>
+    <dt>STATUS</dt><dd id="ledStatus">—</dd>
+  </dl>
+</section>
+
+<details class="reader">
+  <summary>On this music · Carnatic svara and shruti</summary>
+  <div class="rbody">
+    <h4>What you're hearing</h4>
+    <p>South Indian Carnatic music: a raga performed as a short concert item — a free-rhythm <em>ālāpana</em> exploring the raga over a droning tambura, a <em>pallavi</em> line elaborated through repeated <em>sangati</em> variations against a mridangam, and a closing <em>korvai</em>, a phrase stated three times that must land exactly on the downbeat.</p>
+    <h4>Śruti — the twenty-two</h4>
+    <p>Indian music theory since Bharata's <em>Nāṭyaśāstra</em> (~200 BCE–200 CE) counts twenty-two <em>shrutis</em> to the octave — not an equal division, but the exact just-intonation positions melody actually visits. Ten of the twelve semitone regions split into a pair of shrutis a <em>syntonic comma</em> (81/80, about a fifth of a semitone) apart; Sa and Pa never split. A raga's choice of which shruti in a pair to sing is not decoration — it is part of what makes the raga itself. Kharaharapriyā's ri and Śaṅkarābharaṇaṁ's ri are "the same" note, a comma apart.</p>
+    <h4>Gamaka — the swara's own identity</h4>
+    <p>A swara is not a point but an ornamented motion. In many ragas certain notes are never sung plain — the oscillation, slide, or grace note <em>is</em> the note's identity, not something added to it. Every turning point of every ornament here is itself an exact shruti.</p>
+    <h4>Rāga as law</h4>
+    <p>A raga is not just a scale: it is an ascending and a descending path (which may omit notes, or differ from each other), resting tones, notes the melody dwells on, and characteristic phrases. The eight ragas here carry their own such rules, and the melody-generator is only ever allowed to move within them.</p>
+    <h4>The korvai</h4>
+    <p>A <em>korvai</em> closes the item: a phrase stated three times with equal gaps between, sized so precisely that the final stroke falls exactly on <em>samam</em>, the downbeat of the rhythmic cycle. It is pure arithmetic with one right answer.</p>
+    <h4>The name</h4>
+    <p><em>Svara</em> — from <em>svayaṁ rājate</em>, "that which shines of itself" — is Sanskrit for the musical note itself.</p>
+  </div>
+</details>
+
+<footer class="colophon">
+  op. XXIII &middot; <a href="../">opvscvla</a> &middot; keys: space=play/stop &middot; p=pause/resume &middot; r=another &middot; c=cut<br>
+  <span class="fine">turmeric &amp; kumkum, IBM Plex Mono &middot; 2026</span>
+</footer>
+
+</main>
+<script>
+'use strict';
+/* =====================================================================
+   SVARA (op. XXIII) — South Indian Carnatic music: svara over the 22
+   shrutis. ENGINE (pure, DOM-free) → TIMBRE/OFFICINA → audio graph →
+   schedulers → transport → hash → ledger → canvas → iOS/MediaSession →
+   controls → init. See svara/LAKSHANA.md (deleted at registration) for
+   the full design brief this implements.
+   ===================================================================== */
+
+function mulberry32(a){
+  return function(){
+    a|=0; a=(a+0x6D2B79F5)|0;
+    var t=Math.imul(a^(a>>>15),1|a);
+    t=(t+Math.imul(t^(t>>>7),61|t))^t;
+    return ((t^(t>>>14))>>>0)/4294967296;
+  };
+}
+
+/* ============================== ENGINE-BEGIN ============================== */
+
+var SA=196; // the one Hz literal — law, not voicing
+
+/* the 22-shruti grid, ascending, integer ratio pairs end to end.
+   ten comma pairs, each exactly 81/80 apart: (1,2)(3,4)(5,6)(7,8)(9,10)
+   (11,12)(14,15)(16,17)(18,19)(20,21) [0-based]. idx 0 (Sa,1/1) and
+   idx 13 (Pa,3/2) are achala — pairless, immovable. */
+var SHRUTI=[
+  [1,1],[256,243],[16,15],[10,9],[9,8],[32,27],[6,5],[5,4],[81,64],[4,3],
+  [27,20],[45,32],[729,512],[3,2],[128,81],[8,5],[5,3],[27,16],[16,9],[9,5],
+  [15,8],[243,128]
+];
+var SVARA_LABEL=['S','R1','R1⁺','R2','R2⁺','G2','G2⁺','G3','G3⁺',
+  'M1','M1⁺','M2','M2⁺','P','D1','D1⁺','D2','D2⁺','D3','D3⁺',
+  'N3','N3⁺'];
+function ratioVal(pc){return SHRUTI[pc][0]/SHRUTI[pc][1]}
+function shrutiCents(pc){return 1200*Math.log2(ratioVal(pc))}
+
+/* eight ragas — full lakshana: ascent/descent as directed pitch-class
+   sets (bhāṣāṅga ragas carry distinct aro/ava members, e.g. Bhairavi's
+   two dhas), nyāsa (legal phrase endings), jīva (dwell weights),
+   kampitaSet (swaras that may NEVER sound plain), a short prayoga
+   (opening gesture, seeds the first ālāpana phrase). */
+var RAGAS=[
+  {id:'sankarabharanam',name:'ŚAṄKARĀBHARAṆAM',
+   aro:[0,4,7,9,13,16,20],ava:[0,4,7,9,13,16,20],
+   nyasa:[0,13,7],jiva:{7:1.6,16:1.5},kampitaSet:[],
+   prayoga:[0,4,7,9,13]},
+  {id:'kalyani',name:'KALYĀṆI',
+   aro:[0,4,7,11,13,16,20],ava:[0,4,7,11,13,16,20],
+   nyasa:[0,13,11],jiva:{11:1.7,16:1.4},kampitaSet:[11],
+   prayoga:[0,4,7,11,13]},
+  {id:'kharaharapriya',name:'KHARAHARAPRIYĀ',
+   aro:[0,3,6,9,13,16,19],ava:[0,3,6,9,13,16,19],
+   nyasa:[0,13,6],jiva:{6:1.5,16:1.4},kampitaSet:[],
+   prayoga:[0,3,6,9,13]},
+  {id:'todi',name:'TŌḌI',
+   aro:[0,1,5,9,13,14,18],ava:[0,1,5,9,13,14,18],
+   nyasa:[0,13,5],jiva:{5:1.8,14:1.6},kampitaSet:[5,14],
+   prayoga:[0,1,5,9,13]},
+  {id:'mayamalavagaula',name:'MĀYĀMĀḶAVAGAUḶA',
+   aro:[0,2,7,9,13,15,20],ava:[0,2,7,9,13,15,20],
+   nyasa:[0,13,7],jiva:{7:1.3},kampitaSet:[],
+   prayoga:[0,2,7,9,13]},
+  {id:'mohanam',name:'MŌHANAM',
+   aro:[0,4,7,13,16],ava:[0,4,7,13,16],
+   nyasa:[0,13,7,16],jiva:{7:1.5,16:1.5},kampitaSet:[],
+   prayoga:[0,4,7,13,16]},
+  {id:'hindolam',name:'HINDŌḶAM',
+   aro:[0,6,9,15,18],ava:[0,6,9,15,18],
+   nyasa:[0,6,9,15,18],jiva:{6:1.6,18:1.5},kampitaSet:[],
+   prayoga:[0,6,9,15,18]},
+  {id:'bhairavi',name:'BHAIRAVI',
+   aro:[0,3,6,9,13,16,19],ava:[0,3,6,9,13,15,19],
+   nyasa:[0,13,6],jiva:{6:1.7,16:1.4},kampitaSet:[6,15,16],
+   prayoga:[0,3,6,9,13]}
+];
+
+/* four talas — aṅga structure; kriya/korvai accents fall on aṅga heads,
+   derived from the cumulative aṅga lengths (one source of truth). */
+var TALAS=[
+  {id:'adi',label:'ĀDI',beats:8,angas:[4,2,2]},
+  {id:'rupaka',label:'RŪPAKA',beats:6,angas:[2,4]},
+  {id:'chapu7',label:'MIŚRA CHĀPU',beats:7,angas:[3,2,2]},
+  {id:'chapu5',label:'KHAṆḌA CHĀPU',beats:5,angas:[2,3]}
+];
+function angaHeads(tala){
+  var out=[0],acc=0;
+  for(var i=0;i<tala.angas.length-1;i++){acc+=tala.angas[i];out.push(acc)}
+  return out;
+}
+var GATIS=[{n:4,label:'CHATUSRA · 4'},{n:3,label:'TIŚRA · 3'},{n:5,label:'KHAṆḌA · 5'}];
+
+/* the lattice: every (pc,oct) combo the raga's aro/ava sets can reach,
+   spanning mandra Pa (~SA×0.75) to tara Sa (SA×2), sorted by pitch.
+   nextUp/nextDown are the automaton: the directed successor graph that
+   lawfully handles varjya (an absent pc is just never matched) and
+   bhāṣāṅga (a pc present in only one direction, e.g. Bhairavi's two
+   dhas) uniformly, without special-casing either. */
+function buildLattice(aro,ava){
+  var aroSet={}; aro.forEach(function(pc){aroSet[pc]=true});
+  var avaSet={}; ava.forEach(function(pc){avaSet[pc]=true});
+  var union={}; aro.concat(ava).forEach(function(pc){union[pc]=true});
+  var pcs=Object.keys(union).map(Number);
+  var entries=[];
+  for(var oct=-1;oct<=1;oct++){
+    for(var i=0;i<pcs.length;i++){
+      var pc=pcs[i];
+      var cents=shrutiCents(pc)+oct*1200;
+      var freq=SA*ratioVal(pc)*Math.pow(2,oct);
+      entries.push({pc:pc,oct:oct,cents:cents,freq:freq,inAro:!!aroSet[pc],inAva:!!avaSet[pc]});
+    }
+  }
+  entries.sort(function(a,b){return a.cents-b.cents});
+  return entries.filter(function(e){return e.freq>=SA*0.7&&e.freq<=SA*2.05});
+}
+function nextUp(lat,i){for(var j=i+1;j<lat.length;j++)if(lat[j].inAro)return j; return i}
+function nextDown(lat,i){for(var j=i-1;j>=0;j--)if(lat[j].inAva)return j; return i}
+function findStart(lat){for(var i=0;i<lat.length;i++)if(lat[i].oct===0&&lat[i].pc===0)return i; return (lat.length/2)|0}
+function latticeIndexOf(lat,pc,oct){for(var i=0;i<lat.length;i++)if(lat[i].pc===pc&&lat[i].oct===oct)return i; return -1}
+function nearestPc(lat,i,pc){
+  var best=i,bd=1e9;
+  for(var j=0;j<lat.length;j++){if(lat[j].pc!==pc)continue; var d=Math.abs(j-i); if(d<bd){bd=d;best=j}}
+  return best;
+}
+function nearestNyasa(lat,i,raga){
+  var best=i,bd=1e9;
+  for(var j=0;j<lat.length;j++){
+    if(raga.nyasa.indexOf(lat[j].pc)<0)continue;
+    var d=Math.abs(j-i); if(d<bd){bd=d;best=j}
+  }
+  return best;
+}
+
+/* automaton walk: nSteps moves, each up the arohana or down the
+   avarohana successor (never off either directed graph), biased toward
+   jīva swaras and gently mean-reverting around the start. */
+function walkPhrase(rng,lat,startI,nSteps,raga,rangeLo,rangeHi){
+  var i=startI, idxs=[i];
+  for(var s=0;s<nSteps;s++){
+    var up=nextUp(lat,i), down=nextDown(lat,i);
+    var canUp=up!==i&&lat[up].freq<=rangeHi;
+    var canDown=down!==i&&lat[down].freq>=rangeLo;
+    var choice;
+    if(canUp&&canDown){
+      var jUp=raga.jiva[lat[up].pc]||1, jDown=raga.jiva[lat[down].pc]||1;
+      var pUp=0.5*(jUp/(jUp+jDown))+(i<startI?0.15:-0.05);
+      pUp=Math.max(0.15,Math.min(0.85,pUp));
+      choice=rng()<pUp?up:down;
+    }else if(canUp)choice=up;
+    else if(canDown)choice=down;
+    else choice=i;
+    i=choice; idxs.push(i);
+  }
+  return idxs;
+}
+
+/* prayoga: a raga's short signature opening, mapped onto the lattice
+   (pc values are authored ascending, so a pc-decrease means "the walk
+   dropped an octave" — bump register on any such wrap). */
+function prayogaToLattice(lat,pcs){
+  var curOct=0,out=[],prevPc=null;
+  for(var k=0;k<pcs.length;k++){
+    var pc=pcs[k];
+    if(prevPc!=null&&pc<prevPc)curOct++;
+    var li=latticeIndexOf(lat,pc,curOct);
+    if(li<0)li=nearestPc(lat,(lat.length/2)|0,pc);
+    out.push(li); prevPc=pc;
+  }
+  return out;
+}
+
+/* gamaka: which of the 6 archetypes a given note takes. S and Pa are
+   always dīrgha (achala — the drone owns them); a raga's kampitaSet
+   swaras are NEVER plain; a true repeated pitch takes sphurita; a leap
+   sometimes takes jāru (slides in from the previous note); phrase-final
+   notes sometimes take orikkai; everything else is dīrgha with an
+   occasional nokku grace. */
+function pickGamaka(rng,raga,e,prevFreq,isPhraseFinal){
+  if(e.pc===0||e.pc===13)return {type:'dirgha'};
+  if(raga.kampitaSet.indexOf(e.pc)>=0)return {type:'kampita'};
+  if(prevFreq!=null&&Math.abs(prevFreq-e.freq)<1e-6)return {type:'sphurita'};
+  if(prevFreq!=null){
+    var leap=Math.abs(1200*Math.log2(e.freq/prevFreq))>250;
+    if(leap&&rng()<0.5)return {type:'jaru'};
+  }
+  if(isPhraseFinal&&rng()<0.4)return {type:'orikkai'};
+  if(rng()<0.15)return {type:'nokku'};
+  return {type:'dirgha'};
+}
+function neighborFreq(lat,li,gam){
+  if(gam.type==='kampita'||gam.type==='sphurita'){
+    var d=nextDown(lat,li); return d!==li?lat[d].freq:lat[nextUp(lat,li)].freq;
+  }
+  if(gam.type==='nokku'||gam.type==='orikkai'){
+    var u=nextUp(lat,li); return u!==li?lat[u].freq:lat[li].freq;
+  }
+  return lat[li].freq;
+}
+/* the pitch curve: every turning point is an exact shruti (the anchor
+   or its lawful scale-neighbor). Returns [[tOffset,freq],...], used
+   BOTH to automate the oscillator and to drive the canvas needle, so
+   the eye sees exactly what the ear hears. kampitaTrim (0..1, TIMBRE)
+   scales how far toward the neighbor the oscillation actually swings —
+   it can only interpolate within the lawful interval, never past it. */
+function buildCurve(gam,anchor,neighbor,prevFreq,dur,kampitaTrim){
+  var trim=kampitaTrim==null?1:kampitaTrim;
+  var nb=anchor+(neighbor-anchor)*trim;
+  var t=gam.type;
+  if(t==='dirgha')return [[0,anchor],[dur,anchor]];
+  if(t==='kampita'){
+    var rate=5.5,cyc=Math.max(1,Math.round(dur*rate)),cl=dur/cyc,pts=[[0,anchor]],tt=0;
+    for(var c=0;c<cyc;c++){
+      pts.push([tt+cl*0.5,anchor]);
+      pts.push([tt+cl*0.68,nb]);
+      pts.push([tt+cl,anchor]);
+      tt+=cl;
+    }
+    pts.push([dur,anchor]);
+    return pts;
+  }
+  if(t==='jaru'){
+    var from=prevFreq!=null?prevFreq:anchor, slide=Math.min(0.15,dur*0.5);
+    return [[0,from],[slide,anchor],[dur,anchor]];
+  }
+  if(t==='nokku'){
+    var g=Math.min(0.08,dur*0.3);
+    return [[0,nb],[g,nb],[Math.min(dur,g+0.02),anchor],[dur,anchor]];
+  }
+  if(t==='sphurita'){
+    var g2=Math.min(0.09,dur*0.3);
+    return [[0,anchor],[g2*0.6,nb],[g2,anchor],[dur,anchor]];
+  }
+  if(t==='orikkai'){
+    var flick=Math.min(0.12,dur*0.25);
+    return [[0,anchor],[Math.max(0,dur-flick),anchor],[dur,nb]];
+  }
+  return [[0,anchor],[dur,anchor]];
+}
+
+/* tambura pluck schedule: four strings (Pa·Sa·Sa·Ṡ; Hindōḷam has
+   no Pa, so its lowest string is tuned to Ma per the traditional
+   accommodation), each replucked on its own seeded period through the
+   whole piece. */
+function tamburaTuning(ragaId){
+  if(ragaId==='hindolam')return [SA*(4/3)/2,SA,SA,SA*2];
+  return [SA*0.75,SA,SA,SA*2];
+}
+function genTambura(rng,pieceDur,ragaId){
+  var tuning=tamburaTuning(ragaId),evs=[],periods=[2.1,2.3,2.5,2.7];
+  for(var s=0;s<4;s++){
+    var t=0.15+s*0.18+rng()*0.1;
+    while(t<pieceDur){
+      evs.push({type:'tambura',t:t,freq:tuning[s],string:s});
+      t+=periods[s]*(0.94+rng()*0.12);
+    }
+  }
+  return evs;
+}
+
+/* the composer: ālāpana (4 staged, tala-free phrases) → pallavi (4
+   sangati repeats of one automaton line, cumulative elaboration) →
+   korvai (3T+2g=span, the identity solved exactly) → tambura plucks
+   threaded across the whole piece. One sequential seeded rng, one flat
+   sorted events array — the single source the realtime scheduler, the
+   offline render, and the canvas all read. */
+function genAll(seed,params){
+  var lapSeed=(seed^Math.imul(params.lap||0,0x9E3779B1))>>>0;
+  var rng=mulberry32(lapSeed);
+  var raga=RAGAS[params.ragaIdx];
+  var tala=TALAS[params.talaIdx];
+  var gatiN=GATIS[params.gatiIdx].n;
+  var tempo=params.tempo;
+  var lat=buildLattice(raga.aro,raga.ava);
+  var startI=findStart(lat);
+  var events=[];
+  var tCursor=0.08;
+  var curI=startI, prevFreq=null;
+
+  /* ---- ĀLĀPANA ---- */
+  var stageTargets=[9,11,9,9].map(function(x){return x*72/tempo});
+  var openPro=prayogaToLattice(lat,raga.prayoga);
+  var proBudget=0;
+  (function(){
+    var idxs=openPro;
+    for(var k=0;k<idxs.length;k++){
+      var li=idxs[k];
+      var e=lat[li];
+      var dur=(0.5+rng()*0.3)*(72/tempo);
+      var gam=pickGamaka(rng,raga,e,prevFreq,false);
+      var curve=buildCurve(gam,e.freq,neighborFreq(lat,li,gam),prevFreq,dur,TP.voice.kampitaDepthTrim);
+      events.push({type:'voice',t:tCursor,dur:dur,freq:e.freq,curve:curve,section:'alap',stage:1});
+      prevFreq=curve[curve.length-1][1];
+      tCursor+=dur; proBudget+=dur;
+    }
+    curI=idxs[idxs.length-1];
+  })();
+  var stageStarts=[];
+  for(var stg=0;stg<4;stg++){
+    stageStarts.push(tCursor);
+    var target=stageTargets[stg]-(stg===0?proBudget:0);
+    var used=0;
+    var rangeLo=(stg===0||stg===3)?SA*0.85:SA*0.75;
+    var rangeHi=stg===0?SA*1.15:stg===1?SA*1.55:stg===2?SA*2.05:SA*1.05;
+    while(used<target){
+      var nSteps=2+((rng()*4)|0);
+      var idxs2=walkPhrase(rng,lat,curI,nSteps,raga,rangeLo,rangeHi);
+      if(stg===3||rng()<0.35){
+        var snapped=nearestNyasa(lat,idxs2[idxs2.length-1],raga);
+        idxs2=idxs2.slice(0,-1).concat([snapped]);
+      }
+      for(var k2=0;k2<idxs2.length;k2++){
+        var li2=idxs2[k2];
+        var e2=lat[li2];
+        var dur2=(0.42+rng()*0.42)*(72/tempo);
+        var isFinal=(k2===idxs2.length-1)&&rng()<0.3;
+        var gam2=pickGamaka(rng,raga,e2,prevFreq,isFinal);
+        var curve2=buildCurve(gam2,e2.freq,neighborFreq(lat,li2,gam2),prevFreq,dur2,TP.voice.kampitaDepthTrim);
+        events.push({type:'voice',t:tCursor,dur:dur2,freq:e2.freq,curve:curve2,section:'alap',stage:stg+1});
+        prevFreq=curve2[curve2.length-1][1];
+        tCursor+=dur2; used+=dur2;
+      }
+      curI=idxs2[idxs2.length-1];
+      var rest=(0.35+rng()*0.5)*(72/tempo);
+      tCursor+=rest; used+=rest;
+    }
+  }
+  var alapanaDur=tCursor;
+
+  /* ---- PALLAVI (4 sangati repeats on the tala grid) ---- */
+  var beats=tala.beats, P=beats*gatiN;
+  var pulseDur=(60/tempo)/gatiN;
+  var avartanaDur=beats*60/tempo;
+  var heads=angaHeads(tala);
+  function isAngaHead(p){return p%gatiN===0&&heads.indexOf((p/gatiN)|0)>=0}
+
+  var mask0=[true]; for(var p=1;p<P-1;p++)mask0.push(rng()<0.5); mask0.push(true);
+  var attackPos0=[]; for(var p2=0;p2<P;p2++)if(mask0[p2])attackPos0.push(p2);
+  var baseIdxs=walkPhrase(rng,lat,curI,attackPos0.length-1,raga,SA*0.85,SA*1.55);
+  baseIdxs[baseIdxs.length-1]=nearestNyasa(lat,baseIdxs[baseIdxs.length-1],raga);
+
+  var REPEATS=4;
+  var avartanas=[];
+  for(var r=0;r<REPEATS;r++){
+    var attackPos=attackPos0.slice(), idxsAtAttack=baseIdxs.slice();
+    var numSplits=Math.round(2+(r/(REPEATS-1))*4);
+    for(var sp=0;sp<numSplits;sp++){
+      var cand=[];
+      var maskCur={}; attackPos.forEach(function(pp){maskCur[pp]=true});
+      for(var pc=1;pc<P-1;pc++)if(!maskCur[pc])cand.push(pc);
+      if(!cand.length)break;
+      var pick=cand[(rng()*cand.length)|0];
+      var lo=0; while(lo<attackPos.length&&attackPos[lo]<pick)lo++;
+      var beforeI=idxsAtAttack[lo-1];
+      var passI=rng()<0.5?nextUp(lat,beforeI):nextDown(lat,beforeI);
+      attackPos.splice(lo,0,pick);
+      idxsAtAttack.splice(lo,0,passI);
+    }
+    avartanas.push({attackPos:attackPos,idxsAtAttack:idxsAtAttack});
+  }
+
+  var prevFreqP=prevFreq;
+  var avStarts=[];
+  for(var r2=0;r2<REPEATS;r2++){
+    var av=avartanas[r2], avStartT=tCursor;
+    avStarts.push(avStartT);
+    for(var a=0;a<av.attackPos.length;a++){
+      var pp2=av.attackPos[a], li3=av.idxsAtAttack[a], e3=lat[li3];
+      var nextP=a+1<av.attackPos.length?av.attackPos[a+1]:P;
+      var dur3=(nextP-pp2)*pulseDur;
+      var isFinal3=(a===av.attackPos.length-1)&&(r2===REPEATS-1);
+      var gam3=pickGamaka(rng,raga,e3,prevFreqP,isFinal3);
+      var curve3=buildCurve(gam3,e3.freq,neighborFreq(lat,li3,gam3),prevFreqP,dur3,TP.voice.kampitaDepthTrim);
+      events.push({type:'voice',t:avStartT+pp2*pulseDur,dur:dur3,freq:e3.freq,curve:curve3,section:'pallavi',rep:r2});
+      prevFreqP=curve3[curve3.length-1][1];
+      curI=li3;
+    }
+    var dens=0.35+0.12*r2;
+    for(var p3=0;p3<P;p3++){
+      if(isAngaHead(p3)){events.push({type:'mridangam',t:avStartT+p3*pulseDur,stroke:'dhin',vel:1});continue}
+      if(rng()<dens){
+        var strokeBank=['nam','chapu','nam'];
+        events.push({type:'mridangam',t:avStartT+p3*pulseDur,stroke:strokeBank[(rng()*strokeBank.length)|0],vel:0.6});
+      }
+    }
+    for(var b=0;b<beats;b++){
+      events.push({type:'kriya',t:avStartT+b*(60/tempo),accent:heads.indexOf(b)>=0});
+    }
+    tCursor+=avartanaDur;
+  }
+
+  /* ---- KORVAI: 3T + 2g = span, solved exactly ---- */
+  var span=2*P;
+  var g0=(2*span)%3;
+  var candidates=[];
+  for(var g=g0;g<=(span-12)/2;g+=3){
+    var T=(span-2*g)/3;
+    if(Number.isInteger(T)&&T>=4&&g>=0)candidates.push({T:T,g:g});
+  }
+  if(!candidates.length)candidates.push({T:(span/3)|0,g:0});
+  var kv=candidates[(rng()*candidates.length)|0];
+  var Tn=kv.T, Gn=kv.g;
+  var tailSyll=['ta','dhin','gi','ṇa','thom'];
+  var tailStroke={ta:'chapu',dhin:'dhin',gi:'nam','ṇa':'nam',thom:'thom'};
+  var nTail=Math.min(5,Tn), nFill=Tn-nTail;
+  var fillPool=['nam','dhin','chapu'];
+  var strokeSeq=[];
+  for(var f=0;f<nFill;f++)strokeSeq.push(fillPool[(rng()*fillPool.length)|0]);
+  for(var ti=5-nTail;ti<5;ti++)strokeSeq.push(tailStroke[tailSyll[ti]]);
+
+  var korvaiWalk=walkPhrase(rng,lat,curI,Tn-1,raga,SA*0.85,SA*1.55);
+  korvaiWalk[korvaiWalk.length-1]=nearestPc(lat,korvaiWalk[korvaiWalk.length-1],0);
+
+  var korvaiStartT=tCursor, tt=korvaiStartT;
+  avStarts.push(korvaiStartT); avStarts.push(korvaiStartT+avartanaDur);
+  for(var statement=0;statement<3;statement++){
+    for(var si=0;si<Tn;si++){
+      var vel=(statement===2&&si===Tn-1)?1:0.85;
+      events.push({type:'mridangam',t:tt,stroke:strokeSeq[si],vel:vel});
+      var liK=korvaiWalk[si], eK=lat[liK];
+      var durK=pulseDur*0.92;
+      var gamK=(si===Tn-1)?{type:'dirgha'}:pickGamaka(rng,raga,eK,null,false);
+      var curveK=buildCurve(gamK,eK.freq,neighborFreq(lat,liK,gamK),null,durK,TP.voice.kampitaDepthTrim);
+      events.push({type:'voice',t:tt,dur:durK,freq:eK.freq,curve:curveK,section:'korvai',statement:statement});
+      tt+=pulseDur;
+    }
+    if(statement<2)tt+=Gn*pulseDur;
+  }
+  var korvaiEndT=tt;
+  tCursor=korvaiEndT+0.2;
+
+  var TAMBURA_TAIL=2.6;
+  var pieceDur=tCursor+TAMBURA_TAIL;
+  events=events.concat(genTambura(rng,pieceDur,raga.id));
+  events.sort(function(a,b){return a.t-b.t});
+
+  return {events:events,meta:{
+    raga:raga,tala:tala,gatiN:gatiN,tempo:tempo,
+    alapanaDur:alapanaDur,avartanaDur:avartanaDur,pulseDur:pulseDur,
+    P:P,beats:beats,heads:heads,REPEATS:REPEATS,
+    korvaiStartT:korvaiStartT,korvaiEndT:korvaiEndT,T:Tn,g:Gn,span:span,
+    pieceDur:pieceDur,stageStarts:stageStarts,avStarts:avStarts
+  }};
+}
+
+function encodeWav(chL,chR,sr){
+  var n=chL.length;
+  var buf=new ArrayBuffer(44+n*4);
+  var v=new DataView(buf);
+  function ws(o,s){for(var i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))}
+  ws(0,'RIFF'); v.setUint32(4,36+n*4,true); ws(8,'WAVE'); ws(12,'fmt ');
+  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,2,true);
+  v.setUint32(24,sr,true); v.setUint32(28,sr*4,true);
+  v.setUint16(32,4,true); v.setUint16(34,16,true);
+  ws(36,'data'); v.setUint32(40,n*4,true);
+  var o=44;
+  for(var i=0;i<n;i++){
+    var a=Math.max(-1,Math.min(1,chL[i]));
+    v.setInt16(o,a<0?a*0x8000:a*0x7FFF,true); o+=2;
+    a=Math.max(-1,Math.min(1,chR[i]));
+    v.setInt16(o,a<0?a*0x8000:a*0x7FFF,true); o+=2;
+  }
+  return buf;
+}
+/* =============================== ENGINE-END =============================== */
+
+/* ==================== TIMBRE — the voicing of this machine ===============
+   Every synthesis constant, hoisted here. The engine above reads
+   TP.<group>.<param>. Open ../officina/ — the voicing bench — to edit
+   these live inside the running machine. Pitch itself is never TIMBRE —
+   Sa=196, the shruti table, raga lakshana, gamaka assignment, tala/gati
+   tables and the korvai identity are all law, fixed in the ENGINE band
+   above. */
+const TIMBRE={
+  id:'svara', title:'SVARA · op. XXIII',
+  doc:'A Carnatic concert item: ā̄lāpana over a tambura drone, a pallavi elaborated through sangati against a mridangam, a korvai cadence. TAMBURA — four plucked strings, additive harmonics with a slow “jvāri” bloom on the upper partials. VOICE — ākāram (open “aa”) singing: a sawtooth through three fixed vowel formants plus breath noise; every pitch curve (the gamaka) is exact-shruti law, only the depth of kampita’s swing is a voicing trim. MRIDANGAM — five strokes (nam/dhin/chāpu/thom/dhom), modal synthesis with the right head’s partials tuned to Sa. KRIYā — a soft tick marking the tāla. Busses meet a compressor with a modest room — Partch-style corporeal dryness, not a cathedral.',
+  groups:{
+    master:{label:'master & room',doc:'Output gain into the compressor; the room send.',params:{
+      level:{v:.85,min:.3,max:1.2,step:.01,label:'master level',doc:'level into the compressor'},
+      wet:{v:.22,min:0,max:1,step:.02,label:'room return',doc:'reverb send amount'},
+    }},
+    room:{label:'room',doc:'The impulse the wet send passes through.',params:{
+      size:{v:1.6,min:.4,max:4,step:.05,unit:'s',label:'room size',doc:'impulse length'},
+    }},
+    tambura:{label:'tambura',doc:'Four plucked strings, replucked on their own periods throughout the piece.',params:{
+      bloomRate:{v:.06,min:.02,max:.2,step:.005,unit:'Hz',label:'jvāri bloom rate',doc:'speed of the slow shimmer across the upper partials'},
+      bloomDepth:{v:.5,min:0,max:1,step:.02,label:'jvāri bloom depth',doc:'how far the shimmer swings the upper partials'},
+      pluckSoftness:{v:.015,min:.002,max:.05,step:.001,unit:'s',label:'pluck softness',doc:'attack time of each pluck'},
+      decay:{v:2.4,min:1,max:4,step:.05,unit:'s',label:'decay',doc:'per-pluck ring-down'},
+      level:{v:.5,min:.1,max:1,step:.02,label:'level',doc:'drone bus level'},
+    }},
+    voice:{label:'voice (ākāram)',doc:'The sāhitya-less “aa” voice. Pitch is law; these are timbral.',params:{
+      f1:{v:750,min:400,max:1200,step:10,unit:'Hz',label:'formant 1',doc:'vowel formant — lower'},
+      f2:{v:1150,min:700,max:1800,step:10,unit:'Hz',label:'formant 2',doc:'vowel formant — middle'},
+      f3:{v:2800,min:1800,max:4000,step:20,unit:'Hz',label:'formant 3',doc:'vowel formant — upper, the edge'},
+      breath:{v:.06,min:0,max:.3,step:.01,label:'breath',doc:'breath noise mixed under the tone'},
+      attack:{v:.045,min:.01,max:.15,step:.005,unit:'s',label:'attack',doc:'note attack time'},
+      release:{v:.12,min:.03,max:.4,step:.01,unit:'s',label:'release',doc:'note release time'},
+      kampitaDepthTrim:{v:1,min:0,max:1,step:.05,label:'kampita depth',doc:'how far a kampita actually swings toward its lawful neighbor shruti (1 = the full interval, never past it)'},
+      level:{v:.8,min:.3,max:1.2,step:.02,label:'level',doc:'voice bus level'},
+    }},
+    mridangam:{label:'mridangam',doc:'Five strokes; the right head’s partials are tuned to Sa (Raman’s loaded-head harmonicity).',params:{
+      rightTone:{v:.5,min:0,max:1,step:.02,label:'right-head tone',doc:'balance of the upper Sa partials in nam/dhin'},
+      ring:{v:1,min:.4,max:2,step:.02,label:'ring',doc:'decay-time multiplier for dhin/thom'},
+      namBright:{v:.5,min:0,max:1,step:.02,label:'nam brightness',doc:'upper-partial level on the rim stroke'},
+      thomDepth:{v:.94,min:.85,max:1,step:.005,label:'gumki start',doc:'the thom’s pitch swoop starting ratio (1 = no swoop)'},
+      gumkiTime:{v:.06,min:.02,max:.15,step:.005,unit:'s',label:'gumki time',doc:'duration of the thom’s pitch swoop'},
+      level:{v:.8,min:.3,max:1.2,step:.02,label:'level',doc:'mridangam bus level'},
+    }},
+    kriya:{label:'kriyā',doc:'The soft tick marking aṅga heads and beats.',params:{
+      tone:{v:1800,min:800,max:3000,step:20,unit:'Hz',label:'tone',doc:'tick pitch'},
+      level:{v:.18,min:0,max:.6,step:.01,label:'level',doc:'tick bus level'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------ */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+/* ------------------------------- audio graph ------------------------------ */
+function makeIR(ac){
+  var sr=ac.sampleRate, len=Math.floor(sr*TP.room.size);
+  var buf=ac.createBuffer(2,len,sr);
+  for(var c=0;c<2;c++){
+    var rnd=mulberry32(0x5A4A+c*97);
+    var d=buf.getChannelData(c);
+    for(var i=0;i<len;i++){var e=1-i/len; d[i]=(rnd()*2-1)*e*e*e*e}
+  }
+  return buf;
+}
+function makeNoiseBuf(ac){
+  var sr=ac.sampleRate, len=Math.floor(sr*0.5);
+  var buf=ac.createBuffer(1,len,sr);
+  var rnd=mulberry32(0xB4EA7), d=buf.getChannelData(0);
+  for(var i=0;i<len;i++)d[i]=rnd()*2-1;
+  return buf;
+}
+function makeClickBuf(ac){
+  var sr=ac.sampleRate, len=Math.floor(sr*0.03);
+  var buf=ac.createBuffer(1,len,sr);
+  var rnd=mulberry32(0xC11C), d=buf.getChannelData(0);
+  for(var i=0;i<len;i++)d[i]=(rnd()*2-1)*Math.pow(1-i/len,2);
+  return buf;
+}
+function buildGraph(ac){
+  var master=ac.createGain(); master.gain.value=TP.master.level;
+  var comp=ac.createDynamicsCompressor();
+  comp.threshold.value=-16; comp.ratio.value=3.5; comp.attack.value=0.01; comp.release.value=0.22;
+  master.connect(comp); comp.connect(ac.destination);
+  var conv=ac.createConvolver(); conv.buffer=makeIR(ac);
+  var wet=ac.createGain(); wet.gain.value=TP.master.wet;
+  conv.connect(wet); wet.connect(master);
+  function bus(sendAmt){
+    var g=ac.createGain(); var send=ac.createGain(); send.gain.value=sendAmt;
+    g.connect(master); g.connect(send); send.connect(conv);
+    return g;
+  }
+  var voiceGain=bus(0.14), tamburaGain=bus(0.10), mridangamGain=bus(0.10), kriyaGain=bus(0.04);
+  return {master:master,comp:comp,conv:conv,wet:wet,
+    voiceGain:voiceGain,tamburaGain:tamburaGain,mridangamGain:mridangamGain,kriyaGain:kriyaGain,
+    noiseBuf:makeNoiseBuf(ac),clickBuf:makeClickBuf(ac)};
+}
+
+/* ---------------------------- event schedulers ----------------------------- */
+function scheduleVoiceNote(ac,nodes,ev,t0){
+  var T=t0+ev.t, D=ev.dur, curve=ev.curve;
+  var osc=ac.createOscillator(); osc.type='sawtooth';
+  osc.frequency.setValueAtTime(Math.max(20,curve[0][1]),T);
+  for(var i=1;i<curve.length;i++)osc.frequency.linearRampToValueAtTime(Math.max(20,curve[i][1]),T+curve[i][0]);
+  var bp1=ac.createBiquadFilter(); bp1.type='bandpass'; bp1.frequency.value=TP.voice.f1; bp1.Q.value=6;
+  var bp2=ac.createBiquadFilter(); bp2.type='bandpass'; bp2.frequency.value=TP.voice.f2; bp2.Q.value=7;
+  var bp3=ac.createBiquadFilter(); bp3.type='bandpass'; bp3.frequency.value=TP.voice.f3; bp3.Q.value=8;
+  var g1=ac.createGain(); g1.gain.value=0.5;
+  var g2=ac.createGain(); g2.gain.value=0.32;
+  var g3=ac.createGain(); g3.gain.value=0.14;
+  osc.connect(bp1); bp1.connect(g1);
+  osc.connect(bp2); bp2.connect(g2);
+  osc.connect(bp3); bp3.connect(g3);
+  var env=ac.createGain();
+  var atk=Math.max(0.004,Math.min(TP.voice.attack,D*0.4));
+  var rel=Math.max(0.004,Math.min(TP.voice.release,D*0.4));
+  env.gain.setValueAtTime(0,T);
+  env.gain.linearRampToValueAtTime(1,T+atk);
+  env.gain.setValueAtTime(1,Math.max(T+atk,T+D-rel));
+  env.gain.linearRampToValueAtTime(0,T+D);
+  g1.connect(env); g2.connect(env); g3.connect(env);
+  if(TP.voice.breath>0){
+    var nz=ac.createBufferSource(); nz.buffer=nodes.noiseBuf; nz.loop=true;
+    var nf=ac.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=TP.voice.f1*1.2; nf.Q.value=1.1;
+    var ng=ac.createGain(); ng.gain.value=TP.voice.breath*0.5;
+    nz.connect(nf); nf.connect(ng); ng.connect(env);
+    nz.start(T); nz.stop(T+D+0.05);
+  }
+  env.connect(nodes.voiceGain);
+  osc.start(T); osc.stop(T+D+0.05);
+}
+function scheduleMridangam(ac,nodes,ev,t0){
+  var T=t0+ev.t, M=TP.mridangam, bus=nodes.mridangamGain, vel=ev.vel;
+  function partial(freq,gain,decay){
+    var o=ac.createOscillator(); o.type='sine'; o.frequency.value=freq;
+    var g=ac.createGain(); g.gain.setValueAtTime(Math.max(1e-4,gain),T);
+    g.gain.exponentialRampToValueAtTime(0.0006,T+decay);
+    o.connect(g); g.connect(bus); o.start(T); o.stop(T+decay+0.03);
+  }
+  if(ev.stroke==='nam'||ev.stroke==='dhom'){
+    partial(SA,0.45*vel,0.13);
+    partial(SA*2,0.22*vel*(0.4+M.namBright),0.09);
+    partial(SA*3,0.10*vel*(0.4+M.namBright),0.06);
+    var nz=ac.createBufferSource(); nz.buffer=nodes.clickBuf;
+    var hf=ac.createBiquadFilter(); hf.type='highpass'; hf.frequency.value=2200;
+    var ng=ac.createGain(); ng.gain.value=0.22*vel;
+    nz.connect(hf); hf.connect(ng); ng.connect(bus); nz.start(T);
+  }
+  if(ev.stroke==='dhin'){
+    partial(SA,0.5*vel,0.5*M.ring);
+    partial(SA*2,0.22*vel*(0.4+M.rightTone),0.32*M.ring);
+    partial(SA*3,0.10*vel*(0.4+M.rightTone),0.22*M.ring);
+  }
+  if(ev.stroke==='chapu'){
+    var nz2=ac.createBufferSource(); nz2.buffer=nodes.clickBuf;
+    var bf=ac.createBiquadFilter(); bf.type='bandpass'; bf.frequency.value=2200; bf.Q.value=2.2;
+    var ng2=ac.createGain(); ng2.gain.setValueAtTime(0.4*vel,T);
+    ng2.gain.exponentialRampToValueAtTime(0.0008,T+0.06);
+    nz2.connect(bf); bf.connect(ng2); ng2.connect(bus); nz2.start(T);
+  }
+  if(ev.stroke==='thom'||ev.stroke==='dhom'){
+    var base=SA/2, dcy=0.42*M.ring;
+    var o2=ac.createOscillator(); o2.type='sine';
+    var gk=Math.max(0.5,Math.min(1,M.thomDepth));
+    o2.frequency.setValueAtTime(base*gk,T);
+    o2.frequency.linearRampToValueAtTime(base,T+Math.max(0.005,M.gumkiTime));
+    var g4=ac.createGain(); g4.gain.setValueAtTime(0.5*vel,T);
+    g4.gain.exponentialRampToValueAtTime(0.0006,T+dcy);
+    o2.connect(g4); g4.connect(bus); o2.start(T); o2.stop(T+dcy+0.05);
+  }
+}
+function scheduleKriya(ac,nodes,ev,t0){
+  var T=t0+ev.t;
+  var o=ac.createOscillator(); o.type='square'; o.frequency.value=TP.kriya.tone*(ev.accent?1:0.72);
+  var g=ac.createGain(); g.gain.setValueAtTime(TP.kriya.level*(ev.accent?1:0.6),T);
+  g.gain.exponentialRampToValueAtTime(0.0006,T+0.05);
+  o.connect(g); g.connect(nodes.kriyaGain); o.start(T); o.stop(T+0.06);
+}
+function scheduleTamburaPluck(ac,nodes,ev,t0){
+  var T=t0+ev.t, D=TP.tambura.decay, bus=nodes.tamburaGain;
+  var partials=[1,2,3,4,5,6];
+  for(var k=0;k<partials.length;k++){
+    var n=partials[k];
+    var o=ac.createOscillator(); o.type='sine'; o.frequency.value=ev.freq*n;
+    var amp=(1/n)*0.5;
+    if(n>=3){
+      var bloom=0.5+0.5*Math.sin(2*Math.PI*TP.tambura.bloomRate*ev.t+ev.string*1.7);
+      amp*=(1-TP.tambura.bloomDepth)+TP.tambura.bloomDepth*bloom;
+    }
+    var g=ac.createGain();
+    g.gain.setValueAtTime(0,T);
+    g.gain.linearRampToValueAtTime(Math.max(1e-4,amp*TP.tambura.level),T+TP.tambura.pluckSoftness);
+    g.gain.exponentialRampToValueAtTime(0.0005,T+D);
+    o.connect(g); g.connect(bus); o.start(T); o.stop(T+D+0.05);
+  }
+}
+function scheduleEvents(ac,nodes,events,t0){
+  for(var i=0;i<events.length;i++){
+    var ev=events[i];
+    if(ev.type==='voice')scheduleVoiceNote(ac,nodes,ev,t0);
+    else if(ev.type==='mridangam')scheduleMridangam(ac,nodes,ev,t0);
+    else if(ev.type==='kriya')scheduleKriya(ac,nodes,ev,t0);
+    else if(ev.type==='tambura')scheduleTamburaPluck(ac,nodes,ev,t0);
+  }
+}
+
+/* -------------------------------- state ------------------------------------ */
+var st={seed:0,ragaIdx:0,talaIdx:0,gatiIdx:0,tempo:72,playing:false,paused:false,lap:0};
+var ac=null, RT={g:null,events:null,meta:null,t0:0,stopTimer:null};
+var rendering=false;
+var canvas,cctx,el;
+var RM=false;
+try{RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
+
+function seedHex(){return (st.seed>>>0).toString(16).padStart(8,'0')}
+function clampInt(v,lo,hi){if(isNaN(v))return lo; return Math.max(lo,Math.min(hi,v))}
+function ensureCtx(){
+  if(!ac){var AC=window.AudioContext||window.webkitAudioContext; ac=new AC();}
+  return ac;
+}
+function regenerate(){
+  var gen=genAll(st.seed,{ragaIdx:st.ragaIdx,talaIdx:st.talaIdx,gatiIdx:st.gatiIdx,tempo:st.tempo,lap:st.lap});
+  RT.events=gen.events; RT.meta=gen.meta;
+}
+
+/* ------------------------------- transport --------------------------------- */
+function play(){
+  if(st.playing)return;
+  ensureCtx();
+  if(ac.state==='suspended')ac.resume();
+  regenerate();
+  RT.g=buildGraph(ac);
+  st.playing=true; st.paused=false;
+  RT.t0=ac.currentTime+0.12;
+  scheduleEvents(ac,RT.g,RT.events,RT.t0);
+  var dur=RT.meta.pieceDur;
+  RT.stopTimer=setTimeout(function(){ if(st.playing){ st.lap++; stop(); play(); } },(dur+0.2)*1000);
+  el.btnPlay.disabled=true; el.btnPause.disabled=false; el.btnStop.disabled=false;
+  updateHash(); ledger();
+  __mediaSessionInit(); __mediaSessionUpdate(); __silStart();
+  needsDraw=true; startRaf();
+}
+function stop(){
+  var wasPlaying=st.playing;
+  st.playing=false; st.paused=false;
+  if(RT.stopTimer){clearTimeout(RT.stopTimer);RT.stopTimer=null}
+  if(RT.g){try{RT.g.master.disconnect()}catch(e){}}
+  RT.g=null;
+  el.btnPlay.disabled=false; el.btnPause.disabled=true; el.btnStop.disabled=true;
+  el.btnPause.textContent='PAUSE'; el.btnPause.classList.remove('on');
+  if(wasPlaying){__mediaSessionUpdate(); __silStop();}
+  ledger(); needsDraw=true; startRaf();
+}
+function pause(){
+  if(!st.playing||st.paused)return;
+  st.paused=true; ac.suspend();
+  el.btnPause.textContent='RESUME'; el.btnPause.classList.add('on');
+  ledger(); __mediaSessionUpdate();
+}
+function resume(){
+  if(!st.playing||!st.paused)return;
+  st.paused=false; ac.resume();
+  el.btnPause.textContent='PAUSE'; el.btnPause.classList.remove('on');
+  ledger(); __mediaSessionUpdate(); startRaf();
+}
+function togglePause(){if(st.paused)resume(); else pause()}
+function another(){
+  var wasPlaying=st.playing;
+  stop();
+  st.seed=(Math.random()*4294967296)>>>0;
+  st.lap=0;
+  regenerate();
+  updateHash(); ledger(); needsDraw=true; startRaf();
+  if(wasPlaying)play();
+}
+function onParamsChanged(){
+  updateHash();
+  if(!st.playing){regenerate(); ledger(); needsDraw=true; startRaf();}
+}
+
+/* ---------------------------------- cut ------------------------------------- */
+async function cut(){
+  if(rendering)return;
+  rendering=true;
+  el.btnCut.disabled=true; el.btnCut.textContent='CUTTING…';
+  try{
+    var gen=genAll(st.seed,{ragaIdx:st.ragaIdx,talaIdx:st.talaIdx,gatiIdx:st.gatiIdx,tempo:st.tempo,lap:0});
+    var sr=44100, dur=gen.meta.pieceDur+0.3;
+    var OAC=window.OfflineAudioContext||window.webkitOfflineAudioContext;
+    var oc=new OAC(2,Math.ceil(dur*sr),sr);
+    var nodes=buildGraph(oc);
+    scheduleEvents(oc,nodes,gen.events,0.05);
+    var rendered=await oc.startRendering();
+    var wav=encodeWav(rendered.getChannelData(0),rendered.getChannelData(1),rendered.sampleRate);
+    var blob=new Blob([wav],{type:'audio/wav'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url;
+    a.download='svara_'+gen.meta.raga.id+'_'+seedHex()+'.wav'; a.click();
+    URL.revokeObjectURL(url);
+  }catch(e){}
+  rendering=false; el.btnCut.disabled=false; el.btnCut.textContent='CUT · WAV';
+}
+
+/* --------------------------------- hash -------------------------------------- */
+function updateHash(){
+  var h='s='+st.seed+'&r='+st.ragaIdx+'&t='+st.talaIdx+'&g='+st.gatiIdx+'&b='+st.tempo;
+  history.replaceState(null,'','#'+h);
+}
+function loadHash(){
+  var h=location.hash.slice(1); if(!h)return;
+  var p=new URLSearchParams(h);
+  if(p.has('s'))st.seed=parseInt(p.get('s'),10)>>>0;
+  if(p.has('r'))st.ragaIdx=clampInt(parseInt(p.get('r'),10),0,RAGAS.length-1);
+  if(p.has('t'))st.talaIdx=clampInt(parseInt(p.get('t'),10),0,TALAS.length-1);
+  if(p.has('g'))st.gatiIdx=clampInt(parseInt(p.get('g'),10),0,GATIS.length-1);
+  if(p.has('b'))st.tempo=clampInt(parseInt(p.get('b'),10),52,92);
+}
+
+/* -------------------------------- ledger -------------------------------------- */
+function ledger(){
+  el.ledSeed.textContent=seedHex().toUpperCase();
+  el.ledRaga.textContent=RAGAS[st.ragaIdx].name;
+  el.ledTala.textContent=TALAS[st.talaIdx].label+' · '+GATIS[st.gatiIdx].label;
+  if(RT.meta){
+    var m=RT.meta;
+    el.ledKorvai.textContent='T='+m.T+' × 3, gap='+m.g+' — 3·'+m.T+'+2·'+m.g+' = '+(3*m.T+2*m.g)+' = span '+m.span;
+  }else el.ledKorvai.textContent='—';
+  el.ledStatus.textContent=st.playing?(st.paused?'paused':'playing — lap '+(st.lap+1)):'stopped';
+}
+
+/* -------------------------------- canvas --------------------------------------- */
+var rafOn=false, needsDraw=true;
+function startRaf(){
+  if(rafOn)return; rafOn=true;
+  requestAnimationFrame(function loop(){
+    rafOn=false; draw();
+    if(st.playing&&!st.paused&&!RM){rafOn=true; requestAnimationFrame(loop)}
+  });
+}
+function cssVar(name,fallback){
+  try{var v=getComputedStyle(document.documentElement).getPropertyValue(name).trim(); return v||fallback}
+  catch(e){return fallback}
+}
+function curveFreqAt(curve,t){
+  if(t<=curve[0][0])return curve[0][1];
+  for(var i=1;i<curve.length;i++){
+    if(t<=curve[i][0]){
+      var t0=curve[i-1][0],t1=curve[i][0],f0=curve[i-1][1],f1=curve[i][1];
+      var frac=t1>t0?(t-t0)/(t1-t0):1;
+      return f0+(f1-f0)*frac;
+    }
+  }
+  return curve[curve.length-1][1];
+}
+function currentNeedleFreq(){
+  if(!st.playing||st.paused||!ac||!RT.events)return null;
+  var cur=ac.currentTime-RT.t0;
+  if(cur<0)return null;
+  var best=null;
+  for(var i=0;i<RT.events.length;i++){
+    var e=RT.events[i];
+    if(e.t>cur+0.001)break;
+    if(e.type==='voice'&&cur<=e.t+e.dur)best=e;
+  }
+  if(!best)return null;
+  return curveFreqAt(best.curve,cur-best.t);
+}
+function sectionAt(cur){
+  if(cur<0||!RT.meta)return null;
+  var m=RT.meta;
+  if(cur<m.alapanaDur){
+    var stage=1;
+    for(var i=0;i<m.stageStarts.length;i++)if(cur>=m.stageStarts[i])stage=i+1;
+    return {kind:'alap',stage:stage};
+  }
+  if(cur<m.korvaiStartT){
+    var rep=0;
+    for(var r=0;r<m.REPEATS;r++)if(cur>=m.avStarts[r])rep=r;
+    return {kind:'pallavi',rep:rep,avStart:m.avStarts[rep]};
+  }
+  if(cur<=m.korvaiEndT+0.05){
+    var span2=m.korvaiEndT-m.korvaiStartT;
+    var frac=span2>0?(cur-m.korvaiStartT)/span2:0;
+    return {kind:'korvai',statement:Math.min(2,Math.floor(frac*3)),avStart:m.avStarts[4]};
+  }
+  return {kind:'tail'};
+}
+function drawWheel(w,h){
+  var cx=w*0.25, cy=h*0.52, R=Math.min(w*0.22,h*0.42);
+  var raga=RAGAS[st.ragaIdx];
+  var activeSet={};
+  raga.aro.concat(raga.ava).forEach(function(pc){activeSet[pc]=true});
+  cctx.strokeStyle=cssVar('--line','rgba(208,162,74,.28)'); cctx.lineWidth=1;
+  cctx.beginPath(); cctx.arc(cx,cy,R,0,Math.PI*2); cctx.stroke();
+  for(var pc=0;pc<22;pc++){
+    var ang=-Math.PI/2+(shrutiCents(pc)/1200)*2*Math.PI;
+    var x=cx+R*Math.cos(ang), y=cy+R*Math.sin(ang);
+    var isAchala=(pc===0||pc===13), active=activeSet[pc];
+    var rr=isAchala?5:(active?3.6:2.2);
+    cctx.beginPath(); cctx.arc(x,y,rr,0,Math.PI*2);
+    cctx.fillStyle=active?cssVar('--gold','#d0a24a'):cssVar('--faint','#5e5138');
+    cctx.fill();
+    if(active){
+      cctx.font='9px IBM Plex Mono, monospace';
+      cctx.fillStyle=cssVar('--dim','#a08b62');
+      cctx.textAlign=Math.cos(ang)>=0?'left':'right';
+      cctx.textBaseline='middle';
+      cctx.fillText(SVARA_LABEL[pc],x+Math.cos(ang)*10,y+Math.sin(ang)*10);
+    }
+  }
+  var freq=RM?null:currentNeedleFreq();
+  if(freq){
+    var cents=1200*Math.log2(freq/SA); cents=((cents%1200)+1200)%1200;
+    var ang2=-Math.PI/2+(cents/1200)*2*Math.PI;
+    var nx=cx+R*Math.cos(ang2), ny=cy+R*Math.sin(ang2);
+    cctx.strokeStyle=cssVar('--kum','#c2523a'); cctx.lineWidth=2;
+    cctx.beginPath(); cctx.moveTo(cx,cy); cctx.lineTo(nx,ny); cctx.stroke();
+    cctx.beginPath(); cctx.arc(nx,ny,4,0,Math.PI*2);
+    cctx.fillStyle=cssVar('--kum','#c2523a'); cctx.fill();
+  }
+  cctx.fillStyle=cssVar('--dim','#a08b62'); cctx.font='11px IBM Plex Mono, monospace';
+  cctx.textAlign='center'; cctx.textBaseline='top';
+  cctx.fillText(raga.name,cx,cy+R+16);
+}
+function drawTalaLane(w,h){
+  var x0=w*0.55, y0=h*0.18, ww=w*0.4, hh=h*0.24;
+  var cur=(st.playing&&ac)?ac.currentTime-RT.t0:-1;
+  var section=sectionAt(cur);
+  cctx.fillStyle=cssVar('--dim','#a08b62'); cctx.font='11px IBM Plex Mono, monospace';
+  cctx.textAlign='left'; cctx.textBaseline='alphabetic';
+  var head=RAGAS[st.ragaIdx].name;
+  if(section){
+    if(section.kind==='alap')head='ĀLĀPANA · STAGE '+['I','II','III','IV'][section.stage-1];
+    else if(section.kind==='pallavi')head='PALLAVI · SANGATI '+(section.rep+1)+'/'+(RT.meta?RT.meta.REPEATS:4);
+    else if(section.kind==='korvai')head='KORVAI · '+(section.statement+1)+' / 3';
+    else if(section.kind==='tail')head='—';
+  }
+  cctx.fillText(head,x0,y0-8);
+  var tala=TALAS[st.talaIdx], beats=tala.beats, heads=angaHeads(tala), bw=ww/beats;
+  for(var b=0;b<beats;b++){
+    var bx=x0+b*bw, isHead=heads.indexOf(b)>=0;
+    cctx.strokeStyle=cssVar('--line','rgba(208,162,74,.28)'); cctx.lineWidth=1;
+    cctx.strokeRect(bx,y0,bw,hh);
+    cctx.fillStyle=isHead?cssVar('--kum','#c2523a'):cssVar('--faint','#5e5138');
+    cctx.font='13px IBM Plex Mono, monospace'; cctx.textAlign='center'; cctx.textBaseline='middle';
+    cctx.fillText(isHead?'|':'·',bx+bw/2,y0+hh/2);
+  }
+  if(section&&(section.kind==='pallavi'||section.kind==='korvai')&&RT.meta&&!RM){
+    var localBeat=((cur-section.avStart)/(60/RT.meta.tempo))%beats;
+    if(localBeat<0)localBeat+=beats;
+    var cxp=x0+localBeat*bw;
+    cctx.strokeStyle=cssVar('--gold','#d0a24a'); cctx.lineWidth=2;
+    cctx.beginPath(); cctx.moveTo(cxp,y0-4); cctx.lineTo(cxp,y0+hh+4); cctx.stroke();
+  }
+}
+function draw(){
+  if(!canvas)return;
+  var w=canvas.width,h=canvas.height;
+  cctx.fillStyle=cssVar('--well','#120c07'); cctx.fillRect(0,0,w,h);
+  drawWheel(w,h); drawTalaLane(w,h);
+}
+
+/* --------------------------- __iosAudio unlock --------------------------- */
+(function __iosAudio(){
+  try{if('audioSession' in navigator)navigator.audioSession.type='playback'}catch(e){}
+  function kick(){
+    if(!ac)return;
+    if(st.paused)return;
+    if(ac.state!=='running'){
+      try{
+        ac.resume().then(function(){
+          try{var b=ac.createBuffer(1,1,22050); var s=ac.createBufferSource(); s.buffer=b; s.connect(ac.destination); s.start(0)}catch(e){}
+        }).catch(function(){});
+      }catch(e){}
+    }
+  }
+  try{window.addEventListener('pointerdown',kick,{capture:true,passive:true})}
+  catch(e){window.addEventListener('pointerdown',kick,true)}
+  window.addEventListener('keydown',kick,true);
+  document.addEventListener('visibilitychange',kick);
+  window.addEventListener('pagehide',function(){try{if(ac&&ac.state==='running')ac.suspend()}catch(e){}});
+})();
+
+/* ---- Media Session: lock-screen / notification-shade transport ---- */
+var __SILENCE='data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+var __silAudio=null;
+function __silStart(){try{if(!__silAudio){__silAudio=new Audio(__SILENCE);__silAudio.loop=true;__silAudio.setAttribute('playsinline','')}__silAudio.play().catch(function(){})}catch(e){}}
+function __silStop(){try{__silAudio&&__silAudio.pause()}catch(e){}}
+function __mediaSessionInit(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.setActionHandler('play',function(){if(!st.playing)play(); else if(st.paused)togglePause();});
+    navigator.mediaSession.setActionHandler('pause',function(){if(st.playing&&!st.paused)togglePause();});
+    navigator.mediaSession.setActionHandler('stop',function(){if(st.playing)stop();});
+    navigator.mediaSession.setActionHandler('nexttrack',function(){another();});
+  }catch(e){}
+}
+function __mediaSessionUpdate(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.metadata=new MediaMetadata({title:'SVARA',artist:'OPVSCVLA · op. XXIII',album:RAGAS[st.ragaIdx].name+' · '+seedHex()});
+    navigator.mediaSession.playbackState=(st.playing&&!st.paused)?'playing':'paused';
+  }catch(e){}
+}
+
+/* OFFICINA live edit: master/room/voice(level)/tambura(level)/mridangam(level)/
+   kriya(level) ride live via gain nodes; per-note/per-stroke params (formants,
+   gamaka depth, mridangam voicing, tambura bloom) are baked at genAll/schedule
+   time and apply on the next Play/Another — the FADO/BOLG convention. */
+function applyTimbreEdit(){
+  if(!RT.g||!ac)return;
+  var now=ac.currentTime, tau=0.06;
+  try{RT.g.master.gain.setTargetAtTime(TP.master.level,now,tau)}catch(e){}
+  try{RT.g.wet.gain.setTargetAtTime(TP.master.wet,now,tau)}catch(e){}
+  try{RT.g.voiceGain.gain.setTargetAtTime(TP.voice.level,now,tau)}catch(e){}
+  try{RT.g.tamburaGain.gain.setTargetAtTime(TP.tambura.level,now,tau)}catch(e){}
+  try{RT.g.mridangamGain.gain.setTargetAtTime(TP.mridangam.level,now,tau)}catch(e){}
+  try{RT.g.kriyaGain.gain.setTargetAtTime(TP.kriya.level,now,tau)}catch(e){}
+}
+function demoPulse(group){
+  if(!st.playing)play();
+}
+TIMBRE.touch=function(){applyTimbreEdit()};
+TIMBRE.demo=function(group){demoPulse(group)};
+
+/* -------------------------------- init ------------------------------------- */
+canvas=document.getElementById('fig'); cctx=canvas.getContext('2d');
+el={
+  btnPlay:document.getElementById('btnPlay'),btnPause:document.getElementById('btnPause'),
+  btnStop:document.getElementById('btnStop'),btnAnother:document.getElementById('btnAnother'),
+  btnCut:document.getElementById('btnCut'),
+  selRaga:document.getElementById('selRaga'),selTala:document.getElementById('selTala'),
+  selGati:document.getElementById('selGati'),
+  inpTempo:document.getElementById('inpTempo'),lblTempo:document.getElementById('lblTempo'),
+  ledSeed:document.getElementById('ledSeed'),ledRaga:document.getElementById('ledRaga'),
+  ledTala:document.getElementById('ledTala'),ledKorvai:document.getElementById('ledKorvai'),
+  ledStatus:document.getElementById('ledStatus')
+};
+RAGAS.forEach(function(r,i){var o=document.createElement('option'); o.value=i; o.textContent=r.name; el.selRaga.appendChild(o)});
+TALAS.forEach(function(t,i){var o=document.createElement('option'); o.value=i; o.textContent=t.label; el.selTala.appendChild(o)});
+GATIS.forEach(function(g,i){var o=document.createElement('option'); o.value=i; o.textContent=g.label; el.selGati.appendChild(o)});
+
+loadHash();
+el.selRaga.value=st.ragaIdx; el.selTala.value=st.talaIdx; el.selGati.value=st.gatiIdx;
+el.inpTempo.value=st.tempo; el.lblTempo.textContent=st.tempo;
+
+el.btnPlay.addEventListener('click',play);
+el.btnPause.addEventListener('click',togglePause);
+el.btnStop.addEventListener('click',stop);
+el.btnAnother.addEventListener('click',another);
+el.btnCut.addEventListener('click',cut);
+el.selRaga.addEventListener('change',function(e){st.ragaIdx=parseInt(e.target.value,10); onParamsChanged()});
+el.selTala.addEventListener('change',function(e){st.talaIdx=parseInt(e.target.value,10); onParamsChanged()});
+el.selGati.addEventListener('change',function(e){st.gatiIdx=parseInt(e.target.value,10); onParamsChanged()});
+el.inpTempo.addEventListener('input',function(e){st.tempo=parseInt(e.target.value,10); el.lblTempo.textContent=st.tempo; onParamsChanged()});
+document.addEventListener('keydown',function(e){
+  if(e.target&&(e.target.tagName==='SELECT'||e.target.tagName==='INPUT'))return;
+  if(e.key===' '){e.preventDefault(); if(st.playing)stop(); else play();}
+  else if(e.key==='p'){e.preventDefault(); if(st.playing)togglePause();}
+  else if(e.key==='r'){e.preventDefault(); another();}
+  else if(e.key==='c'){e.preventDefault(); cut();}
+});
+
+regenerate(); ledger(); needsDraw=true; startRaf();
+</script>
+</body>
+</html>
