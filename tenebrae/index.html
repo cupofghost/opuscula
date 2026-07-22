@@ -1,0 +1,1955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="theme-color" content="#0d0b09">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>TENEBRAE — officium hebdomadae sanctae</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet">
+<style>
+/* =====================================================================
+   TENEBRAE — the hearse, fifteen candles, a stone room
+   field #0d0b09 · candleflame #e0a84c · parchment #d8cdb4 · smoke #5a544a
+   passiontide violet #4a3652
+   ===================================================================== */
+html{background:#0d0b09}
+:root{
+  color-scheme:dark;
+  --field:#0d0b09; --field2:#161210; --ink:#d8cdb4; --faint:rgba(216,205,180,.46); --hair:rgba(216,205,180,.22);
+  --flame:#e0a84c; --smoke:#5a544a; --violet:#4a3652;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{
+  background:var(--field);
+  background-image:radial-gradient(120% 90% at 50% 0%,rgba(224,168,76,.05),transparent 55%);
+  color:var(--ink);
+  font-family:'EB Garamond',Georgia,serif;
+  min-height:100vh;display:flex;justify-content:center;
+  padding:max(16px,env(safe-area-inset-top)) 12px calc(24px + env(safe-area-inset-bottom));
+}
+.sheet{width:100%;max-width:640px}
+.sc{font-family:'Cormorant SC','EB Garamond',serif}
+
+.eyebrow{font-size:.72rem;letter-spacing:.34em;color:var(--violet);text-align:center;text-transform:uppercase;filter:brightness(1.8)}
+h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;font-size:clamp(3rem,13vw,4.2rem);line-height:1;letter-spacing:.08em;margin:8px 0 2px;color:var(--ink)}
+.sub{text-align:center;font-style:italic;font-size:.98rem;color:var(--ink);opacity:.82;max-width:46ch;margin:0 auto}
+.credit{text-align:center;font-size:.7rem;letter-spacing:.2em;color:var(--faint);margin-top:10px;text-transform:uppercase}
+.fleuron{text-align:center;color:var(--flame);font-size:.9rem;margin:12px 0 4px;letter-spacing:.6em;opacity:.7}
+hr.rule{border:none;border-top:1px solid var(--hair);margin:14px 0 0}
+
+.plate{margin-top:14px;border:1px solid var(--hair);background:var(--field2);position:relative;display:flex;flex-wrap:wrap}
+.hearse-wrap{flex:0 0 128px;border-right:1px solid var(--hair)}
+canvas#hearse{display:block;width:100%;height:auto}
+.book-wrap{flex:1 1 320px;min-width:0}
+.platehead{display:flex;justify-content:space-between;padding:7px 10px;border-bottom:1px solid var(--hair);
+  font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+.platehead .op{color:var(--flame)}
+.scrollwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+canvas#book{display:block;width:100%;height:auto}
+.textline{padding:8px 10px;font-style:italic;font-size:.92rem;line-height:1.5;border-top:1px solid var(--hair);min-height:2.6em}
+.textline .syl{opacity:.5}
+.textline .syl.now{opacity:1;color:var(--flame)}
+.incipit{padding:6px 10px;font-size:.78rem;color:var(--faint);border-top:1px solid var(--hair)}
+
+.controls{margin-top:16px;display:flex;flex-direction:column;gap:15px}
+.lab{font-family:'Cormorant SC',serif;font-weight:600;font-size:.86rem;letter-spacing:.28em;text-transform:uppercase;
+  display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px;color:var(--ink)}
+.lab .rd{font-family:'EB Garamond',serif;font-style:italic;font-size:.85rem;letter-spacing:.02em;text-transform:none;color:var(--faint)}
+
+button{font-family:'Cormorant SC',serif;font-weight:600;color:var(--ink);background:transparent;border:1.5px solid var(--hair);cursor:pointer;letter-spacing:.12em;touch-action:manipulation}
+button:focus-visible{outline:2px solid var(--flame);outline-offset:2px}
+.playbtn{width:100%;padding:14px;font-size:1.2rem;letter-spacing:.36em;border-width:2px;border-color:var(--flame)}
+.playbtn.on{background:var(--flame);border-color:var(--flame);color:#1a1208}
+.playbtn:disabled{opacity:.4;cursor:default}
+
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{padding:8px 12px;font-size:.86rem;border-color:var(--hair)}
+.chips button.on{background:var(--violet);border-color:var(--violet);color:var(--ink)}
+.numchips{display:grid;grid-template-columns:repeat(9,1fr);gap:5px}
+.numchips button{padding:8px 0;font-size:.86rem}
+.numchips button.on{background:var(--flame);border-color:var(--flame);color:#1a1208}
+
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:26px;background:transparent;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--hair)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:19px;height:19px;margin-top:-8.5px;border-radius:50%;background:var(--field2);border:2px solid var(--flame)}
+input[type=range]::-moz-range-track{height:2px;background:var(--hair)}
+input[type=range]::-moz-range-thumb{width:17px;height:17px;border-radius:50%;background:var(--field2);border:2px solid var(--flame)}
+
+.cut{width:100%;padding:12px;font-size:.92rem;letter-spacing:.22em;border-style:dashed}
+.cut:disabled{opacity:.45}
+.cutnote{font-style:italic;text-align:center;font-size:.8rem;color:var(--faint);margin-top:6px;min-height:1.1em}
+
+.ledger{margin-top:16px;border-top:3px double var(--hair);padding-top:10px;font-size:.8rem;line-height:1.75;color:var(--ink)}
+.ledger .k{font-family:'Cormorant SC',serif;letter-spacing:.16em;font-size:.7rem;color:var(--faint);text-transform:uppercase}
+.colophon{text-align:center;font-size:.68rem;letter-spacing:.24em;color:var(--faint);margin-top:14px;text-transform:uppercase}
+.colophon a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+button:active{transform:translateY(1px)}
+button,canvas{-webkit-user-select:none;user-select:none}
+@media(min-width:900px){.sheet{max-width:760px}}
+
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:-moz-fit-content;width:fit-content;align-items:center;gap:.55em;margin:0 0 16px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench{position:fixed;top:max(6px,env(safe-area-inset-top));right:max(6px,env(safe-area-inset-right));z-index:100;display:flex;width:-moz-fit-content;width:fit-content;align-items:center;gap:.55em;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench:hover,.bench:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.bench:active{transform:translateY(1px)}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+@media(prefers-reduced-motion:reduce){.exit,.bench{transition:none}}
+
+.reader{margin:22px auto 4px;padding:0 4px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid var(--hair);border-radius:999px;opacity:.65;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s;color:var(--ink)}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+.rbody a{color:inherit}
+</style>
+</head>
+<body>
+<div class="sheet">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+  <a class="bench" href="../officina/?bench=tenebrae" aria-label="Open in officina — the voicing bench" title="officina">officina</a>
+
+  <div class="eyebrow">Officium Hebdomadae Sanctae · 1585</div>
+  <h1>Tenebrae</h1>
+  <div class="sub">the office of darkness, sung by a machine — four voices in strict counterpoint, a candle put out for each psalm.</div>
+  <div class="credit">after Tomás Luis de Victoria · Good Friday's nine responsories</div>
+  <div class="fleuron">✝</div>
+
+  <div class="plate">
+    <div class="hearse-wrap"><canvas id="hearse" width="128" height="300" aria-label="The hearse — fifteen candles, lit and out"></canvas></div>
+    <div class="book-wrap">
+      <div class="platehead"><span id="formribbon">a · b · ℣ · b</span><span class="op" id="opus">RESP. V</span></div>
+      <div class="scrollwrap"><canvas id="book" height="220" aria-label="Four-voice choirbook notation"></canvas></div>
+      <div class="textline" id="textline"></div>
+      <div class="incipit" id="incipitline"></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <div style="display:flex;gap:10px">
+      <button class="playbtn" id="play" style="flex:1">CANTA</button>
+      <button class="playbtn" id="pause" style="flex:0 0 30%" disabled>MORA</button>
+    </div>
+
+    <div>
+      <div class="lab">Responsorivm <span class="rd" id="resprd"></span></div>
+      <div class="numchips" id="respchips"></div>
+    </div>
+
+    <div>
+      <div class="lab">Modvs <span class="rd" id="modusrd"></span></div>
+      <div class="chips" id="modus"></div>
+    </div>
+
+    <div>
+      <div class="lab">Tactvs <span class="rd" id="tactusrd">56</span></div>
+      <input type="range" id="tactus" min="48" max="66" value="56">
+    </div>
+
+    <button class="playbtn" id="aliud" style="font-size:.95rem;letter-spacing:.28em;padding:12px;border-color:var(--hair)">ALIUD — set it again</button>
+
+    <div>
+      <button class="cut" id="cut">Cut a print · 16-bit WAV</button>
+      <div class="cutnote" id="cutnote">renders the whole responsory offline, exactly as sung</div>
+    </div>
+
+    <div class="ledger" id="ledger"></div>
+
+    <details class="reader">
+      <summary>On this music · the office of darkness</summary>
+      <div class="rbody" id="readerbody"></div>
+    </details>
+
+    <div class="colophon">good friday · nine responsories · 5-limit JI over an anchored bass<br>
+    op. XXVI · <a href="../">opvscvla</a> · claves: space=canta · p=mora · r=aliud · c=cut · 1–9=responsorivm</div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* =====================================================================
+   TENEBRAE (op. XXVI) — Renaissance sacred polyphony narrowed to one
+   liturgical order: Tenebrae, Good Friday, its nine responsories. One
+   pressing = one responsory, freshly composed in strict 16th-c.
+   counterpoint on four synthesized SATB voices, 5-limit just intonation
+   over an anchored bass (Zarlino's senario), sung in a stone room.
+   Design brief: tenebrae/OFFICIUM.md (deleted at landing — see HANDOFF).
+
+   Shared skeleton (see HANDOFF.md "Conventions"): iOS audio unlock +
+   Media Session — TIMBRE/OFFICINA bridge (verbatim) — a seeded genAll()
+   that composes the whole score once — realtime scheduler + offline
+   OfflineAudioContext render, same score, same code — a canvas that
+   sleeps when idle — URL hash is the pressing.
+   ===================================================================== */
+
+/* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
+function __hint(msg){
+  try{
+    const p=document.getElementById('play');
+    if(!p||!p.insertAdjacentElement)return;
+    let h=document.getElementById('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin-top:6px;font-style:italic;letter-spacing:.04em';
+      p.insertAdjacentElement('afterend',h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(st.playing&&!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{if(document.visibilityState==='visible')kick();}catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('AUDIO SUSPENSUM — tap again · check the ring/silent switch');}catch(e){}},450);
+}
+
+/* ---- Media Session: lock-screen / notification-shade transport ---- */
+const __SILENCE='data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+let __silAudio=null;
+function __mediaSessionInit(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.setActionHandler('play',()=>{if(!st.playing)play();else if(st.paused)togglePause();});
+    navigator.mediaSession.setActionHandler('pause',()=>{if(st.playing&&!st.paused)togglePause();});
+    navigator.mediaSession.setActionHandler('stop',()=>{if(st.playing)stop();});
+    navigator.mediaSession.setActionHandler('nexttrack',()=>{aliud();});
+  }catch(e){}
+}
+function __mediaSessionUpdate(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.metadata=new MediaMetadata({
+      title:'TENEBRAE — Resp. '+ROMAN[st.responsory], artist:'OPVSCVLA · op. XXVI',
+      album:MODES_ORDER[st.mode==='sorte'?(RT.score?RT.score.mode:'phrygian'):st.mode]
+    });
+    navigator.mediaSession.playbackState=(st.playing&&!st.paused)?'playing':'paused';
+  }catch(e){}
+}
+function __silStart(){
+  try{if(!__silAudio){__silAudio=new Audio(__SILENCE);__silAudio.loop=true;__silAudio.setAttribute('playsinline','');}
+    __silAudio.play().catch(()=>{});}catch(e){}
+}
+function __silStop(){try{__silAudio&&__silAudio.pause();}catch(e){}}
+
+/* ============================ LAW-BEGIN ============================
+   The tuning and office law. NOT TIMBRE — this is what makes it Tenebrae,
+   not a voicing choice. Ratios are integer pairs [num,den] end to end;
+   the only float multiply is the final conversion to Hz (BASE*n/d), and
+   any Math.pow(2,k) below is an OCTAVE shift with an integer k — never an
+   equal-tempered root (never /12, never a cents-space pitch conversion in
+   the signal path). ===================================================== */
+const BASE=220; // the tenor's A — law, lives beside the mode tables
+
+const ROMAN=[null,'I','II','III','IV','V','VI','VII','VIII','IX'];
+const MODES_ORDER=['dorian','phrygian','mixolydian','aeolian'];
+const FINAL_RATIO={dorian:[2,3],phrygian:[3,4],mixolydian:[8,9],aeolian:[1,2]};
+const MODE_SCALE={
+  dorian:    [[1,1],[9,8],[6,5],[4,3],[3,2],[5,3],[9,5]],
+  phrygian:  [[1,1],[16,15],[6,5],[4,3],[3,2],[8,5],[9,5]],
+  mixolydian:[[1,1],[9,8],[5,4],[4,3],[3,2],[5,3],[16,9]],
+  aeolian:   [[1,1],[9,8],[6,5],[4,3],[3,2],[8,5],[9,5]],
+};
+const COFINAL_DEG={dorian:4,phrygian:3,mixolydian:4,aeolian:4}; // 0-indexed
+const FICTA_RATIO=[15,8]; // leading tone over the cadence root, exact
+const SORTE_W=[['phrygian',.35],['dorian',.30],['aeolian',.25],['mixolydian',.10]];
+
+/* ---- ratio arithmetic: integer pairs end to end ---- */
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){const t=a%b;a=b;b=t;}return a||1;}
+function rr(r){const g=gcd(r[0],r[1])||1;return [r[0]/g,r[1]/g];}
+function rmul(a,b){return rr([a[0]*b[0],a[1]*b[1]]);}
+function rdiv(a,b){return rr([a[0]*b[1],a[1]*b[0]]);}
+function rpow2(r,k){if(!k)return rr(r); return k>0?rr([r[0]*Math.pow(2,k),r[1]]):rr([r[0],r[1]*Math.pow(2,-k)]);}
+function ratioToHz(r){return BASE*r[0]/r[1];}
+function ratioEq(a,b){return a[0]*b[1]===b[0]*a[1];}
+function centsOf(r){return 1200*Math.log2(r[0]/r[1]);}
+function centsHz(hz){return 1200*Math.log2(hz/BASE);}
+
+/* ---- per-mode harmonic analysis: diatonic triad quality + the "diminished
+   trap" (a fifth-above-root that isn't a real perfect fifth, so that root
+   never takes a root-position triad — Phrygian's degree 7 and its kin) ---- */
+function analyzeMode(scale){
+  const c=scale.map(centsOf), quality=[], forceInv=[];
+  for(let i=0;i<7;i++){
+    const thirdC=c[(i+2)%7]+((i+2>=7)?1200:0)-c[i];
+    const fifthC=c[(i+4)%7]+((i+4>=7)?1200:0)-c[i];
+    quality.push(thirdC<350?'min':'maj');
+    forceInv.push(Math.abs(fifthC-701.955)>15);
+  }
+  return {quality,forceInv};
+}
+const MODE_ANALYSIS={};
+for(const m of MODES_ORDER) MODE_ANALYSIS[m]=analyzeMode(MODE_SCALE[m]);
+
+/* ratio of a chord-identity-tone above whichever tone the bass sounds */
+const ABOVE_BASS={
+  root: {maj:{root:[1,1],third:[5,4],fifth:[3,2]}, min:{root:[1,1],third:[6,5],fifth:[3,2]}},
+  third:{maj:{root:[8,5],third:[1,1],fifth:[6,5]}, min:{root:[5,3],third:[1,1],fifth:[5,4]}},
+};
+
+/* voice ranges as multiples of the mode's FINAL frequency */
+const RANGE_MULT={C:[2,4.5],A:[1.5,3],T:[1,2],B:[0.5,1.5]};
+
+/* ============================ LAW-END =============================== */
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function pickW(rng,items){ // items: [[value,weight],...]
+  const tot=items.reduce((s,it)=>s+it[1],0); let r=rng()*tot;
+  for(const it of items){r-=it[1];if(r<=0)return it[0];}
+  return items[items.length-1][0];
+}
+function shuffled(rng,arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+/* ============================ TEXT-BEGIN ==============================
+   The nine Good Friday responsories (Liber Usualis text, OFFICIUM.md §4.3).
+   Transcribed as plain phrase strings, split at : , . ? ; per §5.1; ¶ marks
+   the repetendum boundary (kept implicit — respond is pre-split into a/b
+   arrays already); obscurum indices flag phrases sung in low, piano
+   declamation (§4.4). A small mechanical syllabifier (below) applies the
+   OFFICIUM.md §4.3 rules — single intervocalic consonant to the following
+   syllable, double consonants split, qu/ch/th/ph/mute+liquid stay whole
+   and move to the following syllable, x is an ordinary single consonant —
+   and a heavy-penult stress heuristic (diphthong or closed syllable =
+   heavy => stressed; 2-syllable words always stress the first). Both are
+   validated against the brief's own worked example (crucifixissent →
+   cru·ci·fi·XIS·sent, Judaei → ju·DAE·i, Tenebrae → TE·ne·brae) before use
+   below. This is baked data, not a live prosody engine: it runs once at
+   load over the fixed word lists here, matching the letter of "an engine
+   is a thesis" — no per-listener/runtime Latin analysis ever happens.
+   ===================================================================== */
+const VOWELS='aeiouyAEIOUY';
+const DIPHTHONGS=['ae','oe','au','eu'];
+const isVow=ch=>VOWELS.indexOf(ch)>=0;
+const MUTE_LIQUID=/^(?:b|c|d|g|p|t|f)(?:r|l)$/;
+
+function syllabify(word){
+  const w=word.toLowerCase();
+  const nuclei=[]; let i=0;
+  while(i<w.length){
+    if(isVow(w[i])){
+      if(i+1<w.length && DIPHTHONGS.indexOf(w[i]+w[i+1])>=0){nuclei.push({s:i,e:i+2});i+=2;}
+      else {nuclei.push({s:i,e:i+1});i+=1;}
+    } else i++;
+  }
+  if(nuclei.length<=1) return [w];
+  const bounds=[0];
+  for(let k=1;k<nuclei.length;k++){
+    const cs=nuclei[k-1].e, ce=nuclei[k].s, cluster=w.slice(cs,ce);
+    let cut;
+    if(cluster.length===0) cut=cs;
+    else if(cluster.length===1) cut=cs; // single consonant (incl. x) goes with the following vowel
+    else{
+      const last2=cluster.slice(-2);
+      if(last2==='qu'||last2==='ch'||last2==='th'||last2==='ph'||MUTE_LIQUID.test(last2)) cut=ce-2;
+      else cut=cs+Math.ceil(cluster.length/2); // double consonants split between
+    }
+    bounds.push(cut);
+  }
+  bounds.push(w.length);
+  const syl=[];
+  for(let k=0;k<bounds.length-1;k++) syl.push(w.slice(bounds[k],bounds[k+1]));
+  return syl;
+}
+function nucleusOf(syl){
+  for(const d of DIPHTHONGS) if(syl.indexOf(d)>=0) return d;
+  for(const ch of syl) if(isVow(ch)) return ch;
+  return syl;
+}
+function vowelOf(syl){
+  const n=nucleusOf(syl);
+  if(n==='ae'||n==='oe') return 'e';
+  if(n==='au') return 'a';
+  if(n==='eu') return 'e';
+  if(n==='y') return 'i';
+  return n;
+}
+function isHeavy(syl){
+  if(DIPHTHONGS.indexOf(nucleusOf(syl))>=0) return true;
+  return !isVow(syl[syl.length-1]); // closed syllable
+}
+function stressIndex(syls){
+  const n=syls.length;
+  if(n<=1) return 0;
+  if(n===2) return 0;
+  return isHeavy(syls[n-2]) ? n-2 : n-3;
+}
+function wordInfo(word){
+  const syls=syllabify(word.replace(/[.,:;?¶℣]/g,''));
+  const stIdx=stressIndex(syls);
+  return syls.map((s,i)=>({t:s,v:vowelOf(s),str:i===stIdx}));
+}
+// self-check against OFFICIUM.md's own worked example — throws loudly in
+// console (not to the user) if the syllabifier regresses.
+(function selfCheckSyllabifier(){
+  try{
+    const cx=syllabify('crucifixissent').join('-');
+    const jd=syllabify('Judaei').join('-');
+    const tn=syllabify('Tenebrae').join('-');
+    if(cx!=='cru-ci-fi-xis-sent'||jd!=='ju-dae-i'||tn!=='te-ne-brae')
+      console.warn('TENEBRAE: syllabifier self-check mismatch',cx,jd,tn);
+  }catch(e){console.warn('TENEBRAE: syllabifier self-check failed',e);}
+})();
+
+function phrase(str,obscurum){
+  const words=str.trim().split(/\s+/);
+  return {words:words.map(wordInfo), text:str, obscurum:!!obscurum};
+}
+function P(str){return phrase(str,false);}
+function O(str){return phrase(str,true);} // obscurum phrase
+
+const RAW_TEXTS=[null,
+ { incipit:'Omnes amici mei', daCapo:false,
+   a:[P('Omnes amici mei dereliquerunt me,'),P('et praevaluerunt insidiantes mihi:'),P('tradidit me quem diligebam:')],
+   b:[P('Et terribilibus oculis plaga crudeli percutientes,'),P('aceto potabant me.')],
+   v:[P('Inter iniquos projecerunt me,'),P('et non pepercerunt animae meae.')] },
+ { incipit:'Velum templi', daCapo:false,
+   a:[P('Velum templi scissum est,')],
+   b:[P('et omnis terra tremuit:'),P('latro de cruce clamabat,'),P('dicens:'),P('Memento mei, Domine,'),P('dum veneris in regnum tuum.')],
+   v:[P('Petrae scissae sunt,'),P('et monumenta aperta sunt,'),P('et multa corpora sanctorum,'),P('qui dormierant,'),P('surrexerunt.')] },
+ { incipit:'Vinea mea electa', daCapo:true,
+   a:[P('Vinea mea electa,'),P('ego te plantavi:')],
+   b:[P('Quomodo conversa es in amaritudinem,'),P('ut me crucifigeres,'),P('et Barabbam dimitteres?')],
+   v:[P('Sepivi te,'),P('et lapides elegi ex te,'),P('et aedificavi turrim.')] },
+ { incipit:'Tamquam ad latronem', daCapo:false,
+   a:[P('Tamquam ad latronem existis cum gladiis et fustibus comprehendere me:'),P('quotidie apud vos eram in templo docens,'),P('et non me tenuistis:')],
+   b:[P('et ecce flagellatum ducitis ad crucifigendum.')],
+   v:[P('Cumque injecissent manus in Jesum,'),P('et tenuissent eum,'),P('dixit ad eos.')] },
+ { incipit:'Tenebrae factae sunt', daCapo:false,
+   a:[O('Tenebrae factae sunt,'),P('dum crucifixissent Jesum Judaei:'),P('et circa horam nonam exclamavit Jesus voce magna:'),P('Deus meus,'),P('ut quid me dereliquisti?')],
+   b:[P('Et inclinato capite,'),P('emisit spiritum.')],
+   v:[P('Exclamans Jesus voce magna,'),P('ait:'),P('Pater,'),P('in manus tuas commendo spiritum meum.')] },
+ { incipit:'Animam meam dilectam', daCapo:true,
+   a:[P('Animam meam dilectam tradidi in manus iniquorum,'),P('et facta est mihi haereditas mea sicut leo in silva:'),P('dedit contra me voces adversarius,'),P('dicens:'),P('Congregamini,'),P('et properate ad devorandum illum:'),O('posuerunt me in deserto solitudinis,'),P('et luxit super me omnis terra:')],
+   b:[P('Quia non est inventus qui me agnosceret,'),P('et faceret bene.')],
+   v:[P('Insurrexerunt in me viri absque misericordia,'),P('et non pepercerunt animae meae.')] },
+ { incipit:'Tradiderunt me', daCapo:false,
+   a:[P('Tradiderunt me in manus impiorum,'),P('et inter iniquos projecerunt me,'),P('et non pepercerunt animae meae:'),P('congregati sunt adversum me fortes:')],
+   b:[P('Et sicut gigantes steterunt contra me.')],
+   v:[P('Alieni insurrexerunt adversum me,'),P('et fortes quaesierunt animam meam.')] },
+ { incipit:'Jesum tradidit impius', daCapo:false,
+   a:[P('Jesum tradidit impius summis principibus sacerdotum,'),P('et senioribus populi:')],
+   b:[P('Petrus autem sequebatur eum a longe,'),P('ut videret finem.')],
+   v:[P('Adduxerunt autem eum ad Caipham principem sacerdotum,'),P('ubi scribae et pharisaei convenerant.')] },
+ { incipit:'Caligaverunt oculi mei', daCapo:true,
+   a:[O('Caligaverunt oculi mei a fletu meo:'),P('quia elongatus est a me,'),P('qui consolabatur me:')],
+   b:[P('Videte,'),P('omnes populi,'),P('si est dolor similis sicut dolor meus.')],
+   v:[P('O vos omnes,'),P('qui transitis per viam,'),P('attendite et videte.')] },
+];
+/* ============================ TEXT-END =============================== */
+
+/* ---- the candle law (§4.2, rubric-exact, not smoothed) ---- */
+function candlesOut(k){return 3*Math.ceil(k/3);}
+function candlesLitOf(k){return 15-candlesOut(k);}
+function nocturnOf(k){return Math.ceil(k/3)-1;} // 0,1,2
+
+/* ============================ ENGINE-BEGIN ==============================
+   The counterpoint engine (OFFICIUM.md §5). Deterministic per (seed,
+   responsory, mode, tactus). Rhythm unit: SM (semiminim) = 1 tick;
+   MIN(minim)=2; SB(semibreve)=4; BR(breve)=8. genAll() below produces the
+   complete flat event list before a note sounds; scheduler and offline
+   render both read the same events (house separation).
+
+   The rule kernel is ONE mechanism used everywhere: voiceChord() places
+   four voices over a bass drawn from the mode table (§3.1), retunes the
+   upper three as exact senario ratios above the SOUNDING bass (§3.3), and
+   rejects (bounded, seeded-order search over the 27 role-doubling
+   combinations) any candidate with a parallel/hidden perfect 5th or 8ve
+   between any pair, or with voices crossing. Cadence formulas (§5.5) are
+   baked, not searched — the one place the tradition itself is formulaic —
+   built from the same scaleDegreeRatio/ABOVE_BASS/placeInRange primitives
+   so ficta and the suspension-holds-its-frequency rule are exact.
+   ===================================================================== */
+const SM=1, MIN=2, SB=4, BR=8;
+
+function scaleDegreeRatio(mode,degExt){
+  let deg=degExt,oct=0;
+  while(deg>=7){deg-=7;oct++;}
+  while(deg<0){deg+=7;oct--;}
+  return rpow2(MODE_SCALE[mode][deg],oct);
+}
+function degreeOverBase(mode,degExt){return rmul(FINAL_RATIO[mode],scaleDegreeRatio(mode,degExt));}
+
+function meloIntervalBad(prevHz,hz){
+  if(!prevHz) return false;
+  // unsigned interval size — a DESCENDING whole tone (-182¢) is a whole
+  // tone, not (by wrapping into positive-mod-1200) a seventh; direction
+  // must not change what interval this is.
+  const c=Math.abs(1200*Math.log2(hz/prevHz));
+  return (c>560&&c<640) || (c>930&&c<1130); // tritone / 7th — §5.3 melodic rules
+}
+function placeInRange(ratio,voice,finalHz,prevHz){
+  const [loM,hiM]=RANGE_MULT[voice];
+  const loHz=finalHz*loM, hiHz=finalHz*hiM;
+  const baseHz=ratioToHz(ratio);
+  let cands=[];
+  for(let k=-6;k<=6;k++){const hz=baseHz*Math.pow(2,k); if(hz>=loHz*0.995&&hz<=hiHz*1.005) cands.push(k);}
+  if(!cands.length) for(let k=-8;k<=8;k++){const hz=baseHz*Math.pow(2,k); if(hz>=loHz*0.5&&hz<=hiHz*2) cands.push(k);}
+  if(!cands.length) cands=[0];
+  const target=prevHz||Math.sqrt(loHz*hiHz);
+  // prefer octave placements that don't land a melodic tritone/7th away from
+  // this voice's own previous note; fall back to all candidates if every
+  // in-range octave happens to be one (bounded, still deterministic).
+  const good=cands.filter(k=>!meloIntervalBad(prevHz,baseHz*Math.pow(2,k)));
+  const pool=good.length?good:cands;
+  let bestK=pool[0],bestD=Infinity;
+  for(const k of pool){const hz=baseHz*Math.pow(2,k); const d=Math.abs(Math.log2(hz/target)); if(d<bestD){bestD=d;bestK=k;}}
+  return rpow2(ratio,bestK);
+}
+function classifyPerfect(hzA,hzB){
+  let c=(1200*Math.log2(Math.max(hzA,hzB)/Math.min(hzA,hzB)))%1200;
+  if(c<0)c+=1200;
+  if(c<3||c>1197) return '8ve';
+  if(Math.abs(c-701.955)<3) return '5th';
+  return null;
+}
+function crossingOK(cur){
+  return !(cur.C.hz<cur.A.hz*0.999||cur.A.hz<cur.T.hz*0.999||cur.T.hz<cur.B.hz*0.999);
+}
+function melodicOK(prev,cur){
+  if(!prev) return true;
+  for(const v of ['C','A','T','B']) if(prev[v]&&cur[v]&&meloIntervalBad(prev[v].hz,cur[v].hz)) return false;
+  return true;
+}
+function parallelOK(prev,cur){
+  if(!prev) return true;
+  const voices=['C','A','T','B'];
+  for(let i=0;i<voices.length;i++) for(let j=i+1;j<voices.length;j++){
+    const v1=voices[i],v2=voices[j];
+    if(!prev[v1]||!prev[v2]) continue;
+    const pk=classifyPerfect(prev[v1].hz,prev[v2].hz), ck=classifyPerfect(cur[v1].hz,cur[v2].hz);
+    const d1=cur[v1].hz-prev[v1].hz, d2=cur[v2].hz-prev[v2].hz;
+    const m1=Math.abs(d1)>1e-6, m2=Math.abs(d2)>1e-6;
+    const sameDir=m1&&m2&&Math.sign(d1)===Math.sign(d2);
+    if(pk&&ck&&pk===ck&&sameDir) return false;
+    if(v1==='C'&&v2==='B'&&ck&&sameDir&&m1){
+      const cantusStep=Math.abs(1200*Math.log2(cur.C.hz/prev.C.hz));
+      if(cantusStep>250) return false;
+    }
+  }
+  return true;
+}
+function validateChordMotion(prev,cur){
+  return crossingOK(cur)&&melodicOK(prev,cur)&&parallelOK(prev,cur);
+}
+/* generic crossing repair for a {C,A,T,B} chord dict: octave-shift the
+   offending voice (within its own range) until C>=A>=T>=B holds. Used as a
+   safety net after the hand-built cadence formulas, which place each
+   voice's pitch independently and don't share voiceChord's joint search. */
+function repairCrossing(chord,finalHz,frozen){
+  const order=['C','A','T','B'];
+  const isFrozen=v=>frozen&&frozen.indexOf(v)>=0;
+  for(let pass=0;pass<4;pass++){
+    let fixed=false;
+    for(let i=0;i<order.length-1;i++){
+      const vU=order[i],vD=order[i+1];
+      if(!chord[vU]||!chord[vD]) continue;
+      if(chord[vU].hz<chord[vD].hz-1){
+        const [loD,hiD]=RANGE_MULT[vD], [loU,hiU]=RANGE_MULT[vU];
+        const downHz=chord[vD].hz/2, upHz=chord[vU].hz*2;
+        // a suspension's held voice must never be moved to fix crossing —
+        // its exact frequency IS the law (§3.3, §12) — so try the other
+        // voice, or leave the crossing unresolved for this pair.
+        if(!isFrozen(vD) && downHz>=finalHz*loD*0.99){
+          chord[vD]={ratio:rpow2(chord[vD].ratio,-1),hz:downHz,role:chord[vD].role};
+          fixed=true;
+        } else if(!isFrozen(vU) && upHz<=finalHz*hiU*1.01){
+          chord[vU]={ratio:rpow2(chord[vU].ratio,1),hz:upHz,role:chord[vU].role};
+          fixed=true;
+        }
+      }
+    }
+    if(!fixed) break;
+  }
+  return chord;
+}
+function voiceChord(rng,prevHz,mode,rootDeg,inversion){
+  const finalHz=ratioToHz(FINAL_RATIO[mode]);
+  const qualArr=MODE_ANALYSIS[mode].quality, forceArr=MODE_ANALYSIS[mode].forceInv;
+  let rd=((rootDeg%7)+7)%7;
+  if(forceArr[rd]) inversion=1;
+  const quality=qualArr[rd];
+  const bassDeg=inversion===0?rd:rd+2;
+  const bassRatioRaw=degreeOverBase(mode,bassDeg);
+  const bassRatio=placeInRange(bassRatioRaw,'B',finalHz,prevHz&&prevHz.B&&prevHz.B.hz);
+  const bassHz=ratioToHz(bassRatio);
+  const bassIdentity=inversion===0?'root':'third';
+  const identities=inversion===0?['root','third','fifth']:['third','fifth','root'];
+  const combos=[];
+  for(const t of identities) for(const a of identities) for(const c of identities) combos.push([t,a,c]);
+  const order=shuffled(rng,combos);
+  function buildCombo(combo){
+    const cand={B:{ratio:bassRatio,hz:bassHz,role:bassIdentity}};
+    const pairs=[['T',combo[0]],['A',combo[1]],['C',combo[2]]];
+    for(const [voice,ident] of pairs){
+      const above=ABOVE_BASS[bassIdentity][quality][ident];
+      const raw=rmul(bassRatio,above);
+      const placed=placeInRange(raw,voice,finalHz,prevHz&&prevHz[voice]&&prevHz[voice].hz);
+      cand[voice]={ratio:placed,hz:ratioToHz(placed),role:ident};
+    }
+    return cand;
+  }
+  // bounded, tiered relaxation: crossing is never negotiable; parallel
+  // motion is dropped before melodic legality, since a stray parallel is
+  // a smaller lapse than a tritone/7th leap — documented pearl points,
+  // not silent failures, and still fully deterministic per seed.
+  const cands=order.map(buildCombo);
+  for(const cand of cands) if(crossingOK(cand)&&melodicOK(prevHz,cand)&&parallelOK(prevHz,cand)) return cand;
+  for(const cand of cands) if(crossingOK(cand)&&melodicOK(prevHz,cand)) return cand;
+  for(const cand of cands) if(crossingOK(cand)) return cand;
+  return cands[0];
+}
+
+/* ---- passing/neighbor decoration (free-polyphony texture) ---- */
+function nearestDegreeBetween(mode,finalHz,loHz,hiHz,voice){
+  const [loM,hiM]=RANGE_MULT[voice]||[0,Infinity];
+  const rLo=finalHz*loM*0.97, rHi=finalHz*hiM*1.03;
+  let best=null,bestDist=Infinity;
+  for(let k=-4;k<=4;k++) for(let d=0;d<7;d++){
+    const hz=ratioToHz(rpow2(degreeOverBase(mode,d),k));
+    if(hz<rLo||hz>rHi) continue;
+    if(hz>loHz*1.003&&hz<hiHz*0.997){const dist=Math.abs(Math.log2(hz/((loHz+hiHz)/2))); if(dist<bestDist){bestDist=dist;best=rpow2(degreeOverBase(mode,d),k);}}
+  }
+  return best;
+}
+function nearestDegreeStep(mode,fromHz,dir,finalHz,voice){
+  const [loM,hiM]=RANGE_MULT[voice]||[0,Infinity];
+  const rLo=finalHz*loM*0.97, rHi=finalHz*hiM*1.03;
+  let best=null,bestDist=Infinity;
+  for(let k=-4;k<=4;k++) for(let d=0;d<7;d++){
+    const hz=ratioToHz(rpow2(degreeOverBase(mode,d),k));
+    if(hz<rLo||hz>rHi) continue;
+    const diff=(hz-fromHz)*dir;
+    if(diff>1e-6){const dist=Math.abs(Math.log2(hz/fromHz)); if(dist<bestDist){bestDist=dist;best=rpow2(degreeOverBase(mode,d),k);}}
+  }
+  return best;
+}
+
+/* ---- cadence formulas (§5.5, §3.2 ficta) — baked, not searched ----
+   Fixed cadential functions: Cantus=cantizans, Tenor=tenorizans,
+   Bassus=bassus, Altus=filler (a generative simplification of a role that,
+   historically, could migrate between voices; fixing it keeps the search
+   bounded and the machine deterministic). Each returns {events:[...],
+   endHz:{C,A,T,B}} where events are {voice,dur,ratio,role,beat}. */
+function fillAltus(rng,bassRatio,quality,preferIdent,finalHz,prevHz,prevBassHz){
+  const bassHz=ratioToHz(bassRatio);
+  const idents=preferIdent==='fifth'?['fifth','third']:preferIdent==='root'?['root']:[preferIdent,'fifth','third'];
+  for(const ident of idents){
+    if(!ABOVE_BASS.root[quality][ident]) continue;
+    const placed=placeInRange(rmul(bassRatio,ABOVE_BASS.root[quality][ident]),'A',finalHz,prevHz);
+    const hz=ratioToHz(placed);
+    if(prevHz&&prevBassHz){
+      const pk=classifyPerfect(prevHz,prevBassHz), ck=classifyPerfect(hz,bassHz);
+      const d1=hz-prevHz, d2=bassHz-prevBassHz;
+      const sameDir=Math.abs(d1)>1e-6&&Math.abs(d2)>1e-6&&Math.sign(d1)===Math.sign(d2);
+      if(pk&&ck&&pk===ck&&sameDir) continue; // try the next identity option
+    }
+    return placed;
+  }
+  return placeInRange(rmul(bassRatio,ABOVE_BASS.root[quality][preferIdent]),'A',finalHz,prevHz); // relaxation
+}
+function genClausulaVera(rng,mode,targetDeg,prevHz,opts){
+  opts=opts||{};
+  const finalHz=ratioToHz(FINAL_RATIO[mode]);
+  const evaded=!!opts.evaded, veryFinal=!!opts.veryFinal;
+  // penult: bass on the dominant of the target, held through both the
+  // suspension and its resolution (the bass doesn't move again until the
+  // arrival leap).
+  const penultBass=placeInRange(degreeOverBase(mode,targetDeg+4),'B',finalHz,prevHz&&prevHz.B&&prevHz.B.hz);
+  const penultBassHz=ratioToHz(penultBass);
+  const penultQual=MODE_ANALYSIS[mode].quality[((targetDeg+4)%7+7)%7];
+  // tenorizans is scale-degree "the step above the final" (falls to it),
+  // but §3.3's vertical justice means it's TUNED as the exact senario
+  // third above the sounding (dominant) bass, not read off the mode table
+  // directly — the two pitch-class ideas coincide, but a raw table lookup
+  // can land on a wolf interval against this particular bass (the same
+  // "verticals never read two table entries at once" gotcha the wolf-pair
+  // note in §3.1 flags).
+  const tenPenult=placeInRange(rmul(penultBass,ABOVE_BASS.root[penultQual].third),'T',finalHz,prevHz&&prevHz.T&&prevHz.T.hz);
+  const altPenult=fillAltus(rng,penultBass,penultQual,'fifth',finalHz,prevHz&&prevHz.A&&prevHz.A.hz,prevHz&&prevHz.B&&prevHz.B.hz);
+
+  // cantizans: 7-6 suspension — HOLD the exact frequency voice C was
+  // already singing (the true preparation: struck earlier as a tone in
+  // its own right, now dissonant against the moved bass), then resolve
+  // DOWN BY STEP to the ficta-raised leading tone (§3.2, exactly 15/8
+  // over the cadence root). Cantus's range spans barely more than an
+  // octave, so the ficta pitch class can have only ONE valid placement
+  // there — occasionally that placement sits a tritone/7th from the held
+  // note (a geometric fact, not a search failure — see HANDOFF's open
+  // thread on this machine for the honest residual rate).
+  const ltRatioRaw=rmul(degreeOverBase(mode,targetDeg),FICTA_RATIO);
+  const hasPrep=!!(prevHz&&prevHz.C&&prevHz.C.ratio);
+  const cantHold = hasPrep ? prevHz.C.ratio : placeInRange(rmul(ltRatioRaw,[9,8]),'C',finalHz,null);
+  const cantHoldHz=ratioToHz(cantHold);
+  const cantRes=placeInRange(ltRatioRaw,'C',finalHz,cantHoldHz);
+  const cantResHz=ratioToHz(cantRes);
+
+  const hold={B:{ratio:penultBass,hz:penultBassHz,role:'root'},
+    C:{ratio:cantHold,hz:cantHoldHz,role:hasPrep?'susp':'third'},
+    T:{ratio:tenPenult,hz:ratioToHz(tenPenult),role:'fifth'},
+    A:{ratio:altPenult,hz:ratioToHz(altPenult),role:'fifth'}};
+  const resolve={B:{ratio:penultBass,hz:penultBassHz,role:'root'},
+    C:{ratio:cantRes,hz:cantResHz,role:'res'},
+    T:{ratio:tenPenult,hz:ratioToHz(tenPenult),role:'fifth'},
+    A:{ratio:altPenult,hz:ratioToHz(altPenult),role:'fifth'}};
+
+  const arrDeg = evaded ? targetDeg+5 : targetDeg;
+  const arrBassRatio=placeInRange(degreeOverBase(mode,arrDeg),'B',finalHz,penultBassHz);
+  const arrBassHz=ratioToHz(arrBassRatio);
+  let arrQual = evaded ? MODE_ANALYSIS[mode].quality[((arrDeg%7)+7)%7] : 'maj';
+  if(veryFinal) arrQual = rng()<0.7 ? 'maj':'open';
+  const cantArrRaw = evaded ? rmul(arrBassRatio,ABOVE_BASS.root[arrQual==='open'?'maj':arrQual].third)
+                            : degreeOverBase(mode,targetDeg);
+  const cantArr = placeInRange(cantArrRaw,'C',finalHz,cantResHz);
+  const tenArrRaw = evaded ? rmul(arrBassRatio,ABOVE_BASS.root[arrQual==='open'?'maj':arrQual].third) : degreeOverBase(mode,targetDeg);
+  const tenArr = placeInRange(tenArrRaw,'T',finalHz,ratioToHz(tenPenult));
+  const altIdent = arrQual==='open' ? 'root' : 'third';
+  const altArr = fillAltus(rng,arrBassRatio,arrQual==='open'?'maj':arrQual,evaded?'fifth':altIdent,finalHz,ratioToHz(altPenult),penultBassHz);
+  const arrival={B:{ratio:arrBassRatio,hz:arrBassHz,role:'root'},
+    C:{ratio:cantArr,hz:ratioToHz(cantArr),role:evaded?'third':'root'},
+    T:{ratio:tenArr,hz:ratioToHz(tenArr),role:evaded?'third':'root'},
+    A:{ratio:altArr,hz:ratioToHz(altArr),role:altIdent}};
+  repairCrossing(hold,finalHz,hasPrep?['C']:null); // the held suspension's frequency is law — never shift it
+  resolve.B=hold.B; resolve.T=hold.T; resolve.A=hold.A;
+  repairCrossing(resolve,finalHz);
+  repairCrossing(arrival,finalHz);
+  return {hold,resolve,arrival,endHz:arrival};
+}
+function genPhrygianClausula(rng,mode,prevHz,opts){
+  opts=opts||{};
+  const finalHz=ratioToHz(FINAL_RATIO[mode]);
+  const veryFinal=!!opts.veryFinal;
+  const penultBassRaw=rdiv(degreeOverBase(mode,0),[4,3]); // final approached from a 4th below
+  const penultBass=placeInRange(penultBassRaw,'B',finalHz,prevHz&&prevHz.B&&prevHz.B.hz);
+  const cantPenultRaw=degreeOverBase(mode,-1); // the natural step below final, no ficta
+  const cantPenult=placeInRange(cantPenultRaw,'C',finalHz,prevHz&&prevHz.C&&prevHz.C.hz);
+  const penultQual=MODE_ANALYSIS[mode].quality[4]; // the bass's own scale degree (a 4th below = degree index 4, folded)
+  // tenorizans is scale-degree "the step above final, falling to it" but,
+  // as in genClausulaVera above, tuned as the exact senario third above
+  // the sounding bass (§3.3) rather than read off the mode table, which
+  // can land on a wolf interval against this specific bass.
+  const tenPenult=placeInRange(rmul(penultBass,ABOVE_BASS.root[penultQual].third),'T',finalHz,prevHz&&prevHz.T&&prevHz.T.hz);
+  const altPenult=fillAltus(rng,penultBass,penultQual,'fifth',finalHz,prevHz&&prevHz.A&&prevHz.A.hz,prevHz&&prevHz.B&&prevHz.B.hz);
+  const stage={B:{ratio:penultBass,hz:ratioToHz(penultBass),role:'root'},
+    C:{ratio:cantPenult,hz:ratioToHz(cantPenult),role:'third'},
+    T:{ratio:tenPenult,hz:ratioToHz(tenPenult),role:'fifth'},
+    A:{ratio:altPenult,hz:ratioToHz(altPenult),role:'fifth'}};
+  const arrBass=placeInRange(degreeOverBase(mode,0),'B',finalHz,ratioToHz(penultBass));
+  const arrQual='maj'; // always a major 4:5:6 on the Phrygian final — the characteristic sound
+  const cantArr=placeInRange(degreeOverBase(mode,0),'C',finalHz,ratioToHz(cantPenult));
+  const tenArr=placeInRange(degreeOverBase(mode,0),'T',finalHz,ratioToHz(tenPenult));
+  const altArr=fillAltus(rng,arrBass,arrQual,'third',finalHz,ratioToHz(altPenult),ratioToHz(penultBass));
+  const arrival={B:{ratio:arrBass,hz:ratioToHz(arrBass),role:'root'},
+    C:{ratio:cantArr,hz:ratioToHz(cantArr),role:'root'},
+    T:{ratio:tenArr,hz:ratioToHz(tenArr),role:'root'},
+    A:{ratio:altArr,hz:ratioToHz(altArr),role:'third'}};
+  repairCrossing(stage,finalHz);
+  repairCrossing(arrival,finalHz);
+  return {hold:stage,resolve:stage,arrival,endHz:arrival};
+}
+function genPlagal(rng,mode,targetDeg,prevHz){
+  const c1=voiceChord(rng,prevHz,mode,targetDeg+3,0);
+  const c2=voiceChord(rng,c1,mode,targetDeg,0);
+  return {penult:c1,arrival:c2,endHz:c2};
+}
+
+/* ---- soggetto: the head motif for imitation points (§5.2) ----
+   degs[] are scale-STEP offsets from the entry tone (0 = the entry tone
+   itself); first interval a leap (4th/5th up, or a 3rd down), thereafter
+   stepwise with at most one more leap <=4th in the opposite direction. */
+function genSoggetto(rng,openingWords){
+  const n=4+Math.floor(rng()*4); // 4-7 notes
+  const firstLeap=pickW(rng,[[4,.4],[5,.3],[-2,.3]]);
+  const degs=[0,firstLeap];
+  let leapsUsed=1;
+  for(let i=2;i<n;i++){
+    const prev=degs[i-1];
+    let next;
+    if(leapsUsed<2 && rng()<0.18){
+      const mag=2+Math.floor(rng()*2); // a 3rd or 4th
+      next = prev + (firstLeap>0 ? -mag : mag); // opposite direction of the opening leap
+      leapsUsed++;
+    } else {
+      next = prev + (rng()<0.5?1:-1);
+    }
+    degs.push(next);
+  }
+  const flatSyls=[]; for(const w of openingWords) for(const s of w) flatSyls.push(s);
+  const durs=[];
+  for(let i=0;i<n;i++){
+    const s=flatSyls[i%Math.max(flatSyls.length,1)];
+    durs.push(s&&s.str ? SB : MIN);
+  }
+  return {degs,durs};
+}
+
+/* ---- harmony-skeleton helpers ---- */
+function nextRootDeg(rng,prevDeg){
+  const bucket=pickW(rng,[['45',.45],['3',.25],['2',.30]]);
+  const dir=rng()<0.5?1:-1;
+  const step = bucket==='45' ? (rng()<0.5?3:4) : (bucket==='3'?2:1);
+  return prevDeg+dir*step;
+}
+function pickInversion(rng){return rng()<0.7?0:1;}
+function flattenSyllables(words){const out=[]; for(const w of words) for(const s of w) out.push(s); return out;}
+function mkEvent(voice,t0,dur,ratio,role,syl,obscurum,strong,isArrival){
+  return {voice,t0,dur,n:ratio[0],d:ratio[1],vowel:syl?syl.v:'a',role,
+    text:syl?syl.t:'', stressed:syl?syl.str:false,
+    obscurum:!!obscurum, beat:strong?'strong':'weak', isArrival:!!isArrival};
+}
+/* ---- declamation / obscurum: chordal, one chord (mostly) per syllable ---- */
+function genDeclamation(rng,mode,finalHz,syls,target,isLastOfSection,veryFinal,prevHz,prevRootDeg,obscurum){
+  const events=[]; let t=0, rootDeg=(prevRootDeg==null?Math.floor(rng()*7):prevRootDeg), cur=prevHz;
+  const targetDeg=target==='final'?0:COFINAL_DEG[mode];
+  const n=syls.length;
+  for(let i=0;i<n-1;i++){
+    const s=syls[i], strong=(t%SB===0);
+    const dur = s.str ? pickW(rng,[[MIN,.7],[SB,.3]]) : MIN;
+    if(!obscurum || i%2===0) rootDeg=nextRootDeg(rng,rootDeg);
+    const inv=pickInversion(rng);
+    const chord=voiceChord(rng,cur,mode,rootDeg,inv);
+    for(const v of ['C','A','T','B']) events.push(mkEvent(v,t,dur,chord[v].ratio,chord[v].role,s,obscurum,strong));
+    cur=chord; t+=dur;
+  }
+  const evaded=!isLastOfSection && rng()<0.35;
+  const usePhrygian = mode==='phrygian' && target==='final' && isLastOfSection && !evaded;
+  const cad = usePhrygian ? genPhrygianClausula(rng,mode,cur,{veryFinal})
+                          : genClausulaVera(rng,mode,targetDeg,cur,{evaded,veryFinal});
+  const lastSyl=syls[n-1]||syls[0];
+  const strongH=(t%SB===0);
+  for(const v of ['C','A','T','B']){const e=mkEvent(v,t,MIN,cad.hold[v].ratio,cad.hold[v].role,lastSyl,obscurum,strongH);e.cadence=true;events.push(e);}
+  t+=MIN;
+  const strongR=(t%SB===0);
+  for(const v of ['C','A','T','B']){const e=mkEvent(v,t,MIN,cad.resolve[v].ratio,cad.resolve[v].role,lastSyl,obscurum,strongR);e.cadence=true;events.push(e);}
+  t+=MIN;
+  const strongA=(t%SB===0);
+  for(const v of ['C','A','T','B']){const e=mkEvent(v,t,SB,cad.arrival[v].ratio,cad.arrival[v].role,lastSyl,obscurum,strongA,true);e.cadence=true;events.push(e);}
+  t+=SB;
+  return {events, durTicks:t, endHz:cad.arrival, endRootDeg: evaded?targetDeg+5:targetDeg};
+}
+
+/* ---- falsobordone (verse): 3 voices CAT, tenor on the cofinal recitation ---- */
+function genFalsobordone(rng,mode,finalHz,syls,prevHz){
+  const events=[]; let t=0;
+  const cofinalDeg=COFINAL_DEG[mode];
+  const tenorRatio=placeInRange(degreeOverBase(mode,cofinalDeg),'T',finalHz,prevHz&&prevHz.T&&prevHz.T.hz);
+  const quality=MODE_ANALYSIS[mode].quality[cofinalDeg];
+  const cantRatio=placeInRange(rmul(tenorRatio,ABOVE_BASS.root[quality].third),'C',finalHz,prevHz&&prevHz.C&&prevHz.C.hz);
+  const altRatio=placeInRange(rmul(tenorRatio,ABOVE_BASS.root[quality].fifth),'A',finalHz,prevHz&&prevHz.A&&prevHz.A.hz);
+  const held={T:{ratio:tenorRatio,role:'root'},C:{ratio:cantRatio,role:'third'},A:{ratio:altRatio,role:'fifth'}};
+  const n=syls.length, cadenceSyls=Math.min(3,n), reciteCount=n-cadenceSyls;
+  for(let i=0;i<reciteCount;i++){
+    const s=syls[i], strong=(t%SB===0);
+    const dur = (i===reciteCount-1) ? SB : MIN;
+    for(const v of ['T','C','A']) events.push(mkEvent(v,t,dur,held[v].ratio,held[v].role,s,false,strong));
+    t+=dur;
+  }
+  let cur={T:{ratio:tenorRatio,hz:ratioToHz(tenorRatio)},C:{ratio:cantRatio,hz:ratioToHz(cantRatio)},
+    A:{ratio:altRatio,hz:ratioToHz(altRatio)},B:{ratio:rpow2(tenorRatio,-1),hz:ratioToHz(tenorRatio)/2}};
+  for(let i=reciteCount;i<n-1;i++){
+    const s=syls[i], strong=(t%SB===0), dur=MIN;
+    const rootDeg=cofinalDeg+(rng()<0.5?1:-1), inv=pickInversion(rng);
+    const chord=voiceChord(rng,cur,mode,rootDeg,inv);
+    for(const v of ['C','A','T']) events.push(mkEvent(v,t,dur,chord[v].ratio,chord[v].role,s,false,strong));
+    cur=chord; t+=dur;
+  }
+  const lastSyl=syls[n-1]||syls[0];
+  const cad=genClausulaVera(rng,mode,cofinalDeg,cur,{evaded:false,veryFinal:false});
+  const strongH=(t%SB===0);
+  for(const v of ['C','A','T']) events.push(mkEvent(v,t,MIN,cad.hold[v].ratio,cad.hold[v].role,lastSyl,false,strongH));
+  t+=MIN;
+  const strongR=(t%SB===0);
+  for(const v of ['C','A','T']) events.push(mkEvent(v,t,MIN,cad.resolve[v].ratio,cad.resolve[v].role,lastSyl,false,strongR));
+  t+=MIN;
+  const strongA=(t%SB===0);
+  for(const v of ['C','A','T']) events.push(mkEvent(v,t,SB,cad.arrival[v].ratio,cad.arrival[v].role,lastSyl,false,strongA,true));
+  t+=SB;
+  return {events, durTicks:t, endHz:{C:cad.arrival.C,A:cad.arrival.A,T:cad.arrival.T,B:null}, endRootDeg:cofinalDeg};
+}
+
+/* ---- overlap validator for staggered imitative entries ---- */
+function checkOverlapValid(voiceNotes){
+  const times=new Set();
+  for(const v of ['C','A','T','B']) for(const nt of voiceNotes[v]) times.add(nt.t0);
+  const sorted=[...times].sort((a,b)=>a-b);
+  function soundingAt(t){
+    const out={};
+    for(const v of ['C','A','T','B']){
+      let cur=null;
+      for(const nt of voiceNotes[v]) if(nt.t0<=t+1e-9) cur=nt; else break;
+      if(cur && t<cur.t0+cur.dur+1e-6) out[v]=cur.hz;
+    }
+    return out;
+  }
+  let prevSnap=null;
+  for(const t of sorted){
+    const snap=soundingAt(t);
+    // crossing: whichever of C/A/T/B are already sounding must stay ordered
+    const order=['C','A','T','B'].filter(v=>snap[v]!==undefined);
+    for(let i=0;i<order.length-1;i++) if(snap[order[i]]<snap[order[i+1]]-1) return false;
+    // every sounding upper voice must be consonant against the sounding
+    // bass — soggetto entries carry no passing/neighbor/suspension role,
+    // so nothing here is allowed to be dissonant.
+    if(snap.B!==undefined) for(const v of ['C','A','T']) if(snap[v]!==undefined && !isBassConsonant(snap[v],snap.B)) return false;
+    if(prevSnap){
+      const voices=Object.keys(snap).filter(v=>prevSnap[v]!==undefined);
+      for(let i=0;i<voices.length;i++) for(let j=i+1;j<voices.length;j++){
+        const v1=voices[i],v2=voices[j];
+        const pk=classifyPerfect(prevSnap[v1],prevSnap[v2]), ck=classifyPerfect(snap[v1],snap[v2]);
+        const d1=snap[v1]-prevSnap[v1], d2=snap[v2]-prevSnap[v2];
+        const m1=Math.abs(d1)>1e-6, m2=Math.abs(d2)>1e-6;
+        if(pk&&ck&&pk===ck&&m1&&m2&&Math.sign(d1)===Math.sign(d2)) return false;
+      }
+    }
+    prevSnap=snap;
+  }
+  return true;
+}
+const PERMS4=(()=>{
+  const a=['C','A','T','B'], out=[];
+  (function perm(arr,k){
+    if(k===arr.length){out.push(arr.slice());return;}
+    for(let i=k;i<arr.length;i++){[arr[k],arr[i]]=[arr[i],arr[k]];perm(arr,k+1);[arr[k],arr[i]]=[arr[i],arr[k]];}
+  })(a,0);
+  return out;
+})();
+
+/* ---- imitation point: soggetto + staggered entries + free-counterpoint tail ---- */
+/* consonances against a sounding bass (§5.3) — NOT the same set as "between
+   upper voices", where 4/3 also counts consonant; against the bass 4/3 is
+   the dissonant 4th, so it is deliberately absent here. */
+const BASS_CONS_CENTS=[0,315.641,386.314,701.955,813.686,884.359];
+function isBassConsonant(hz,bassHz){
+  let c=((1200*Math.log2(hz/bassHz))%1200+1200)%1200;
+  for(const sc of BASS_CONS_CENTS) if(Math.abs(c-sc)<4) return true;
+  return false;
+}
+function nearestConsonantScaleTone(mode,finalHz,voice,targetHz,bassHz,melodyRefHz){
+  const [loM,hiM]=RANGE_MULT[voice];
+  const cands=[];
+  for(let k=-4;k<=4;k++) for(let d=0;d<7;d++){
+    const ratio=rpow2(degreeOverBase(mode,d),k);
+    const hz=ratioToHz(ratio);
+    if(hz<finalHz*loM*0.97||hz>finalHz*hiM*1.03) continue;
+    if(!isBassConsonant(hz,bassHz)) continue;
+    cands.push({ratio,hz});
+  }
+  const clean=melodyRefHz?cands.filter(c=>!meloIntervalBad(melodyRefHz,c.hz)):cands;
+  const pool=clean.length?clean:cands;
+  let best=null,bestDist=Infinity;
+  for(const c of pool){const dist=Math.abs(Math.log2(c.hz/targetHz)); if(dist<bestDist){bestDist=dist;best=c.ratio;}}
+  return best;
+}
+/* A held note can outlast the bass note it was consonant against — the
+   bass keeps walking its own soggetto line underneath. Split the held
+   note at every such bass onset and re-derive the later segment against
+   the new bass (§3.3's "re-derive at each onset", extended to bass
+   CHANGES under a sustain, not just the upper voice's own onsets) —
+   otherwise a held tone can go dissonant partway through with nothing to
+   classify it as passing/neighbor/suspension. */
+function retuneAgainstMovingBass(vn,mode,finalHz){
+  if(!vn.B.length) return;
+  for(const voice of ['C','A','T']){
+    const out=[];
+    for(const nt of vn[voice]){
+      const innerOnsets=vn.B.map(b=>b.t0).filter(t=>t>nt.t0+1e-9&&t<nt.t0+nt.dur-1e-9).sort((a,b)=>a-b);
+      let cursor=nt.t0, curRatio=nt.ratio, curHz=nt.hz;
+      for(const bt of innerOnsets){
+        out.push(Object.assign({},nt,{t0:cursor,dur:bt-cursor,ratio:curRatio,hz:curHz}));
+        cursor=bt;
+        let bassHz=null; for(const b of vn.B) if(b.t0<=bt+1e-9) bassHz=b.hz; else break;
+        if(bassHz && !isBassConsonant(curHz,bassHz)){
+          const snapped=nearestConsonantScaleTone(mode,finalHz,voice,curHz,bassHz,curHz);
+          if(snapped){curRatio=snapped; curHz=ratioToHz(snapped);}
+        }
+      }
+      out.push(Object.assign({},nt,{t0:cursor,dur:nt.t0+nt.dur-cursor,ratio:curRatio,hz:curHz}));
+    }
+    vn[voice]=out.filter(e=>e.dur>1e-6);
+  }
+}
+const VOICE_ORDER_IDX={C:0,A:1,T:2,B:3};
+function genImitation(rng,mode,finalHz,syls,target,isLastOfSection,veryFinal,prevHz){
+  const soggetto=genSoggetto(rng, syls.slice(0,Math.min(4,syls.length)).map(s=>[s]));
+  /* Build every voice's entries in GLOBAL CHRONOLOGICAL order (interleaved
+     across voices, not one whole voice at a time), so each new note is
+     placed with full knowledge of whatever is already sounding elsewhere.
+     For each note, try the soggetto's own intended scale degree first,
+     then nearby degrees (±1, ±2, ±3 steps) — first candidate that is
+     senario-consonant against whatever bass is currently sounding (or, if
+     THIS is the bass note, keeps whatever upper voices are already
+     sounding consonant against it) and doesn't cross an adjacent
+     already-sounding voice wins; ties broken by nearest pitch and by
+     avoiding a melodic tritone/7th from this voice's own previous note.
+     A truly independent stretto of four transposed copies of one melodic
+     shape cannot otherwise guarantee §5.3's vertical law by construction
+     alone — this is the bounded, deterministic search that makes it hold. */
+  function buildFor(order){
+    const items=[];
+    for(let i=0;i<4;i++){
+      const voice=order[i], baseDeg=(i%2===0)?0:COFINAL_DEG[mode];
+      let tcur=i*SB;
+      for(let j=0;j<soggetto.degs.length;j++){
+        items.push({voice,t0:tcur,dur:soggetto.durs[j],deg:baseDeg+soggetto.degs[j],j});
+        tcur+=soggetto.durs[j];
+      }
+    }
+    items.sort((a,b)=> a.t0-b.t0 || VOICE_ORDER_IDX[order[0]]);
+    const vn={C:[],A:[],T:[],B:[]};
+    const lastHz={};
+    for(const it of items){
+      const {voice,t0,dur,deg}=it;
+      const sounding={};
+      for(const v of ['C','A','T','B']){
+        if(v===voice) continue;
+        let cur=null; for(const nt of vn[v]) if(nt.t0<=t0+1e-9) cur=nt; else break;
+        if(cur) sounding[v]=cur.hz;
+      }
+      const offsets=[0,1,-1,2,-2,3,-3];
+      let chosen=null;
+      for(const off of offsets){
+        const placed=placeInRange(degreeOverBase(mode,deg+off),voice,finalHz,lastHz[voice]);
+        const hz=ratioToHz(placed);
+        let ok=true;
+        if(voice==='B'){
+          for(const v of ['C','A','T']) if(sounding[v]!==undefined && !isBassConsonant(sounding[v],hz)){ok=false;break;}
+        } else if(sounding.B!==undefined && !isBassConsonant(hz,sounding.B)){
+          ok=false;
+        }
+        if(ok) for(const v in sounding){
+          if(VOICE_ORDER_IDX[voice]<VOICE_ORDER_IDX[v] && hz<sounding[v]-1) ok=false;
+          if(VOICE_ORDER_IDX[voice]>VOICE_ORDER_IDX[v] && hz>sounding[v]+1) ok=false;
+        }
+        if(ok && lastHz[voice]!==undefined && meloIntervalBad(lastHz[voice],hz)) ok=false;
+        if(ok){chosen={ratio:placed,hz}; break;}
+      }
+      if(!chosen){ // relaxation: bounded search exhausted, take the intended degree (documented pearl point)
+        const placed=placeInRange(degreeOverBase(mode,deg),voice,finalHz,lastHz[voice]);
+        chosen={ratio:placed,hz:ratioToHz(placed)};
+      }
+      vn[voice].push({t0,dur,ratio:chosen.ratio,hz:chosen.hz});
+      lastHz[voice]=chosen.hz;
+    }
+    for(const v of ['C','A','T','B']) vn[v].sort((a,b)=>a.t0-b.t0);
+    retuneAgainstMovingBass(vn,mode,finalHz);
+    return vn;
+  }
+  const orderPerms=shuffled(rng,PERMS4);
+  let voiceNotes=null;
+  for(const order of orderPerms){const vn=buildFor(order); if(checkOverlapValid(vn)){voiceNotes=vn;break;}}
+  if(!voiceNotes) voiceNotes=buildFor(orderPerms[0]); // relaxation: bounded search exhausted (documented pearl point)
+
+  const events=[];
+  for(const v of ['C','A','T','B']){
+    for(let j=0;j<voiceNotes[v].length;j++){
+      const nt=voiceNotes[v][j];
+      const s=syls[Math.min(j,syls.length-1)];
+      const strong=(nt.t0%SB===0);
+      events.push(mkEvent(v,nt.t0,nt.dur,nt.ratio,j===0?'entry':'step',s,false,strong));
+    }
+  }
+  let contStart=0;
+  for(const v of ['C','A','T','B']){const arr=voiceNotes[v]; const last=arr[arr.length-1]; contStart=Math.max(contStart,last.t0+last.dur);}
+  const endHz={};
+  for(const v of ['C','A','T','B']){const arr=voiceNotes[v]; const last=arr[arr.length-1]; endHz[v]={hz:last.hz,ratio:last.ratio};}
+
+  const consumed=Math.min(soggetto.degs.length, Math.max(syls.length-1,1));
+  const restSyls = syls.slice(consumed).length ? syls.slice(consumed) : [syls[syls.length-1]];
+  const targetDeg=target==='final'?0:COFINAL_DEG[mode];
+  const tail=genDeclamation(rng,mode,finalHz,restSyls,target,isLastOfSection,veryFinal,endHz,targetDeg,false);
+  for(const ev of tail.events){ev.t0+=contStart; events.push(ev);}
+  return {events, durTicks:contStart+tail.durTicks, endHz:tail.endHz, endRootDeg:tail.endRootDeg};
+}
+
+/* ---- free polyphony: the chordal skeleton plus stepwise passing/neighbor
+   decoration — dissonance only inserted as the unique diatonic midpoint
+   (passing) or a single step-and-return (neighbor), always on the weak
+   half of a subdivided chord, so it classifies correctly by construction. */
+function genFreePolyphony(rng,mode,finalHz,syls,target,isLastOfSection,veryFinal,prevHz,prevRootDeg){
+  const base=genDeclamation(rng,mode,finalHz,syls,target,isLastOfSection,veryFinal,prevHz,prevRootDeg,false);
+  const byVoice={C:[],A:[],T:[],B:[]};
+  for(const ev of base.events) byVoice[ev.voice].push(ev);
+  const decorated=[];
+  for(const v of ['C','A','T','B']){
+    const list=byVoice[v];
+    for(let i=0;i<list.length;i++){
+      const ev=list[i], nextEv=list[i+1];
+      // never decorate the bass: a bass passing/neighbor tone changes what
+      // EVERY other voice is consonant against, and the other voices are
+      // typically mid-note (unaware) when it happens — restricting
+      // decoration to the upper voices keeps §3.3's "against the bass"
+      // dissonance law checkable one voice at a time.
+      if(v==='B' || ev.isArrival || !nextEv || ev.dur<SB || nextEv.cadence || rng()<0.5){decorated.push(ev);continue;}
+      const hzHere=ratioToHz([ev.n,ev.d]), hzNext=ratioToHz([nextEv.n,nextEv.d]);
+      const centsDiff=Math.abs(1200*Math.log2(hzHere/hzNext));
+      if(centsDiff>0.5 && centsDiff<420){
+        const lo=Math.min(hzHere,hzNext), hi=Math.max(hzHere,hzNext);
+        const pass=nearestDegreeBetween(mode,finalHz,lo,hi,v);
+        if(pass){
+          decorated.push(Object.assign({},ev,{dur:ev.dur/2}));
+          decorated.push(Object.assign({},ev,{t0:ev.t0+ev.dur/2,dur:ev.dur/2,n:pass[0],d:pass[1],role:'passing',beat:'weak'}));
+          continue;
+        }
+      } else if(centsDiff<=0.5){
+        const dir=rng()<0.5?1:-1;
+        const nb=nearestDegreeStep(mode,hzHere,dir,finalHz,v);
+        if(nb){
+          decorated.push(Object.assign({},ev,{dur:ev.dur/2}));
+          decorated.push(Object.assign({},ev,{t0:ev.t0+ev.dur/2,dur:ev.dur/2,n:nb[0],d:nb[1],role:'neighbor',beat:'weak'}));
+          continue;
+        }
+      }
+      decorated.push(ev);
+    }
+  }
+  return {events:decorated, durTicks:base.durTicks, endHz:base.endHz, endRootDeg:base.endRootDeg};
+}
+
+/* ---- section assembler ---- */
+function genSection(rng,mode,finalHz,phrases,sectionTag,target,veryFinalSection){
+  let t=0, prevHz=null, prevRootDeg=null;
+  const events=[];
+  const n=phrases.length;
+  for(let i=0;i<n;i++){
+    const ph=phrases[i], syls=flattenSyllables(ph.words), isLast=(i===n-1);
+    const veryFinal=isLast&&!!veryFinalSection;
+    let texture;
+    if(ph.obscurum) texture='declamation';
+    else if(sectionTag==='a'&&i===0) texture='imitation';
+    else if(sectionTag==='v') texture='falsobordone';
+    else texture=pickW(rng,[['declamation',.5],['imitation',.3],['free',.2]]);
+    let res;
+    if(texture==='falsobordone') res=genFalsobordone(rng,mode,finalHz,syls,prevHz);
+    else if(texture==='imitation') res=genImitation(rng,mode,finalHz,syls,target,isLast,veryFinal,prevHz);
+    else if(texture==='free') res=genFreePolyphony(rng,mode,finalHz,syls,target,isLast,veryFinal,prevHz,prevRootDeg);
+    else res=genDeclamation(rng,mode,finalHz,syls,target,isLast,veryFinal,prevHz,prevRootDeg,ph.obscurum);
+    for(const ev of res.events){ev.t0+=t; ev.phraseIdx=i; ev.sectionTag=sectionTag; ev.texture=texture; events.push(ev);}
+    t+=res.durTicks; prevHz=res.endHz; prevRootDeg=res.endRootDeg;
+  }
+  return {events, durTicks:t, endHz:prevHz, endRootDeg:prevRootDeg};
+}
+
+/* ---- the strepitus (responsory IX only, §6.4) ---- */
+function genStrepitus(rng,tStart){
+  const durTicks=3*SB;
+  const nTaps=10+Math.floor(rng()*5);
+  const taps=[];
+  for(let i=0;i<nTaps;i++) taps.push({frac:rng(),gain:0.5+rng()*0.5,pan:(rng()*2-1)});
+  return {tStart, durTicks, taps, thudSeed:rng(), tailSeed:rng()};
+}
+
+/* ---- genAll: the complete deterministic score ---- */
+function genAll(seed,responsoryIdx,modeSel,tactus){
+  const rng=mulberry32(((seed>>>0) ^ (responsoryIdx*0x9e3779b1) ^ 0x51ed270b)>>>0);
+  let mode=modeSel;
+  if(mode==='sorte') mode=pickW(rng,SORTE_W);
+  const finalHz=ratioToHz(FINAL_RATIO[mode]);
+  const text=RAW_TEXTS[responsoryIdx];
+
+  const aRes=genSection(rng,mode,finalHz,text.a,'a','cofinal',false);
+  const bRes=genSection(rng,mode,finalHz,text.b,'b','final',true); // the b cadence is always the piece's true close
+  const vRes=genSection(rng,mode,finalHz,text.v,'v','cofinal',false);
+
+  const events=[]; let t=0;
+  const stamp=(res,label)=>{
+    for(const ev of res.events){const e=Object.assign({},ev); e.t0+=t; e.section=label; events.push(e);}
+    t+=res.durTicks;
+  };
+  stamp(aRes,'a'); stamp(bRes,'b'); stamp(vRes,'verse'); stamp(bRes,'b-repeat');
+  if(text.daCapo){ stamp(aRes,'a-dacapo'); stamp(bRes,'b-dacapo'); }
+
+  if(rng()<0.3){ // plagal amen, after the true final cadence has already landed
+    const plag=genPlagal(rng,mode,0,bRes.endHz);
+    const strongP=true;
+    for(const v of ['C','A','T','B']) events.push(Object.assign(mkEvent(v,t,SB,plag.penult[v].ratio,plag.penult[v].role,null,false,strongP),{section:'plagal'}));
+    t+=SB;
+    for(const v of ['C','A','T','B']) events.push(Object.assign(mkEvent(v,t,SB,plag.arrival[v].ratio,plag.arrival[v].role,null,false,true,true),{section:'plagal'}));
+    t+=SB;
+  }
+
+  let strepitus=null;
+  if(responsoryIdx===9){
+    t+=2*SB;
+    strepitus=genStrepitus(rng,t);
+    t+=strepitus.durTicks;
+    t+=4*SB;
+  } else {
+    t+=2*SB;
+  }
+
+  const k=responsoryIdx;
+  return {
+    events, totalTicks:t, mode, responsory:k, seed, tactus,
+    candlesLit:candlesLitOf(k), candlesOutN:candlesOut(k), nocturn:nocturnOf(k),
+    strepitus, daCapo:text.daCapo, incipit:text.incipit,
+    formLabel: text.daCapo ? ['a','b','℣','b','a','b'] : ['a','b','℣','b'],
+  };
+}
+/* ============================ ENGINE-END ================================ */
+
+/* ============================ TIMBRE ==================================
+   ~32 params / 8 groups (OFFICIUM.md §10). The law (BASE, finals, mode
+   tables, senario tuning, ficta, the counterpoint rules, texts, candle
+   math, form) stays OUT of TIMBRE — see LAW-BEGIN/ENGINE-BEGIN above. */
+const TIMBRE={
+  id:'tenebrae', title:'TENEBRAE · op. XXVI',
+  doc:'Four synthesized voices (SATB) — a sawtooth through a three-formant bandpass bank plus a breathy noise floor — singing exact 5-limit just intonation over an anchored bass, in a seeded stone room. These groups are the voicing: choir size, room, brightness, breath, vibrato. The office itself (modes, ratios, ficta, the counterpoint rules, the nine texts, the candle math) is law and lives in the code.',
+  groups:{
+    master:{label:'master',doc:'The output stage: drive, glue compression, the candle-darkening tilt coupling, and trim.',params:{
+      drive:{v:.08,min:0,max:.3,step:.01,label:'drive',doc:'warmth from the output shaper — past ~.15 it fuzzes'},
+      compThreshold:{v:-18,min:-40,max:0,step:1,unit:'dB',label:'comp threshold',doc:'glue compressor threshold'},
+      compRatio:{v:2,min:1,max:8,step:.1,label:'comp ratio',doc:'glue compressor ratio'},
+      outTrim:{v:.85,min:.3,max:1.2,step:.01,label:'out trim',doc:'final output gain, pre-destination'},
+      obscuratio:{v:1,min:0,max:2,step:.05,label:'obscuratio depth',doc:'how strongly the candle count darkens the master tilt (0=no coupling, 1=factory, 2=double) — §4.2'},
+    }},
+    aula:{label:'aula · the stone room',doc:'The chapel: a seeded convolution send, darker and longer as the candles go out.',params:{
+      rt60:{v:2.6,min:2.2,max:3.2,step:.05,unit:'s',label:'RT60',doc:'reverberation time of the room IR'},
+      damp:{v:.25,min:0,max:1,step:.02,label:'damping',doc:'high-frequency damping of the room tail'},
+      predelay:{v:.03,min:0,max:.12,step:.005,unit:'s',label:'predelay',doc:'gap before the room answers'},
+      wet:{v:.34,min:0,max:.7,step:.01,label:'wet',doc:'room send level (live)'},
+    }},
+    capella:{label:'capella · the choir',doc:'How many voices sing each part, their spread, breath, and vibrato — Renaissance voices warm, they do not wobble. Verse always drops to one singer per part regardless of this setting (soloists — Victoria\'s own practice).',params:{
+      cantores:{v:2,min:1,max:4,step:1,label:'cantores/part',doc:'singers per part in the respond (applies next Play/Another)'},
+      detuneSpread:{v:6,min:4,max:9,step:.5,unit:'¢',label:'detune spread',doc:'fixed per-singer seeded detune when cantores>1'},
+      breathLevel:{v:.22,min:0,max:.6,step:.02,label:'breath level',doc:'continuous breathy noise under the tone'},
+      vibRate:{v:5,min:4,max:5.5,step:.1,unit:'Hz',label:'vibrato rate',doc:'shared vibrato speed'},
+      vibDepth:{v:8,min:0,max:14,step:.5,unit:'¢',label:'vibrato depth',doc:'width of the vibrato — narrow and warm, symmetric around the exact frequency'},
+      vibOnset:{v:400,min:300,max:500,step:10,unit:'ms',label:'vibrato onset',doc:'a held tone stays straight this long before the vibrato fades in'},
+      stagger:{v:10,min:0,max:12,step:.5,unit:'ms',label:'ensemble stagger',doc:'per-singer onset spread on non-unison attacks'},
+    }},
+    cantus:{label:'cantus',doc:'The top part (boys/falsettists).',params:{
+      level:{v:.62,min:.2,max:1,step:.02,label:'level',doc:'part volume (live)'},
+      formantScale:{v:1.0,min:.75,max:1.15,step:.005,label:'formant scale',doc:'throat length — 1.0 is the shortest/highest of the four'},
+      tilt:{v:.1,min:-.4,max:.4,step:.02,label:'tilt',doc:'brightness'},
+    }},
+    altus:{label:'altus',doc:'The second-highest part.',params:{
+      level:{v:.58,min:.2,max:1,step:.02,label:'level',doc:'part volume (live)'},
+      formantScale:{v:.94,min:.75,max:1.15,step:.005,label:'formant scale',doc:'throat length'},
+      tilt:{v:.02,min:-.4,max:.4,step:.02,label:'tilt',doc:'brightness'},
+    }},
+    tenor:{label:'tenor',doc:'The part the office is anchored to (the falsobordone recitation pitch in the verse).',params:{
+      level:{v:.60,min:.2,max:1,step:.02,label:'level',doc:'part volume (live)'},
+      formantScale:{v:.88,min:.75,max:1.15,step:.005,label:'formant scale',doc:'throat length'},
+      tilt:{v:-.05,min:-.4,max:.4,step:.02,label:'tilt',doc:'brightness'},
+    }},
+    bassus:{label:'bassus',doc:'The foundation — sings the mode table, always (§3.3).',params:{
+      level:{v:.66,min:.2,max:1,step:.02,label:'level',doc:'part volume (live)'},
+      formantScale:{v:.82,min:.75,max:1.15,step:.005,label:'formant scale',doc:'throat length — the longest/lowest of the four'},
+      tilt:{v:-.12,min:-.4,max:.4,step:.02,label:'tilt',doc:'brightness'},
+    }},
+    strepitus:{label:'strepitus',doc:'Responsory IX only: the earthquake at the death of Christ — a thud, a clatter of slammed books, the room ringing longer than anything before it.',params:{
+      level:{v:.55,min:0,max:1,step:.02,label:'level',doc:'noise-burst level (live)'},
+      weight:{v:.5,min:0,max:1,step:.02,label:'weight',doc:'the low thud'},
+      clatter:{v:.4,min:0,max:1,step:.02,label:'clatter',doc:'the slammed-book taps'},
+      tail:{v:1,min:.5,max:2,step:.05,label:'tail',doc:'how much longer the room rings after it'},
+    }},
+  }
+};
+/* ---- OFFICINA bridge (identical in every machine) ------------------------ */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+/* ============================ AUDIO GRAPH ============================== */
+const VOWEL_F={a:[700,1150,2600],e:[500,1750,2500],i:[300,2100,2700],o:[450,850,2500],u:[320,700,2350]};
+const FORMANT_Q=[9,10,11];
+const FORMANT_GAIN_DB=[0,-6,-12];
+function voiceKey(v){return {C:'cantus',A:'altus',T:'tenor',B:'bassus'}[v];}
+
+let __noiseCtx=null,__noiseBuf=null;
+function getNoiseBuffer(ctx){
+  if(__noiseCtx===ctx&&__noiseBuf) return __noiseBuf;
+  const sr=ctx.sampleRate,len=Math.floor(sr*2);
+  const buf=ctx.createBuffer(1,len,sr), d=buf.getChannelData(0);
+  const rng=mulberry32(0xA5A5A5);
+  for(let i=0;i<len;i++) d[i]=rng()*2-1;
+  __noiseCtx=ctx; __noiseBuf=buf; return buf;
+}
+function makeShaperCurve(amount){
+  const n=1024,curve=new Float32Array(n),k=amount*40+0.0001;
+  for(let i=0;i<n;i++){const x=i/(n-1)*2-1; curve[i]=Math.tanh(k*x)/Math.tanh(k);}
+  return curve;
+}
+function makeRoomIR(ctx,seed,rt60,damp,candlesOutN){
+  const sr=ctx.sampleRate, len=Math.floor(sr*Math.max(0.5,rt60));
+  const buf=ctx.createBuffer(2,len,sr);
+  const rng=mulberry32((seed>>>0)^0x1EA5E);
+  const extraDamp=1+(candlesOutN/15)*0.6;
+  for(let ch=0;ch<2;ch++){
+    const d=buf.getChannelData(ch);
+    for(let i=0;i<len;i++){
+      const t=i/sr;
+      const decay=Math.exp(-t*(3/Math.max(0.4,rt60))*extraDamp*(1+damp));
+      d[i]=(rng()*2-1)*decay;
+    }
+  }
+  return buf;
+}
+function buildGraph(ctx,score){
+  const g={};
+  g.voiceGain={C:ctx.createGain(),A:ctx.createGain(),T:ctx.createGain(),B:ctx.createGain()};
+  g.voiceGain.C.gain.value=TP.cantus.level;
+  g.voiceGain.A.gain.value=TP.altus.level;
+  g.voiceGain.T.gain.value=TP.tenor.level;
+  g.voiceGain.B.gain.value=TP.bassus.level;
+  g.strepitusGain=ctx.createGain(); g.strepitusGain.gain.value=TP.strepitus.level;
+
+  g.bus=ctx.createGain();
+  for(const v of ['C','A','T','B']) g.voiceGain[v].connect(g.bus);
+  g.strepitusGain.connect(g.bus);
+
+  const candlesOutN=(score&&score.candlesOutN)||0;
+  g.tilt=ctx.createBiquadFilter(); g.tilt.type='highshelf'; g.tilt.frequency.value=1500;
+  g.tilt.gain.value = -(candlesOutN/3)*0.35*TP.master.obscuratio;
+  g.bus.connect(g.tilt);
+
+  g.comp=ctx.createDynamicsCompressor();
+  g.comp.threshold.value=TP.master.compThreshold; g.comp.ratio.value=TP.master.compRatio;
+  g.comp.attack.value=0.006; g.comp.release.value=0.25;
+  g.tilt.connect(g.comp);
+
+  g.drive=ctx.createWaveShaper(); g.drive.curve=makeShaperCurve(TP.master.drive); g.drive.oversample='2x';
+  g.comp.connect(g.drive);
+
+  g.dry=ctx.createGain(); g.wet=ctx.createGain();
+  g.wet.gain.value=TP.aula.wet; g.dry.gain.value=1-TP.aula.wet;
+  g.drive.connect(g.dry); g.drive.connect(g.wet);
+
+  g.convolver=ctx.createConvolver();
+  const seed=(score&&score.seed)||1;
+  g.convolver.buffer=makeRoomIR(ctx,seed,TP.aula.rt60,TP.aula.damp,candlesOutN);
+  g.predelay=ctx.createDelay(0.25); g.predelay.delayTime.value=TP.aula.predelay;
+  g.wet.connect(g.predelay); g.predelay.connect(g.convolver);
+
+  g.out=ctx.createGain(); g.out.gain.value=TP.master.outTrim;
+  g.dry.connect(g.out); g.convolver.connect(g.out);
+  g.out.connect(ctx.destination);
+  return g;
+}
+function scheduleNote(ctx,dest,hz,t0,dur,vowel,voiceType,detuneCents){
+  const vf=VOWEL_F[vowel]||VOWEL_F.a;
+  const tp=TP[voiceType], sc=tp.formantScale, tilt=tp.tilt;
+  const nodes=[];
+  const mk=(n)=>{nodes.push(n);return n;};
+  const osc=mk(ctx.createOscillator()); osc.type='sawtooth'; osc.frequency.value=hz; osc.detune.value=detuneCents||0;
+  const atk=0.035, rel=Math.min(0.14,Math.max(0.03,dur*0.35)), peak=0.5;
+  const amp=mk(ctx.createGain()); amp.gain.setValueAtTime(0,t0);
+  amp.gain.linearRampToValueAtTime(peak,t0+atk);
+  amp.gain.setValueAtTime(peak,Math.max(t0+atk,t0+dur-rel));
+  amp.gain.linearRampToValueAtTime(0,t0+dur+rel*0.4);
+
+  const sum=mk(ctx.createGain());
+  const gdb=[FORMANT_GAIN_DB[0],FORMANT_GAIN_DB[1]+tilt*14,FORMANT_GAIN_DB[2]+tilt*22];
+  for(let i=0;i<3;i++){
+    const bp=mk(ctx.createBiquadFilter()); bp.type='bandpass'; bp.frequency.value=vf[i]*sc; bp.Q.value=FORMANT_Q[i];
+    const gn=mk(ctx.createGain()); gn.gain.value=Math.pow(10,gdb[i]/20);
+    osc.connect(bp); bp.connect(gn); gn.connect(sum);
+  }
+  const direct=mk(ctx.createBiquadFilter()); direct.type='lowpass'; direct.frequency.value=900*sc; direct.Q.value=0.7;
+  const directGain=mk(ctx.createGain()); directGain.gain.value=0.16*(1+tilt*0.5);
+  osc.connect(direct); direct.connect(directGain); directGain.connect(sum);
+
+  const noise=mk(ctx.createBufferSource()); noise.buffer=getNoiseBuffer(ctx); noise.loop=true;
+  const breathBP=mk(ctx.createBiquadFilter()); breathBP.type='bandpass'; breathBP.frequency.value=vf[0]*sc; breathBP.Q.value=1.1;
+  const breathGain=mk(ctx.createGain()); breathGain.gain.value=TP.capella.breathLevel*0.5;
+  noise.connect(breathBP); breathBP.connect(breathGain); breathGain.connect(sum);
+
+  const stopAt=t0+dur+rel*0.4+0.05;
+  if(TP.capella.vibDepth>0 && dur>TP.capella.vibOnset*0.001){
+    const lfo=mk(ctx.createOscillator()); lfo.type='sine'; lfo.frequency.value=TP.capella.vibRate;
+    const lfoGain=mk(ctx.createGain());
+    const onsetT=t0+TP.capella.vibOnset*0.001;
+    lfoGain.gain.setValueAtTime(0,t0);
+    lfoGain.gain.setValueAtTime(0,onsetT);
+    lfoGain.gain.linearRampToValueAtTime(TP.capella.vibDepth,Math.min(onsetT+0.15,stopAt));
+    lfo.connect(lfoGain); lfoGain.connect(osc.detune);
+    lfo.start(t0); lfo.stop(stopAt);
+  }
+  sum.connect(amp); amp.connect(dest);
+  osc.start(t0); osc.stop(stopAt);
+  noise.start(t0); noise.stop(stopAt);
+  // Web Audio never auto-disconnects a downstream node just because its
+  // source stopped — leftover filter/gain chains keep being processed
+  // (and their state decays toward denormal-range numbers, which is
+  // catastrophically slow on most CPUs) for the rest of the render unless
+  // torn down explicitly. With a full responsory's worth of short-lived
+  // note chains, that turned a ~90s render into one that never finished.
+  osc.onended=()=>{for(const n of nodes){try{n.disconnect();}catch(e){}}};
+}
+function scheduleStrepitus(ctx,dest,strep,tStart){
+  const thud=ctx.createOscillator(); thud.type='sine';
+  thud.frequency.setValueAtTime(80,tStart); thud.frequency.exponentialRampToValueAtTime(40,tStart+0.5);
+  const thudGain=ctx.createGain(); thudGain.gain.setValueAtTime(0.0001,tStart);
+  thudGain.gain.linearRampToValueAtTime(Math.max(.01,TP.strepitus.weight),tStart+0.02);
+  thudGain.gain.exponentialRampToValueAtTime(0.001,tStart+0.9*TP.strepitus.tail);
+  thud.connect(thudGain); thudGain.connect(dest); thud.start(tStart); thud.stop(tStart+1.0*TP.strepitus.tail);
+  thud.onended=()=>{try{thud.disconnect();thudGain.disconnect();}catch(e){}};
+
+  const noiseBuf=getNoiseBuffer(ctx);
+  const burst=ctx.createBufferSource(); burst.buffer=noiseBuf;
+  const burstBP=ctx.createBiquadFilter(); burstBP.type='bandpass'; burstBP.frequency.value=300; burstBP.Q.value=0.8;
+  const burstGain=ctx.createGain(); burstGain.gain.setValueAtTime(0.0001,tStart);
+  burstGain.gain.linearRampToValueAtTime(Math.max(.01,TP.strepitus.level),tStart+0.01);
+  burstGain.gain.exponentialRampToValueAtTime(0.001,tStart+0.8*TP.strepitus.tail);
+  burst.connect(burstBP); burstBP.connect(burstGain); burstGain.connect(dest);
+  burst.start(tStart); burst.stop(tStart+0.9*TP.strepitus.tail);
+  burst.onended=()=>{try{burst.disconnect();burstBP.disconnect();burstGain.disconnect();}catch(e){}};
+
+  for(const tap of strep.taps){
+    const tt=tStart+tap.frac*1.4;
+    const src=ctx.createBufferSource(); src.buffer=noiseBuf;
+    const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1200+tap.gain*1800; bp.Q.value=2.2;
+    const gg=ctx.createGain(); gg.gain.setValueAtTime(0.0001,tt);
+    gg.gain.linearRampToValueAtTime(Math.max(.01,TP.strepitus.clatter*tap.gain),tt+0.003);
+    gg.gain.exponentialRampToValueAtTime(0.001,tt+0.09);
+    src.connect(bp); bp.connect(gg); gg.connect(dest);
+    src.start(tt); src.stop(tt+0.1);
+    src.onended=()=>{try{src.disconnect();bp.disconnect();gg.disconnect();}catch(e){}};
+  }
+}
+function hashSeed(){let h=0; for(const a of arguments){const s=String(a); for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0;} return h>>>0;}
+function singerDetuneCents(voice,idx,seed){
+  if(idx===0) return 0;
+  const r=mulberry32(hashSeed(voice,idx,seed,0xC0FFEE))();
+  const mag=TP.capella.detuneSpread*(0.6+r*0.5);
+  return (idx%2===0?1:-1)*mag;
+}
+function singerStaggerSec(voice,idx,seed){
+  if(idx===0) return 0;
+  const r=mulberry32(hashSeed(voice,idx,seed,0xBADA55))();
+  return r*TP.capella.stagger*0.001;
+}
+function secondsPerTick(tactus){return 15/tactus;}
+/* One persistent oscillator+formant-bank chain per (voice,singer), running
+   for the WHOLE piece — not one per note. A fresh node graph per note
+   (the obvious approach, and what scheduleNote/demoPulse still do for the
+   tiny ► HEAR audition) is correct but not viable at full-piece scale:
+   Web Audio keeps evaluating every connected node for the entire render
+   even after its note "ends" (nothing auto-disconnects a node just
+   because its upstream source stopped, and OfflineAudioContext does not
+   service 'ended' callbacks promptly enough mid-render to disconnect them
+   in time either) — with a few hundred notes × several formant filters
+   each, that made a ~90s piece take minutes to render instead of seconds.
+   Automating one long-lived chain's frequency/formants per note (a hard
+   jump after a rest, a short ramp within a legato run) fixes the
+   performance and is also exactly what OFFICIUM.md §6.2 asks for: "one
+   phrase is one note-stream per singer... must not retrigger the
+   envelope, or the legato reads as typing." */
+function scheduleSingerChain(ctx,dest,voice,singerIdx,notes,tactus,startTime,seed){
+  if(!notes.length) return;
+  const spt=secondsPerTick(tactus);
+  const voiceType=voiceKey(voice);
+  const tp=TP[voiceType], sc=tp.formantScale, tilt=tp.tilt;
+  const detune=singerDetuneCents(voice,singerIdx,seed);
+  const stagger=singerStaggerSec(voice,singerIdx,seed);
+
+  const osc=ctx.createOscillator(); osc.type='sawtooth'; osc.detune.value=detune;
+  const sum=ctx.createGain();
+  const bps=[];
+  const gdb=[FORMANT_GAIN_DB[0],FORMANT_GAIN_DB[1]+tilt*14,FORMANT_GAIN_DB[2]+tilt*22];
+  for(let i=0;i<3;i++){
+    const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.Q.value=FORMANT_Q[i];
+    const gn=ctx.createGain(); gn.gain.value=Math.pow(10,gdb[i]/20);
+    osc.connect(bp); bp.connect(gn); gn.connect(sum);
+    bps.push(bp);
+  }
+  const direct=ctx.createBiquadFilter(); direct.type='lowpass'; direct.Q.value=0.7;
+  const directGain=ctx.createGain(); directGain.gain.value=0.16*(1+tilt*0.5);
+  osc.connect(direct); direct.connect(directGain); directGain.connect(sum);
+
+  const noise=ctx.createBufferSource(); noise.buffer=getNoiseBuffer(ctx); noise.loop=true;
+  const breathBP=ctx.createBiquadFilter(); breathBP.type='bandpass'; breathBP.Q.value=1.1;
+  const breathGain=ctx.createGain(); breathGain.gain.value=TP.capella.breathLevel*0.5;
+  noise.connect(breathBP); breathBP.connect(breathGain); breathGain.connect(sum);
+
+  const amp=ctx.createGain(); amp.gain.setValueAtTime(0,startTime);
+  sum.connect(amp); amp.connect(dest);
+
+  const lfo=ctx.createOscillator(); lfo.type='sine'; lfo.frequency.value=TP.capella.vibRate;
+  const lfoGain=ctx.createGain(); lfoGain.gain.value=0;
+  lfo.connect(lfoGain); lfoGain.connect(osc.detune);
+
+  const atk=0.035, rel=0.12, gapThresh=0.06, xfade=0.03, peak=0.5;
+  let lastEnd=-Infinity, firstT=Infinity, lastStop=startTime;
+  for(let i=0;i<notes.length;i++){
+    const ev=notes[i];
+    const t0=startTime+ev.t0*spt+stagger, dur=ev.dur*spt;
+    const hz=BASE*ev.n/ev.d;
+    const vf=VOWEL_F[ev.vowel]||VOWEL_F.a;
+    if(i===0) firstT=t0;
+    const gap=t0-lastEnd;
+    if(gap>gapThresh){
+      if(lastEnd>startTime) amp.gain.setValueAtTime(0,Math.min(lastEnd+rel,t0));
+      osc.frequency.setValueAtTime(hz,t0);
+      for(let k=0;k<3;k++) bps[k].frequency.setValueAtTime(vf[k]*sc,t0);
+      direct.frequency.setValueAtTime(900*sc,t0);
+      breathBP.frequency.setValueAtTime(vf[0]*sc,t0);
+      amp.gain.setValueAtTime(0,t0);
+      amp.gain.linearRampToValueAtTime(peak,t0+atk);
+      if(TP.capella.vibDepth>0){
+        const vOnset=t0+TP.capella.vibOnset*0.001;
+        lfoGain.gain.setValueAtTime(0,t0);
+        lfoGain.gain.setValueAtTime(0,vOnset);
+        lfoGain.gain.linearRampToValueAtTime(TP.capella.vibDepth,vOnset+0.15);
+      }
+    } else {
+      osc.frequency.linearRampToValueAtTime(hz,t0+xfade);
+      for(let k=0;k<3;k++) bps[k].frequency.linearRampToValueAtTime(vf[k]*sc,t0+xfade);
+      breathBP.frequency.linearRampToValueAtTime(vf[0]*sc,t0+xfade);
+      amp.gain.setValueAtTime(peak,t0);
+    }
+    lastEnd=t0+dur;
+  }
+  amp.gain.setValueAtTime(peak,lastEnd);
+  amp.gain.linearRampToValueAtTime(0,lastEnd+rel);
+  lastStop=lastEnd+rel+0.05;
+  const startAt=Math.max(0,Math.min(startTime,firstT-0.02));
+  osc.start(startAt); osc.stop(lastStop);
+  noise.start(startAt); noise.stop(lastStop);
+  lfo.start(startAt); lfo.stop(lastStop);
+}
+function scheduleScore(ctx,graph,score,startTime,tactus){
+  const spt=secondsPerTick(tactus);
+  const respondSingers=Math.max(1,Math.round(TP.capella.cantores));
+  for(const voice of ['C','A','T','B']){
+    for(let s=0;s<respondSingers;s++){
+      const notes=score.events
+        .filter(ev=>ev.voice===voice && s<(ev.section==='verse'?1:respondSingers))
+        .sort((a,b)=>a.t0-b.t0);
+      scheduleSingerChain(ctx,graph.voiceGain[voice],voice,s,notes,tactus,startTime,score.seed);
+    }
+  }
+  if(score.strepitus) scheduleStrepitus(ctx,graph.strepitusGain,score.strepitus,startTime+score.strepitus.tStart*spt);
+}
+
+/* ============================ TRANSPORT ================================= */
+const st={responsory:5, mode:'phrygian', tactus:56, seed:(Math.random()*0xffffffff)>>>0, playing:false, paused:false};
+let RT={ac:null, graph:null, score:null, loopTimer:null, startTime:0};
+
+function ensureAc(){
+  if(!RT.ac){RT.ac=new (window.AudioContext||window.webkitAudioContext)(); __iosAudio(RT.ac);}
+  return RT.ac;
+}
+function buildScoreIfNeeded(){
+  if(!RT.score) RT.score=genAll(st.seed,st.responsory,st.mode,st.tactus);
+  return RT.score;
+}
+function play(){
+  if(st.playing) return;
+  const ctx=ensureAc();
+  if(ctx.state!=='running') ctx.resume().catch(()=>{});
+  st.playing=true; st.paused=false;
+  buildScoreIfNeeded();
+  RT.graph=buildGraph(ctx,RT.score);
+  RT.startTime=ctx.currentTime+0.08;
+  scheduleScore(ctx,RT.graph,RT.score,RT.startTime,RT.score.tactus);
+  const spt=secondsPerTick(RT.score.tactus);
+  if(RT.loopTimer) clearTimeout(RT.loopTimer);
+  RT.loopTimer=setTimeout(loopBack,Math.max(200,RT.score.totalTicks*spt*1000));
+  el.play.disabled=true; el.pause.disabled=false; el.play.classList.add('on');
+  __mediaSessionInit(); __mediaSessionUpdate(); __silStart();
+  updateHash(); refreshChips(); updateLedger(); rebuildCanvasStatic();
+  animate();
+}
+function loopBack(){
+  if(!st.playing||st.paused) return;
+  if(RT.graph){try{RT.graph.out.disconnect();}catch(e){}}
+  RT.graph=buildGraph(RT.ac,RT.score);
+  RT.startTime=RT.ac.currentTime+0.05;
+  scheduleScore(RT.ac,RT.graph,RT.score,RT.startTime,RT.score.tactus);
+  const spt=secondsPerTick(RT.score.tactus);
+  RT.loopTimer=setTimeout(loopBack,Math.max(200,RT.score.totalTicks*spt*1000));
+}
+function togglePause(){
+  if(!st.playing) return;
+  if(!st.paused){st.paused=true; RT.ac.suspend(); el.pause.textContent='RESVME'; el.pause.classList.add('on');}
+  else{st.paused=false; RT.ac.resume(); el.pause.textContent='MORA'; el.pause.classList.remove('on'); animate();}
+  __mediaSessionUpdate();
+}
+function stop(){
+  st.playing=false; st.paused=false;
+  if(RT.loopTimer){clearTimeout(RT.loopTimer); RT.loopTimer=null;}
+  if(RT.graph){try{RT.graph.out.disconnect();}catch(e){}}
+  RT.graph=null;
+  el.play.disabled=false; el.pause.disabled=true; el.play.classList.remove('on');
+  el.pause.textContent='MORA'; el.pause.classList.remove('on');
+  __mediaSessionUpdate(); __silStop();
+}
+function aliud(){
+  const wasPlaying=st.playing;
+  stop();
+  st.seed=(Math.random()*0xffffffff)>>>0;
+  RT.score=null;
+  updateHash();
+  if(wasPlaying) play(); else {rebuildCanvasStatic(); updateLedger();}
+}
+
+/* ============================ OFFLINE RENDER ============================ */
+async function cut(){
+  el.cut.disabled=true; el.cutnote.textContent='rendering…';
+  try{
+    const score=genAll(st.seed,st.responsory,st.mode,st.tactus);
+    const spt=secondsPerTick(score.tactus);
+    const durSec=score.totalTicks*spt+1.2;
+    const sr=44100;
+    const offline=new OfflineAudioContext(2,Math.ceil(durSec*sr),sr);
+    const graph=buildGraph(offline,score);
+    scheduleScore(offline,graph,score,0.05,score.tactus);
+    const rendered=await offline.startRendering();
+    saveWav(rendered,'tenebrae-resp'+score.responsory+'-'+score.seed+'.wav');
+    el.cutnote.textContent='cut · '+rendered.duration.toFixed(1)+'s';
+  }catch(e){
+    el.cutnote.textContent='render failed';
+    console.error(e);
+  }
+  el.cut.disabled=false;
+}
+function saveWav(buf,filename){
+  const nCh=buf.numberOfChannels, len=buf.length, sr=buf.sampleRate;
+  const chans=[]; for(let c=0;c<nCh;c++) chans.push(buf.getChannelData(c));
+  const blockAlign=nCh*2, dataSize=len*blockAlign;
+  const ab=new ArrayBuffer(44+dataSize), view=new DataView(ab);
+  const ws=(off,s)=>{for(let i=0;i<s.length;i++) view.setUint8(off+i,s.charCodeAt(i));};
+  ws(0,'RIFF'); view.setUint32(4,36+dataSize,true); ws(8,'WAVE');
+  ws(12,'fmt '); view.setUint32(16,16,true); view.setUint16(20,1,true);
+  view.setUint16(22,nCh,true); view.setUint32(24,sr,true);
+  view.setUint32(28,sr*blockAlign,true); view.setUint16(32,blockAlign,true); view.setUint16(34,16,true);
+  ws(36,'data'); view.setUint32(40,dataSize,true);
+  let off=44;
+  for(let i=0;i<len;i++) for(let c=0;c<nCh;c++){
+    let s=Math.max(-1,Math.min(1,chans[c][i]));
+    view.setInt16(off, s<0? s*0x8000 : s*0x7fff, true); off+=2;
+  }
+  const blob=new Blob([ab],{type:'audio/wav'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ============================ OFFICINA live-edit / audition ============= */
+function applyTimbreEdit(g,p,v){
+  if(!RT.graph||!RT.ac) return;
+  const now=RT.ac.currentTime, tau=.05;
+  if(g==='*'){
+    RT.graph.voiceGain.C.gain.setTargetAtTime(TP.cantus.level,now,tau);
+    RT.graph.voiceGain.A.gain.setTargetAtTime(TP.altus.level,now,tau);
+    RT.graph.voiceGain.T.gain.setTargetAtTime(TP.tenor.level,now,tau);
+    RT.graph.voiceGain.B.gain.setTargetAtTime(TP.bassus.level,now,tau);
+    RT.graph.strepitusGain.gain.setTargetAtTime(TP.strepitus.level,now,tau);
+    RT.graph.wet.gain.setTargetAtTime(TP.aula.wet,now,tau);
+    RT.graph.dry.gain.setTargetAtTime(1-TP.aula.wet,now,tau);
+    RT.graph.out.gain.setTargetAtTime(TP.master.outTrim,now,tau);
+    RT.graph.comp.threshold.setTargetAtTime(TP.master.compThreshold,now,tau);
+    RT.graph.comp.ratio.setTargetAtTime(TP.master.compRatio,now,tau);
+    return;
+  }
+  if(g==='cantus'&&p==='level') RT.graph.voiceGain.C.gain.setTargetAtTime(v,now,tau);
+  else if(g==='altus'&&p==='level') RT.graph.voiceGain.A.gain.setTargetAtTime(v,now,tau);
+  else if(g==='tenor'&&p==='level') RT.graph.voiceGain.T.gain.setTargetAtTime(v,now,tau);
+  else if(g==='bassus'&&p==='level') RT.graph.voiceGain.B.gain.setTargetAtTime(v,now,tau);
+  else if(g==='strepitus'&&p==='level') RT.graph.strepitusGain.gain.setTargetAtTime(v,now,tau);
+  else if(g==='aula'&&p==='wet'){RT.graph.wet.gain.setTargetAtTime(v,now,tau); RT.graph.dry.gain.setTargetAtTime(1-v,now,tau);}
+  else if(g==='master'&&p==='outTrim') RT.graph.out.gain.setTargetAtTime(v,now,tau);
+  else if(g==='master'&&p==='compThreshold') RT.graph.comp.threshold.setTargetAtTime(v,now,tau);
+  else if(g==='master'&&p==='compRatio') RT.graph.comp.ratio.setTargetAtTime(v,now,tau);
+  // else: baked (formantScale/tilt/vibrato/breath/cantores/detune/stagger/rt60/damp/predelay/drive/obscuratio/strepitus weight-clatter-tail) — applies next Play/Aliud
+}
+function demoPulse(group){
+  const ctx=ensureAc();
+  if(ctx.state!=='running') ctx.resume().catch(()=>{});
+  if(!RT.graph) RT.graph=buildGraph(ctx, RT.score||{seed:1,candlesOutN:0});
+  if(group==='strepitus'){
+    scheduleStrepitus(ctx,RT.graph.strepitusGain,{taps:[{frac:.1,gain:.6},{frac:.3,gain:.5},{frac:.5,gain:.7}],thudSeed:.3},ctx.currentTime+0.05);
+    return;
+  }
+  const mode='phrygian', rng=mulberry32(0xDEC0DE);
+  const cad=genClausulaVera(rng,mode,0,null,{veryFinal:false});
+  const spt=secondsPerTick(56);
+  const voicesToPlay = ['cantus','altus','tenor','bassus'].includes(group) ? [group[0].toUpperCase()] : ['C','A','T','B'];
+  let t=ctx.currentTime+0.05;
+  const seq=[[cad.hold,MIN],[cad.resolve,MIN],[cad.arrival,SB]];
+  for(const [chord,dur] of seq){
+    for(const v of voicesToPlay) scheduleNote(ctx,RT.graph.voiceGain[v],ratioToHz(chord[v].ratio),t,dur*spt,'a',voiceKey(v),0);
+    t+=dur*spt;
+  }
+}
+TIMBRE.touch=(path)=>{
+  if(!path){applyTimbreEdit('*','*',null); return;}
+  const i=path.indexOf('.'), g=path.slice(0,i), p=path.slice(i+1);
+  applyTimbreEdit(g,p,TP[g][p]);
+};
+TIMBRE.demo=(group)=>demoPulse(group);
+
+/* ============================ CANVAS ===================================== */
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+let hctx,bctx,hearseStaticCanvas=null,bookStaticCanvas=null,rafId=null;
+const ROWS=[5,4,3,2,1];
+function sizeCanvases(){
+  const hc=el.hearse, bc=el.book;
+  hc.width=hc.clientWidth||128; hc.height=300;
+  bc.width=bc.clientWidth||400; bc.height=220;
+}
+function drawCandle(ctx,x,y,lit,isApex){
+  ctx.fillStyle= lit ? '#d8cdb4' : '#3a352c';
+  ctx.fillRect(x-1.5,y-14,3,14);
+  if(lit){
+    ctx.fillStyle='#e0a84c';
+    ctx.beginPath(); ctx.ellipse(x,y-17,3,5,0,0,Math.PI*2); ctx.fill();
+    if(isApex){ctx.strokeStyle='rgba(224,168,76,.5)'; ctx.beginPath(); ctx.arc(x,y-17,9,0,Math.PI*2); ctx.stroke();}
+  } else {
+    ctx.fillStyle='#5a544a';
+    ctx.beginPath(); ctx.ellipse(x,y-15,1.5,2,0,0,Math.PI*2); ctx.fill();
+  }
+}
+function drawHearseStatic(){
+  const c=el.hearse, w=c.width, h=c.height;
+  const off=document.createElement('canvas'); off.width=w; off.height=h;
+  const octx=off.getContext('2d');
+  const lit = RT.score ? RT.score.candlesLit : candlesLitOf(st.responsory);
+  octx.fillStyle='#0d0b09'; octx.fillRect(0,0,w,h);
+  const grad=octx.createRadialGradient(w/2,h*0.3,10,w/2,h*0.3,h*0.8);
+  const glow=0.08+0.35*(lit/15);
+  grad.addColorStop(0,`rgba(224,168,76,${glow})`);
+  grad.addColorStop(1,'rgba(13,11,9,0)');
+  octx.fillStyle=grad; octx.fillRect(0,0,w,h);
+  const marginTop=16, marginBottom=16, usableH=h-marginTop-marginBottom;
+  let idx=0;
+  for(let r=0;r<ROWS.length;r++){
+    const count=ROWS[r];
+    const y=h-marginBottom-(usableH*r/(ROWS.length-1));
+    for(let c2=0;c2<count;c2++){
+      const spread=w*0.62;
+      const x=w/2+(c2-(count-1)/2)*(spread/4);
+      const isLit = idx>=(15-lit);
+      drawCandle(octx,x,y,isLit,idx===14);
+      idx++;
+    }
+  }
+  hearseStaticCanvas=off;
+}
+function drawBookStatic(){
+  const c=el.book, w=c.width, h=c.height;
+  const off=document.createElement('canvas'); off.width=w; off.height=h;
+  const octx=off.getContext('2d');
+  octx.fillStyle='#161210'; octx.fillRect(0,0,w,h);
+  if(!RT.score){bookStaticCanvas=off; return;}
+  const score=RT.score, bandH=h/4, voices=['C','A','T','B'];
+  const finalHz=ratioToHz(FINAL_RATIO[score.mode]);
+  octx.strokeStyle='rgba(216,205,180,.14)';
+  for(let i=1;i<4;i++){octx.beginPath(); octx.moveTo(0,i*bandH); octx.lineTo(w,i*bandH); octx.stroke();}
+  const totalTicks=Math.max(1,score.totalTicks);
+  for(const ev of score.events){
+    const vi=voices.indexOf(ev.voice); if(vi<0) continue;
+    const x=(ev.t0/totalTicks)*w;
+    const ww=Math.max(1.5,(ev.dur/totalTicks)*w-1);
+    const [loM,hiM]=RANGE_MULT[ev.voice];
+    const hz=BASE*ev.n/ev.d;
+    const frac=1-((Math.log2(hz/finalHz)-Math.log2(loM))/(Math.log2(hiM)-Math.log2(loM)));
+    const y=vi*bandH + Math.min(bandH-4,Math.max(2,frac*(bandH-6)))+2;
+    octx.fillStyle = (ev.role==='susp'||ev.role==='passing'||ev.role==='neighbor') ? '#4a3652' : '#e0a84c';
+    octx.globalAlpha = ev.role==='entry' ? 1 : 0.82;
+    octx.fillRect(x,y,ww,3);
+  }
+  octx.globalAlpha=1;
+  bookStaticCanvas=off;
+}
+function rebuildCanvasStatic(){
+  sizeCanvases();
+  drawHearseStatic();
+  drawBookStatic();
+  hctx.clearRect(0,0,el.hearse.width,el.hearse.height); hctx.drawImage(hearseStaticCanvas,0,0);
+  bctx.clearRect(0,0,el.book.width,el.book.height); bctx.drawImage(bookStaticCanvas,0,0);
+}
+function updateTextLine(tickNow){
+  const score=RT.score; if(!score) return;
+  let active=null;
+  for(const ev of score.events){ if(ev.t0<=tickNow && (!active||ev.t0>active.t0) && ev.text) active=ev; }
+  el.textline.textContent = active ? active.text : '';
+  el.incipitline.textContent = score.incipit+' · Resp. '+ROMAN[score.responsory]+' · '+score.mode;
+}
+function animate(){
+  if(!st.playing||st.paused){rafId=null; return;}
+  rafId=requestAnimationFrame(animate);
+  const bc=el.book;
+  bctx.clearRect(0,0,bc.width,bc.height);
+  if(bookStaticCanvas) bctx.drawImage(bookStaticCanvas,0,0);
+  if(RT.score&&RT.ac){
+    const elapsed=RT.ac.currentTime-RT.startTime;
+    const spt=secondsPerTick(RT.score.tactus);
+    const tickNow=elapsed/spt;
+    const frac=Math.max(0,Math.min(1,tickNow/RT.score.totalTicks));
+    const x=frac*bc.width;
+    bctx.strokeStyle='#e0a84c'; bctx.lineWidth=1.5;
+    bctx.beginPath(); bctx.moveTo(x,0); bctx.lineTo(x,bc.height); bctx.stroke();
+    updateTextLine(tickNow);
+  }
+  const hc=el.hearse;
+  hctx.clearRect(0,0,hc.width,hc.height);
+  if(hearseStaticCanvas) hctx.drawImage(hearseStaticCanvas,0,0);
+}
+
+/* ============================ CONTROLS / HASH ============================ */
+const el={};
+function grabEls(){
+  ['play','pause','aliud','cut','cutnote','respchips','modus','tactus','tactusrd','resprd','modusrd',
+   'hearse','book','textline','incipitline','formribbon','opus','ledger','readerbody'].forEach(id=>el[id]=document.getElementById(id));
+}
+const MODE_CHIPS=[['sorte','SORTE'],['dorian','DORIVS'],['phrygian','PHRYGIVS'],['mixolydian','MIXOLYDIVS'],['aeolian','AEOLIVS']];
+function buildChips(){
+  el.respchips.innerHTML='';
+  for(let k=1;k<=9;k++){
+    const b=document.createElement('button'); b.textContent=k; b.dataset.k=k;
+    b.title=RAW_TEXTS[k].incipit;
+    b.addEventListener('click',()=>selectResponsory(k));
+    el.respchips.appendChild(b);
+  }
+  el.modus.innerHTML='';
+  for(const [id,label] of MODE_CHIPS){
+    const b=document.createElement('button'); b.textContent=label; b.dataset.m=id;
+    b.addEventListener('click',()=>selectMode(id));
+    el.modus.appendChild(b);
+  }
+}
+function refreshChips(){
+  [...el.respchips.children].forEach(b=>b.classList.toggle('on', +b.dataset.k===st.responsory));
+  [...el.modus.children].forEach(b=>b.classList.toggle('on', b.dataset.m===st.mode));
+  el.resprd.textContent = RAW_TEXTS[st.responsory].incipit;
+  el.modusrd.textContent = st.mode==='sorte' ? 'drawn per pressing' : '';
+}
+function updateLedger(){
+  const score=RT.score;
+  el.opus.textContent='RESP. '+ROMAN[st.responsory];
+  el.formribbon.textContent = score ? score.formLabel.join(' · ') : 'a · b · ℣ · b';
+  el.ledger.innerHTML = score ? (
+    '<div><span class="k">mode</span> '+score.mode+'</div>'+
+    '<div><span class="k">candles lit</span> '+score.candlesLit+' / 15</div>'+
+    '<div><span class="k">nocturn</span> '+(score.nocturn+1)+'</div>'+
+    '<div><span class="k">seed</span> '+score.seed.toString(16)+'</div>'
+  ) : '';
+}
+function selectResponsory(k){
+  st.responsory=k; RT.score=null; refreshChips(); updateHash(); updateLedger();
+  if(st.playing){stop();play();} else rebuildCanvasStatic();
+}
+function selectMode(m){
+  st.mode=m; RT.score=null; refreshChips(); updateHash(); updateLedger();
+  if(st.playing){stop();play();} else rebuildCanvasStatic();
+}
+function wire(){
+  el.play.addEventListener('click',play);
+  el.pause.addEventListener('click',togglePause);
+  el.aliud.addEventListener('click',aliud);
+  el.cut.addEventListener('click',cut);
+  el.tactus.addEventListener('input',e=>{
+    st.tactus=+e.target.value; el.tactusrd.textContent=st.tactus; RT.score=null; updateHash();
+    if(st.playing){stop();play();}
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.target && e.target.tagName==='INPUT') return;
+    if(e.key===' '){e.preventDefault(); if(st.playing) stop(); else play();}
+    else if(e.key==='p'){e.preventDefault(); togglePause();}
+    else if(e.key==='r'){e.preventDefault(); aliud();}
+    else if(e.key==='c'){e.preventDefault(); cut();}
+    else if(e.key>='1'&&e.key<='9'){e.preventDefault(); selectResponsory(+e.key);}
+  });
+  window.addEventListener('resize',()=>{ if(document.body.contains(el.hearse)) rebuildCanvasStatic(); });
+}
+function updateHash(){
+  const m=MODE_CHIPS.findIndex(x=>x[0]===st.mode);
+  const hash='v1·s'+st.seed+'·r'+st.responsory+'·m'+m+'·t'+st.tactus;
+  history.replaceState(null,'',location.pathname+'#'+hash);
+}
+function loadHash(){
+  const h=location.hash.slice(1); if(!h) return;
+  for(const p of h.split('·')){
+    if(p==='v1'||!p.length) continue;
+    const key=p[0], val=p.slice(1);
+    if(key==='s'){const s=parseInt(val,10); if(isFinite(s)) st.seed=s>>>0;}
+    else if(key==='r'){const k=parseInt(val,10); if(k>=1&&k<=9) st.responsory=k;}
+    else if(key==='m'){const mi=parseInt(val,10); if(MODE_CHIPS[mi]) st.mode=MODE_CHIPS[mi][0];}
+    else if(key==='t'){const t=parseInt(val,10); if(t>=48&&t<=66) st.tactus=t;}
+  }
+}
+
+/* ============================ READER PANEL =============================== */
+const READER_HTML = `
+<h4>What you're hearing</h4>
+<p><em>Tenebrae</em> — "darkness" — is the popular name for Matins and Lauds of the last three days of Holy Week, sung the evening before so the office ends as night deepens. This machine renders one day only, Good Friday, and further narrows to its nine <em>responsories</em>: choral responses to the night's readings. Pick a responsory (I–IX) and a mode; the machine composes a fresh four-voice setting of that responsory's actual Latin text in strict sixteenth-century counterpoint and sings it in a stone room.</p>
+<h4>The hearse</h4>
+<p>Tenebrae is built around a piece of furniture: the <em>hearse</em>, a triangular stand of fifteen candles. One is put out after each psalm until a single flame remains, carried behind the altar, still burning but unseen. After the last psalm the choir makes the <em>strepitus</em> — a sudden noise, read by tradition as the earthquake at the death of Christ (Matthew 27:51) — the hidden candle returns, and everyone leaves in silence. The candle count at any responsory is fixed by the rubric (three snuffed per psalm, nine psalms across three nocturns), and it drives this machine's light and its darkening master tone alike — responsory IX is sung by six flames in a near-black room, and carries the strepitus as its coda.</p>
+<h4>The responsory, and why the machine repeats itself</h4>
+<p>A responsory is a strict form: a choral <em>respond</em> (a·b) whose closing section, the <em>repetendum</em>, repeats after a <em>verse</em> sung by reduced voices — a·b·℣·b. In the Triduum the Gloria Patri is suppressed everywhere (nothing doxological survives the darkness), and the third responsory of each nocturn (III, VI, IX here) adds a full da capo: a·b·℣·b·a·b. The repeated b is not regenerated — it is the identical music, sung again, the way a real choir repeats it.</p>
+<h4>Victoria</h4>
+<p>Tomás Luis de Victoria (c. 1548–1611) was the great composer of the Spanish Counter-Reformation: trained in Ávila, ordained in Rome within Philip Neri's circle, and eventually chaplain to the dowager Empress María, ending his life at an organ loft in a Madrid convent. His 1585 <em>Officium Hebdomadae Sanctae</em> — the complete music for Holy Week — includes eighteen Tenebrae responsories, four voices, verses for three, and a style this machine tries to earn honestly: imitation points at a text's opening, grave chordal declamation for the rest, dissonance almost always a prepared suspension.</p>
+<h4>What a suspension is</h4>
+<p>A suspension is the oldest trick in counterpoint: a voice holds its note while the harmony underneath moves on, so the held note turns momentarily dissonant against the new bass — then it yields, stepping down to a note that IS consonant. Holding your ground while the world moves, then giving way. This machine's suspensions hold their exact frequency through the dissonance and only retune once they resolve — nothing slides.</p>
+<h4>Zarlino's senario, and ficta</h4>
+<p>The tuning theorist of Victoria's own age, Gioseffo Zarlino, derived consonance from the <em>senario</em> — the ratios of 1 through 6 (5-limit just intonation). Unaccompanied choirs tune this way by ear, bending by small commas as the harmony asks; keyboards, tuned in meantone, only approximate it. This machine sings the choir's version: every chord is tuned in exact small-integer ratios over whichever bass note is sounding, not read off a fixed table. <em>Ficta</em> is the accidental a singer adds that isn't written down — almost always to sharpen a cadence's leading tone. Here it appears as one exact ratio (15/8 over the note the cadence resolves to) at authentic cadences; Phrygian cadences raise nothing at all — the bass simply falls a semitone, which is what makes a Phrygian close sound the way it does.</p>
+<h4>Why so much of this is chords</h4>
+<p>The Council of Trent's Counter-Reformation reforms demanded, above all, that the words be intelligible. Victoria's generation answered with <em>falsobordone</em> — plain chordal recitation — and grave, homorhythmic declamation wherever the text needed to be heard clearly, saving imitative polyphony for a text's opening gesture. This machine follows the same economy.</p>
+<h4>Honesty notes</h4>
+<p>The voices are a vowel stream, not consonants or full text-to-speech — sung Latin at a generative machine's distance, not a choir's. Good Friday's nine responsories are v1; the other eighteen (Maundy Thursday, Holy Saturday) are a schema-ready pickup. The strepitus here stands in for all of Lauds, which historically follows. And this is new music under an old law: these are not Victoria's notes. They are his rules.</p>
+`;
+
+/* ============================ INIT ======================================= */
+function init(){
+  grabEls();
+  loadHash();
+  buildChips();
+  el.tactus.value=st.tactus; el.tactusrd.textContent=st.tactus;
+  hctx=el.hearse.getContext('2d'); bctx=el.book.getContext('2d');
+  el.readerbody.innerHTML=READER_HTML;
+  wire();
+  refreshChips();
+  updateLedger();
+  rebuildCanvasStatic();
+  updateHash();
+}
+init();
+</script>
+</body>
+</html>
