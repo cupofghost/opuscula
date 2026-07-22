@@ -251,6 +251,36 @@ Conventions when touching this layer:
 
 Newest first.
 
+### TENEBRAE — maintainer-reported voicing fixes (op. XXVI)
+**Branch:** `claude/tenebrae-to-main-3s6rw3` · **File:** `tenebrae/index.html`
+(3 targeted changes in `scheduleSingerChain`/`buildGraph`). **Status:** done,
+verified headless. Three complaints, all confirmed real:
+
+- **Portamento too prominent, reads as dissonant.** `scheduleSingerChain`'s
+  legato note-to-note glide (`xfade`) was 30ms — long enough that quick
+  melismatic runs spent audible time sliding through the interval between
+  two lawful pitches, landing as passing dissonance against the other
+  voices rather than a clean attack. Cut to 12ms — still glides (no
+  zipper-noise jump), but short enough not to linger on the in-between.
+- **Vibrato was unified across singers.** Every singer in a part shared
+  the exact `TP.capella.vibRate`, so cantores>1 produced one synchronized
+  wobble instead of individual voices — real choirs don't lock vibrato
+  rate. Added `singerVibRateHz(voice,idx,seed)`, seeded ±12% around the
+  TIMBRE center rate per singer (same `hashSeed`+`mulberry32` pattern as
+  `singerDetuneCents`/`singerStaggerSec`), so each voice drifts in and out
+  of phase with the others. `vibRate`'s doc updated to describe it as the
+  choir's center, not a shared value.
+- **Output could clip.** `buildGraph`'s only ceiling was the user-tunable
+  glue compressor (gentle default, 2:1) plus a hard `Math.max(-1,Math.min(1,…))`
+  clamp in `saveWav` — a real clip, not a limiter. A stress test at
+  `cantores=4` (max) across responsories 1/3/6/9 × 2 seeds hit peaks up to
+  ~0.94 pre-fix headroom margin was thin enough that louder seeds/tuttis
+  could plausibly cross 1.0 and hard-clip in the WAV. Added a fixed safety
+  `DynamicsCompressor` (threshold -1dB, ratio 20, attack 2ms) between
+  `g.out` and `ctx.destination` — not exposed in TIMBRE, it's a ceiling,
+  not a voicing choice. Re-tested the same stress sweep post-fix: peaks
+  0.84–0.94, zero clip, zero NaN.
+
 ### TENEBRAE — new machine, op. XXVI (implemented from tenebrae/OFFICIUM.md)
 **Branch:** `claude/tenebrae-machine-an2uin` · **File:** `tenebrae/index.html`
 (new, ~1950 lines) · `tenebrae/OFFICIUM.md` deleted per its own instruction.

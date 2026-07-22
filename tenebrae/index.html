@@ -1240,7 +1240,7 @@ const TIMBRE={
       cantores:{v:2,min:1,max:4,step:1,label:'cantores/part',doc:'singers per part in the respond (applies next Play/Another)'},
       detuneSpread:{v:6,min:4,max:9,step:.5,unit:'¢',label:'detune spread',doc:'fixed per-singer seeded detune when cantores>1'},
       breathLevel:{v:.22,min:0,max:.6,step:.02,label:'breath level',doc:'continuous breathy noise under the tone'},
-      vibRate:{v:5,min:4,max:5.5,step:.1,unit:'Hz',label:'vibrato rate',doc:'shared vibrato speed'},
+      vibRate:{v:5,min:4,max:5.5,step:.1,unit:'Hz',label:'vibrato rate',doc:'the choir\'s center vibrato speed — each singer wanders a fixed seeded amount around it, never locked together'},
       vibDepth:{v:8,min:0,max:14,step:.5,unit:'¢',label:'vibrato depth',doc:'width of the vibrato — narrow and warm, symmetric around the exact frequency'},
       vibOnset:{v:400,min:300,max:500,step:10,unit:'ms',label:'vibrato onset',doc:'a held tone stays straight this long before the vibrato fades in'},
       stagger:{v:10,min:0,max:12,step:.5,unit:'ms',label:'ensemble stagger',doc:'per-singer onset spread on non-unison attacks'},
@@ -1367,7 +1367,14 @@ function buildGraph(ctx,score){
 
   g.out=ctx.createGain(); g.out.gain.value=TP.master.outTrim;
   g.dry.connect(g.out); g.convolver.connect(g.out);
-  g.out.connect(ctx.destination);
+
+  // fixed safety ceiling — tutti + reverb tail can sum past 0dBFS even after
+  // the (user-tunable) glue compressor above; this catches it before the
+  // destination/WAV render ever has to hard-clip.
+  g.limiter=ctx.createDynamicsCompressor();
+  g.limiter.threshold.value=-1; g.limiter.knee.value=0; g.limiter.ratio.value=20;
+  g.limiter.attack.value=0.002; g.limiter.release.value=0.05;
+  g.out.connect(g.limiter); g.limiter.connect(ctx.destination);
   return g;
 }
 function scheduleNote(ctx,dest,hz,t0,dur,vowel,voiceType,detuneCents){
@@ -1463,6 +1470,10 @@ function singerStaggerSec(voice,idx,seed){
   const r=mulberry32(hashSeed(voice,idx,seed,0xBADA55))();
   return r*TP.capella.stagger*0.001;
 }
+function singerVibRateHz(voice,idx,seed){
+  const r=mulberry32(hashSeed(voice,idx,seed,0xF00DED))();
+  return TP.capella.vibRate*(0.88+r*0.24); // ±12%: singers never share one wobble
+}
 function secondsPerTick(tactus){return 15/tactus;}
 /* One persistent oscillator+formant-bank chain per (voice,singer), running
    for the WHOLE piece — not one per note. A fresh node graph per note
@@ -1509,11 +1520,11 @@ function scheduleSingerChain(ctx,dest,voice,singerIdx,notes,tactus,startTime,see
   const amp=ctx.createGain(); amp.gain.setValueAtTime(0,startTime);
   sum.connect(amp); amp.connect(dest);
 
-  const lfo=ctx.createOscillator(); lfo.type='sine'; lfo.frequency.value=TP.capella.vibRate;
+  const lfo=ctx.createOscillator(); lfo.type='sine'; lfo.frequency.value=singerVibRateHz(voice,singerIdx,seed);
   const lfoGain=ctx.createGain(); lfoGain.gain.value=0;
   lfo.connect(lfoGain); lfoGain.connect(osc.detune);
 
-  const atk=0.035, rel=0.12, gapThresh=0.06, xfade=0.03, peak=0.5;
+  const atk=0.035, rel=0.12, gapThresh=0.06, xfade=0.012, peak=0.5;
   let lastEnd=-Infinity, firstT=Infinity, lastStop=startTime;
   for(let i=0;i<notes.length;i++){
     const ev=notes[i];
