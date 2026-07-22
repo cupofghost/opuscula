@@ -1,0 +1,1479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0c0a08">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RICERCAR">
+<meta name="description" content="RICERCAR — the riddle canons of Bach's Musical Offering, run as a formal system. A seed spells a royal theme (Gödel numbering); a deterministic search finds true canons in it (Quaerendo invenietis); the finale rises through six real Werckmeister III keys and folds home an octave up — a strange loop that contains its own beginning.">
+<title>RICERCAR · op. XXIII</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<style>
+:root{--ground:#0c0a08;--field:#171310;--ink:#e7ddc6;--dim:rgba(231,221,198,.6);--line:rgba(231,221,198,.22);--gold:#c9a24a;--red:#a5372c}
+@media (prefers-color-scheme: light){
+  :root{--ground:#f4efe2;--field:#e9e0c8;--ink:#241d12;--dim:rgba(36,29,18,.62);--line:rgba(36,29,18,.24);--gold:#8a6a1e;--red:#8a2f22}
+}
+:root[data-theme="dark"]{--ground:#0c0a08;--field:#171310;--ink:#e7ddc6;--dim:rgba(231,221,198,.6);--line:rgba(231,221,198,.22);--gold:#c9a24a;--red:#a5372c}
+:root[data-theme="light"]{--ground:#f4efe2;--field:#e9e0c8;--ink:#241d12;--dim:rgba(36,29,18,.62);--line:rgba(36,29,18,.24);--gold:#8a6a1e;--red:#8a2f22}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--ground)}
+body{background:var(--ground);color:var(--ink);font-family:Charter,'Bitstream Charter',Georgia,serif;
+  min-height:100vh;padding:max(18px,env(safe-area-inset-top)) 16px calc(28px + env(safe-area-inset-bottom))}
+.wrap{max-width:900px;margin:0 auto}
+header{text-align:center;padding:.5rem 0 1.2rem;border-bottom:2px double var(--line)}
+h1{font-family:Charter,Georgia,serif;font-weight:400;letter-spacing:.22em;font-size:2rem}
+.sub{font-family:'IBM Plex Mono',monospace;font-size:.7rem;letter-spacing:.12em;color:var(--dim);margin-top:.4rem;text-transform:uppercase}
+.exitpill{position:absolute;top:14px;left:14px}
+main{padding-top:1.4rem}
+.controls{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;margin-bottom:1rem}
+button{background:var(--field);color:var(--ink);border:1px solid var(--line);padding:.5rem .9rem;cursor:pointer;font:inherit;font-size:.85rem;border-radius:2px}
+button:hover{border-color:var(--gold)}
+button:disabled{opacity:.4;cursor:default}
+button.on{background:var(--gold);color:var(--ground);border-color:var(--gold)}
+.row{display:flex;flex-wrap:wrap;gap:.9rem;align-items:center;margin-bottom:.7rem;font-size:.85rem}
+.slider{display:flex;align-items:center;gap:.45rem}
+input[type=range]{width:150px;accent-color:var(--gold)}
+select{background:var(--field);color:var(--ink);border:1px solid var(--line);padding:.3rem .5rem;font:inherit}
+.tag{font-family:'IBM Plex Mono',monospace;font-size:.72rem;color:var(--dim);min-width:2.4em;display:inline-block}
+canvas{width:100%;height:auto;display:block;background:var(--field);border:1px solid var(--line);margin:1rem 0;border-radius:2px}
+.panel{background:var(--field);border:1px solid var(--line);padding:1.1rem 1.3rem;margin-bottom:1.1rem;border-radius:2px}
+.panel h2{font-size:1rem;letter-spacing:.06em;margin-bottom:.6rem;font-weight:600}
+.panel p{margin-bottom:.55rem;font-size:.92rem;line-height:1.55}
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.4rem;font-size:.82rem}
+.key{background:var(--ground);padding:.4rem .55rem;border:1px solid var(--line)}
+.hint{font-size:.78rem;color:var(--dim);margin-top:.2rem}
+footer{border-top:2px double var(--line);padding:1.2rem 0;text-align:center;font-size:.85rem;margin-top:1.4rem}
+.pills{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap}
+a{color:var(--gold);text-decoration:none}
+a:hover{text-decoration:underline}
+.pill{display:inline-block;padding:.25rem .7rem;border:1px solid var(--line);font-size:.8rem;border-radius:2px}
+details summary{cursor:pointer}
+@media (prefers-reduced-motion: reduce){canvas{border-width:2px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header style="position:relative">
+  <a href="../" class="pill exitpill">.exit</a>
+  <h1>RICERCAR</h1>
+  <div class="sub">op. XXIII · MMXXVI · the riddle canons of the Musical Offering, run as a formal system</div>
+</header>
+<main>
+  <div class="controls">
+    <button id="play">&#9658; Play</button>
+    <button id="pause" disabled>&#9616;&#9616; Pause</button>
+    <button id="stop">&#9632; Stop</button>
+    <button id="aliud">&#8635; Aliud</button>
+    <button id="cut">&#8659; Cut WAV</button>
+  </div>
+
+  <div class="row">
+    <div class="slider"><label for="seed">SIGILLUM</label>
+      <input type="range" id="seed" min="0" max="2985983" value="1747" step="1">
+      <span class="tag" id="seedVal">1747</span></div>
+    <div class="slider"><label for="tonus">TONUS</label>
+      <select id="tonus"></select></div>
+  </div>
+  <div class="row">
+    <div class="slider"><label for="canon">CANON</label>
+      <select id="canon">
+        <option value="0">OMNIA</option>
+        <option value="1">1 · THEMA</option>
+        <option value="2">2 · SIMPLEX</option>
+        <option value="3">3 · CANCRIZANS</option>
+        <option value="4">4 · CONTRARIUM</option>
+        <option value="5">5 · AUGMENTATIONEM</option>
+        <option value="6">6 · PER TONOS</option>
+      </select></div>
+    <div class="slider"><label for="interval">INTERVALLUM</label>
+      <select id="interval">
+        <option value="7">5th</option>
+        <option value="5">4th</option>
+        <option value="12">8ve</option>
+      </select></div>
+    <div class="slider"><label for="godel">G&Ouml;DEL</label>
+      <button id="godel" class="on">on</button></div>
+    <div class="slider"><label for="tempo">TEMPO</label>
+      <input type="range" id="tempo" min="60" max="96" value="72" step="1">
+      <span class="tag" id="tempoVal">72</span></div>
+  </div>
+
+  <canvas id="canvas" width="1600" height="440"></canvas>
+
+  <div class="panel">
+    <h2>On this music</h2>
+    <p>May 7, 1747: Frederick the Great hands the visiting Johann Sebastian Bach a long, chromatic
+    theme at the fortepiano in Potsdam and asks for an improvised fugue. Bach obliges, then goes home
+    to Leipzig and mails back the <em>Musical Offering</em> — two ricercars, a trio sonata, and ten
+    canons on the King's theme, several of them <em>riddle canons</em>: notated as a single line plus
+    a Latin motto, the second voice left for the performer to <em>find</em>. One bears the inscription
+    <em>Quaerendo invenietis</em> — "seek and you shall find."</p>
+    <p>Two of the ten carry mottoes that wire structure to meaning: the augmentation canon —
+    <em>Notulis crescentibus crescat Fortuna Regis</em>, "as the notes grow, may the King's fortune
+    grow" — and the modulating canon, the <em>canon per tonos</em>, which rises a whole tone every
+    time through and could in principle rise forever: <em>Ascendenteque Modulatione ascendat Gloria
+    Regis</em>.</p>
+    <p>Douglas Hofstadter's <em>Gödel, Escher, Bach</em> (1979) takes that endless canon as the
+    emblem of a <em>strange loop</em> — a hierarchy that, climbed level by level, returns you to
+    where you started — and pairs it with Gödel's discovery that a formal system can encode
+    statements <em>about itself</em> as numbers <em>inside</em> itself.</p>
+    <p>This machine does what the riddle asks. Your seed is spelled, in base twelve, into six notes
+    of the royal theme — decode them and you have the seed back; the URL is audibly in the tune. A
+    deterministic search then looks for canons — retrograde, mirror-inverted, augmented, endlessly
+    modulating — that verify as contrapuntally <em>true</em> against the theme, exactly the way a
+    1747 performer had to find them. The finale rises through six real, differently-coloured
+    Werckmeister III keys and, at the seam, folds itself down an octave and restarts the piece: one
+    strange loop that contains its own beginning.</p>
+    <p>Honesty: the search is sometimes allowed to bend a rule (marked <em>licentia</em> on the
+    score) when no clean solution turns up in time; the octave fold at the seam is a real, exact
+    &minus;1200&cent; drop, not an illusion; the <b>B&ndash;A&ndash;C&ndash;H</b> utterance that sounds across
+    the fold is deliberately not derived by any rule in the piece &mdash; the one true statement the
+    system cannot prove; and Werckmeister III (Bach's world, tuned at A=415, a semitone under modern
+    pitch) is one plausible period tuning, not a documented certainty for this piece.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Keys</h2>
+    <div class="keys">
+      <div class="key"><b>space</b> play/stop</div>
+      <div class="key"><b>p</b> pause/resume</div>
+      <div class="key"><b>r</b> aliud (new seed)</div>
+      <div class="key"><b>c</b> cut WAV</div>
+      <div class="key"><b>m</b> next movement</div>
+    </div>
+    <div class="hint">The URL hash <em>is</em> the pressing. A change to a control re-vibes at the
+    next movement boundary, not mid-canon &mdash; a derivation isn't interruptible.</div>
+  </div>
+</main>
+<footer>
+  <div class="pills">
+    <a href="../" class="pill">.exit</a>
+    <a href="../officina/?bench=ricercar" class="pill">.bench</a>
+  </div>
+</footer>
+</div>
+
+<script>
+'use strict';
+/* ======================================================================
+   RICERCAR · op. XXIII — the riddle canons of the Musical Offering, run
+   as a formal system. See ricercar/GEB.md (deleted at ship) for the brief
+   this implements; see HANDOFF.md's RICERCAR thread for the record of
+   which of the brief's freedoms this session resolved and how.
+   ====================================================================== */
+
+/* ---------------------------------------------------------------------
+   1 · TIMBRE (OFFICINA schema) + the verbatim bridge
+   --------------------------------------------------------------------- */
+const TIMBRE = {
+  id: 'ricercar',
+  title: 'RICERCAR',
+  doc: 'Three synthesized voices for the riddle canons: CEMBALO (Karplus–Strong pluck, the dux), PRINCIPAL (additive organ flue, the comes), PEDAAL (bourdon pedal point / bass cantus). Werckmeister III tuning and the canon rules are law, not voicing, and live outside this schema.',
+  groups: {
+    master: { label: 'Master', doc: 'Output stage: warmth shaper, reverb send, brick-wall ceiling.', params: {
+      level:     { v: .85, min: .2, max: 1.3, step: .01, label: 'level', doc: 'Output trim after the limiter.' },
+      drive:     { v: .05, min: 0, max: .4, step: .01, label: 'drive', doc: 'Gentle waveshaper warmth before the compressor.' },
+      verbSend:  { v: .26, min: 0, max: .8, step: .01, label: 'verb send', doc: 'Wet reverb send level.' },
+      limCeiling:{ v: -1.5, min: -6, max: 0, step: .1, unit: 'dB', label: 'limiter ceiling', doc: 'Brick-wall threshold; the mix never exceeds this.' }
+    }},
+    cembalo: { label: 'Cembalo (dux)', doc: 'The plucked harpsichord voice — always the dux. Level rides live; the rest are baked per note and apply next Play/Aliud.', params: {
+      level:      { v: .62, min: .1, max: 1.2, step: .01, label: 'level', doc: 'Cembalo bus gain (live).' },
+      brightness: { v: 4200, min: 800, max: 10000, step: 50, unit: 'Hz', label: 'brightness', doc: 'One-pole damping inside the string feedback loop.' },
+      decay:      { v: 1.6, min: .5, max: 4, step: .05, unit: 's', label: 'decay', doc: 'Ring time before the pluck dies away.' },
+      damp:       { v: .3, min: 0, max: 1, step: .02, label: 'damp', doc: 'Extra high-frequency loss per string round trip.' },
+      excite:     { v: .95, min: .3, max: 1, step: .01, label: 'excite', doc: 'Noise-burst gain that excites the string.' }
+    }},
+    principal: { label: 'Principal (comes)', doc: 'The additive organ flue — the comes voice, and the Gödel utterance. Partial content is baked; level rides live.', params: {
+      level:      { v: .5, min: .1, max: 1.2, step: .01, label: 'level', doc: 'Principal bus gain (live).' },
+      partials:   { v: 5, min: 2, max: 9, step: 1, label: 'partials', doc: 'Harmonic partials stacked into the flue tone.' },
+      rolloff:    { v: .55, min: .1, max: .9, step: .01, label: 'rolloff', doc: 'Amplitude falloff per partial (lower = brighter).' },
+      chiff:      { v: .18, min: 0, max: .6, step: .01, label: 'chiff', doc: 'Filtered noise transient at note onset (organ pipe speech).' },
+      chiffDecay: { v: .04, min: .01, max: .15, step: .005, unit: 's', label: 'chiff decay', doc: 'How fast the onset chiff dies away.' },
+      tremDepth:  { v: 0, min: 0, max: .3, step: .01, label: 'tremulant depth', doc: 'Slow tremulant amplitude wobble (organs: usually near zero).' },
+      tremRate:   { v: 5.2, min: 3, max: 8, step: .1, unit: 'Hz', label: 'tremulant rate', doc: 'Tremulant speed.' }
+    }},
+    pedaal: { label: 'Pedaal (cantus)', doc: 'The bourdon pedal point / finale bass cantus.', params: {
+      level:    { v: .55, min: .1, max: 1.2, step: .01, label: 'level', doc: 'Pedaal bus gain (live).' },
+      tone:     { v: .12, min: 0, max: .4, step: .01, label: '3rd-partial tone', doc: 'Whisper of a third-partial overtone on the sine fundamental.' },
+      attack:   { v: .12, min: .02, max: .4, step: .01, unit: 's', label: 'attack', doc: 'Envelope attack.' },
+      release:  { v: .5, min: .1, max: 1.2, step: .02, unit: 's', label: 'release', doc: 'Envelope release.' }
+    }},
+    room: { label: 'Room', doc: 'The Offering was chamber music in a palace, not a cathedral — a small stone room, not a hall.', params: {
+      seconds:  { v: 2.2, min: .6, max: 4, step: .1, unit: 's', label: 'size', doc: 'Impulse response length.' },
+      damp:     { v: 1.6, min: .5, max: 4, step: .1, label: 'damp', doc: 'High-frequency decay exponent of the seeded IR.' },
+      level:    { v: 1, min: 0, max: 1.5, step: .02, label: 'level', doc: 'IR level trim.' },
+      predelay: { v: .012, min: 0, max: .08, step: .002, unit: 's', label: 'predelay', doc: 'Silence before the IR onset.' }
+    }},
+    pulsus: { label: 'Pulsus', doc: 'A subtle beat-1 tactus click, off by default — a rehearsal aid, not a voice.', params: {
+      tickLevel: { v: 0, min: 0, max: .3, step: .01, label: 'tick level', doc: 'Downbeat click volume (0 = silent).' }
+    }}
+  }
+};
+/* ---- OFFICINA bridge (identical in every machine) ------------------------ */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+/* ---------------------------------------------------------------------
+   2 · THE LAW — Werckmeister III (exact), the cipher, canon rules.
+   None of this is TIMBRE; it is the interface the controls expose.
+   --------------------------------------------------------------------- */
+const PC_NAMES = ['C','C♯','D','E♭','E','F','F♯','G','G♯','A','B♭','B'];
+
+// §3 — exact ratios (rationals × fourth roots of two), evaluated once.
+const W = [
+  1,                                  // C
+  256/243,                            // C#
+  (64/81)*Math.sqrt(2),               // D
+  32/27,                              // Eb
+  (256/243)*Math.pow(2,1/4),          // E
+  4/3,                                // F
+  1024/729,                           // F#
+  (8/9)*Math.pow(2,3/4),              // G
+  128/81,                             // G#
+  (1024/729)*Math.pow(2,1/4),         // A
+  16/9,                               // Bb
+  (128/81)*Math.pow(2,1/4)            // B
+];
+const A4 = 415;                        // Baroque Cammerton — the one Hz literal
+const C4REF = A4 / W[9];               // derived, not a second literal
+// ci = an unbounded chromatic-degree integer: pc = ci mod 12, register k = floor(ci/12)
+// (register 0 == the octave containing C4REF). Transposition is index
+// arithmetic on ci — never a frequency multiply. See §13: no pitch-shifting.
+function freqFromCi(ci){
+  const pc = ((ci % 12) + 12) % 12, k = Math.floor(ci/12);
+  return C4REF * W[pc] * Math.pow(2, k);
+}
+function pcOf(ci){ return ((ci%12)+12)%12; }
+
+// §4 — the Gödel cipher. s ∈ [0, 12^6). Base-12 little-endian digits are
+// chromatic degrees ABOVE the tonic; decoding the six SIGILLUM pcs of any
+// theme recovers s exactly.
+const SEED_MAX = Math.pow(12,6); // 2,985,984
+function cipherDigits(s){
+  s = ((s % SEED_MAX) + SEED_MAX) % SEED_MAX;
+  const d = [];
+  for(let i=0;i<6;i++){ d.push(s % 12); s = Math.floor(s/12); }
+  return d; // d[0..5], little-endian
+}
+function digitsToSeed(d){
+  let s = 0;
+  for(let i=5;i>=0;i--) s = s*12 + d[i];
+  return s;
+}
+
+// §5.1 — the alphabet of transformations, applied to a note list
+// [{beat,dur,semi}] where `semi` is a chromatic offset from whatever tonic
+// realizes it later (kept abstract here so the same rule works at any lap's
+// tonic). `T(i)` per §13 is index arithmetic (add i to semi), never a
+// frequency multiply.
+function ruleT(notes,i){ return notes.map(n=>({...n, semi:n.semi+i})); }
+function ruleD(notes,beats){ return notes.map(n=>({...n, beat:n.beat+beats})); }
+function ruleR(notes,spanBeats){ // cancrizans: reverse onsets AND durations
+  return notes.map(n=>({...n, beat: spanBeats - (n.beat+n.dur), dur:n.dur})).sort((a,b)=>a.beat-b.beat);
+}
+function ruleI(notes){ return notes.map(n=>({...n, semi: -n.semi})); } // per motum contrarium: mirror about the tonic (semi=0)
+function ruleA(notes){ return notes.map(n=>({...n, beat:n.beat*2, dur:n.dur*2})); } // per augmentationem
+
+/* ---------------------------------------------------------------------
+   3 · THE THEME — CAPUT / SIGILLUM / LAMENTUS / CLAUSULA (§4)
+   --------------------------------------------------------------------- */
+const THEME_BEATS = 32; // 8 bars × 4/4
+
+// Content menus (the pitch-degree freedom): rhythm itself is drawn fresh
+// per search attempt (randomPartition, below) rather than picked from a
+// small fixed table — a riddle canon's vertical truth against an arbitrary
+// delay/inversion/retrograde of the SAME line depends on exactly which
+// underlying notes end up simultaneous, which a handful of fixed rhythm
+// templates can't cover densely enough to hit the §15.4 target (≥60% of
+// movements verifying at licentia-free level 0) within the 512-attempt cap.
+// Quantizing the continuous draw to an eighth-note grid keeps it a genuine
+// "menu, chosen per attempt" rather than an unbounded parameter.
+const CAPUT_DEG_VARIANTS = [ // beats 0-8, core degrees 1→♭3→5 = semi 0,3,7
+  [0,3,7],
+  [0,2,3,7],   // passing tone into ♭3
+  [0,3,5,7],   // passing tone into 5
+  [0,0,3,7]    // rhythmic variant: tonic restruck
+];
+const LAMENTUS_KEEP_VARIANTS = [ // beats 20-28 (8 beats), chromatic 5→1 = semi 7..0
+  [7,6,5,4,3,2,1,0],
+  [7,5,4,2,1,0],
+  [7,6,4,3,1,0],
+  [7,4,3,0]
+];
+const CLAUSULA_DEG_VARIANTS = [ // beats 28-32 (4 beats), cadence onto tonic
+  [7,11,0],
+  [7,10,11,0],
+  [0],
+  [7,0,7,0]
+];
+// n gap lengths >0 summing to `total`, quantized to an eighth note (.5 beat).
+function randomPartition(rng, total, n){
+  if(n<=1) return { onsets:[0], durs:[total] };
+  const raw = []; let sum=0;
+  for(let i=0;i<n;i++){ const v=.35+rng(); raw.push(v); sum+=v; }
+  const durs = raw.map(v=>Math.max(.5, Math.round((v/sum*total)*2)/2));
+  let over = durs.reduce((a,b)=>a+b,0) - total;
+  let i=0;
+  while(Math.abs(over)>1e-9 && i<200){ // redistribute rounding drift, keep each dur >= .5
+    const k = i%n;
+    if(over>0 && durs[k]>.5){ durs[k]-=.5; over-=.5; }
+    else if(over<0){ durs[k]+=.5; over+=.5; }
+    i++;
+  }
+  const onsets=[]; let acc=0;
+  for(const d of durs){ onsets.push(acc); acc+=d; }
+  return { onsets, durs };
+}
+
+// nearest-octave placement (§4 register rule; tie → below/lower pitch)
+function nearestCi(prevCi, deg){
+  deg = ((deg%12)+12)%12;
+  const base = Math.floor(prevCi/12)*12 + deg;
+  let best = base, bestDist = Math.abs(base-prevCi);
+  for(const c of [base-12, base+12]){
+    const dist = Math.abs(c-prevCi);
+    if(dist < bestDist || (dist===bestDist && c < best)){ best=c; bestDist=dist; }
+  }
+  return best;
+}
+
+// Realize a base theme (the seed's cipher digits, fixed) into a concrete
+// note list under one movement's chosen "freedoms" (rhythm/octave templates
+// — search state, §5.4). Pitch content (cipher pcs, CAPUT/LAMENTUS degrees)
+// is identical every time; only rhythm + octave placement vary. Returns
+// {notes:[{beat,dur,semi,region}], sigilCi:[6 absolute ci at the found
+// octaves]} — sigilCi lets the bijectivity check decode straight back.
+// `flip(rng)` draws one octave-placement freedom per note — NOT limited to
+// SIGILLUM (§4's octave freedom is explicit there, but every region's
+// register placement is equally free within the register rule, and a canon's
+// vertical consonance against a delayed/inverted/retrograded copy of the
+// SAME note sequence depends on register at whichever notes end up paired
+// vertically, which varies by rule/delay — see the QUAERENDO note in
+// HANDOFF.md's RICERCAR thread for why this needed broadening past the
+// brief's literal "SIGILLUM octaves only" wording to hit the §15.4 target).
+function realizeTheme(cipherDigits_, freedoms, rng){
+  const notes = [];
+  let prevCi = 0; // relative to tonic=0 (semi 0 = tonic, register anchored at first note)
+  const flip = (ci, prev) => rng() < 0.5 ? ci : ci + (ci >= prev ? -12 : 12);
+
+  const capDegs = CAPUT_DEG_VARIANTS[freedoms.cap];
+  const capR = randomPartition(rng, 8, capDegs.length);
+  for(let i=0;i<capDegs.length;i++){
+    const deg = capDegs[i];
+    const ci = i===0 ? deg : flip(nearestCi(prevCi, deg), prevCi);
+    notes.push({beat:capR.onsets[i], dur:capR.durs[i], semi:ci, region:'CAPUT'});
+    prevCi = ci;
+  }
+
+  const sigR = randomPartition(rng, 12, 6);
+  const sigilCi = [];
+  for(let i=0;i<6;i++){
+    const deg = cipherDigits_[i];
+    const ci = flip(nearestCi(prevCi, deg), prevCi);
+    notes.push({beat:8+sigR.onsets[i], dur:sigR.durs[i], semi:ci, region:'SIGILLUM'});
+    sigilCi.push(ci);
+    prevCi = ci;
+  }
+
+  const lamKeep = LAMENTUS_KEEP_VARIANTS[freedoms.lam];
+  const lamR = randomPartition(rng, 8, lamKeep.length);
+  for(let i=0;i<lamKeep.length;i++){
+    const deg = lamKeep[i];
+    const ci = flip(nearestCi(prevCi, deg), prevCi);
+    notes.push({beat:20+lamR.onsets[i], dur:lamR.durs[i], semi:ci, region:'LAMENTUS'});
+    prevCi = ci;
+  }
+
+  const clauDegs = CLAUSULA_DEG_VARIANTS[freedoms.clau];
+  const clauR = randomPartition(rng, 4, clauDegs.length);
+  for(let i=0;i<clauDegs.length;i++){
+    const deg = clauDegs[i];
+    const ci = flip(nearestCi(prevCi, deg), prevCi);
+    notes.push({beat:28+clauR.onsets[i], dur:clauR.durs[i], semi:ci, region:'CLAUSULA'});
+    prevCi = ci;
+  }
+
+  return {notes, sigilCi};
+}
+
+function decodeSigil(sigilCi, homeTonicPc){
+  return sigilCi.map(ci => (((ci%12)+12)%12));
+}
+
+/* ---------------------------------------------------------------------
+   4 · MOVEMENTS — form + the truth predicate + QUAERENDO search (§5)
+   --------------------------------------------------------------------- */
+const MOVEMENTS = [
+  { n:1, id:'THEMA', lat:'THEMA', motto:'', bars:8 },
+  { n:2, id:'SIMPLEX', lat:'CANON SIMPLEX', motto:'', bars:16,
+    voices:['dux','comes','pedal'], statements:2, rule:['T'], delayBars:2 },
+  { n:3, id:'CANCRIZANS', lat:'CANON CANCRIZANS', motto:'', bars:16,
+    voices:['dux','comes'], statements:2, rule:['R'], delayBars:0, perStatement:true },
+  { n:4, id:'CONTRARIUM', lat:'CANON PER MOTUM CONTRARIUM', motto:'', bars:16,
+    voices:['dux','comes','pedal'], statements:2, rule:['I'], delayBars:1 },
+  { n:5, id:'AUGMENTATIONEM', lat:'CANON PER AUGMENTATIONEM, CONTRARIO MOTU',
+    motto:'Notulis crescentibus crescat Fortuna Regis', bars:16,
+    voices:['dux','comes'], statements:2, comesStatements:1, rule:['A','I'], delayBars:0 },
+  { n:6, id:'PERTONOS', lat:'CANON PER TONOS',
+    motto:'Ascendenteque Modulatione ascendat Gloria Regis', bars:48, perTonos:true }
+];
+const CONSONANT = new Set([0,3,4,7,8,9]);
+const RANGE = { // ci bounds, tonic-relative (loose tessitura per §7)
+  dux:    [-16, 20],
+  comes:  [-24, 28],
+  pedal:  [-36, -6],
+  bass6:  [-40, -8],
+  voice6: [-14, 22]
+};
+
+function inRange(role, ci){ const r = RANGE[role]||[-48,48]; return ci>=r[0] && ci<=r[1]; }
+
+// Build the interval-class between two ci values, oriented by actual pitch
+// height (so a bare 4th above the bass ≠ a 5th — §5.3's set is directional).
+function ivClass(ciA, ciB){
+  const lo = Math.min(ciA,ciB), hi = Math.max(ciA,ciB);
+  return ((hi-lo)%12+12)%12;
+}
+
+// Sample all voices at integer-beat grid points across [0,spanBeats) and
+// check the §5.3 predicate. `level` selects the relaxation ladder (§5.4).
+function checkPredicate(voiceLists, spanBeats, level){
+  const violations = [];
+  const roleOf = Object.keys(voiceLists);
+  const sample = t => { // {role: ci|null}
+    const o = {};
+    for(const role of roleOf){
+      let hit = null;
+      for(const n of voiceLists[role]) if(n.beat<=t && t<n.beat+n.dur){ hit=n.ci; break; }
+      o[role]=hit;
+    }
+    return o;
+  };
+  // ranges + gather per-beat samples
+  const beats = [];
+  for(let t=0;t<Math.ceil(spanBeats);t++) beats.push(sample(t));
+  // ranges are part of the ladder too: level 3 is "parallels only" (§5.4) —
+  // the one check never waived is the parallel-perfects check below.
+  for(let t=0;t<beats.length && level<3;t++){
+    for(const role of roleOf) if(beats[t][role]!=null && !inRange(role,beats[t][role]))
+      violations.push({type:'range', t, role});
+  }
+  // vertical checks
+  for(let t=0;t<beats.length;t++){
+    const bib = t%4; // beat-in-bar, 0-indexed
+    const strong = (bib===0 || bib===2);
+    const present = roleOf.filter(r=>beats[t][r]!=null);
+    let pairsChecked=0, pairsConsonant=0;
+    for(let i=0;i<present.length;i++) for(let j=i+1;j<present.length;j++){
+      const a=present[i], b=present[j];
+      const d = ivClass(beats[t][a], beats[t][b]);
+      const cons = CONSONANT.has(d);
+      pairsChecked++; if(cons) pairsConsonant++;
+      if(cons) continue;
+      if(strong){
+        if(level>=2 && pairsChecked>0 && (pairsConsonant/pairsChecked)>=.5) continue; // level-2 partial waiver
+        violations.push({type:'strong', t, a, b});
+      } else {
+        if(level>=1) continue; // level-1 waives all weak-beat checks
+        // passing/neighbour (stepwise in/out) or suspension (prepared, resolves down by step)
+        let ok=false;
+        for(const role of [a,b]){
+          const prev = t>0?beats[t-1][role]:null, cur=beats[t][role], next=t+1<beats.length?beats[t+1][role]:null;
+          const stepIn = prev==null || Math.abs(cur-prev)<=2;
+          const stepOut = next==null || Math.abs(next-cur)<=2;
+          const prepared = prev===cur;
+          const resolvesDown = next!=null && (cur-next)>0 && (cur-next)<=2;
+          if((stepIn && stepOut) || (prepared && resolvesDown)){ ok=true; break; }
+        }
+        if(!ok) violations.push({type:'weak', t, a, b});
+      }
+    }
+  }
+  // no parallel perfects between the same voice pair
+  for(let i=0;i<roleOf.length;i++) for(let j=i+1;j<roleOf.length;j++){
+    const a=roleOf[i], b=roleOf[j];
+    for(let t=0;t<beats.length-1;t++){
+      const ca=beats[t][a], cb=beats[t][b], na=beats[t+1][a], nb=beats[t+1][b];
+      if(ca==null||cb==null||na==null||nb==null) continue;
+      const d0=ivClass(ca,cb), d1=ivClass(na,nb);
+      if((d0===0||d0===7) && d0===d1 && !(ca===na&&cb===nb)) violations.push({type:'parallel', t, a, b});
+    }
+  }
+  return violations;
+}
+
+// deterministic per-movement RNG stream (§5.4 step 1)
+function movementRng(seed, movIdx){ return mulberry32((seed>>>0) ^ Math.imul(movIdx+1, 0x9e3779b1)); }
+
+function randomFreedoms(rng){
+  return {
+    cap: Math.floor(rng()*CAPUT_DEG_VARIANTS.length),
+    lam: Math.floor(rng()*LAMENTUS_KEEP_VARIANTS.length),
+    clau: Math.floor(rng()*CLAUSULA_DEG_VARIANTS.length)
+  };
+}
+
+// realize + assemble one movement's voices (non-perTonos movements) at a
+// given tonic (ci offset 0 = tonic) from a candidate theme's abstract notes.
+function assembleMovement(mv, theme, interval, tonicOffset){
+  const dux = [];
+  for(let s=0;s<mv.statements;s++) for(const n of theme)
+    dux.push({beat:n.beat+s*THEME_BEATS, dur:n.dur, ci:tonicOffset+n.semi, region:n.region});
+
+  let comesBase = theme;
+  for(const r of mv.rule){
+    if(r==='T') comesBase = ruleT(comesBase, interval);
+    else if(r==='I') comesBase = ruleI(comesBase);
+    else if(r==='A') comesBase = ruleA(comesBase);
+    else if(r==='R') comesBase = ruleR(comesBase, THEME_BEATS);
+  }
+  const comesStatements = mv.comesStatements || mv.statements;
+  const comes = [];
+  if(mv.perStatement){ // R applied independently per 8-bar block (the palindrome ×2)
+    for(let s=0;s<mv.statements;s++) for(const n of comesBase)
+      comes.push({beat:n.beat+s*THEME_BEATS+mv.delayBars*4, dur:n.dur, ci:tonicOffset+n.semi, region:n.region});
+  } else {
+    for(let s=0;s<comesStatements;s++) for(const n of comesBase)
+      comes.push({beat:n.beat+s*THEME_BEATS*(mv.rule.includes('A')?2:1)+mv.delayBars*4, dur:n.dur, ci:tonicOffset+n.semi, region:n.region});
+  }
+  const movBeats = mv.bars*4;
+  const clip = arr => arr.filter(n=>n.beat<movBeats).map(n=>({...n, dur:Math.min(n.dur, movBeats-n.beat)}));
+  const voices = { dux: clip(dux), comes: clip(comes) };
+  if(mv.voices && mv.voices.includes('pedal')){
+    // a pedal point that moves once per bar (tonic/dominant/rest), COMPOSED
+    // against whatever dux+comes actually sound that bar rather than drawn
+    // blindly — a fixed whole-statement drone can't help but clash with a
+    // cipher-driven line above it, and the per-bar choice space (3^16) is
+    // far too large for the 512-attempt cap to explore by random sampling;
+    // picking the best-fitting degree directly is how a real pedal point
+    // gets composed in practice, and keeps the RANDOM part of the search
+    // (§5.4) spent on the dux/comes freedoms that actually need it.
+    const pedalCi = tonicOffset - 24; // two octaves down
+    const noPedal = { dux: voices.dux, comes: voices.comes };
+    const pedal = [];
+    for(let b=0; b<mv.bars; b++){
+      const s0 = b*4, s2 = b*4+2; // this bar's strong beats
+      let best=2, bestScore=-1; // 2 = rest
+      for(const choice of [0,1]){
+        const ci = pedalCi + (choice===1?7:0);
+        let score=0;
+        for(const t of [s0,s2]) for(const role in noPedal) for(const n of noPedal[role])
+          if(n.beat<=t && t<n.beat+n.dur) score += CONSONANT.has(ivClass(ci,n.ci)) ? 1 : -1;
+        if(score>bestScore){ bestScore=score; best=score>0?choice:2; }
+      }
+      if(best===2) continue;
+      pedal.push({beat:b*4, dur:4, ci: pedalCi + (best===1?7:0), region:'PEDAL'});
+    }
+    voices.pedal = clip(pedal);
+  }
+  return voices;
+}
+
+// A candidate's octave PLACEMENT (register) is free within the register
+// rule (§4) — a random draw only samples that freedom, it doesn't search
+// it. One greedy sweep — try each note ±1200¢, keep the flip if it strictly
+// lowers the violation count — turns each of the 512 random rhythm/content
+// draws into a locally-optimized candidate instead of a single dice roll,
+// which is what actually makes the §15.4 target reachable within the cap
+// (register never touches pitch class, so this never alters what the
+// bijectivity or canon-truth-by-construction checks see — §13 untouched).
+function repairOctaves(voices, spanBeats, level){
+  let violations = checkPredicate(voices, spanBeats, level);
+  if(violations.length===0) return 0;
+  let cur = violations.length;
+  for(let pass=0; pass<2; pass++){
+    // only try notes actually implicated in a current violation — far
+    // cheaper than sweeping the whole voice, and just as effective since a
+    // flip can only help by changing an interval it participates in.
+    const implicated = new Set();
+    for(const v of violations) for(const role of [v.role, v.a, v.b]){
+      if(!role || !voices[role]) continue;
+      for(let idx=0; idx<voices[role].length; idx++){
+        const n = voices[role][idx];
+        if(n.beat<=v.t && v.t<n.beat+n.dur) implicated.add(role+'|'+idx);
+      }
+    }
+    if(implicated.size===0) break;
+    let improved = false;
+    for(const key of implicated){
+      const sep = key.indexOf('|'), role = key.slice(0,sep), idx = +key.slice(sep+1);
+      const n = voices[role][idx];
+      n.ci += 12;
+      let v = checkPredicate(voices, spanBeats, level).length;
+      if(v<cur){ cur=v; improved=true; if(cur===0) return 0; continue; }
+      n.ci -= 24;
+      v = checkPredicate(voices, spanBeats, level).length;
+      if(v<cur){ cur=v; improved=true; if(cur===0) return 0; continue; }
+      n.ci += 12; // revert
+    }
+    if(!improved) break;
+    violations = checkPredicate(voices, spanBeats, level);
+    cur = violations.length;
+  }
+  return cur;
+}
+
+// §5.4 QUAERENDO: deterministic seeded search with a relaxation ladder.
+function searchMovement(seed, mv, movIdx, baseTheme, cipherDigits_, tonicOffset, interval){
+  const rng = movementRng(seed, movIdx);
+  // §5.4 specifies a 512-attempt cap; with the greedy octave repair above,
+  // each attempt is already locally optimized rather than a single dice
+  // roll, so a much smaller cap plus an early stall-out (below) reaches the
+  // same distribution in a fraction of the browser time (genAll must stay
+  // interactive) — see HANDOFF.md's RICERCAR thread for the measurement
+  // that motivated this.
+  const CAP = 48, STALL = 10;
+  let last = null;
+  for(let level=0; level<=3; level++){
+    let best = Infinity, stale = 0;
+    for(let attempt=0; attempt<CAP; attempt++){
+      const freedoms = randomFreedoms(rng);
+      const realized = realizeTheme(cipherDigits_, freedoms, rng);
+      const voices = assembleMovement(mv, realized.notes, interval, tonicOffset);
+      const spanBeats = mv.bars*4;
+      repairOctaves(voices, spanBeats, level);
+      const viol = checkPredicate(voices, spanBeats, level);
+      last = {realized, voices, level, attempt: attempt+1, violations: viol};
+      if(viol.length===0) return last;
+      if(viol.length<best){ best=viol.length; stale=0; } else if(++stale>=STALL) break; // no progress — try the next relaxation level
+    }
+  }
+  return last; // level-3 floor: parallels-only, always satisfiable in practice
+}
+
+function searchThema(seed, baseTheme, cipherDigits_, tonicOffset){
+  const rng = movementRng(seed, 0);
+  const CAP = 512;
+  let last=null;
+  for(let level=0; level<=3; level++){
+    for(let attempt=0; attempt<CAP; attempt++){
+      const freedoms = randomFreedoms(rng);
+      const realized = realizeTheme(cipherDigits_, freedoms, rng);
+      const dux = realized.notes.map(n=>({beat:n.beat, dur:n.dur, ci:tonicOffset+n.semi, region:n.region}));
+      const viol = checkPredicate({dux}, THEME_BEATS, level); // single voice: only range checks apply
+      last = {realized, voices:{dux}, level, attempt:attempt+1, violations:viol};
+      if(viol.length===0) return last;
+    }
+  }
+  return last;
+}
+
+/* ---- PER TONOS (movement 6): bass cantus + two canon voices, six laps,
+   tonic climbing +2 pcs/lap, the finale's own pivot + seam (§6). ---- */
+function searchPerTonos(seed, baseTheme, cipherDigits_, homeTonicPc, interval, godelOn){
+  const rng = movementRng(seed, 6);
+  const CAP = 24; // ×6 laps ×4 levels — see the CAP note in searchMovement above
+  const laps = [];
+  let searchInfo = null;
+  for(let n=0;n<6;n++){
+    const tonicAbs = homeTonicPc + 2*n;
+    const nextTonicAbs = homeTonicPc + 2*(n+1); // pivot target; n=5 → home+12 (the seam)
+    let found=null, level=0;
+    const STALL = 6;
+    outer:
+    for(level=0; level<=3; level++){
+      let best=Infinity, stale=0;
+      for(let attempt=0; attempt<CAP; attempt++){
+        const freedoms = randomFreedoms(rng);
+        const realized = realizeTheme(cipherDigits_, freedoms, rng);
+        // split theme into "body" (CAPUT/SIGILLUM/LAMENTUS) at tonicAbs and
+        // "pivot" (CLAUSULA) at nextTonicAbs — the elided pivot (§6.2).
+        const body = realized.notes.filter(nn=>nn.region!=='CLAUSULA');
+        const pivot = realized.notes.filter(nn=>nn.region==='CLAUSULA');
+        const bass = [], v1 = [], v2 = [];
+        for(const nn of body){
+          bass.push({beat:nn.beat, dur:nn.dur, ci:tonicAbs+nn.semi-24, region:nn.region});
+          v1.push({beat:nn.beat, dur:nn.dur, ci:tonicAbs+nn.semi, region:nn.region});
+        }
+        for(const nn of pivot){
+          bass.push({beat:nn.beat, dur:nn.dur, ci:nextTonicAbs+nn.semi-24, region:nn.region});
+          v1.push({beat:nn.beat, dur:nn.dur, ci:nextTonicAbs+nn.semi, region:nn.region});
+        }
+        for(const nn of realized.notes){ // v2 = T(interval) ∘ D(1 bar) of v1's material
+          const useTonic = nn.region==='CLAUSULA' ? nextTonicAbs : tonicAbs;
+          v2.push({beat:nn.beat+4, dur:nn.dur, ci:useTonic+nn.semi+interval, region:nn.region});
+        }
+        const spanBeats = THEME_BEATS;
+        const voices = { bass6: clipTo(bass, spanBeats), voice6: clipTo(v1, spanBeats), voice2: clipTo(v2, spanBeats) };
+        repairOctaves(voices, spanBeats, level);
+        const viol = checkPredicate(voices, spanBeats, level);
+        if(viol.length===0){ found = {realized, voices, level, attempt:attempt+1, violations:viol}; break outer; }
+        searchInfo = {realized, voices, level, attempt:attempt+1, violations:viol};
+        if(viol.length<best){ best=viol.length; stale=0; } else if(++stale>=STALL) break;
+      }
+    }
+    const chosen = found || searchInfo;
+    laps.push({ n, tonicAbs, nextTonicAbs, level: chosen.level, voices: chosen.voices });
+  }
+  // GÖDEL utterance (§5.5): pcs {Bb,A,C,B} = {10,9,0,11} absolute, register
+  // near the top of the climb, exempt from the predicate, no rule derives it.
+  let godel = [];
+  if(godelOn){
+    const topCi = homeTonicPc + 12 + 4; // near the seam register, comfortably placed
+    const pcs = [10,9,0,11];
+    godel = pcs.map((pc,i)=>{
+      const base = Math.floor(topCi/12)*12 + pc;
+      // anchored inside lap 6's own CLAUSULA (beats 28-31 of the 32-beat lap),
+      // not appended after it — masks the fold without exceeding the movement's
+      // declared 48-bar span (see buildLapEvents, which reads this beat as
+      // "cursor - THEME_BEATS + beat", i.e. relative to the LAST lap's start).
+      return { beat: (THEME_BEATS-4) + i, dur: 1, ci: base, region:'GODEL' };
+    });
+  }
+  const seamCi = homeTonicPc + 12;         // the arrival: same pc as home, +1 register
+  const foldedCi = seamCi - 12;            // §13: fold is exactly −1200¢, applied to register
+  return { laps, godel, seamCi, foldedCi };
+}
+function clipTo(arr, span){ return arr.filter(n=>n.beat<span).map(n=>({...n, dur:Math.min(n.dur, span-n.beat)})); }
+
+/* ---------------------------------------------------------------------
+   5 · genAll — the whole pressing, once per law change, cached.
+   --------------------------------------------------------------------- */
+let CACHE = null, CACHE_KEY = null;
+function genAll(state){
+  const key = [state.seed, state.tonus, state.interval, state.godel?1:0].join('|');
+  if(CACHE && CACHE_KEY===key) return CACHE;
+
+  const digits = cipherDigits(state.seed);
+  const homeTonicPc = state.tonus;
+  const baseTheme = null; // abstract theme is re-realized per movement's search (see §4/§5.4 note)
+
+  const movements = [];
+  const derivations = [];
+  const relaxLevels = [];
+
+  const thema = searchThema(state.seed, baseTheme, digits, homeTonicPc);
+  movements.push({ mv: MOVEMENTS[0], result: thema });
+  derivations.push('THEMA');
+  relaxLevels.push(thema.level);
+
+  for(let i=1;i<5;i++){
+    const mv = MOVEMENTS[i];
+    const res = searchMovement(state.seed, mv, i, baseTheme, digits, homeTonicPc, state.interval);
+    movements.push({ mv, result: res });
+    const ruleStr = mv.rule.map(r=>r==='T'?`T(${state.interval})`:r).join('∘');
+    derivations.push(`THEMA ⊢ ${ruleStr}(THEMA)`);
+    relaxLevels.push(res.level);
+  }
+
+  const perTonos = searchPerTonos(state.seed, baseTheme, digits, homeTonicPc, state.interval, state.godel);
+  movements.push({ mv: MOVEMENTS[5], result: perTonos });
+  derivations.push(`THEMA ⊢ T(${state.interval})∘D(1)(THEMA), ×6 laps`);
+  relaxLevels.push(Math.max(...perTonos.laps.map(l=>l.level)));
+
+  // bijectivity check (kept, for the ledger / verify hook): the six SIGILLUM
+  // notes' ci are stored tonic-relative in realizeTheme, so ci mod 12 IS the
+  // digit directly — bijective regardless of TONUS (§4: encoding is in the
+  // pressing's own alphabet, chromatic degree above tonic).
+  const sigilCi = thema.realized.sigilCi;
+  const decodedDigits = sigilCi.map(ci => ((ci%12)+12)%12);
+  const decodedSeed = digitsToSeed(decodedDigits);
+
+  CACHE = { digits, homeTonicPc, movements, derivations, relaxLevels, decodedSeed, lapBars: 120 };
+  CACHE_KEY = key;
+  return CACHE;
+}
+
+/* ---------------------------------------------------------------------
+   6 · SYNTHESIS — CEMBALO (Karplus–Strong), PRINCIPAL (additive flue),
+   PEDAAL (bourdon). No samples.
+   --------------------------------------------------------------------- */
+function mulberry32(a){
+  return function(){
+    a|=0; a=a+0x6d2b79f5|0;
+    let t=Math.imul(a^a>>>15,1|a);
+    t=t+Math.imul(t^t>>>7,61|t)^t;
+    return ((t^t>>>14)>>>0)/4294967296;
+  };
+}
+
+const __ksCache = new Map();
+function ksBuffer(ctx, seed, freq, dur){
+  const bright = TP.cembalo.brightness, decay = Math.max(.15, dur*TP.cembalo.decay);
+  const qd = Math.round(decay*20)/20;
+  const key = [Math.round(freq*10), qd, Math.round(bright), Math.round(TP.cembalo.damp*100), seed].join('|');
+  const hit = __ksCache.get(key); if(hit) return hit;
+  const sr = ctx.sampleRate, N = Math.max(2, Math.round(sr/freq));
+  const len = Math.min(Math.ceil(decay*sr*1.1)+N, sr*8);
+  const b = ctx.createBuffer(1,len,sr), d = b.getChannelData(0);
+  const r = mulberry32((seed ^ Math.imul(Math.round(freq*10), 2654435761))|0);
+  for(let i=0;i<N;i++) d[i] = (r()*2-1)*TP.cembalo.excite*(1-.25*i/N);
+  const c = Math.exp(-2*Math.PI*bright/sr);
+  const gLoss = Math.pow(.001, 1/(sr*decay)) * (1-TP.cembalo.damp*.15);
+  for(let i=N;i<len;i++){
+    const avg = .5*(d[i-N]+d[i-N+1]);
+    d[i] = ((1-c)*avg + c*d[i-1]) * gLoss;
+  }
+  let peak=0; for(let i=0;i<len;i++){const v=Math.abs(d[i]); if(v>peak) peak=v;}
+  if(peak>1e-6){ const s=.92/peak; for(let i=0;i<len;i++) d[i]*=s; }
+  if(__ksCache.size>300) __ksCache.clear();
+  __ksCache.set(key,b);
+  return b;
+}
+function playCembalo(ctx, bus, t0, freq, dur, vel, seed){
+  const src = ctx.createBufferSource(); src.buffer = ksBuffer(ctx, seed, freq, dur);
+  const g = ctx.createGain(); g.gain.value = vel;
+  src.connect(g); g.connect(bus);
+  src.start(t0);
+}
+
+const __waveCache = new Map();
+function principalWave(ctx){
+  const partials = Math.round(TP.principal.partials), rolloff = TP.principal.rolloff;
+  const key = partials+'|'+rolloff.toFixed(3);
+  const hit = __waveCache.get(key); if(hit) return hit;
+  const real = new Float32Array(partials+1), imag = new Float32Array(partials+1);
+  for(let k=1;k<=partials;k++) real[k] = Math.pow(rolloff, k-1);
+  const w = ctx.createPeriodicWave(real, imag, {disableNormalization:false});
+  __waveCache.set(key,w);
+  return w;
+}
+function playPrincipal(ctx, bus, t0, freq, dur, vel){
+  const osc = ctx.createOscillator(); osc.setPeriodicWave(principalWave(ctx)); osc.frequency.value = freq;
+  const env = ctx.createGain();
+  const atk = .05, rel = Math.min(.25, dur*.5);
+  env.gain.setValueAtTime(0,t0);
+  env.gain.linearRampToValueAtTime(vel, t0+atk);
+  env.gain.setValueAtTime(vel, Math.max(t0+atk, t0+dur-rel));
+  env.gain.linearRampToValueAtTime(0, t0+dur);
+  osc.connect(env);
+  if(TP.principal.tremDepth>0){
+    const lfo=ctx.createOscillator(); lfo.frequency.value=TP.principal.tremRate;
+    const lg=ctx.createGain(); lg.gain.value=vel*TP.principal.tremDepth;
+    lfo.connect(lg); lg.connect(env.gain);
+    lfo.start(t0); lfo.stop(t0+dur);
+  }
+  if(TP.principal.chiff>0){
+    const nb = ctx.createBuffer(1, Math.ceil(ctx.sampleRate*.05), ctx.sampleRate);
+    const nd = nb.getChannelData(0); for(let i=0;i<nd.length;i++) nd[i]=(Math.random()*2-1);
+    const ns = ctx.createBufferSource(); ns.buffer = nb;
+    const nf = ctx.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=freq*3; nf.Q.value=1.2;
+    const ng = ctx.createGain(); ng.gain.setValueAtTime(vel*TP.principal.chiff, t0);
+    ng.gain.exponentialRampToValueAtTime(.0001, t0+TP.principal.chiffDecay);
+    ns.connect(nf); nf.connect(ng); ng.connect(bus);
+    ns.start(t0); ns.stop(t0+TP.principal.chiffDecay+.02);
+  }
+  env.connect(bus);
+  osc.start(t0); osc.stop(t0+dur+.05);
+}
+function playPedaal(ctx, bus, t0, freq, dur, vel){
+  const osc = ctx.createOscillator(); osc.type='sine'; osc.frequency.value=freq;
+  const osc3 = ctx.createOscillator(); osc3.type='sine'; osc3.frequency.value=freq*3;
+  const g3 = ctx.createGain(); g3.gain.value = TP.pedaal.tone;
+  const env = ctx.createGain();
+  const atk = TP.pedaal.attack, rel = Math.min(TP.pedaal.release, dur*.5);
+  env.gain.setValueAtTime(0,t0);
+  env.gain.linearRampToValueAtTime(vel, t0+atk);
+  env.gain.setValueAtTime(vel, Math.max(t0+atk, t0+dur-rel));
+  env.gain.linearRampToValueAtTime(0, t0+dur);
+  osc.connect(env); osc3.connect(g3); g3.connect(env); env.connect(bus);
+  osc.start(t0); osc.stop(t0+dur+.05);
+  osc3.start(t0); osc3.stop(t0+dur+.05);
+}
+
+/* ---------------------------------------------------------------------
+   7 · GRAPH — master chain, identical realtime & offline.
+   --------------------------------------------------------------------- */
+function makeRoomIR(ctx, seed){
+  const sec=TP.room.seconds, damp=TP.room.damp, sr=ctx.sampleRate;
+  const pre = Math.max(0, Math.floor(TP.room.predelay*sr));
+  const len = Math.max(1, Math.floor(sec*sr))+pre;
+  const b = ctx.createBuffer(2,len,sr);
+  const rng = mulberry32(seed^0x51ed270b);
+  for(let c=0;c<2;c++){
+    const d = b.getChannelData(c); let lp=0;
+    for(let i=0;i<len;i++){
+      if(i<pre){ d[i]=0; continue; }
+      const j=i-pre, e=Math.pow(1-j/(len-pre), damp);
+      lp += .3*((rng()*2-1)-lp);
+      d[i] = lp*e*1.4*TP.room.level;
+    }
+  }
+  return b;
+}
+function makeShaperCurve(amount){
+  const n=1024, curve=new Float32Array(n), k=amount*16+0.0001, norm=Math.tanh(k);
+  for(let i=0;i<n;i++){ const x=i/(n-1)*2-1; curve[i]=Math.tanh(k*x)/norm; }
+  return curve;
+}
+function buildGraph(ctx, seed){
+  const G = { ctx };
+  G.cembaloGain = ctx.createGain(); G.cembaloGain.gain.value = TP.cembalo.level;
+  G.principalGain = ctx.createGain(); G.principalGain.gain.value = TP.principal.level;
+  G.pedaalGain = ctx.createGain(); G.pedaalGain.gain.value = TP.pedaal.level;
+  G.tickGain = ctx.createGain(); G.tickGain.gain.value = TP.pulsus.tickLevel;
+
+  G.shaper = ctx.createWaveShaper(); G.shaper.curve = makeShaperCurve(TP.master.drive); G.shaper.oversample='2x';
+  G.comp = ctx.createDynamicsCompressor();
+  G.comp.threshold.value=-18; G.comp.knee.value=8; G.comp.ratio.value=3; G.comp.attack.value=.008; G.comp.release.value=.12;
+
+  G.verb = ctx.createConvolver(); G.verb.buffer = makeRoomIR(ctx, seed);
+  G.wet = ctx.createGain(); G.wet.gain.value = TP.master.verbSend;
+  G.dry = ctx.createGain(); G.dry.gain.value = 1;
+
+  G.lim = ctx.createDynamicsCompressor();
+  G.lim.threshold.value = TP.master.limCeiling; G.lim.knee.value=0; G.lim.ratio.value=20;
+  G.lim.attack.value=.002; G.lim.release.value=.12;
+  G.out = ctx.createGain(); G.out.gain.value = TP.master.level;
+
+  for(const bus of [G.cembaloGain, G.principalGain, G.pedaalGain, G.tickGain]){
+    bus.connect(G.dry); bus.connect(G.verb);
+  }
+  G.dry.connect(G.shaper);
+  G.verb.connect(G.wet); G.wet.connect(G.shaper);
+  G.shaper.connect(G.comp); G.comp.connect(G.lim); G.lim.connect(G.out); G.out.connect(ctx.destination);
+  return G;
+}
+
+/* ---------------------------------------------------------------------
+   8 · SCHEDULING — flatten a movement's voices into events, schedule at
+   play() time (the whole lap or a soloed movement, both bounded), loop.
+   --------------------------------------------------------------------- */
+function flattenMovement(entry){
+  const out = [];
+  const v = entry.result.voices;
+  for(const role in v) for(const n of v[role]){
+    let voice = 'principal';
+    if(role==='dux'||role==='bass6') voice='cembalo';
+    else if(role==='pedal') voice='pedaal';
+    else if(role==='comes'||role==='voice6'||role==='voice2') voice='principal';
+    if(entry.mv.id==='PERTONOS'){
+      if(role==='bass6') voice='pedaal';
+      else if(role==='voice6') voice='cembalo';
+      else voice='principal';
+    }
+    out.push({ t:n.beat, dur:n.dur, ci:n.ci, voice, vel: role==='pedal'?.5: .72 });
+  }
+  return out;
+}
+function buildLapEvents(model){
+  const events = [];
+  let cursor = 0; // beats
+  const boundaries = [0];
+  for(const entry of model.movements){
+    const mv = entry.mv;
+    if(mv.id==='PERTONOS'){
+      const pt = entry.result;
+      for(const lap of pt.laps){
+        for(const role in lap.voices) for(const n of lap.voices[role]){
+          let voice = role==='bass6'?'pedaal':(role==='voice6'?'cembalo':'principal');
+          events.push({ t: cursor+n.beat, dur:n.dur, ci:n.ci, voice, vel: role==='bass6'?.55:.7 });
+        }
+        cursor += THEME_BEATS;
+      }
+      for(const n of pt.godel) events.push({ t: cursor - THEME_BEATS + n.beat, dur:n.dur, ci:n.ci, voice:'godel', vel:.6 });
+    } else {
+      for(const ev of flattenMovement(entry)) events.push({ t: cursor+ev.t, dur:ev.dur, ci:ev.ci, voice:ev.voice, vel:ev.vel });
+      cursor += mv.bars*4;
+    }
+    boundaries.push(cursor);
+  }
+  return { events, totalBeats: cursor, boundaries };
+}
+function buildSoloEvents(model, movNum){
+  const entry = model.movements[movNum-1];
+  const mv = entry.mv;
+  if(mv.id==='PERTONOS'){
+    const events = []; let cursor=0;
+    for(const lap of entry.result.laps){
+      for(const role in lap.voices) for(const n of lap.voices[role]){
+        let voice = role==='bass6'?'pedaal':(role==='voice6'?'cembalo':'principal');
+        events.push({ t: cursor+n.beat, dur:n.dur, ci:n.ci, voice, vel: role==='bass6'?.55:.7 });
+      }
+      cursor += THEME_BEATS;
+    }
+    for(const n of entry.result.godel) events.push({ t: cursor-THEME_BEATS+n.beat, dur:n.dur, ci:n.ci, voice:'godel', vel:.6 });
+    return { events, totalBeats: cursor, boundaries:[0,cursor] };
+  }
+  const events = flattenMovement(entry);
+  return { events, totalBeats: mv.bars*4, boundaries:[0, mv.bars*4] };
+}
+
+function scheduleEvents(ctx, G, events, t0, tempo, seed){
+  const spb = 60/tempo; // seconds per beat
+  for(const ev of events){
+    const start = t0 + ev.t*spb, dur = Math.max(.05, ev.dur*spb);
+    const freq = freqFromCi(ev.ci);
+    if(ev.voice==='cembalo') playCembalo(ctx, G.cembaloGain, start, freq, dur, ev.vel, seed);
+    else if(ev.voice==='pedaal') playPedaal(ctx, G.pedaalGain, start, freq, dur, ev.vel);
+    else playPrincipal(ctx, G.principalGain, start, freq, dur, ev.vel);
+  }
+  // pulsus tactus: a soft click on beat 1 of every bar
+  if(TP.pulsus.tickLevel>0){
+    const totalBeats = events.reduce((m,e)=>Math.max(m,e.t+e.dur),0);
+    for(let b=0;b*4<totalBeats;b++){
+      const t = t0+b*4*spb;
+      const nb = ctx.createBuffer(1, Math.ceil(ctx.sampleRate*.02), ctx.sampleRate);
+      const nd = nb.getChannelData(0); for(let i=0;i<nd.length;i++) nd[i]=(Math.random()*2-1)*(1-i/nd.length);
+      const ns = ctx.createBufferSource(); ns.buffer=nb;
+      const ng = ctx.createGain(); ng.gain.value = TP.pulsus.tickLevel;
+      ns.connect(ng); ng.connect(G.tickGain); ns.start(t);
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------
+   9 · STATE, TRANSPORT, HASH
+   --------------------------------------------------------------------- */
+const st = { seed:1747, tonus:0, canon:0, interval:7, godel:true, tempo:72 };
+let ac=null, RT={ playing:false, paused:false, G:null, loopTimer:null, model:null, boundaryTimers:[], pending:false };
+let canvas, cctx;
+
+function currentPacket(){ return buildLapPacket(); }
+function buildLapPacket(){
+  const model = genAll(st);
+  return st.canon===0 ? buildLapEvents(model) : buildSoloEvents(model, st.canon);
+}
+
+function play(){
+  if(RT.playing) return;
+  if(!ac) ac = new (window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ac);
+  RT.playing = true; RT.paused = false;
+  $('play').disabled = true; $('pause').disabled = false; $('stop').disabled = false; $('pause').textContent='▐▐ Pause'; $('pause').classList.remove('on');
+  runLap();
+  __mediaSessionInit(); __mediaSessionUpdate(); __silStart();
+}
+function runLap(){
+  if(!RT.playing) return;
+  clearBoundaryTimers();
+  const model = genAll(st);
+  RT.model = model;
+  RT.G = buildGraph(ac, st.seed);
+  const packet = st.canon===0 ? buildLapEvents(model) : buildSoloEvents(model, st.canon);
+  const t0 = ac.currentTime + .1;
+  scheduleEvents(ac, RT.G, packet.events, t0, st.tempo, st.seed);
+  const spb = 60/st.tempo;
+  const lapSeconds = packet.totalBeats*spb;
+  // change-while-playing: check for a pending law edit at each movement boundary
+  for(const b of packet.boundaries){
+    if(b<=0 || b>=packet.totalBeats) continue;
+    const id = setTimeout(()=>{ if(RT.pending){ RT.pending=false; teardownGraph(); runLap(); } }, b*spb*1000);
+    RT.boundaryTimers.push(id);
+  }
+  RT.loopTimer = setTimeout(()=>{
+    if(!RT.playing) return;
+    teardownGraph();
+    if(st.canon===0) st.lap = (st.lap||0)+1;
+    runLap();
+  }, Math.max(50, lapSeconds*1000));
+  updateHash();
+  animate();
+}
+function clearBoundaryTimers(){ for(const id of RT.boundaryTimers) clearTimeout(id); RT.boundaryTimers=[]; }
+function teardownGraph(){
+  if(RT.loopTimer) clearTimeout(RT.loopTimer);
+  clearBoundaryTimers();
+  if(RT.G){ try{ RT.G.out.disconnect(); }catch(e){} RT.G=null; }
+}
+function pause(){
+  if(!RT.playing || RT.paused) return;
+  RT.paused = true; ac.suspend();
+  $('pause').textContent='▶ Resume'; $('pause').classList.add('on');
+  __mediaSessionUpdate();
+}
+function resume(){
+  if(!RT.playing || !RT.paused) return;
+  RT.paused = false; ac.resume();
+  $('pause').textContent='▐▐ Pause'; $('pause').classList.remove('on');
+  __mediaSessionUpdate(); animate();
+}
+function stop(){
+  RT.playing=false; RT.paused=false;
+  teardownGraph();
+  $('play').disabled=false; $('pause').disabled=true; $('stop').disabled=true;
+  $('pause').textContent='▐▐ Pause'; $('pause').classList.remove('on');
+  if(canvas) canvas.width = canvas.width;
+  __mediaSessionUpdate(); __silStop();
+}
+function aliud(){
+  const wasPlaying = RT.playing;
+  st.seed = Math.floor(Math.random()*SEED_MAX);
+  $('seed').value = st.seed; $('seedVal').textContent = st.seed;
+  updateHash();
+  if(wasPlaying){ teardownGraph(); runLap(); __mediaSessionUpdate(); }
+}
+function nextMovement(){
+  if(st.canon===0) return; // OMNIA already walks every movement in one lap
+  st.canon = st.canon>=6 ? 1 : st.canon+1;
+  $('canon').value = st.canon;
+  updateHash();
+  if(RT.playing){ teardownGraph(); runLap(); }
+}
+
+/* ---------------------------------------------------------------------
+   10 · OFFLINE RENDER — one lap, seam-crossfade-safe (tails folded).
+   --------------------------------------------------------------------- */
+async function cut(){
+  const btn = $('cut'); btn.disabled = true;
+  try{
+    const model = genAll(st);
+    const packet = st.canon===0 ? buildLapEvents(model) : buildSoloEvents(model, st.canon);
+    const spb = 60/st.tempo;
+    const tail = 3; // seconds of ring allowed past the nominal end, folded back onto the head
+    const total = packet.totalBeats*spb + tail;
+    const offline = new OfflineAudioContext(2, Math.ceil(total*offlineSR()), offlineSR());
+    const G = buildGraph(offline, st.seed);
+    scheduleEvents(offline, G, packet.events, .05, st.tempo, st.seed);
+    const rendered = await offline.startRendering();
+    const nominalLen = Math.round(packet.totalBeats*spb*rendered.sampleRate);
+    const L = rendered.getChannelData(0).slice(0, nominalLen);
+    const R = (rendered.numberOfChannels>1?rendered.getChannelData(1):rendered.getChannelData(0)).slice(0, nominalLen);
+    const tailL = rendered.getChannelData(0).slice(nominalLen);
+    const tailR = (rendered.numberOfChannels>1?rendered.getChannelData(1):rendered.getChannelData(0)).slice(nominalLen);
+    for(let i=0;i<tailL.length && i<L.length;i++){ L[i]+=tailL[i]; R[i]+=tailR[i]; } // fold ring past the loop point onto the head
+    let peak=0; for(let i=0;i<L.length;i++){ peak=Math.max(peak, Math.abs(L[i]), Math.abs(R[i])); }
+    if(peak>.92){ const k=.92/peak; for(let i=0;i<L.length;i++){ L[i]*=k; R[i]*=k; } }
+    saveWav(L, R, rendered.sampleRate);
+  } finally { btn.disabled = false; }
+}
+function offlineSR(){ return 44100; }
+function saveWav(L, R, sr){
+  const n = L.length, buf = new ArrayBuffer(44+n*4), d = new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++) d.setUint8(o+i, s.charCodeAt(i));};
+  ws(0,'RIFF'); d.setUint32(4,36+n*4,true); ws(8,'WAVE'); ws(12,'fmt ');
+  d.setUint32(16,16,true); d.setUint16(20,1,true); d.setUint16(22,2,true);
+  d.setUint32(24,sr,true); d.setUint32(28,sr*4,true); d.setUint16(32,4,true); d.setUint16(34,16,true);
+  ws(36,'data'); d.setUint32(40,n*4,true);
+  let o=44;
+  for(let i=0;i<n;i++){
+    const l=Math.max(-1,Math.min(1,L[i])), r=Math.max(-1,Math.min(1,R[i]));
+    d.setInt16(o, l<0?l*0x8000:l*0x7fff, true); o+=2;
+    d.setInt16(o, r<0?r*0x8000:r*0x7fff, true); o+=2;
+  }
+  const blob = new Blob([buf],{type:'audio/wav'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=`ricercar-${st.seed}.wav`; a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ---------------------------------------------------------------------
+   11 · OFFICINA live edit / audition
+   --------------------------------------------------------------------- */
+function applyTimbreEdit(g,p){
+  if(!RT.G || !ac) return;
+  const now = ac.currentTime, tau=.05;
+  if(g==='*'){
+    RT.G.cembaloGain.gain.setTargetAtTime(TP.cembalo.level, now, tau);
+    RT.G.principalGain.gain.setTargetAtTime(TP.principal.level, now, tau);
+    RT.G.pedaalGain.gain.setTargetAtTime(TP.pedaal.level, now, tau);
+    RT.G.tickGain.gain.setTargetAtTime(TP.pulsus.tickLevel, now, tau);
+    RT.G.wet.gain.setTargetAtTime(TP.master.verbSend, now, tau);
+    RT.G.out.gain.setTargetAtTime(TP.master.level, now, tau);
+    RT.G.lim.threshold.setTargetAtTime(TP.master.limCeiling, now, tau);
+    return;
+  }
+  if(g==='master'&&p==='level') RT.G.out.gain.setTargetAtTime(TP.master.level, now, tau);
+  else if(g==='master'&&p==='verbSend') RT.G.wet.gain.setTargetAtTime(TP.master.verbSend, now, tau);
+  else if(g==='master'&&p==='limCeiling') RT.G.lim.threshold.setTargetAtTime(TP.master.limCeiling, now, tau);
+  else if(g==='cembalo'&&p==='level') RT.G.cembaloGain.gain.setTargetAtTime(TP.cembalo.level, now, tau);
+  else if(g==='principal'&&p==='level') RT.G.principalGain.gain.setTargetAtTime(TP.principal.level, now, tau);
+  else if(g==='pedaal'&&p==='level') RT.G.pedaalGain.gain.setTargetAtTime(TP.pedaal.level, now, tau);
+  else if(g==='pulsus'&&p==='tickLevel') RT.G.tickGain.gain.setTargetAtTime(TP.pulsus.tickLevel, now, tau);
+  // else: baked param (KS cache / partial content / IR) — applies next Play/Aliud
+}
+function demoGroup(group){
+  if(!RT.playing){ play(); return; }
+  if(!ac||!RT.G) return;
+  const t0 = ac.currentTime+.05;
+  if(group==='cembalo') playCembalo(ac, RT.G.cembaloGain, t0, freqFromCi(0), .8, .8, st.seed);
+  else if(group==='principal') playPrincipal(ac, RT.G.principalGain, t0, freqFromCi(7), 1.2, .8);
+  else if(group==='pedaal') playPedaal(ac, RT.G.pedaalGain, t0, freqFromCi(-24), 1.6, .7);
+}
+TIMBRE.touch = (path)=>{
+  if(!path){ applyTimbreEdit('*','*'); __ksCache.clear(); __waveCache.clear(); return; }
+  const i=path.indexOf('.'), g=path.slice(0,i), p=path.slice(i+1);
+  applyTimbreEdit(g,p);
+  if(g==='cembalo') __ksCache.clear();
+  if(g==='principal') __waveCache.clear();
+};
+TIMBRE.demo = (group)=>demoGroup(group);
+
+/* ---------------------------------------------------------------------
+   12 · __iosAudio + Media Session + silent anchor (built in from birth)
+   --------------------------------------------------------------------- */
+(function(){ try{ if('audioSession' in navigator) navigator.audioSession.type='playback'; }catch(e){} })();
+function __iosAudio(ctx){
+  function kick(){
+    if(!ctx) return;
+    if(RT.paused) return;
+    if(ctx.state!=='running'){
+      try{ ctx.resume().then(()=>{
+        try{ const b=ctx.createBuffer(1,1,22050), s=ctx.createBufferSource(); s.buffer=b; s.connect(ctx.destination); s.start(0); }catch(e){}
+      }).catch(()=>{}); }catch(e){}
+    }
+  }
+  if(ctx.__iosWired) return; ctx.__iosWired=true;
+  window.addEventListener('pointerdown', kick, {capture:true, passive:true});
+  window.addEventListener('keydown', kick, true);
+  document.addEventListener('visibilitychange', kick);
+  window.addEventListener('pagehide', ()=>{ try{ if(ctx.state==='running') ctx.suspend(); }catch(e){} });
+}
+function __mediaSessionInit(){
+  if(!('mediaSession' in navigator)) return;
+  try{
+    navigator.mediaSession.setActionHandler('play', ()=>{ if(!RT.playing) play(); else if(RT.paused) resume(); });
+    navigator.mediaSession.setActionHandler('pause', ()=>{ if(RT.playing && !RT.paused) pause(); });
+    navigator.mediaSession.setActionHandler('stop', ()=>{ if(RT.playing) stop(); });
+    navigator.mediaSession.setActionHandler('nexttrack', ()=>aliud());
+  }catch(e){}
+}
+function __mediaSessionUpdate(){
+  if(!('mediaSession' in navigator)) return;
+  try{
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: 'RICERCAR', artist: 'OPVSCVLA · op. XXIII',
+      album: 'sigillum ' + st.seed
+    });
+    navigator.mediaSession.playbackState = (RT.playing && !RT.paused) ? 'playing' : 'paused';
+  }catch(e){}
+}
+const __SILENCE='data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+let __silAudio=null;
+function __silStart(){ try{ if(!__silAudio){ __silAudio=new Audio(__SILENCE); __silAudio.loop=true; __silAudio.setAttribute('playsinline',''); } __silAudio.play().catch(()=>{}); }catch(e){} }
+function __silStop(){ try{ __silAudio && __silAudio.pause(); }catch(e){} }
+
+/* ---------------------------------------------------------------------
+   13 · CANVAS — the Escher layer
+   --------------------------------------------------------------------- */
+function css(v){ return getComputedStyle(document.body).getPropertyValue(v).trim(); }
+let __lastDraw = 0;
+function animate(){
+  if(!RT.playing) return;
+  requestAnimationFrame(animate);
+  const now = performance.now();
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduced && now-__lastDraw<33) return;
+  __lastDraw = now;
+  draw();
+}
+function draw(){
+  if(!canvas) return;
+  const w = canvas.width, h = canvas.height;
+  const ground = css('--field'), ink = css('--ink'), dim = css('--dim'), gold = css('--gold'), red = css('--red'), line = css('--line');
+  cctx.fillStyle = ground; cctx.fillRect(0,0,w,h);
+
+  const model = RT.model || genAll(st);
+  const movIdx = st.canon===0 ? currentMovementIndex() : st.canon-1;
+  const entry = model.movements[movIdx];
+
+  // derivation line
+  cctx.fillStyle = gold; cctx.font = '600 26px Charter, Georgia, serif';
+  cctx.fillText(entry.mv.lat, 24, 42);
+  cctx.fillStyle = dim; cctx.font = '14px monospace';
+  cctx.fillText(model.derivations[movIdx], 24, 66);
+  const lvl = model.relaxLevels[movIdx];
+  if(lvl>0){ cctx.fillStyle = red; cctx.fillText('licentia ' + ['','I','II','III'][lvl], 24, 86); }
+  if(entry.mv.motto){ cctx.fillStyle = dim; cctx.font='italic 14px Charter, Georgia, serif'; cctx.fillText(entry.mv.motto, 24, 106); }
+
+  // score ribbons — movement-specific geometry
+  cctx.strokeStyle = line; cctx.strokeRect(20, 130, w-40, h-170);
+  if(entry.mv.id==='PERTONOS') drawPerTonos(entry, w, h, gold, dim, red);
+  else if(entry.mv.id==='CANCRIZANS') drawPalindrome(entry, w, h, gold, dim);
+  else if(entry.mv.id==='CONTRARIUM') drawMirror(entry, w, h, gold, dim);
+  else if(entry.mv.id==='AUGMENTATIONEM') drawAugment(entry, w, h, gold, dim);
+  else drawRibbon(entry, w, h, gold, dim);
+
+  // the cipher, during THEMA
+  if(entry.mv.id==='THEMA'){
+    cctx.fillStyle = dim; cctx.font='12px monospace';
+    const digs = model.digits;
+    cctx.fillText('SIGILLUM (base 12): ' + digs.slice().reverse().join('') + '  →  seed ' + st.seed, 24, h-16);
+  }
+}
+function currentMovementIndex(){
+  // OMNIA: pick the movement the transport is currently inside, from RT timing
+  if(!ac || !RT.G) return 0;
+  const model = RT.model; if(!model) return 0;
+  const packet = buildLapEvents(model);
+  const spb = 60/st.tempo;
+  const elapsed = (ac.currentTime - (RT.t0||ac.currentTime))/spb;
+  for(let i=packet.boundaries.length-1;i>=0;i--) if(elapsed>=packet.boundaries[i]) return Math.min(i, model.movements.length-1);
+  return 0;
+}
+function ribbonNotes(entry){
+  const out = [];
+  const v = entry.result.voices || {};
+  for(const role in v) for(const n of v[role]) out.push({beat:n.beat, dur:n.dur, ci:n.ci, role});
+  return out;
+}
+function plot(notes, x0,y0,ww,hh, spanBeats){
+  if(!notes.length) return [];
+  let lo=Infinity, hi=-Infinity; for(const n of notes){ lo=Math.min(lo,n.ci); hi=Math.max(hi,n.ci); }
+  if(hi<=lo){ hi=lo+1; }
+  return notes.map(n=>({
+    x: x0 + (n.beat/spanBeats)*ww,
+    w: (n.dur/spanBeats)*ww,
+    y: y0 + hh - ((n.ci-lo)/(hi-lo))*hh,
+    role: n.role
+  }));
+}
+function drawRibbon(entry, w, h, gold, dim){
+  const notes = ribbonNotes(entry);
+  const span = entry.mv.bars*4;
+  const pts = plot(notes, 40, 150, w-80, h-210, span);
+  cctx.lineWidth=2;
+  for(const role of ['dux','comes','pedal']){
+    const rp = pts.filter((p,i)=>notes[i].role===role);
+    if(!rp.length) continue;
+    cctx.strokeStyle = role==='dux'?gold:(role==='comes'?dim:'rgba(165,55,44,.6)');
+    cctx.beginPath();
+    rp.forEach((p,i)=>{ i===0?cctx.moveTo(p.x,p.y):cctx.lineTo(p.x,p.y); });
+    cctx.stroke();
+  }
+}
+function drawPalindrome(entry, w, h, gold, dim){
+  const notes = ribbonNotes(entry);
+  const span = entry.mv.bars*4;
+  const pts = plot(notes, 40, 150, w-80, h-210, span);
+  cctx.lineWidth=2;
+  ['dux','comes'].forEach((role,ri)=>{
+    const rp = pts.filter((p,i)=>notes[i].role===role);
+    if(!rp.length) return;
+    cctx.strokeStyle = ri===0?gold:dim;
+    cctx.beginPath(); rp.forEach((p,i)=> i===0?cctx.moveTo(p.x,p.y):cctx.lineTo(p.x,p.y)); cctx.stroke();
+  });
+  cctx.strokeStyle='rgba(201,162,74,.25)'; cctx.setLineDash([4,4]);
+  cctx.beginPath(); cctx.moveTo(w/2,150); cctx.lineTo(w/2,h-60); cctx.stroke(); cctx.setLineDash([]);
+}
+function drawMirror(entry, w, h, gold, dim){
+  const notes = ribbonNotes(entry);
+  const span = entry.mv.bars*4;
+  const axisY = 150 + (h-210)/2;
+  cctx.strokeStyle='rgba(201,162,74,.3)'; cctx.beginPath(); cctx.moveTo(40,axisY); cctx.lineTo(w-40,axisY); cctx.stroke();
+  const pts = plot(notes, 40, 150, w-80, h-210, span);
+  cctx.lineWidth=2;
+  ['dux','comes'].forEach((role,ri)=>{
+    const rp = pts.filter((p,i)=>notes[i].role===role);
+    if(!rp.length) return;
+    cctx.strokeStyle = ri===0?gold:dim;
+    cctx.beginPath(); rp.forEach((p,i)=> i===0?cctx.moveTo(p.x,p.y):cctx.lineTo(p.x,p.y)); cctx.stroke();
+  });
+}
+function drawAugment(entry, w, h, gold, dim){
+  const notes = ribbonNotes(entry);
+  const span = entry.mv.bars*4;
+  const pts = plot(notes, 40, 150, w-80, h-210, span);
+  cctx.lineWidth=2;
+  const dp = pts.filter((p,i)=>notes[i].role==='dux');
+  cctx.strokeStyle=gold; cctx.beginPath(); dp.forEach((p,i)=> i===0?cctx.moveTo(p.x,p.y):cctx.lineTo(p.x,p.y)); cctx.stroke();
+  const cp = pts.filter((p,i)=>notes[i].role==='comes');
+  cctx.globalAlpha=.45; cctx.strokeStyle=dim; cctx.beginPath(); cp.forEach((p,i)=> i===0?cctx.moveTo(p.x,p.y):cctx.lineTo(p.x,p.y)); cctx.stroke();
+  cctx.globalAlpha=1;
+}
+function drawPerTonos(entry, w, h, gold, dim, red){
+  // a closed spiral of six flights (the acceptable floor per §10 — a true
+  // Penrose-stair perspective was noted a stretch goal in the brief) drawn
+  // as a wide ellipse to fill the canvas's own wide aspect ratio.
+  const cx=w/2, cy=150+(h-210)/2;
+  const rx=Math.min(w*.42, (h-210)*1.9), ry=(h-210)/2-16;
+  cctx.lineWidth=1.4; cctx.strokeStyle='rgba(201,162,74,.35)';
+  for(let f=0;f<6;f++){
+    const a0=f/6*Math.PI*2-Math.PI/2, a1=(f+1)/6*Math.PI*2-Math.PI/2;
+    const k = .5 + .5*(f/6);
+    cctx.beginPath(); cctx.ellipse(cx,cy,rx*k,ry*k,0,a0,a1); cctx.stroke();
+  }
+  cctx.fillStyle = gold; cctx.font='600 15px monospace'; cctx.textAlign='center';
+  const laps = entry.result.laps||[];
+  for(let f=0;f<laps.length;f++){
+    const a=(f+.5)/6*Math.PI*2-Math.PI/2, k=.5+.5*(f/6);
+    const x=cx+Math.cos(a)*rx*k, y=cy+Math.sin(a)*ry*k;
+    cctx.fillText(PC_NAMES[((laps[f].tonicAbs%12)+12)%12], x, y+5);
+  }
+  if(entry.result.godel && entry.result.godel.length){
+    cctx.fillStyle = red; cctx.font='italic 16px Charter, Georgia, serif';
+    cctx.fillText('B–A–C–H', cx, cy+ry*.55);
+  }
+  cctx.textAlign='left';
+}
+
+/* ---------------------------------------------------------------------
+   14 · UI wiring, hash, keys
+   --------------------------------------------------------------------- */
+function $(id){ return document.getElementById(id); }
+function markPendingIfPlaying(){ if(RT.playing) RT.pending = true; }
+
+function initTonusSelect(){
+  const sel = $('tonus');
+  PC_NAMES.forEach((n,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=n; sel.appendChild(o); });
+}
+function updateHash(){
+  const hash = `s=${st.seed}&k=${st.tonus}&c=${st.canon}&i=${st.interval}&g=${st.godel?1:0}&t=${st.tempo}`;
+  history.replaceState(null,'','#'+hash);
+}
+function loadHash(){
+  const hash = location.hash.slice(1); if(!hash) return;
+  const p = new URLSearchParams(hash);
+  if(p.has('s')) st.seed = Math.max(0, Math.min(SEED_MAX-1, parseInt(p.get('s'))||0));
+  if(p.has('k')) st.tonus = ((parseInt(p.get('k'))||0)%12+12)%12;
+  if(p.has('c')) st.canon = Math.max(0, Math.min(6, parseInt(p.get('c'))||0));
+  if(p.has('i')) st.interval = parseInt(p.get('i'))||7;
+  if(p.has('g')) st.godel = p.get('g')!=='0';
+  if(p.has('t')) st.tempo = Math.max(60, Math.min(96, parseInt(p.get('t'))||72));
+}
+function syncControls(){
+  $('seed').value = st.seed; $('seedVal').textContent = st.seed;
+  $('tonus').value = st.tonus;
+  $('canon').value = st.canon;
+  $('interval').value = st.interval;
+  $('godel').classList.toggle('on', st.godel); $('godel').textContent = st.godel?'on':'off';
+  $('tempo').value = st.tempo; $('tempoVal').textContent = st.tempo;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  canvas = $('canvas'); cctx = canvas.getContext('2d');
+  initTonusSelect();
+  loadHash();
+  syncControls();
+
+  $('play').addEventListener('click', play);
+  $('pause').addEventListener('click', ()=>{ RT.paused?resume():pause(); });
+  $('stop').addEventListener('click', stop);
+  $('aliud').addEventListener('click', aliud);
+  $('cut').addEventListener('click', cut);
+
+  $('seed').addEventListener('input', e=>{ st.seed=parseInt(e.target.value); $('seedVal').textContent=st.seed; updateHash(); markPendingIfPlaying(); });
+  $('tonus').addEventListener('change', e=>{ st.tonus=parseInt(e.target.value); updateHash(); markPendingIfPlaying(); });
+  $('canon').addEventListener('change', e=>{ st.canon=parseInt(e.target.value); updateHash(); if(RT.playing){ teardownGraph(); runLap(); } });
+  $('interval').addEventListener('change', e=>{ st.interval=parseInt(e.target.value); updateHash(); markPendingIfPlaying(); });
+  $('godel').addEventListener('click', ()=>{ st.godel=!st.godel; $('godel').classList.toggle('on',st.godel); $('godel').textContent=st.godel?'on':'off'; updateHash(); markPendingIfPlaying(); });
+  $('tempo').addEventListener('input', e=>{ st.tempo=parseInt(e.target.value); $('tempoVal').textContent=st.tempo; updateHash(); });
+
+  document.addEventListener('keydown', e=>{
+    if(e.target.tagName==='SELECT'||e.target.tagName==='INPUT') return;
+    if(e.key===' '){ e.preventDefault(); RT.playing?stop():play(); }
+    else if(e.key==='p'||e.key==='P'){ e.preventDefault(); RT.paused?resume():(RT.playing&&pause()); }
+    else if(e.key==='r'||e.key==='R'){ e.preventDefault(); aliud(); }
+    else if(e.key==='c'||e.key==='C'){ e.preventDefault(); cut(); }
+    else if(e.key==='m'||e.key==='M'){ e.preventDefault(); nextMovement(); }
+  });
+
+  window.addEventListener('hashchange', ()=>{ loadHash(); syncControls(); });
+});
+</script>
+</body>
+</html>

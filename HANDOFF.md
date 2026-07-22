@@ -7,7 +7,7 @@ start of a session — it's meant to be enough to work without re-explaining.
 
 ## Architecture
 
-**OPVSCVLA is twenty-two independent single-file Web Audio machines** plus a static
+**OPVSCVLA is twenty-three independent single-file Web Audio machines** plus a static
 landing page. There is **no build step, no bundler, no dependencies, no npm, no
 samples, no server-side anything.** Each `op.` is one self-contained
 `index.html` — inline `<style>`, inline `<script>`, all synthesis in the
@@ -84,6 +84,7 @@ tritava/index.html   op. XIX   TRITAVA    — Bohlen–Pierce scale (a music wit
 germen/index.html    op. XX    GERMEN     — an L-system that grows music from grammar
 forfex/index.html    op. XXI   FORFEX     — early tape splicing (musique concrète, elektronische Musik)
 fado/index.html      op. XXII  FADÓ       — portuguese fado (mezzo-soprano voice + guitarra)
+ricercar/index.html  op. XXIII RICERCAR   — Bach's Musical Offering riddle canons as a formal system
 ```
 
 The `op.` roman-numeral order is fixed and lives in `index.html` and `README.md`;
@@ -247,12 +248,119 @@ Conventions when touching this layer:
 
 Newest first.
 
+### RICERCAR — new machine, op. XXIII (implemented from the GEB.md brief)
+**Branch:** `claude/ricecar-instructions-qqwaj3` · **File:** `ricercar/index.html`
+(new, ~1500 lines) · `ricercar/GEB.md` deleted per its own instruction, outcome
+folded in below. **Status:** done, verified headless (Chromium/playwright,
+39 checks across tuning/cipher/rules/loop/determinism/smoke/TIMBRE — 37
+pass; the two known misses are the search-quality target, see below). New
+op. Registered in `index.html` (card + counts), `README.md` (row, also
+fixed a stale "Twenty-one" intro count that predated this session — real
+count was already 22), `officina` (chip), `CLAUDE.md` + this file (counts
++ file table). One-session build (design decisions + implement + verify +
+register), full autonomy, from the prior session's brief.
+
+Implements the brief in `ricercar/GEB.md` essentially as specified — Gödel
+cipher, Werckmeister III tuning, the six canon movements, the truth
+predicate + relaxation ladder, the per-tonos strange loop — with three
+implementer decisions the brief left open, plus one honest shortfall
+against its own acceptance gauntlet:
+
+- **Tuning (§3), cipher (§4), loop math (§6/§13) match the brief exactly**
+  and are verified: all 12 Werckmeister ratios ±0.05¢ of the table
+  (evaluated as floats, not symbolic rationals — the ±0.05¢ tolerance
+  absorbs this); the four tempered fifths at 696.09¢, the other eight pure
+  701.955¢; cipher round-trips exactly for 200 random seeds and the
+  SIGILLUM notes' `ci mod 12` recovers the digits regardless of octave
+  placement (bijective, tonic-invariant, as designed); `T`/`I`/`A`/`R`
+  verified structurally against the abstract rule functions; per-tonos lap
+  tonics are exactly `(home+2n) mod 12`, the seam is exactly +1200¢ above
+  lap 1's entry, the fold subtracts exactly 12 semitones and lands back on
+  lap 1's own opening ci, the GÖDEL utterance is exactly pcs {B♭,A,C,B} and
+  absent when the control is off.
+- **Engine shape:** `genAll(state)` returns the whole lap once, cached by
+  `(seed,tonus,interval,godel)` — TEMPO doesn't invalidate it, only retimes
+  playback, per the house "law vs. voicing" split. Transport schedules a
+  movement's (or OMNIA's) full event list at `play()` time and loops via a
+  timer at the lap boundary — simpler than a rolling lookahead scheduler,
+  same pattern FADÓ/GERMEN already use, appropriate since the whole score
+  is deterministic and known up front. Change-while-playing re-`genAll`s
+  and swaps in at the next movement boundary via per-boundary timers, per
+  §8's instruction that a canon mid-derivation isn't interruptible.
+- **CANON per tonos's finale mechanics (§6.2's "implementer decides the
+  pivot rule"):** each lap's CLAUSULA (bars 8 of its 8-bar cycle) is
+  realized at the *next* lap's tonic rather than its own — a direct,
+  literal "preview next key" pivot — which is what makes the register
+  climb land exactly +1200¢ at the seam without any separate fudge-factor
+  event. The GÖDEL utterance is anchored inside the last lap's own
+  CLAUSULA span (not appended after it), so it never exceeds the
+  movement's declared 48-bar length.
+- **The pedal point is composed, not searched.** The brief's §5.4 freedoms
+  (rhythm cells, SIGILLUM octaves) don't by themselves make a *fixed*
+  whole-statement pedal drone consonant against a cipher-driven line above
+  it — a blind per-bar random search over pedal degree is a 3¹⁶ space no
+  512-attempt cap explores meaningfully. Instead the pedal picks, per bar,
+  whichever of {tonic, dominant, rest} scores best against whatever dux/
+  comes actually sound that bar — composed the way a real pedal point is,
+  not gambled on.
+- **Octave placement is greedily repaired, not just drawn.** A single
+  random flip-per-note draw (SIGILLUM only, then broadened to every note)
+  barely moved the level-0 rate (18% → 17%) despite several redesigns —
+  the real fix was `repairOctaves`: after each random rhythm/content draw,
+  a local-search pass tries ±1200¢ on just the notes implicated in a
+  current violation and keeps any flip that strictly reduces the count.
+  This never touches pitch class (§13 stays intact — verified separately
+  against the raw `ruleT/I/A/R` functions, which repair never sees) and
+  turns each attempt from one dice roll into a locally-optimized candidate.
+- **Known shortfall against §15's acceptance gauntlet, honestly recorded:**
+  target #4 wants ≥60% of movements verifying at licentia-free level 0
+  over seeds 1–50, no movement ever bottoming at level 3. Measured: **~17%
+  at level 0, ~83% bottoming at level 3** (never crashing, always
+  terminating, `licentia` always printed honestly on the canvas when it
+  applies — the *mechanism* the brief specifies is intact and correct).
+  This is a genuine ceiling, not an under-tuned budget: raising the
+  attempt cap 4× (48→200, 24→100 for the per-tonos laps) and disabling the
+  stall-cutoff moved the level-0 rate by under a point while blowing
+  genAll's runtime from ~2s past two minutes for just 15 seeds — so the
+  cap was reverted rather than kept. Checking a random 12-tone cipher
+  against arbitrary canonic transforms of itself for *strict* beat-by-beat
+  triadic truth is a hard constraint problem; Bach had the theme and the
+  canonic devices to choose *together*, this machine only gets to choose
+  the rhythm/octave/pedal around a cipher it can't touch. `genAll` stays
+  interactive (~2s worst case, verified) at the cost of the search settling
+  for `licentia III` (parallels-only) more often than the brief wanted —
+  audible as: OMNIA still always plays cleanly (no dissonance is literally
+  unbounded — level 3 only drops the strong/weak/range checks, parallel
+  motion is never waived), but a from-scratch listening pass would likely
+  hear more clashing simultaneities in movements 2–6 than a from-the-book
+  Bach canon. Pick-up idea below.
+- **Verified headless** (`scratchpad/verify-ricercar.mjs`, playwright
+  against the bundled Chromium, not committed): tuning table + fifth
+  pattern, cipher bijectivity (200 + 100 seeds), rule-function correctness,
+  loop/seam/fold math, GÖDEL pcs, determinism (identical event list across
+  two fresh `genAll` calls), all controls present, hash round-trips all
+  six params, play/pause/stop/resume drive the AudioContext correctly, the
+  RILLE hide-while-paused gotcha holds, ALIUD reseeds, Media Session is
+  wired, a full 120-bar OMNIA lap renders offline with no NaNs and a sane
+  peak, `cut()` produces a downloadable WAV, the OFFICINA schema is
+  well-formed (6 groups, 25 params) with factory defaults matching `TP` at
+  boot and `touch()` callable without throwing. Also screenshot-smoke-
+  tested light/dark and three canvas geometries (THEMA ribbon, CANCRIZANS
+  palindrome, PER TONOS spiral) — zero page errors in every run.
+- **Pick-up ideas:** the search is the one place a future session could
+  meaningfully improve on this build — a real local-search/backtracking
+  pass over rhythm placement (not just octave) would likely close most of
+  the level-0 gap without the combinatorial blowup random sampling hit
+  here; the REGIUM preset, riddle mode, more canons, and a Kirnberger/
+  Vallotti tuning menu from the brief's §17 are all still open and
+  untouched.
+
 ### RICERCAR — design brief for a GEB machine (op. XXIII provisional, NOT implemented)
 **Branch:** `claude/geb-musical-machine-plan-mu1af8` · **File:**
 `ricercar/GEB.md` only — no code, no registry rows (a brief claims the
-concept and the directory name, never the number). **Status:** design
-complete; a later session implements from the brief and deletes it,
-folding the outcome back here.
+concept and the directory name, never the number). **Status:** shipped as
+op. XXIII — see the RICERCAR thread at the top of Open threads for the
+implementation record; this brief is deleted per its own instruction.
 
 Maintainer's brief: a machine based on Hofstadter's *Gödel, Escher, Bach*,
 "as deep as you like," plan handed to another session for implementation.
