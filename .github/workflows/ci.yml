@@ -1,0 +1,40 @@
+name: verify
+
+# Runs the OPVSCVLA dev tooling on every PR and on main: the static drift check
+# (bridge identity + registry agreement + op. numbering) and the headless
+# verification harness (every machine loaded, benched, played, and cut). Green =
+# the machines still hold the house contract. Nothing here ships with the
+# machines — they stay one file, zero dependencies.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dev tooling
+        working-directory: dev
+        run: npm install
+
+      - name: Install Chromium
+        working-directory: dev
+        run: npx playwright install --with-deps chromium
+
+      - name: Drift / registry / numbering check
+        run: node dev/check.mjs
+
+      - name: Headless machine verification
+        run: node dev/verify.mjs
+        env:
+          VERIFY_CONCURRENCY: 3

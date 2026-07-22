@@ -1,0 +1,7 @@
+{
+  "_comment": "OPTIONAL per-machine assertions for dev/verify.mjs. Copy to <machine>/expected.json and set real values, or delete keys you don't want enforced. Omitting the file entirely is fine — the generic checks (loads-clean, bench-schema, plays-clean, cut-renders-wav) run on every machine regardless.",
+  "schemaId": "template",
+  "groups": 2,
+  "params": 4,
+  "mustContain": ["officina:1", "__iosAudio", "OfflineAudioContext"]
+}

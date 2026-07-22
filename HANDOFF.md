@@ -70,6 +70,9 @@ THREADS.md           cross-cutting / meta session log; each machine's own log
 icon.svg             app icon (master); icon-512/192.png, apple-touch-icon.png,
                      favicon-32.png rendered from it · site.webmanifest (PWA)
 officina/index.html  OFFICINA — the voicing bench (backstage, NOT an op.)
+dev/                 dev-only tooling — verify harness, drift checker, machine
+                     template; never shipped with the machines. See dev/README.md
+.github/workflows/   CI: runs dev/verify.mjs + dev/check.mjs on every PR
 pas-sale/index.html  op. I    PAS SALÉ   — zydeco two-step
 scala/index.html     op. II   SCALA      — Shepard–Risset in just intonation
 gradus/index.html    op. III  GRADUS     — species counterpoint after Fux
@@ -124,9 +127,12 @@ keep all three (page, README, this file) in sync when adding a machine.
   history of the idea it renders.
 - `prefers-reduced-motion` respected throughout; render loops sleep when idle;
   canvas layers cached.
-- Verify audio work **headless (Chromium)**: enumerate the model for
-  correctness, then smoke-test the transport/scheduler and offline render for
-  runtime errors. See the RILLE threads for the pattern.
+- Verify audio work **headless (Chromium)** before every PR: `node dev/verify.mjs
+  <machine>` runs the shared harness (loads clean · bench schema · plays · cuts a
+  WAV) on any machine, no per-machine wiring. For machine-specific invariants (a
+  tuning table, a counterpoint rule) add a `<machine>/expected.json` or a
+  throwaway scratchpad script. `node dev/check.mjs` catches bridge/registry/
+  numbering drift. See dev/README.md.
 - Git: develop on your `claude/*` branch, commit with descriptive messages (the
   music-theory / design reasoning lives there), and **open a PR** — every task
   ends in a PR the maintainer reviews and merges. Never push to `main`, never
@@ -139,8 +145,9 @@ grammar end to end: the law is the interface, generation is seeded and
 deterministic, the URL hash round-trips, the offline WAV is deterministic and
 clip-safe, iOS audio + Media Session are wired, `prefers-reduced-motion` is
 respected, TIMBRE + the OFFICINA bridge are present, and it is **verified
-headless** (enumerate the model → transport smoke → offline render, all with
-zero page errors). If you can't clear that bar inside the token budget, ship a
+headless** — `node dev/verify.mjs <machine>` passes (loads clean · bench schema ·
+plays · cuts a WAV), plus any machine-specific invariants in `<machine>/expected.json`
+or a scratchpad script. If you can't clear that bar inside the token budget, ship a
 smaller scope *well* and note the rest in the machine's `THREADS.md` — never ship
 a half-working machine to save tokens.
 
@@ -191,12 +198,13 @@ several items at once and PRs merge continuously.
 - **Before you PR:** fetch again, rebase onto `origin/main`, re-verify, and
   re-read the registry (file table above / `index.html` / `README.md`) on
   `origin/main`.
-- **Opus numbers are provisional until merged.** Take the next free numeral from
-  current `origin/main` and say in the PR that it's provisional; if another
-  machine merges first, the maintainer settles final numbering at merge — the
-  directory name is yours, the number can move. (Machines here have renumbered
-  several times before landing; that's normal.) Also check live branches for an
-  in-flight directory of the same name — two machines may share a provisional
+- **Opus numbers are assigned at merge, by the maintainer.** A build agent may
+  leave an `op. ??` placeholder (the directory name is what's claimed), or take
+  the next free numeral from `node dev/check.mjs --next` and flag it provisional
+  in the PR. Either way the maintainer stamps the final numeral at merge —
+  `dev/check.mjs` fails CI on a duplicate or a gap — so the number can move even
+  after you push; the directory name is yours. Check live branches for an
+  in-flight directory of the same name: two machines may share a provisional
   number but never a directory.
 - A **merged PR is finished.** Follow-up work is a fresh branch off
   `origin/main`, never new commits on the merged branch. Branches with no merge
@@ -292,3 +300,44 @@ Conventions when touching this layer:
   overlay round-trips; `verify-bench.mjs` and `sweep-bench.mjs` drive the
   bench UI itself. All 13 pass (387 params).
 
+## Dev tooling (`dev/`, dev-only — machines stay zero-dep)
+
+One committed toolchain so agents stop re-deriving a playwright harness in
+`scratchpad/` every session. Node 22+; `cd dev && npm install` once. **None of it
+ships with the machines.**
+
+- **`node dev/verify.mjs [machine …]`** — the shared headless harness. Drives any
+  machine through the house grammar that is identical across all of them (the
+  bench schema over postMessage, the space/`c` keyboard transport), so it needs
+  no per-machine wiring: `loads-clean · bench-schema · plays-clean ·
+  cut-renders-wav`. `--quick` skips the play/cut runtime checks; `--list` lists
+  machines. Optional `<machine>/expected.json` adds machine-specific assertions
+  (group/param counts, required substrings) — see `dev/template/expected.json`.
+- **`node dev/check.mjs`** — static drift: the OFFICINA bridge is byte-identical
+  in every machine (flags any drifted copy), all four registries agree, and op.
+  numbering has no duplicate/gap. `--next` prints the next free numeral.
+- **`dev/template/index.html`** — the house shell as a **minimal working machine**
+  (loads, benches, plays, cuts — passes the harness from commit one). Copy to
+  `<machine>/index.html` and fill the `TODO(law/voices/canvas/reader)` markers;
+  leave the SHARED blocks (bridge, `__iosAudio`, Media Session, `saveWav`,
+  keyboard grammar) verbatim.
+- **`.github/workflows/ci.yml`** runs verify + check on every PR. Green is the
+  merge signal — CI carries the mechanical Quality-bar checks so the maintainer
+  doesn't hand-verify each PR.
+
+## Session history — per-machine `THREADS.md`
+
+The inline Open-threads log has moved out of this file to keep it light. **Each
+machine's development history now lives in its own `<machine>/THREADS.md`**
+(newest first) — read only the one for the machine you're touching, not the
+others. Threads that span machines or the whole repo (voicing-layer rollouts,
+lock-screen sweeps, the OP–XY fork, meta snapshots) live in the repo-root
+**`THREADS.md`**, which also indexes which machines have recorded history.
+
+**Adding an entry (end of every session):** put it at the **top** of the relevant
+`THREADS.md` — your machine's file for machine work, root `THREADS.md` for a
+cross-cutting change — under its own `###` heading, same format as the existing
+entries. That is where the per-session record goes; edit HANDOFF.md itself only
+when your change alters orientation (architecture, decisions, file structure,
+conventions). Because per-machine files rarely overlap, parallel PRs conflict
+far less than when every branch appended to one shared log here.
