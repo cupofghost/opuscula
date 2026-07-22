@@ -246,6 +246,38 @@ Conventions when touching this layer:
 
 Newest first.
 
+### RICERCAR — design brief for a GEB machine (op. XXIII provisional, NOT implemented)
+**Branch:** `claude/geb-musical-machine-plan-mu1af8` · **File:**
+`ricercar/GEB.md` only — no code, no registry rows (a brief claims the
+concept and the directory name, never the number). **Status:** design
+complete; a later session implements from the brief and deletes it,
+folding the outcome back here.
+
+Maintainer's brief: a machine based on Hofstadter's *Gödel, Escher, Bach*,
+"as deep as you like," plan handed to another session for implementation.
+The design: **the riddle canons of Bach's *Musical Offering*, run as a
+formal system.** The seed is Gödel-numbered into the royal theme (six
+base-12 cipher notes — the URL hash is audibly *in* the tune, bijective
+both ways); a deterministic seeded search ("Quaerendo invenietis") finds
+theme variants under which the canons verify against a truth predicate,
+with an honest relaxation ladder (`licentia`) so it always terminates; the
+movements are the Offering's canons (simplex, cancrizans, contrario motu,
+augmentation, per tonos); the **canon per tonos finale rises a whole tone
+per lap through six real keys and folds home an octave at the seam** — the
+whole pressing is one strange loop that contains its own beginning, with a
+deliberately underivable B–A–C–H utterance (the Gödel sentence) masking
+the fold. Tuning is **Werckmeister III, exact** (rationals × fourth roots
+of 2; A=415) — the catalogue's first historical well temperament, chosen
+because key colour is what makes the modulating canon an audible journey
+(no pitch-shift transposition anywhere, index arithmetic only). Canvas is
+the Escher layer: crab canon drawn as a palindrome, inversion as *Drawing
+Hands* mirror, per tonos as a closed staircase. Explicit boundaries drawn
+against SCALA (owns the Shepard illusion), GRADUS (Fux pedagogy), GERMEN
+(grammar rewriting), TESSERA (prediction), PEAL (permutation truth). The
+brief carries full acceptance gauntlet (tuning cents, cipher bijectivity,
+canon-truth-by-construction, loop arithmetic, determinism, smoke) and a
+considered-and-rejected list the implementer must not "improve" back in.
+
 ### RILLE — harmony recomposed on the LAMENTO GROUND (a tradition with rules)
 **Branch:** `claude/rille-edm-aesthetic-fix-m3nik7` · **Files:** `rille/index.html`
 only (engine + display + reader notes; UI shell, drums, mix chain, TIMBRE,
