@@ -46,8 +46,15 @@ asked for.
   whitespace-normalized OFFICINA bridge and flags any drifted copy (all 28 are
   currently byte-identical); asserts every machine appears in all four registries
   (landing card / README row / officina chip / HANDOFF table); asserts op.
-  numbering has no duplicate or gap. `--next` prints the next free numeral (→ XXIX)
+  numbering has no duplicate or gap. `--next` prints the next free numeral
   for the maintainer to stamp at merge.
+- **The checker earned its keep on day one.** Rebasing onto current `main` (which
+  had gained PERSONA, op. XXIX, while this branch worked), `check.mjs` flagged a
+  real bridge drift: PERSONA's copy renamed the local `P`→`Pp` in the bridge's
+  `reset`, so it was no longer verbatim. Restored to canonical (one line,
+  functionally identical, block-scoped so safe — PERSONA still passes the harness
+  fully). That one-line machine-file change is the only non-`dev/`/-doc edit in
+  this PR, made solely because the tool caught a genuine house-rule violation.
 - **`dev/template/index.html` — the house shell as a minimal *working* machine.**
   Loads, benches, plays, cuts — passes the harness from commit one (verified by
   copying it to a temp dir named `template`). Copy it to `<machine>/index.html`

@@ -541,7 +541,7 @@ const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const Pp=TIMBRE.
   const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
   const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
     if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
-  const reset=()=>{for(const g in TIMBRE.groups){const Pp=TIMBRE.groups[g].params;for(const p in Pp)TP[g][p]=Pp[p].v}};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
   if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
     if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
   if(!qs.has('bench'))return;
