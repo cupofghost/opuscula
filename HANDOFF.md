@@ -268,7 +268,7 @@ Implements the brief's four-voice SATB Renaissance counterpoint engine —
 5-limit just intonation over an anchored bass (Zarlino's *senario*), ficta
 at cadences (exact 15/8), the fifteen-candle hearse (`3·ceil(k/3)`),
 strepitus on responsory IX only — as a seeded backtracking search modeled
-on GRADUS/RICERCAR's DFS architecture:
+on GRADUS's DFS architecture:
 
 - **Tuning, candles, form, ficta, determinism, render, and plumbing all
   verified exact.** Da-capo/repetendum structure byte-identical on repeat;
@@ -313,12 +313,6 @@ on GRADUS/RICERCAR's DFS architecture:
     cadences' own consonance; a `fillAltus`-based fallback traded melodic
     violations for a worse spike in parallel motion) — both are gone from
     the code, which keeps the simpler, honestly-imperfect original.
-  - These are architecturally the same category of shortfall RICERCAR
-    disclosed above (a hard constraint-satisfaction search settling for
-    "mostly right, honestly measured" over "provably clean") — a
-    constructive/backtracking rewrite of the cadence-resolution placement
-    specifically (rather than generate-and-repair) is the concrete
-    pick-up idea most likely to close the largest (melodic) category.
 - **A real test-harness bug, also fixed:** the verify script's OFFICINA
   bridge check hung intermittently — not an app bug. The page's `<head>`
   references `fonts.googleapis.com` in a parser-blocking
