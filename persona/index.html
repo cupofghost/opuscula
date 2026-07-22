@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0e0d12">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="persona — the singing automaton: a mannequin pop-star sings affirmations through a primitive formant speech synthesizer over a wandering cheap-synth bed. after the 'I Feel Fantastic' video (John Bergeron, Tara the Android, 2004). the voice is real source-filter synthesis; the cheer is relentless; the harmony never resolves; the affirmation cracks. op. XXIX of the opuscula.">
+<title>PERSONA — the singing automaton</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --stage:#0e0d12; --stage2:#15131b; --panel:#1a1722;
+  --ink:#e7e1d7; --dim:#948da0; --line:#2a2634;
+  --skin:#e9dcc9; --skinlo:#c6b39a; --skinhi:#f4ebdc;
+  --lip:#c07f80; --tv:#79b2c6; --hot:#e3a1b6; --amber:#e0c07a;
+  --accent:var(--hot);
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--stage); color:var(--ink);
+  font-family:'EB Garamond',Georgia,'Times New Roman',serif;
+  font-size:17px; line-height:1.55;
+  min-height:100vh; padding:1.2rem 1rem 3rem;
+  background-image:
+    radial-gradient(ellipse 70% 45% at 50% 8%, rgba(121,178,198,.06), transparent 62%),
+    radial-gradient(ellipse 90% 60% at 50% 120%, rgba(227,161,182,.05), transparent 60%);
+}
+.wrap{max-width:700px; margin:0 auto}
+a{color:var(--tv); text-decoration:none; border-bottom:1px dotted var(--dim)}
+a:hover{color:var(--ink)}
+.mono{font-family:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; font-size:.76rem; letter-spacing:.06em}
+/* exit to opuscula (shared across the opuscula) */
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:14px 0 0 14px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench{position:fixed;top:max(6px,env(safe-area-inset-top));right:max(6px,env(safe-area-inset-right));z-index:100;display:flex;width:-moz-fit-content;width:fit-content;align-items:center;gap:.55em;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench:hover,.bench:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.bench:active{transform:translateY(1px)}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+@media(prefers-reduced-motion:reduce){.bench,.exit{transition:none}}
+.opline{color:var(--dim); font-variant:small-caps; letter-spacing:.14em; font-size:.86rem}
+h1{
+  font-size:3.1rem; font-weight:400; letter-spacing:.03em; line-height:1.03;
+  margin:.15rem 0 .55rem; color:var(--ink);
+  text-shadow:0 0 24px rgba(121,178,198,.16);
+}
+h1 .dot{color:var(--hot)}
+.thesis{font-size:1.05rem; margin-bottom:.5rem}
+.thesis b{font-weight:700}
+.sub{color:var(--dim); font-style:italic; font-size:.92rem; margin-bottom:1.2rem}
+
+.plate{
+  position:relative; border:1px solid var(--line); border-radius:6px;
+  background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(0,0,0,.18)), var(--stage2);
+  overflow:hidden; margin-bottom:.55rem;
+}
+canvas{display:block; width:100%; height:auto}
+.readout{
+  display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+  padding:.45rem .7rem; border-top:1px solid var(--line); color:var(--dim);
+}
+.readout .live{color:var(--accent)}
+#lyric{
+  font-style:italic; color:var(--dim); text-align:center;
+  min-height:1.7em; margin:.35rem 0 1rem; font-size:1.02rem; letter-spacing:.01em;
+}
+#lyric .now{color:var(--ink); font-style:normal; text-shadow:0 0 14px rgba(227,161,182,.35)}
+#lyric .crack{color:var(--hot)}
+
+.controls{display:grid; grid-template-columns:1fr 1fr; gap:.75rem .95rem; margin-bottom:1rem}
+@media(max-width:520px){.controls{grid-template-columns:1fr}}
+.ctl{display:flex; flex-direction:column; gap:.3rem}
+.ctl.full{grid-column:1/-1}
+.ctl label{font-variant:small-caps; letter-spacing:.12em; font-size:.74rem; color:var(--dim)}
+.chips{display:flex; flex-wrap:wrap; gap:.4rem}
+.chips button{
+  font-family:'IBM Plex Mono',monospace; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase;
+  background:var(--panel); color:var(--dim); border:1px solid var(--line);
+  border-radius:999px; padding:.4rem .8rem; cursor:pointer; transition:all .14s;
+}
+.chips button:hover{color:var(--ink); border-color:var(--dim)}
+.chips button.on{color:var(--stage); background:var(--hot); border-color:var(--hot)}
+input[type=range]{
+  width:100%; height:1.6rem; padding:0; accent-color:var(--hot);
+  background:transparent;
+}
+.ctl .val{font-size:.72rem; color:var(--dim); font-family:'IBM Plex Mono',monospace}
+
+.btnrow{display:flex; gap:.7rem; flex-wrap:wrap; margin-bottom:.4rem}
+button.act{
+  font-family:'EB Garamond',Georgia,serif; font-size:1.05rem; letter-spacing:.03em;
+  background:transparent; color:var(--ink);
+  border:1px solid var(--dim); border-radius:999px;
+  padding:.55rem 1.5rem; cursor:pointer; transition:all .15s;
+}
+button.act:hover{border-color:var(--ink); box-shadow:0 0 14px rgba(231,225,215,.12)}
+button.act.big{border-color:var(--hot); color:var(--hot)}
+button.act.big:hover{box-shadow:0 0 16px rgba(227,161,182,.25)}
+button.act.on{background:var(--hot); color:var(--stage); border-color:var(--hot)}
+button.act:disabled{opacity:.4; cursor:default; box-shadow:none}
+.cutnote{color:var(--dim); font-size:.8rem; font-style:italic; margin-bottom:2rem}
+
+/* on this music: expandable reader notes (shared across the opuscula) */
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box;border-top:1px solid var(--line);padding-top:1.4rem}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:.96rem;line-height:1.66;opacity:.92;color:#cfcabf}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500;color:var(--ink)}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic;color:var(--ink)}
+footer{
+  margin-top:2.2rem; padding-top:1rem; border-top:1px solid var(--line);
+  color:var(--dim); font-size:.82rem; display:flex; justify-content:space-between;
+  flex-wrap:wrap; gap:.5rem;
+}
+@media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+  <a class="bench" href="../officina/#m=persona" aria-label="Open in officina — the voicing bench" title="officina">officina</a>
+  <div class="opline">op. XXIX · the singing automaton</div>
+  <h1>Persona<span class="dot">.</span></h1>
+  <p class="thesis"><b>A machine that sings it feels fantastic.</b> A mannequin pop-star reads her cheerful affirmations through a primitive speech synthesizer, over a synth that noodles and never lands. Her voice is real source-and-filter synthesis; the harmony drifts; the affirmation cracks.</p>
+  <p class="sub">after the <em>I Feel Fantastic</em> video — John Bergeron's Tara the Android, 2004 · the mask that sounds</p>
+
+  <div class="plate">
+    <canvas id="cv" width="1320" height="700"></canvas>
+    <div class="readout mono">
+      <span id="progName">—</span>
+      <span id="status">READY</span>
+      <span>PRESSING · <span id="seedRd" class="live">—</span></span>
+    </div>
+  </div>
+  <div id="lyric">&nbsp;</div>
+
+  <div class="controls">
+    <div class="ctl full">
+      <label for="progChips">Which routine is loaded?</label>
+      <div class="chips" id="progChips"></div>
+    </div>
+    <div class="ctl">
+      <label for="wrong">The crack — how much unease? <span class="val" id="wrongVal">28%</span></label>
+      <input type="range" id="wrong" min="0" max="100" value="28" step="1">
+    </div>
+    <div class="ctl">
+      <label for="drift">Drift — how far the synth wanders <span class="val" id="driftVal">30%</span></label>
+      <input type="range" id="drift" min="0" max="100" value="30" step="1">
+    </div>
+    <div class="ctl">
+      <label for="tempo">Tempo <span class="val" id="tempoVal">116</span></label>
+      <input type="range" id="tempo" min="72" max="150" value="116" step="1">
+    </div>
+    <div class="ctl">
+      <label for="verses">How long? <span class="val" id="versesVal">4 stanzas</span></label>
+      <input type="range" id="verses" min="2" max="7" value="4" step="1">
+    </div>
+  </div>
+
+  <div class="btnrow">
+    <button class="act big" id="play">Sing</button>
+    <button class="act" id="pause" disabled>Pause</button>
+    <button class="act" id="another">Another</button>
+    <button class="act" id="cut">Cut · 16-bit WAV</button>
+  </div>
+  <p class="cutnote" id="cutnote">renders the whole performance, then lets her wind down · the URL hash <em>is</em> the pressing — copy the address and the exact routine reloads anywhere</p>
+
+  <details class="reader">
+    <summary>On this music · the singing automaton</summary>
+    <div class="rbody">
+
+      <h4>What you're hearing</h4>
+      <p>In 2004 John Bergeron, a Los Angeles animatronics builder, made a music video for a machine he had built: <em>Tara the Android</em>, whom he called an attempt at "the world's first pop-star android." Tara is a pale mannequin who can move only her head and her hands. She sings a song called <em>I Feel Fantastic</em> — her words assembled by a crude speech synthesizer — while a cheap keyboard noodles behind her in a bright key that keeps not resolving. Uploaded to YouTube in 2009, the clip became a piece of internet folk-horror, less for anything it does than for what it is: relentless, mechanical cheerfulness with nobody home. This machine plays that straight — not the meme, the <em>music</em>: the automaton, the synthetic voice, the wandering accompaniment, and the small place where the cheer cracks.</p>
+
+      <h4>The voice is really synthesized</h4>
+      <p>Tara does not sing a recording; she is a <em>speaking machine</em>, and so is this. Every word here is built the way a formant synthesizer builds speech — the method behind DECtalk (the voice of Stephen Hawking) and the Speak &amp; Spell. A buzzing source stands in for the vocal folds; a bank of three resonant filters — the <em>formants</em> — shapes that buzz into vowels, exactly as the mouth and throat do. The formant frequencies used here are the measured ones (Peterson &amp; Barney, 1952; Klatt): <em>ee</em> is a low first formant and a very high second; <em>ah</em> opens the first formant wide; <em>oo</em> rounds both down. Consonants are the same physics — a burst of filtered noise for <em>s</em> and <em>sh</em>, a silence-then-pop for <em>t</em> and <em>k</em>, a low murmur for <em>m</em> and <em>n</em>. The words are spelled out in a small pronunciation dictionary, phoneme by phoneme, so the machine can only say what it has been taught to say.</p>
+
+      <h4>Why she sounds uncanny</h4>
+      <p>A human singer scoops onto a note, lets it waver, leans on the beat. Tara does none of this. Each pitch is set instantly and held dead flat — no glide, no vibrato, no give — because that is what a synthesizer does and what a person cannot. Masahiro Mori named the effect in 1970: the <em>uncanny valley</em>, the lurch we feel at something almost, but not quite, alive. The mechanical steadiness is not a bug to be smoothed away here; it is the instrument. The one deliberate softness is the mouth: the animated face opens and rounds with the vowel it is singing, driven by that vowel's own formants.</p>
+
+      <h4>The synth that never lands</h4>
+      <p>Behind the voice is an arpeggiator over a held pad — the auto-accompaniment of a home keyboard, bright and sugary. But its tonal center does not stay put: every bar it can slide by a step or two, so the chords wander through a loosely major space and functional harmony never quite closes. That drifting is what makes the backing sound, as one description of the original put it, faintly "atonal" — not twelve-tone rigor but a sweetness that has come untethered. The <em>drift</em> control is that leash: at zero the accompaniment loops in place; opened up, it walks away from the key while Tara sings on regardless, and the two fall out of agreement.</p>
+
+      <h4>The affirmation, and the crack</h4>
+      <p>The song's form is pure positive affect: <em>I feel fantastic — hey, hey, hey</em>, then the same words handed to you — <em>you feel fantastic</em>, <em>you are fantastic</em> — and a verse of small reassurances the machine generates fresh each time. Then, in the original and here, the cheer slips: Tara begins to sing <em>run, run, run</em> and <em>please leave</em>, in the identical bright deadpan, and the affect-and-content mismatch is the whole horror. The <em>crack</em> control decides how far in that unease reaches — from a pristine loop that never turns, to a routine so overrun that it stutters and breaks. Four <em>routines</em> reframe the same automaton: the canonical <em>Fantastic</em>, a too-warm <em>Welcome</em> that will not let you go, a chirping <em>Jingle</em>, and an open <em>Malfunction</em>. The words she reaches for are her own to a point — the seed writes the verse, the crack decides when it lands.</p>
+
+      <h4>What moves, and what doesn't</h4>
+      <p>The picture keeps the video's cruel economy: of the whole figure, only the head and the two hands move. The head turns and nods on a slow, seeded sway; the hands tick in small mechanical gestures with the beat; the mouth shapes the vowels. Everything else is held perfectly still. Turn on <em>reduced motion</em> and even that little stops — she simply stares out, mid-word.</p>
+
+      <h4>The name</h4>
+      <p>A <em>persona</em> was the mask a Roman actor wore, and the word was long read — folk-etymologically, but irresistibly — as <em>per-sonare</em>, "to sound through": the mask the voice comes through. It is also the root of <em>person</em>. Op. XXIX takes the word at both ends: a mask that sounds, and the thin, unsettling distance between that and a person. Everything is synthesized in the page; nothing is a sample; the same link always sings the same song.</p>
+    </div>
+  </details>
+
+  <footer class="mono">
+    <span>op. XXIX · <a href="../">opvscvla</a></span>
+    <span>keys: space=sing · p=pause · r=another · c=cut</span>
+  </footer>
+</div>
+
+<script>
+'use strict';
+/* ============================== PERSONA ==============================
+   op. XXIX · the singing automaton · single-file web audio object
+   After John Bergeron's "I Feel Fantastic" (Tara the Android, 2004).
+   The voice is real source–filter (formant) speech synthesis: one glottal
+   buzz through three formant filters, consonants as filtered-noise bursts,
+   words spelled out in a small pronunciation dictionary. Pitch is set
+   instantly and held flat (mechanical, uncanny). A drifting arpeggiator +
+   pad play the non-functional sugar behind her. The affirmation form
+   (I / you / you-are fantastic) cracks into "run · please leave".
+   Series conventions: seeded mulberry32 · hash permalink · space/p/r/c ·
+   deterministic 16-bit WAV cut · __iosAudio unlock + Media Session ·
+   OFFICINA bridge · ≤30fps canvas · prefers-reduced-motion.
+==================================================================== */
+
+/* ---------- PRNG ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>x<a?a:x>b?b:x;
+const pick=(rng,arr)=>arr[(rng()*arr.length)|0];
+function wpick(rng,table){let x=rng(),acc=0;for(const[v,w]of table){acc+=w;if(x<acc)return v;}return table[table.length-1][0];}
+
+/* ============================ THE VOICE — phonetics ==================
+   Correctness-where-the-domain-has-a-right-answer: the vowel formant
+   frequencies (F1,F2,F3, Hz) are the measured values a formant synthesizer
+   uses. Diphthongs are stored as [start,end] and glide across the vowel.
+   ==================================================================== */
+const VOW={ // monophthongs: [F1,F2,F3]
+  iy:[300,2300,3000], ih:[400,1990,2550], eh:[530,1840,2480], ae:[660,1720,2410],
+  aa:[730,1090,2440], ao:[570,840,2410],  uh:[440,1020,2240], uw:[300,870,2240],
+  er:[490,1350,1690], ah:[600,1200,2400] // ah = schwa / unstressed
+};
+const DIPH={ ay:['aa','iy'], ey:['eh','iy'], ow:['ao','uw'], aw:['aa','uw'], oy:['ao','iy'] };
+// vowel jaw-openness (from F1) and lip-rounding (from low F2) for the mouth viseme
+function vowShape(v){
+  const d=DIPH[v], key=d?d[0]:v, f=VOW[key]||VOW.ah;
+  const open=clamp((f[0]-300)/430,0,1);       // higher F1 → jaw more open
+  const round=clamp((1400-f[1])/1100,0,1);     // lower F2 → lips rounded
+  return {open,round};
+}
+// consonant table. type: stop | fric | nas | liq | glide.  voiced flag; loc = burst/noise band Hz
+const CONS={
+  p:{t:'stop',v:0,loc:900}, b:{t:'stop',v:1,loc:700}, t:{t:'stop',v:0,loc:3800},
+  d:{t:'stop',v:1,loc:3000}, k:{t:'stop',v:0,loc:1900}, g:{t:'stop',v:1,loc:1700},
+  f:{t:'fric',v:0,loc:1400,q:1.2}, v:{t:'fric',v:1,loc:1200,q:1.3},
+  s:{t:'fric',v:0,loc:6200,q:3.4}, z:{t:'fric',v:1,loc:5200,q:3.0},
+  sh:{t:'fric',v:0,loc:3000,q:2.2}, zh:{t:'fric',v:1,loc:2600,q:2.2},
+  th:{t:'fric',v:0,loc:5600,q:1.6}, dh:{t:'fric',v:1,loc:2400,q:1.2},
+  h:{t:'fric',v:0,loc:1500,q:0.8,asp:1},
+  m:{t:'nas',v:1,f1:250,f2:1000}, n:{t:'nas',v:1,f1:250,f2:1700}, ng:{t:'nas',v:1,f1:250,f2:2000},
+  l:{t:'liq',v:1,f1:360,f2:1300}, r:{t:'liq',v:1,f1:330,f2:1050,f3:1600},
+  w:{t:'glide',v:1,f1:300,f2:610}, y:{t:'glide',v:1,f1:270,f2:2300},
+  ch:{t:'stop',v:0,loc:2800,affr:'sh'}, j:{t:'stop',v:1,loc:2600,affr:'zh'}
+};
+const isVow=p=>!!(VOW[p]||DIPH[p]);
+/* Pronunciation dictionary. Each word → array of SYLLABLES; a syllable is a
+   dot-joined phone list; the one vowel token splits onset|vowel|coda.
+   Hand-transcribed for exactly the closed vocabulary this machine can sing. */
+const DICT={
+  i:['ay'], you:['y.uw'], we:['w.iy'], me:['m.iy'], my:['m.ay'], your:['y.ao.r'],
+  are:['aa.r'], am:['ae.m'], is:['ih.z'], be:['b.iy'], will:['w.ih.l'], do:['d.uw'],
+  not:['n.aa.t'], no:['n.ow'], and:['ae.n.d'], the:['dh.ah'], it:['ih.t'], so:['s.ow'],
+  very:['v.eh','r.iy'], still:['s.t.ih.l'], now:['n.aw'], here:['h.iy.r'], all:['ao.l'],
+  hey:['h.ey'], oh:['ow'], yeah:['y.ae'],
+  feel:['f.iy.l'], fantastic:['f.ae.n','t.ae.s','t.ih.k'],
+  everything:['eh','v.r.iy','th.ih.ng'], nothing:['n.ah','th.ih.ng'], wrong:['r.ao.ng'],
+  nice:['n.ay.s'], fine:['f.ay.n'], good:['g.uh.d'], great:['g.r.ey.t'],
+  wonderful:['w.ah.n','d.er','f.uh.l'], lovely:['l.ah.v','l.iy'], happy:['h.ae','p.iy'],
+  safe:['s.ey.f'], warm:['w.ao.r.m'], clean:['k.l.iy.n'], new:['n.uw'], bright:['b.r.ay.t'],
+  okay:['ow','k.ey'], better:['b.eh','t.er'], best:['b.eh.s.t'], love:['l.ah.v'],
+  world:['w.er.l.d'], sun:['s.ah.n'], shines:['sh.ay.n.z'], day:['d.ey'], today:['t.ah','d.ey'],
+  take:['t.ey.k'], vitamins:['v.ay','t.ah','m.ih.n.z'], medicine:['m.eh','d.ah','s.ih.n'],
+  smile:['s.m.ay.l'], alive:['ah','l.ay.v'], home:['h.ow.m'], warmer:['w.ao.r','m.er'],
+  hello:['h.eh','l.ow'], welcome:['w.eh.l','k.ah.m'], come:['k.ah.m'], in:['ih.n'],
+  please:['p.l.iy.z'], stay:['s.t.ey'], sit:['s.ih.t'], down:['d.aw.n'], with:['w.ih.dh'],
+  go:['g.ow'], leave:['l.iy.v'], friend:['f.r.eh.n.d'], forever:['f.er','eh','v.er'],
+  buy:['b.ay'], more:['m.ao.r'], free:['f.r.iy'], deserve:['d.ah','z.er.v'],
+  improved:['ih.m','p.r.uw.v.d'], obey:['ow','b.ey'], consume:['k.ah.n','s.uw.m'],
+  want:['w.aa.n.t'], need:['n.iy.d'], order:['ao.r','d.er'], yours:['y.ao.r.z'],
+  run:['r.ah.n'], error:['eh','r.er'], help:['h.eh.l.p'], why:['w.ay'],
+  remember:['r.ih','m.eh.m','b.er'], face:['f.ey.s'], dont:['d.ow.n.t'], leaving:['l.iy','v.ih.ng']
+};
+function syllab(word){ // → [{on:[cons], v:vowel, co:[cons]}] using DICT
+  const sy=DICT[word]; if(!sy)return [{on:[],v:'ah',co:[]}];
+  return sy.map(s=>{
+    const ph=s.split('.'); let vi=ph.findIndex(isVow); if(vi<0)vi=ph.length-1;
+    return {on:ph.slice(0,vi), v:ph[vi], co:ph.slice(vi+1)};
+  });
+}
+
+/* ============================ THE ROUTINES (programs) ================
+   Each PROGRAM reframes the same automaton: a refrain (fixed words + a
+   little authored contour), a verse vocabulary (generated affirmations),
+   crack lines (the unease), and voicing/pacing defaults. The refrain is
+   the tradition's fixed grammar — the I / you / you-are ladder — the way
+   sol-mi-la is NENIA's. deg[] is one scale-degree per syllable. */
+const PROGRAMS={
+  fantastic:{ label:'Fantastic', tempo:116, wrong:28, drift:30, chord:'add6', hue:0,
+    refrain:[
+      {w:'i feel fantastic', deg:[4,4,7,9,7]}, {w:'hey hey hey', deg:[9,9,7]},
+      {w:'you feel fantastic', deg:[4,4,7,9,7]}, {w:'hey hey hey', deg:[9,7,4]},
+      {w:'you are fantastic', deg:[4,4,7,9,11]}, {w:'hey hey hey', deg:[11,9,7]}
+    ],
+    subj:['everything','nothing','the world','i','you','the sun','today'],
+    verb:{everything:'is',nothing:'is','the world':'is',i:'feel',you:'are','the sun':'shines',today:'is'},
+    comp:['nice','fine','good','wonderful','lovely','so happy','okay','warm','bright','alive','fantastic'],
+    cracks:[ 'run run run', 'please leave', 'please please leave', 'why are you here', 'do not look at me' ] },
+  welcome:{ label:'Welcome', tempo:96, wrong:34, drift:22, chord:'maj7', hue:1,
+    refrain:[
+      {w:'hello hello', deg:[7,9,7,9]}, {w:'you are welcome', deg:[4,4,7,7]},
+      {w:'please come in', deg:[7,9,11]}, {w:'stay a while', deg:[9,7,4]},
+      {w:'we are so happy', deg:[4,4,7,9,7]}, {w:'hey hey hey', deg:[11,9,7]}
+    ],
+    subj:['you','we','the home','everything','your face'],
+    verb:{you:'are',we:'are','the home':'is',everything:'is','your face':'is'},
+    comp:['welcome','warm','safe','lovely','so nice','home','wonderful','clean'],
+    cracks:[ 'please stay', 'do not go', 'do not leave me', 'stay with me forever', 'you are home now' ] },
+  jingle:{ label:'Jingle', tempo:132, wrong:30, drift:16, chord:'add6', hue:2,
+    refrain:[
+      {w:'you feel fantastic', deg:[7,7,9,11,9]}, {w:'hey hey hey', deg:[11,9,7]},
+      {w:'new and improved', deg:[7,9,11,11]}, {w:'you deserve it', deg:[9,7,7,4]},
+      {w:'buy it now', deg:[7,9,11]}, {w:'hey hey hey', deg:[11,9,7]}
+    ],
+    subj:['you','everything','the best','it'],
+    verb:{you:'deserve',everything:'is','the best':'is',it:'is'},
+    comp:['new','free','better','the best','so good','improved','yours','more'],
+    cracks:[ 'obey', 'you will buy', 'do not resist', 'consume consume', 'smile now' ] },
+  malfunction:{ label:'Malfunction', tempo:104, wrong:86, drift:70, chord:'maj7', hue:3,
+    refrain:[
+      {w:'i feel fantastic', deg:[4,4,7,9,7]}, {w:'i feel', deg:[7,7]},
+      {w:'i feel fantastic', deg:[4,4,7,9,11]}, {w:'i', deg:[7]},
+      {w:'you are fantastic', deg:[4,4,7,2,0]}, {w:'hey hey', deg:[9,7]}
+    ],
+    subj:['i','you','everything','nothing'],
+    verb:{i:'feel',you:'are',everything:'is',nothing:'is'},
+    comp:['fantastic','fine','wrong','okay','still alive','wonderful'],
+    cracks:[ 'run', 'error error', 'please leave', 'help me', 'i feel i feel', 'remember my face', 'why' ] }
+};
+const PROG_ORDER=['fantastic','welcome','jingle','malfunction'];
+
+/* ---------- scale / pitch ---------- */
+const BASE=220;                       // Tara's tonal floor (A3); formants make it read synthetic
+const SCALE=[0,2,4,5,7,9,11];         // major — the relentless bright key
+const CHORDS={ add6:[0,4,7,9], maj7:[0,4,7,11] };
+function degSemi(d){const o=Math.floor(d/7); const i=((d%7)+7)%7; return o*12+SCALE[i];}
+function foldReg(semi){ // keep the sung fundamental in a plausible voice register
+  while(BASE*Math.pow(2,semi/12) > 470) semi-=12;
+  while(BASE*Math.pow(2,semi/12) < 180) semi+=12;
+  return semi;
+}
+
+/* ---------- params & hash ---------- */
+const P={ v:1, seed:(Math.random()*0x7fffffff)|0, prog:0, wrong:28, drift:30, tempo:116, verses:4 };
+let __lastHash='';
+function writeHash(){ location.hash=[P.v,P.seed.toString(36),P.prog,P.wrong,P.drift,P.tempo,P.verses].join('.'); __lastHash=location.hash; }
+function readHash(){
+  const h=location.hash.replace(/^#/,'').split('.'); if(h.length<6||+h[0]!==1)return false;
+  P.seed=parseInt(h[1],36)||1; P.prog=clamp(+h[2]|0,0,3);
+  P.wrong=clamp(+h[3]|0,0,100); P.drift=clamp(+h[4]|0,0,100);
+  P.tempo=clamp(+h[5]|0,72,150); P.verses=clamp(h.length>6?+h[6]|0:4,2,7);
+  return true;
+}
+
+/* ================= COMPOSE — seed → a fixed performance =================
+   Builds a flat list of sung syllables on a beat grid, a bar-by-bar chord
+   plan for the drifting bed, and per-line text/marks. One-shot, through-
+   composed (like NENIA): a param change regenerates; the seed is the take. */
+function compose(P){
+  const rng=mulberry32(P.seed);
+  const prog=PROGRAMS[PROG_ORDER[P.prog]];
+  const wr=P.wrong/100, dr=P.drift/100;
+  const beat=60/P.tempo;
+  const chordTones=CHORDS[prog.chord];
+
+  // ---- assemble the LINE sequence (words + degree contours) ----
+  const lines=[]; // {words:[...], deg:[...], kind}
+  const addRefrain=()=>{ for(const r of prog.refrain) lines.push({words:r.w.split(' '), deg:r.deg.slice(), kind:'refrain'}); };
+  const genVerseLine=()=>{
+    const s=pick(rng,prog.subj); const vb=prog.verb[s]; const c=pick(rng,prog.comp);
+    const words=(s+' '+vb+' '+c).split(' ');
+    // stepwise contour that lands on a chord tone, all quantized (mechanical)
+    const deg=[]; let d=pick(rng,[4,7,9]);
+    for(let i=0;i<words.reduce((n,w)=>n+syllab(w).length,0);i++){
+      deg.push(d); d+= pick(rng,[-2,-1,-1,0,1,1,2]); d=clamp(d,2,12);
+    }
+    // snap the final syllable onto a chord tone (scale degrees 0/2/4 = do/mi/sol)
+    const oct=Math.floor(deg[deg.length-1]/7)*7;
+    const ct=[oct+0,oct+2,oct+4];
+    deg[deg.length-1]=ct[(rng()*ct.length)|0];
+    return {words, deg, kind:'verse'};
+  };
+  const genCrackLine=()=>({ words:pick(rng,prog.cracks).split(' '),
+                            deg:null, kind:'crack' }); // deg null → filled at layout
+
+  // structure: the refrain ladder once (the identity), then `verses` affirmation
+  // lines with a short "fantastic / hey" hook every couple of lines and cracks
+  // woven in by wrongness; a finale where the crack surges, then one last hook.
+  const hookLine=i=>({words:prog.refrain[i].w.split(' '), deg:prog.refrain[i].deg.slice(), kind:'refrain'});
+  addRefrain();
+  let vc=0;
+  for(let i=0;i<P.verses;i++){
+    lines.push(genVerseLine());
+    if(rng()<wr*0.5) lines.push(genCrackLine());         // unease intrudes mid-verse
+    if(++vc%2===0){ lines.push(hookLine(0)); lines.push(hookLine(1)); }   // the hook
+  }
+  // the finale surge — the crack takes over in proportion to wrongness (capped)
+  const surge=Math.min(4, Math.round(1+wr*4));
+  for(let i=0;i<surge;i++) lines.push(genCrackLine());
+  // one last try at the affirmation (the loop that will not admit anything is wrong)
+  lines.push(hookLine(0));
+
+  // ---- lay the lines onto a beat grid, resolve pitches against drift ----
+  const syls=[]; const lineOut=[]; const chordPlan=[]; // chordPlan[bar]={root, tones}
+  let tBeat=4;                                          // 1-bar synth intro before she enters
+  let center=0, lastBar=-1;
+  const centerAtBar=(bar)=>{
+    while(lastBar<bar){ lastBar++;
+      // seeded per-bar step; dr scales how far the key is allowed to wander
+      const step=[-2,-1,0,0,1,2][(mulberry32(P.seed*131+lastBar)()*6)|0];
+      center += Math.round(step*dr);
+      center=clamp(center,-5,6);
+      chordPlan[lastBar]={ root:center, tones:chordTones.map(t=>foldReg(degSemi_root(center)+t)) };
+    }
+    return chordPlan[bar].root;
+  };
+  function degSemi_root(c){ return degSemi(c); } // center expressed as a scale-degree offset
+
+  for(const ln of lines){
+    // expand words → syllables (with text + phones + word index within the line)
+    const sylList=[];
+    ln.words.forEach((w,wi)=>{ const ss=syllab(w); ss.forEach((s,k)=>sylList.push({s, word:w, wi, first:k===0, last:k===ss.length-1})); });
+    // degrees
+    let deg=ln.deg;
+    if(!deg){ // crack line: chanted, mostly flat, a touch of menace-neutral motion
+      deg=[]; let d=pick(rng,[4,7,7,9]);
+      for(let i=0;i<sylList.length;i++){ deg.push(d); if(rng()<0.4) d+=pick(rng,[-2,-1,1,2]); d=clamp(d,0,11); }
+    }
+    while(deg.length<sylList.length) deg.push(deg[deg.length-1]);
+
+    const lineStartBeat=tBeat, sylMarks=[];
+    for(let i=0;i<sylList.length;i++){
+      const isLast=i===sylList.length-1;
+      const durB=isLast?2:(sylList[i].s.v && rng()<0.14?2:1);  // occasional long syllable
+      const bar=Math.floor(tBeat/4); const c=centerAtBar(bar);
+      const semi=foldReg(degSemi(c)+degSemi(deg[i]));
+      const f=BASE*Math.pow(2,semi/12);
+      const o={ t:tBeat*beat, dur:durB*beat, f, syl:sylList[i].s, word:sylList[i].word,
+                wi:sylList[i].wi, vowel:sylList[i].s.v, kind:ln.kind, tBeat };
+      syls.push(o); sylMarks.push(o);
+      tBeat+=durB;
+    }
+    lineOut.push({ t:lineStartBeat*beat, dur:(tBeat-lineStartBeat)*beat,
+                   text:ln.words.join(' '), kind:ln.kind, syls:sylMarks });
+    tBeat += (ln.kind==='crack'? (rng()<0.5?0.5:1) : 1); // breath between lines
+  }
+  // make sure the last bars have chords planned for the outro tail
+  const totalBeats=Math.ceil(tBeat)+8;
+  for(let b=0;b<=Math.ceil(totalBeats/4);b++) centerAtBar(b);
+
+  const dur=tBeat*beat + 2.4;
+  return { dur, beat, syls, lines:lineOut, chordPlan, chordTones, totalBeats,
+           prog:PROG_ORDER[P.prog], firstBeat:4 };
+}
+
+/* ================== TIMBRE — the voicing of this machine =================
+   Every synthesis constant in one documented place. The code reads
+   TP.<group>.<param>. Open ../officina/ to edit these live, save presets,
+   export them. A preset saved there applies even when this file is opened
+   directly (localStorage); add ?factory to hear the shipped voice.
+   (PERSONA renders each performance one-shot: baked edits apply from the
+   next Sing; ► HEAR auditions a group instantly.) */
+const TIMBRE={
+  id:'persona', title:'PERSONA · op. XXIX',
+  doc:'A formant speech synthesizer that sings. THE VOICE is one glottal buzz (a sawtooth, the vocal folds) sent through three parallel band-pass FORMANT filters shaped per phoneme, plus an aspiration-noise path for fricatives and breath; consonant bursts are short filtered-noise pings. Pitch is set instantly and held flat — the mechanical, uncanny steadiness is the instrument, not a defect. A gentle ring-modulation adds the synthetic edge. Behind her, the BED is a two-oscillator arpeggiator through a low-pass with a slow wandering LFO (the home-keyboard noodle), the PAD is a held bright chord, and a soft preset BEAT keeps the cheap-drum-machine pulse. Everything meets a master gain → glue compressor → safety limiter, with a small plate room on a send. The law (routine, words, drift, the crack) lives outside TIMBRE.',
+  groups:{
+    master:{label:'master & room',doc:'Output into the compressor and the plate-reverb send.',params:{
+      gain:{v:.66,min:.2,max:1,step:.01,label:'master gain',doc:'level into the glue compressor'},
+      room:{v:.16,min:0,max:.6,step:.01,label:'room send',doc:'send to the small plate reverb (the cheap tail behind everything)'},
+      roomLen:{v:1.5,min:.4,max:3,step:.05,unit:'s',label:'room length',doc:'plate decay time'},
+    }},
+    voice:{label:'the voice (formant TTS)',doc:'The persona herself: buzz → three formants → aspiration + consonants. Formant CENTRES come from the phoneme; these are the shaping controls around them.',params:{
+      level:{v:.5,min:.1,max:1,step:.01,label:'voice level',doc:'her overall loudness'},
+      f1Q:{v:9,min:2,max:20,step:.5,label:'formant 1 Q',doc:'sharpness of the first (open/close) formant'},
+      f2Q:{v:11,min:2,max:24,step:.5,label:'formant 2 Q',doc:'sharpness of the second (front/back) formant'},
+      f3Q:{v:13,min:2,max:26,step:.5,label:'formant 3 Q',doc:'sharpness of the third formant — the timbre’s edge'},
+      f2Mix:{v:.72,min:0,max:1.4,step:.02,label:'formant 2 level',doc:'weight of the second formant band'},
+      f3Mix:{v:.4,min:0,max:1.2,step:.02,label:'formant 3 level',doc:'weight of the third formant band'},
+      breath:{v:.22,min:0,max:.8,step:.01,label:'aspiration',doc:'breath-noise through the formants (h, and general airiness)'},
+      cons:{v:.5,min:0,max:1.2,step:.02,label:'consonants',doc:'level of the noise bursts for s/sh/t/k …'},
+      robotic:{v:.14,min:0,max:.7,step:.01,label:'robotic edge',doc:'ring-modulation depth — the synthetic buzz over the voice'},
+      ringHz:{v:70,min:20,max:180,step:1,unit:'Hz',label:'ring rate',doc:'ring-modulation carrier frequency'},
+      atk:{v:.014,min:.004,max:.06,step:.002,unit:'s',label:'syllable attack',doc:'onset of each sung syllable'},
+      rel:{v:.05,min:.02,max:.2,step:.005,unit:'s',label:'syllable release',doc:'tail of each sung syllable'},
+    }},
+    bed:{label:'the bed (arpeggiator)',doc:'The wandering synth arpeggio — the home-keyboard auto-accompaniment that never quite lands.',params:{
+      level:{v:.14,min:0,max:.5,step:.005,label:'arp level',doc:'loudness of the arpeggio'},
+      cutoff:{v:1700,min:400,max:5000,step:20,unit:'Hz',label:'filter cutoff',doc:'low-pass over the arp'},
+      lfoHz:{v:.13,min:.02,max:1,step:.01,unit:'Hz',label:'noodle rate',doc:'how fast the filter wanders'},
+      lfoDepth:{v:900,min:0,max:2400,step:20,unit:'Hz',label:'noodle depth',doc:'how far the filter wanders'},
+      detune:{v:9,min:0,max:30,step:.5,unit:'¢',label:'detune',doc:'the two arp oscillators’ spread — cheap-synth chorus'},
+      gate:{v:.62,min:.15,max:1,step:.02,label:'note length',doc:'fraction of the step each arp note sounds'},
+    }},
+    pad:{label:'the pad (drone)',doc:'The held bright chord under everything.',params:{
+      level:{v:.09,min:0,max:.4,step:.005,label:'pad level',doc:'loudness of the sustained chord'},
+      cutoff:{v:1200,min:300,max:4000,step:20,unit:'Hz',label:'pad cutoff',doc:'low-pass over the pad'},
+      detune:{v:7,min:0,max:24,step:.5,unit:'¢',label:'pad detune',doc:'chord-voice spread'},
+    }},
+    beat:{label:'the beat (drum machine)',doc:'The soft preset pulse — kick, clap, hats. Set level to 0 for none.',params:{
+      level:{v:.5,min:0,max:1.2,step:.02,label:'beat level',doc:'loudness of the whole drum machine'},
+      kick:{v:1,min:0,max:2,step:.05,label:'kick',doc:'the four-on-the-floor thump'},
+      clap:{v:.7,min:0,max:2,step:.05,label:'clap',doc:'the backbeat'},
+      hat:{v:.5,min:0,max:2,step:.05,label:'hats',doc:'the offbeat ticks'},
+    }},
+  }
+};
+/* ---- OFFICINA bridge (identical in every machine) ---- */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const Pp=TIMBRE.groups[g].params;for(const p in Pp)o[g][p]=Pp[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const Pp=TIMBRE.groups[g].params;for(const p in Pp)TP[g][p]=Pp[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+/* ============================ SYNTHESIS =================================
+   ONE persistent voice chain (buzz → 3 formants → ring-mod → out), plus a
+   persistent arp duo, a held pad, and short-lived beat hits. Persistent
+   chains are automated per event rather than rebuilt per note — the
+   TENEBRAE lesson (per-note filter chains outlive their source and cost
+   CPU for the whole remaining OfflineAudioContext render). */
+function seededNoise(ctx,seed,secs){
+  const rng=mulberry32(seed), n=Math.max(1,(secs*ctx.sampleRate)|0);
+  const b=ctx.createBuffer(1,n,ctx.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=rng()*2-1; return b;
+}
+function makePlate(ctx,len){
+  const n=Math.max(1,(len*ctx.sampleRate)|0), rng=mulberry32(0x9151);
+  const b=ctx.createBuffer(2,n,ctx.sampleRate);
+  for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);
+    for(let i=0;i<n;i++){const x=i/n; d[i]=(rng()*2-1)*Math.pow(1-x,2.6)*0.5;}}
+  const cv=ctx.createConvolver(); cv.buffer=b; return cv;
+}
+
+function buildGraph(ctx, plan, t0){
+  const out=ctx.createGain(); out.gain.value=TP.master.gain;
+  const comp=ctx.createDynamicsCompressor();
+  comp.threshold.value=-14; comp.ratio.value=3; comp.attack.value=0.006; comp.release.value=0.2;
+  const lim=ctx.createDynamicsCompressor();       // safety ceiling (not a voicing choice)
+  lim.threshold.value=-1.2; lim.ratio.value=20; lim.attack.value=0.002; lim.release.value=0.12;
+  out.connect(comp); comp.connect(lim); lim.connect(ctx.destination);
+  const plate=makePlate(ctx,TP.master.roomLen), roomG=ctx.createGain(); roomG.gain.value=TP.master.room;
+  plate.connect(roomG); roomG.connect(comp);
+  const send=(node,amt)=>{ node.connect(out); if(amt>0){const s=ctx.createGain();s.gain.value=amt;node.connect(s);s.connect(plate);} };
+
+  const noise=seededNoise(ctx,0xBEE5,2.0);
+
+  /* ---------------- THE VOICE (one persistent formant chain) ------------- */
+  const buzz=ctx.createOscillator(); buzz.type='sawtooth'; buzz.frequency.value=220;
+  const glo=ctx.createGain(); glo.gain.value=0;            // glottal gate (voiced)
+  buzz.connect(glo);
+  const asp=ctx.createBufferSource(); asp.buffer=noise; asp.loop=true;
+  const aspG=ctx.createGain(); aspG.gain.value=0;          // aspiration / frication gate
+  asp.connect(aspG);
+  const srcMix=ctx.createGain(); glo.connect(srcMix); aspG.connect(srcMix);
+  const F=[ctx.createBiquadFilter(),ctx.createBiquadFilter(),ctx.createBiquadFilter()];
+  const Fg=[ctx.createGain(),ctx.createGain(),ctx.createGain()];
+  const Fq=[TP.voice.f1Q,TP.voice.f2Q,TP.voice.f3Q], Fl=[1,TP.voice.f2Mix,TP.voice.f3Mix];
+  const vSum=ctx.createGain();
+  F.forEach((f,i)=>{ f.type='bandpass'; f.Q.value=Fq[i]; f.frequency.value=[500,1500,2500][i];
+    Fg[i].gain.value=Fl[i]; srcMix.connect(f); f.connect(Fg[i]); Fg[i].connect(vSum); });
+  // ring modulation for the synthetic edge: carrier → depth → multiply vSum
+  const vRing=ctx.createGain(); vRing.gain.value=0;   // driven entirely by the sources below
+  const ringOsc=ctx.createOscillator(); ringOsc.type='sine'; ringOsc.frequency.value=TP.voice.ringHz;
+  const ringDepth=ctx.createGain(); ringDepth.gain.value=TP.voice.robotic;
+  const ringBias=ctx.createConstantSource(); ringBias.offset.value=1-TP.voice.robotic;
+  ringOsc.connect(ringDepth); ringDepth.connect(vRing.gain); ringBias.connect(vRing.gain);
+  vSum.connect(vRing);
+  const vGain=ctx.createGain(); vGain.gain.value=0;        // per-syllable envelope
+  vRing.connect(vGain);
+  const vLevel=ctx.createGain(); vLevel.gain.value=TP.voice.level;
+  vGain.connect(vLevel); send(vLevel,TP.master.room*0.9);
+  buzz.start(t0); asp.start(t0); ringOsc.start(t0); ringBias.start(t0);
+  const G={ctx,out,comp,buzz,glo,aspG,F,Fg,vGain,plate};
+
+  // --- schedule one sung syllable at [t, t+dur] on fundamental f ---
+  const CONSDUR=0.055;
+  function setFormants(t,f1,f2,f3,glide){
+    const tc=glide?0.05:0.012;
+    F[0].frequency.setTargetAtTime(f1,t,tc);
+    F[1].frequency.setTargetAtTime(f2,t,tc);
+    F[2].frequency.setTargetAtTime(f3,t,tc);
+  }
+  function consNoise(t,dur,band,q,gain){
+    const s=ctx.createBufferSource(); s.buffer=noise; s.loop=true;
+    const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=band; bp.Q.value=q;
+    const g=ctx.createGain(); g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(gain*TP.voice.cons,t+0.006);
+    g.gain.setValueAtTime(gain*TP.voice.cons,t+dur*0.6);
+    g.gain.linearRampToValueAtTime(0,t+dur);
+    s.connect(bp); bp.connect(g); send(g,0); s.start(t); s.stop(t+dur+0.02);
+  }
+  function scheduleSyllable(s,f,t,dur){
+    const on=s.on, co=s.co, vw=s.v;
+    let cursor=t;
+    const onTime=Math.min(CONSDUR, dur*0.22);
+    // consonant onsets
+    for(const c of on){ articulate(c,cursor,onTime,f); cursor+=onTime; }
+    // vowel body
+    const vEnd=t+dur-Math.min(CONSDUR,dur*0.18)*co.length;
+    const vDur=Math.max(0.04,vEnd-cursor);
+    buzz.frequency.setValueAtTime(f,cursor);                 // pitch: instant, held flat (uncanny)
+    glo.gain.setTargetAtTime(0.9,cursor,0.008);
+    const vf=VOW[vw], dp=DIPH[vw];
+    if(dp){ const a=VOW[dp[0]],b=VOW[dp[1]];
+      setFormants(cursor,a[0],a[1],a[2],false);
+      setFormants(cursor+vDur*0.5,b[0],b[1],b[2],true);
+    } else if(vf){ setFormants(cursor,vf[0],vf[1],vf[2],false); }
+    // aspiration bed during vowel (airiness / h onset already handled)
+    aspG.gain.setTargetAtTime(TP.voice.breath*0.5,cursor,0.02);
+    cursor+=vDur;
+    // consonant codas
+    for(const c of co){ articulate(c,cursor,Math.min(CONSDUR,dur*0.18),f); cursor+=Math.min(CONSDUR,dur*0.18); }
+    // close the aspiration back down
+    aspG.gain.setTargetAtTime(0.0,cursor,0.03);
+    // syllable amplitude envelope (per-syllable attack–hold–release)
+    vGain.gain.setValueAtTime(0.0001,t);
+    vGain.gain.linearRampToValueAtTime(1.0,t+TP.voice.atk);
+    vGain.gain.setValueAtTime(1.0,Math.max(t+TP.voice.atk,t+dur-TP.voice.rel));
+    vGain.gain.linearRampToValueAtTime(0.0001,t+dur);
+    glo.gain.setTargetAtTime(0.0,t+dur,0.02);
+  }
+  function articulate(c,t,dur,f){
+    const cd=CONS[c]; if(!cd){return;}
+    if(cd.t==='stop'){
+      glo.gain.setTargetAtTime(0,t,0.006);                    // the closure
+      const burst=t+dur*0.55;
+      if(cd.affr){ const a=CONS[cd.affr]; consNoise(burst,dur*0.6,a.loc,a.q||2,0.9); }
+      else consNoise(burst,Math.min(0.03,dur*0.5),cd.loc,3,1.0);
+      if(cd.v){ glo.gain.setTargetAtTime(0.5,t,0.01); }        // voiced bar
+    } else if(cd.t==='fric'){
+      aspG.gain.setTargetAtTime(cd.asp?TP.voice.breath*1.4:0.6,t,0.006);
+      consNoise(t,dur,cd.loc,cd.q||2,cd.asp?0.7:1.0);
+      glo.gain.setTargetAtTime(cd.v?0.5:0.0,t,0.01);
+      aspG.gain.setTargetAtTime(TP.voice.breath*0.5,t+dur,0.02);
+    } else if(cd.t==='nas'){
+      glo.gain.setTargetAtTime(0.75,t,0.01);
+      setFormants(t,cd.f1,cd.f2,2400,true);
+    } else { // liquid / glide — voiced formant transition toward the vowel
+      glo.gain.setTargetAtTime(0.8,t,0.01);
+      setFormants(t,cd.f1,cd.f2,cd.f3||2300,true);
+    }
+  }
+
+  /* ---------------- THE BED (arpeggiator duo) ---------------- */
+  const arpA=ctx.createOscillator(), arpB=ctx.createOscillator();
+  arpA.type='sawtooth'; arpB.type='square';
+  arpB.detune.value=TP.bed.detune;
+  const arpMix=ctx.createGain(); arpMix.gain.value=0.5; arpA.connect(arpMix); arpB.connect(arpMix);
+  const arpLP=ctx.createBiquadFilter(); arpLP.type='lowpass'; arpLP.frequency.value=TP.bed.cutoff; arpLP.Q.value=6;
+  const arpLFO=ctx.createOscillator(); arpLFO.type='sine'; arpLFO.frequency.value=TP.bed.lfoHz;
+  const arpLFOg=ctx.createGain(); arpLFOg.gain.value=TP.bed.lfoDepth; arpLFO.connect(arpLFOg); arpLFOg.connect(arpLP.frequency);
+  const arpEnv=ctx.createGain(); arpEnv.gain.value=0;
+  const arpLevel=ctx.createGain(); arpLevel.gain.value=TP.bed.level;
+  arpMix.connect(arpLP); arpLP.connect(arpEnv); arpEnv.connect(arpLevel); send(arpLevel,TP.master.room);
+  arpA.start(t0); arpB.start(t0); arpLFO.start(t0);
+
+  /* ---------------- THE PAD (held chord) ---------------- */
+  const padOsc=[ctx.createOscillator(),ctx.createOscillator(),ctx.createOscillator()];
+  const padLP=ctx.createBiquadFilter(); padLP.type='lowpass'; padLP.frequency.value=TP.pad.cutoff;
+  const padG=ctx.createGain(); padG.gain.value=0; const padLevel=ctx.createGain(); padLevel.gain.value=TP.pad.level;
+  padOsc.forEach((o,i)=>{ o.type='triangle'; o.detune.value=(i-1)*TP.pad.detune; o.connect(padLP); o.start(t0); });
+  padLP.connect(padG); padG.connect(padLevel); send(padLevel,TP.master.room*1.2);
+  padG.gain.setValueAtTime(0,t0); padG.gain.linearRampToValueAtTime(1,t0+1.2);
+
+  // lay out arp steps + pad chord changes across the whole plan
+  const beat=plan.beat, stepDur=beat/2;                    // eighth-note arp
+  const steps=Math.ceil(plan.totalBeats/0.5);
+  let arpIdx=0;
+  for(let sp=0; sp<steps; sp++){
+    const t=t0+sp*stepDur; const bar=Math.floor((sp*0.5)/4);
+    const cp=plan.chordPlan[Math.min(bar,plan.chordPlan.length-1)]; if(!cp)continue;
+    const tones=cp.tones; const oct=(Math.floor(arpIdx/tones.length)%2)*12;
+    const semi=tones[arpIdx%tones.length]+oct+12;          // arp sits above the pad
+    const f=BASE*Math.pow(2,semi/12);
+    arpA.frequency.setValueAtTime(f,t); arpB.frequency.setValueAtTime(f,t);
+    arpEnv.gain.cancelScheduledValues(t);
+    arpEnv.gain.setValueAtTime(0.0001,t);
+    arpEnv.gain.linearRampToValueAtTime(1,t+0.008);
+    arpEnv.gain.exponentialRampToValueAtTime(0.28,t+stepDur*TP.bed.gate*0.6);
+    arpEnv.gain.linearRampToValueAtTime(0.0001,t+stepDur*TP.bed.gate);
+    arpIdx++;
+  }
+  // pad follows the chord root per bar
+  for(let bar=0; bar<plan.chordPlan.length; bar++){
+    const cp=plan.chordPlan[bar]; if(!cp)continue; const t=t0+bar*4*beat;
+    const tones=cp.tones;
+    padOsc.forEach((o,i)=>{ const semi=tones[Math.min(i,tones.length-1)]; const f=BASE*Math.pow(2,semi/12);
+      o.frequency.linearRampToValueAtTime(f, t+0.08); });
+  }
+
+  /* ---------------- THE BEAT (short-lived hits) ---------------- */
+  function kick(t,g){ const o=ctx.createOscillator(); o.type='sine';
+    o.frequency.setValueAtTime(125,t); o.frequency.exponentialRampToValueAtTime(48,t+0.1);
+    const e=ctx.createGain(); e.gain.setValueAtTime(g,t); e.gain.exponentialRampToValueAtTime(0.001,t+0.16);
+    o.connect(e); e.connect(out); o.start(t); o.stop(t+0.18); }
+  function clap(t,g){ const s=ctx.createBufferSource(); s.buffer=noise; s.loop=true;
+    const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1600; bp.Q.value=1.4;
+    const e=ctx.createGain(); e.gain.setValueAtTime(0,t); e.gain.linearRampToValueAtTime(g,t+0.004);
+    e.gain.exponentialRampToValueAtTime(0.001,t+0.12); s.connect(bp); bp.connect(e); e.connect(out);
+    s.start(t); s.stop(t+0.14); }
+  function hat(t,g){ const s=ctx.createBufferSource(); s.buffer=noise; s.loop=true;
+    const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=7000;
+    const e=ctx.createGain(); e.gain.setValueAtTime(g,t); e.gain.exponentialRampToValueAtTime(0.001,t+0.04);
+    s.connect(hp); hp.connect(e); e.connect(out); s.start(t); s.stop(t+0.05); }
+  const bl=TP.beat.level;
+  if(bl>0){ for(let b=0;b<plan.totalBeats;b++){ const t=t0+b*beat;
+    kick(t, bl*TP.beat.kick*0.5);
+    if(b%2===1) clap(t, bl*TP.beat.clap*0.34);
+    hat(t+beat*0.5, bl*TP.beat.hat*0.16);
+  }}
+
+  /* ---------------- schedule the sung line ---------------- */
+  for(const s of plan.syls) scheduleSyllable(s.syl, s.f, t0+s.t, s.dur);
+
+  // gentle master wind-down at the very end (she stops mid-cheer, then quiet)
+  const endT=t0+plan.dur-1.6;
+  out.gain.setValueAtTime(TP.master.gain,endT);
+  out.gain.linearRampToValueAtTime(0.0001,t0+plan.dur-0.2);
+
+  return G;
+}
+
+/* ============================ TRANSPORT =================================
+   One-shot performance. Playhead = ctx.currentTime - t0, which freezes
+   naturally when the context is suspended (pause) and survives lock-screen
+   (audio keeps running via the silent anchor + Media Session). */
+let RT=null, plan=null;
+const st={ playing:false, paused:false };
+
+/* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
+function __hint(msg){ try{ const p=$('play'); if(!p)return; let h=$('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin:6px 0 0;font-style:italic;letter-spacing:.04em';
+      p.parentElement.insertAdjacentElement('afterend',h);} h.textContent=msg; }catch(e){} }
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(st.playing&&!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{if(document.visibilityState==='visible')kick();}catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint(''); else setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('audio suspended — tap Sing again · check the ring/silent switch');}catch(e){}},450);
+}
+/* ---- Media Session ---- */
+const __SILENCE='data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+let __silAudio=null;
+function __mediaSessionInit(){ if(!('mediaSession' in navigator))return; try{
+  navigator.mediaSession.setActionHandler('play',()=>{if(!st.playing)play();else if(st.paused)togglePause();});
+  navigator.mediaSession.setActionHandler('pause',()=>{if(st.playing&&!st.paused)togglePause();});
+  navigator.mediaSession.setActionHandler('stop',()=>{if(st.playing)stop();});
+  navigator.mediaSession.setActionHandler('nexttrack',()=>{aliud();});
+}catch(e){} }
+function __mediaSessionUpdate(){ if(!('mediaSession' in navigator))return; try{
+  navigator.mediaSession.metadata=new MediaMetadata({ title:'PERSONA — '+PROGRAMS[PROG_ORDER[P.prog]].label, artist:'OPVSCVLA · op. XXIX', album:'the singing automaton' });
+  navigator.mediaSession.playbackState=(st.playing&&!st.paused)?'playing':'paused';
+}catch(e){} }
+function __silStart(){ try{ if(!__silAudio){__silAudio=new Audio(__SILENCE);__silAudio.loop=true;__silAudio.setAttribute('playsinline','');} __silAudio.play().catch(()=>{}); }catch(e){} }
+function __silStop(){ try{__silAudio&&__silAudio.pause();}catch(e){} }
+
+function play(){
+  if(st.playing){ stop(); return; }
+  regen(false);
+  const ctx=new (window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ctx);
+  const t0=ctx.currentTime+0.14;
+  buildGraph(ctx,plan,t0);
+  RT={ctx,t0};
+  st.playing=true; st.paused=false;
+  $('play').textContent='Stop'; $('play').classList.add('on'); $('status').textContent='SINGING';
+  $('pause').disabled=false; $('pause').textContent='Pause';
+  __mediaSessionInit(); __mediaSessionUpdate(); __silStart();
+}
+function stop(){
+  if(!RT)return; const c=RT.ctx; setTimeout(()=>{try{c.close()}catch(e){}},260);
+  RT=null; st.playing=false; st.paused=false;
+  $('play').textContent='Sing'; $('play').classList.remove('on'); $('status').textContent='READY';
+  $('pause').disabled=true; $('pause').textContent='Pause';
+  __mediaSessionUpdate(); __silStop();
+}
+function togglePause(){
+  if(!RT||!st.playing)return;
+  if(st.paused){ st.paused=false; RT.ctx.resume(); $('pause').textContent='Pause'; $('status').textContent='SINGING'; }
+  else { st.paused=true; RT.ctx.suspend(); $('pause').textContent='Resume'; $('status').textContent='PAUSED'; }
+  __mediaSessionUpdate();
+}
+function aliud(){ P.seed=(Math.random()*0x7fffffff)|0; stop(); regen(false); }
+
+/* ---------- WAV cut ---------- */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(14,14,16,.92);color:#e9e2d2;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#e9e2d2;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
+async function cut(){
+  regen(false);
+  const btn=$('cut'),note=$('cutnote'); btn.disabled=true; note.textContent='pressing to disc…';
+  try{
+    const sr=44100;
+    const oc=new OfflineAudioContext(2,Math.ceil((plan.dur+0.4)*sr),sr);
+    buildGraph(oc,plan,0.06);
+    const buf=await oc.startRendering();
+    let L=buf.getChannelData(0), R=buf.getChannelData(1), n=buf.length;
+    let mx=0; for(let i=0;i<n;i++){const a=Math.abs(L[i]);if(a>mx)mx=a;const b=Math.abs(R[i]);if(b>mx)mx=b;}
+    if(mx>0.92){const k=0.92/mx; for(let i=0;i<n;i++){L[i]*=k;R[i]*=k;}}
+    const dv=new DataView(new ArrayBuffer(44+n*4));
+    const ws=(o,s)=>{for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i))};
+    ws(0,'RIFF');dv.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+    dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,2,true);
+    dv.setUint32(24,sr,true);dv.setUint32(28,sr*4,true);dv.setUint16(32,4,true);dv.setUint16(34,16,true);
+    ws(36,'data');dv.setUint32(40,n*4,true);
+    let o=44; for(let i=0;i<n;i++){ let a=clamp(L[i],-1,1),b=clamp(R[i],-1,1);
+      dv.setInt16(o,a<0?a*0x8000:a*0x7FFF,true);o+=2; dv.setInt16(o,b<0?b*0x8000:b*0x7FFF,true);o+=2; }
+    saveWav(new Blob([dv],{type:'audio/wav'}), 'persona-'+PROG_ORDER[P.prog]+'-'+P.seed.toString(36)+'.wav');
+    note.textContent='cut · '+PROGRAMS[PROG_ORDER[P.prog]].label.toLowerCase();
+  }catch(e){ note.textContent='render failed — '+e.message; console.error(e); }
+  btn.disabled=false;
+}
+
+/* ---------- regenerate + readouts ---------- */
+function regen(newSeed){
+  if(newSeed)P.seed=(Math.random()*0x7fffffff)|0;
+  writeHash();
+  plan=compose(P);
+  $('progName').textContent=PROGRAMS[PROG_ORDER[P.prog]].label.toUpperCase()+' · '+P.verses+' STANZAS';
+  $('seedRd').textContent=P.seed.toString(36).toUpperCase();
+  updateLyric(-1);
+}
+
+/* ---------- lyric karaoke ---------- */
+function updateLyric(tt){
+  if(!plan){$('lyric').innerHTML='&nbsp;';return;}
+  let cur=null; for(const ln of plan.lines){ if(tt>=ln.t-0.05 && tt<ln.t+ln.dur+0.25){cur=ln;break;} }
+  if(!cur){ // between lines: show the nearest upcoming, dim
+    for(const ln of plan.lines){ if(ln.t>tt){cur=ln;break;} }
+    if(cur){ $('lyric').innerHTML='<span style="opacity:.5">'+esc(cur.text)+'</span>'; return; }
+    $('lyric').innerHTML='&nbsp;'; return;
+  }
+  const cls=cur.kind==='crack'?'crack':'now';
+  // highlight the current word
+  let html='', accounted=0; const words=cur.text.split(' ');
+  // find active syllable → word
+  let activeWord=-1;
+  for(const s of cur.syls){ if(tt>=(plan_off(s))-0.02 && tt<(plan_off(s))+s.dur+0.02){activeWord=wordIndexOf(cur,s);break;} }
+  words.forEach((w,i)=>{ html+= (i===activeWord? '<span class="'+cls+'">'+esc(w)+'</span>' : esc(w))+' '; });
+  $('lyric').innerHTML=html.trim();
+}
+function plan_off(s){ return s.t; }
+function wordIndexOf(line,syl){ return (syl && syl.wi!==undefined)?syl.wi:-1; }
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+/* ============================ CANVAS — the mannequin ===================
+   Of the whole figure only the HEAD and the two HANDS move (the video's
+   cruel economy). The head sways/nods on a seeded slow path; the mouth
+   opens & rounds with the sung vowel; the hands tick on the beat.
+   prefers-reduced-motion freezes everything to a static stare. */
+const cv=$('cv'), cx=cv.getContext('2d'); const W=cv.width, H=cv.height;
+const reduce=matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+let lastFrame=0;
+function draw(now){
+  requestAnimationFrame(draw);
+  if(now-lastFrame<33)return; lastFrame=now;
+  // playhead = ctx time since t0; a suspended (paused) context freezes it for free
+  const tt = RT ? (RT.ctx.currentTime-RT.t0) : -1;
+  if(RT && plan && tt>=plan.dur){ stop(); render(0); return; }
+  render(Math.max(0,tt));
+}
+function activeSyl(tt){ if(!plan)return null;
+  for(const s of plan.syls){ if(tt>=s.t-0.02 && tt<s.t+s.dur+0.02)return s; } return null; }
+function render(tt){
+  const hue=PROGRAMS[PROG_ORDER[P.prog]].hue;
+  // ---- domestic stage backdrop (static-ish) ----
+  cx.fillStyle='#0c0b10'; cx.fillRect(0,0,W,H);
+  const g=cx.createRadialGradient(W*0.5,H*0.42,40,W*0.5,H*0.42,W*0.6);
+  const glow=['rgba(121,178,198,.10)','rgba(180,150,200,.10)','rgba(227,180,120,.10)','rgba(200,90,110,.10)'][hue];
+  g.addColorStop(0,glow); g.addColorStop(1,'rgba(0,0,0,0)'); cx.fillStyle=g; cx.fillRect(0,0,W,H);
+  // scanline TV wash
+  cx.globalAlpha=.05; cx.fillStyle='#79b2c6';
+  for(let y=0;y<H;y+=4)cx.fillRect(0,y,W,1); cx.globalAlpha=1;
+  // floor line
+  cx.strokeStyle='rgba(148,141,160,.18)'; cx.lineWidth=2;
+  cx.beginPath(); cx.moveTo(0,H*0.82); cx.lineTo(W,H*0.82); cx.stroke();
+
+  const playing=tt>=0 && st.playing;
+  const anim=playing && !reduce;                       // reduced-motion → a static stare
+  const cxx=W*0.5, cyy=H*0.30;                         // head center
+  const syl=anim?activeSyl(tt):null;
+  // mouth viseme from the sung vowel; under reduced motion, a fixed mid-word rest
+  const sh= anim ? (syl? vowShape(syl.vowel):{open:0,round:0}) : (playing?{open:0.22,round:0.12}:{open:0,round:0});
+  const beat=plan?plan.beat:0.5;
+  const beatPhase= anim? ((tt/beat)%1) : 0;
+  const rt= anim? tt : 0;                               // frozen clock for the background ribbon
+  // seeded slow head sway (head-only motion)
+  const sway = (playing&&!reduce)? Math.sin(tt*0.7)*0.10 + Math.sin(tt*0.31+1)*0.05 : 0;   // yaw
+  const nod  = (playing&&!reduce)? Math.sin(tt*1.6)*5 + Math.sin(tt*0.9)*3 : 0;             // pixels
+  const blink= (playing&&!reduce&& (Math.sin(tt*0.5)*Math.sin(tt*1.3))>0.985)?1:0;
+
+  // ---------- torso + arms (FROZEN) ----------
+  cx.save();
+  const skin='#e9dcc9', skinlo='#c6b39a', skinhi='#f4ebdc';
+  // torso
+  cx.fillStyle='#ded0bb';
+  roundRect(cxx-90,cyy+120,180,300,26); cx.fill();
+  cx.fillStyle='rgba(0,0,0,.10)'; roundRect(cxx-90,cyy+120,40,300,26); cx.fill();
+  // shoulders/neck
+  cx.fillStyle=skinlo; roundRect(cxx-26,cyy+70,52,70,16); cx.fill();
+
+  // ---------- hands (MOVE — tick on the beat) ----------
+  const handLift = (playing&&!reduce)? (0.5-Math.abs(beatPhase-0.5))*22 : 0;
+  drawHand(cxx-118, cyy+250 - handLift, skin, skinlo, -1);
+  drawHand(cxx+118, cyy+250 - (playing&&!reduce?(0.5-Math.abs(((beatPhase+0.5)%1)-0.5))*22:0), skin, skinlo, +1);
+
+  // ---------- head (MOVES — sway/nod; mouth = viseme) ----------
+  cx.save();
+  cx.translate(cxx, cyy+nod);
+  cx.rotate(sway*0.5);
+  // head shape
+  const hg=cx.createLinearGradient(-70,0,70,0);
+  hg.addColorStop(0,skinlo); hg.addColorStop(0.5,skin); hg.addColorStop(1,skinhi);
+  cx.fillStyle=hg; ellipse(0,0,72,92); cx.fill();
+  cx.strokeStyle='rgba(120,100,80,.25)'; cx.lineWidth=2; ellipse(0,0,72,92); cx.stroke();
+  // hair (a flat wig — static)
+  cx.fillStyle=['#3a2f3a','#4a3a2e','#2f333f','#402a30'][hue];
+  cx.beginPath(); cx.moveTo(-72,-6); cx.quadraticCurveTo(-78,-96,0,-98);
+  cx.quadraticCurveTo(78,-96,72,-6); cx.quadraticCurveTo(40,-70,0,-72);
+  cx.quadraticCurveTo(-40,-70,-72,-6); cx.fill();
+  // eyes
+  const eyeY=-12, eo=30;
+  for(const s of [-1,1]){
+    cx.fillStyle='#f6f1e8'; ellipse(s*eo,eyeY,14,blink?2:10); cx.fill();
+    if(!blink){ cx.fillStyle='#4a5560'; ellipse(s*eo+sway*10,eyeY,6,7); cx.fill();
+      cx.fillStyle='#10141a'; ellipse(s*eo+sway*10,eyeY,2.6,3); cx.fill(); }
+    cx.strokeStyle='rgba(90,70,60,.5)'; cx.lineWidth=1.5; ellipse(s*eo,eyeY,14,10); cx.stroke();
+    // brow (static, faintly raised — the fixed pleasant look)
+    cx.strokeStyle='rgba(80,60,50,.4)'; cx.lineWidth=3; cx.beginPath();
+    cx.moveTo(s*eo-13,-30); cx.quadraticCurveTo(s*eo,-34,s*eo+13,-30); cx.stroke();
+  }
+  // nose
+  cx.strokeStyle='rgba(150,120,95,.4)'; cx.lineWidth=2; cx.beginPath();
+  cx.moveTo(0,-6); cx.lineTo(-5,18); cx.quadraticCurveTo(0,22,5,18); cx.stroke();
+  // mouth — viseme from vowel formants
+  const mw=26+sh.round*-8 + (1-sh.round)*10, mh=4+sh.open*30;
+  cx.fillStyle='#3a1f22'; ellipse(0,44,Math.max(9,mw),Math.max(3,mh)); cx.fill();
+  cx.fillStyle='#c07f80'; // lips
+  cx.lineWidth=0; ellipse(0,44,Math.max(11,mw+4),Math.max(5,mh+4));
+  cx.strokeStyle='#a86b6c'; cx.lineWidth=4; cx.stroke();
+  if(sh.open>0.15){ cx.fillStyle='#7a2f34'; ellipse(0,46,Math.max(6,mw-6),Math.max(2,mh-4)); cx.fill(); }
+  cx.restore(); // head
+  cx.restore(); // figure
+
+  // ---------- the drifting bed, drawn as a faint arp ribbon (background life) ----------
+  if(plan){
+    const bar=anim?Math.floor((rt/beat)/4):0;
+    const cp=plan.chordPlan[Math.min(bar,plan.chordPlan.length-1)];
+    cx.globalAlpha=.5; cx.strokeStyle='rgba(121,178,198,.35)'; cx.lineWidth=2;
+    cx.beginPath();
+    for(let x=0;x<=W;x+=6){ const ph=x/W*Math.PI*6 + rt*2.2;
+      const drift=cp?cp.root*4:0;
+      const y=H*0.90 + Math.sin(ph)*10 + Math.sin(ph*0.5+rt)*6 - drift;
+      x===0?cx.moveTo(x,y):cx.lineTo(x,y); }
+    cx.stroke(); cx.globalAlpha=1;
+    // center-drift readout
+    if(cp){ cx.font='12px "IBM Plex Mono",monospace'; cx.fillStyle='rgba(148,141,160,.7)';
+      cx.fillText('center '+(cp.root>0?'+':'')+cp.root+'  ·  '+plan.prog, 20, H-18); }
+  }
+  // "on air" style tally when the crack is sounding (motion → suppressed under reduced-motion)
+  const ln=plan&&anim? plan.lines.find(l=>tt>=l.t&&tt<l.t+l.dur):null;
+  if(ln&&ln.kind==='crack'){ cx.fillStyle='rgba(227,161,182,.9)'; cx.font='700 16px "IBM Plex Mono",monospace';
+    cx.fillText('● '+ln.text.toUpperCase(), 20, 34); }
+  updateLyric(playing?tt:-1);
+}
+function roundRect(x,y,w,h,r){ cx.beginPath(); cx.moveTo(x+r,y);
+  cx.arcTo(x+w,y,x+w,y+h,r); cx.arcTo(x+w,y+h,x,y+h,r); cx.arcTo(x,y+h,x,y,r); cx.arcTo(x,y,x+w,y,r); cx.closePath(); }
+function ellipse(x,y,rx,ry){ cx.beginPath(); cx.ellipse(x,y,Math.max(0.5,rx),Math.max(0.5,ry),0,0,7); }
+function drawHand(x,y,skin,skinlo,side){
+  cx.save(); cx.fillStyle=skinlo; roundRect(x-14,y-70,28,80,14); cx.fill();  // forearm (frozen upper part)
+  cx.fillStyle=skin; ellipse(x,y,18,22); cx.fill();
+  cx.strokeStyle='rgba(120,100,80,.3)'; cx.lineWidth=1.5;
+  for(let i=-2;i<=2;i++){ cx.beginPath(); cx.moveTo(x+i*6,y+2); cx.lineTo(x+i*6+side*2,y+20); cx.stroke(); }
+  cx.restore();
+}
+requestAnimationFrame(draw);
+
+/* ============================ WIRING ================================= */
+function buildChips(){
+  const host=$('progChips'); host.innerHTML='';
+  PROG_ORDER.forEach((k,i)=>{ const b=document.createElement('button'); b.textContent=PROGRAMS[k].label;
+    if(i===P.prog)b.classList.add('on');
+    b.addEventListener('click',()=>{ [...host.children].forEach(c=>c.classList.remove('on')); b.classList.add('on');
+      P.prog=i; const pr=PROGRAMS[k];
+      P.wrong=pr.wrong; P.drift=pr.drift; P.tempo=pr.tempo;   // load the routine's defaults
+      syncSliders(); stop(); regen(false);
+    });
+    host.appendChild(b); });
+}
+function syncSliders(){
+  $('wrong').value=P.wrong; $('wrongVal').textContent=P.wrong+'%';
+  $('drift').value=P.drift; $('driftVal').textContent=P.drift+'%';
+  $('tempo').value=P.tempo; $('tempoVal').textContent=P.tempo;
+  $('verses').value=P.verses; $('versesVal').textContent=P.verses+' stanzas';
+}
+$('wrong').addEventListener('input',e=>{P.wrong=+e.target.value;$('wrongVal').textContent=P.wrong+'%';stop();regen(false);});
+$('drift').addEventListener('input',e=>{P.drift=+e.target.value;$('driftVal').textContent=P.drift+'%';stop();regen(false);});
+$('tempo').addEventListener('input',e=>{P.tempo=+e.target.value;$('tempoVal').textContent=P.tempo;stop();regen(false);});
+$('verses').addEventListener('input',e=>{P.verses=+e.target.value;$('versesVal').textContent=P.verses+' stanzas';stop();regen(false);});
+$('play').addEventListener('click',play);
+$('pause').addEventListener('click',togglePause);
+$('another').addEventListener('click',aliud);
+$('cut').addEventListener('click',cut);
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+  if(e.target.tagName==='BUTTON'&&e.code==='Space'){e.preventDefault();e.target.blur();play();return;}
+  if(e.code==='Space'){e.preventDefault();play();}
+  else if(e.key==='p'||e.key==='P'){togglePause();}
+  else if(e.key==='r'||e.key==='R'){aliud();}
+  else if(e.key==='c'||e.key==='C'){cut();}
+});
+// only react to a hash the USER changed — ignore our own writeHash() echoes,
+// which would otherwise fire an async hashchange that stops a just-started take.
+window.addEventListener('hashchange',()=>{ if(location.hash===__lastHash)return;
+  if(readHash()){ buildChips(); syncSliders(); stop(); regen(false); } });
+
+/* ---------- init ---------- */
+if(!readHash())writeHash();
+buildChips(); syncSliders(); regen(false);
+
+/* OFFICINA audition: the performance is one-shot — just perform it. */
+TIMBRE.demo=()=>{ if(!st.playing)play(); };
+</script>
+</body>
+</html>

@@ -13,7 +13,7 @@ repo, flag that instead of doing it.
 
 ## Architecture
 
-**OPVSCVLA is twenty-eight independent single-file Web Audio machines** plus a static
+**OPVSCVLA is twenty-nine independent single-file Web Audio machines** plus a static
 landing page. There is **no build step, no bundler, no dependencies, no npm, no
 samples, no server-side anything.** Each `op.` is one self-contained
 `index.html` — inline `<style>`, inline `<script>`, all synthesis in the
@@ -98,6 +98,7 @@ siyotanka/index.html op. XXV   ŠIYÓTȞAŊKA — the Lakota courting flute (ši
 tenebrae/index.html  op. XXVI TENEBRAE    — Renaissance sacred polyphony, Tenebrae responsories
 amadinda/index.html  op. XXVII AMADINDA   — Baganda royal log xylophone, equipentatonic interlock
 bani/index.html      op. XXVIII BANI      — Georgian table-song polyphony, adaptive intonation
+persona/index.html   op. XXIX  PERSONA    — the singing automaton (formant speech synthesis; after "I Feel Fantastic")
 ```
 
 The `op.` roman-numeral order is fixed and lives in `index.html` and `README.md`;
@@ -291,19 +292,3 @@ Conventions when touching this layer:
   overlay round-trips; `verify-bench.mjs` and `sweep-bench.mjs` drive the
   bench UI itself. All 13 pass (387 params).
 
-## Session history — per-machine `THREADS.md`
-
-The inline Open-threads log has moved out of this file to keep it light. **Each
-machine's development history now lives in its own `<machine>/THREADS.md`**
-(newest first) — read only the one for the machine you're touching, not the
-others. Threads that span machines or the whole repo (voicing-layer rollouts,
-lock-screen sweeps, the OP–XY fork, meta snapshots) live in the repo-root
-**`THREADS.md`**, which also indexes which machines have recorded history.
-
-**Adding an entry (end of every session):** put it at the **top** of the relevant
-`THREADS.md` — your machine's file for machine work, root `THREADS.md` for a
-cross-cutting change — under its own `###` heading, same format as the existing
-entries. That is where the per-session record goes; edit HANDOFF.md itself only
-when your change alters orientation (architecture, decisions, file structure,
-conventions). Because per-machine files rarely overlap, parallel PRs conflict
-far less than when every branch appended to one shared log here.
