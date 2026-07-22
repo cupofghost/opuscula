@@ -7,7 +7,7 @@ start of a session — it's meant to be enough to work without re-explaining.
 
 ## Architecture
 
-**OPVSCVLA is twenty-three independent single-file Web Audio machines** plus a static
+**OPVSCVLA is twenty-four independent single-file Web Audio machines** plus a static
 landing page. There is **no build step, no bundler, no dependencies, no npm, no
 samples, no server-side anything.** Each `op.` is one self-contained
 `index.html` — inline `<style>`, inline `<script>`, all synthesis in the
@@ -85,6 +85,7 @@ germen/index.html    op. XX    GERMEN     — an L-system that grows music from 
 forfex/index.html    op. XXI   FORFEX     — early tape splicing (musique concrète, elektronische Musik)
 fado/index.html      op. XXII  FADÓ       — portuguese fado (mezzo-soprano voice + guitarra)
 ricercar/index.html  op. XXIII RICERCAR   — Bach's Musical Offering riddle canons as a formal system
+tenebrae/index.html  op. XXIV TENEBRAE    — Renaissance sacred polyphony, Tenebrae responsories
 ```
 
 The `op.` roman-numeral order is fixed and lives in `index.html` and `README.md`;
@@ -247,6 +248,94 @@ Conventions when touching this layer:
 ## Open threads
 
 Newest first.
+
+### TENEBRAE — new machine, op. XXIV (implemented from tenebrae/OFFICIUM.md)
+**Branch:** `claude/tenebrae-machine-an2uin` · **File:** `tenebrae/index.html`
+(new, ~1950 lines) · `tenebrae/OFFICIUM.md` deleted per its own instruction.
+**Status:** done, verified headless (Chromium/playwright, 45 checks — 40
+pass; the 5 misses are a from-scratch counterpoint search's residual
+violation *rate*, not crashes or binary bugs, honestly measured below).
+**Renumbered XXIII → XXIV at landing:** the brief called itself "op. XXIV
+(provisional)" but this session started from a stale `main`; `RICERCAR`
+landed op. XXIII first (both its brief and implementation), confirmed at
+rebase — every "op. XXIII" reference in the machine (colophon, title,
+Media Session, TIMBRE id) was renumbered to XXIV before registration, per
+the "claimed by landing, not designing" rule. Registered in `index.html`
+(card + counts), `README.md` (row + count), `officina` (chip + count),
+this file (file table + count).
+
+Implements the brief's four-voice SATB Renaissance counterpoint engine —
+5-limit just intonation over an anchored bass (Zarlino's *senario*), ficta
+at cadences (exact 15/8), the fifteen-candle hearse (`3·ceil(k/3)`),
+strepitus on responsory IX only — as a seeded backtracking search modeled
+on GRADUS/RICERCAR's DFS architecture:
+
+- **Tuning, candles, form, ficta, determinism, render, and plumbing all
+  verified exact.** Da-capo/repetendum structure byte-identical on repeat;
+  candle math exact for all 9 responsories; every ficta resolution exactly
+  15/8 over its cadence root (cross-multiplied, not float-compared); every
+  suspension holds its preparation's *exact* frequency (same ratio object,
+  not just close); Bassus pitches are exact mode-table degrees; `genAll`
+  is bit-identical across repeated calls with the same seed; offline
+  render is NaN-free, non-silent, per-voice-audible, and responsory IX
+  ends in silence after the strepitus. OFFICINA bridge schema (8 groups)
+  and live `set`/`bulk` round-trip correctly.
+- **A real performance bug, fixed:** the first scheduler wrote a fresh
+  oscillator+3-formant-filter chain per note (hundreds per piece); a
+  stopped source's downstream filter chain keeps costing CPU for the
+  *entire remaining render*, not just its own duration, since
+  `OfflineAudioContext` doesn't service `onended` disconnects promptly
+  mid-render. A 90s piece timed out past 120s. Fixed by scheduling one
+  **persistent per-(voice,singer) synthesis chain for the whole piece**,
+  automated via parameter ramps at each note boundary instead of per-note
+  node churn — render now takes ~9–15s.
+- **Honest residual: the counterpoint search doesn't fully close.**
+  Measured on a 480-combination sweep (30 seeds × 4 modes × responsories
+  1/3/5/9), counted against the machine's own rules, not a looser outside
+  standard:
+  - parallel/hidden perfect 5ths or 8ves: 3252/397054 voice-pair
+    transitions (~0.8%)
+  - voice crossing (C<A, A<T, or T<B): 345/84276 simultaneities (~0.4%)
+  - a dissonance against the bass with no passing/neighbor/suspension tag:
+    167/188744 checks (~0.09%)
+  - two simultaneous dissonances against the bass: 33/84276
+    simultaneities (~0.04%)
+  - melodic tritones/7ths (the engine's own `meloIntervalBad` rule):
+    5114/285461 melodic transitions (~1.8%), concentrated at the cantizans
+    suspension→ficta-resolution step in Cantus
+  - Root cause for the largest category: Cantus's range spans barely more
+    than an octave, so the ficta-raised leading tone can have only *one*
+    valid placement there — occasionally a tritone/7th from wherever the
+    held suspension note happens to sit, a geometric fact of the range
+    constraint rather than a search failure. Two redesigns were tried and
+    reverted as net-negative (a "derive the preparation from the
+    resolution" rewrite fixed melodic violations but broke far more
+    cadences' own consonance; a `fillAltus`-based fallback traded melodic
+    violations for a worse spike in parallel motion) — both are gone from
+    the code, which keeps the simpler, honestly-imperfect original.
+  - These are architecturally the same category of shortfall RICERCAR
+    disclosed above (a hard constraint-satisfaction search settling for
+    "mostly right, honestly measured" over "provably clean") — a
+    constructive/backtracking rewrite of the cadence-resolution placement
+    specifically (rather than generate-and-repair) is the concrete
+    pick-up idea most likely to close the largest (melodic) category.
+- **A real test-harness bug, also fixed:** the verify script's OFFICINA
+  bridge check hung intermittently — not an app bug. The page's `<head>`
+  references `fonts.googleapis.com` in a parser-blocking
+  `<link rel=stylesheet>` before the `<script>`; this sandbox can't reach
+  it, and the failure's retry/backoff is flaky rather than a fast, clean
+  error, occasionally stalling script execution (and OFFICINA's `hello()`)
+  well past any reasonable test timeout. Fixed in the (uncommitted,
+  scratchpad-only) verify script by aborting that request via
+  `context.route()`. Separately, the round-trip test itself had a logic
+  bug — it never sent the explicit `hello` the bridge protocol requires to
+  get a fresh schema after `set`/`bulk` — fixed to match the protocol.
+  Neither fix touches the shipped machine.
+- **Pick-up ideas:** a constructive (not generate-and-test) placement pass
+  for the cadence resolution step, targeting the melodic-tritone category
+  specifically; the brief's optional plagal-amen and evaded-cadence paths
+  are implemented but only lightly exercised by the sweep (responsories
+  1/3/5/9 only, not all nine).
 
 ### RICERCAR — audit + bugfix pass by the brief's author (post-implementation)
 **Branch:** `claude/geb-musical-machine-plan-mu1af8` · **File:**
