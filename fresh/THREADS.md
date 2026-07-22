@@ -1,5 +1,102 @@
 # FRESH — threads
 
+### 2026-07-22 · build session — FRESH (op. XXX, provisional) shipped whole
+
+Built `fresh/index.html` from the GENESIS brief in one session, all three
+staged scopes (beat / MC / turntables) landed rather than split — the brief's
+degrade path (ship stages, note the rest) wasn't needed. Verified headless:
+`node dev/verify.mjs fresh` (loads-clean · bench-schema 10 groups/82 params ·
+plays-clean · cut-renders-wav) and `node dev/check.mjs` (bridge byte-identical,
+all four registries agree, numbering clean) both pass. Two throwaway
+`scratchpad/` gauntlets (gitignored, not shipped) exercised the model and the
+render:
+
+- **Model enumeration** — 5 seeds × 4 styles × 3 flows × 3 themes (180
+  combinations, 5400 lines / 1440 couplets): every emitted word has a DICT
+  transcription, every verse couplet's setup/payoff share a rhyme family
+  (LYRICAL's internal-rhyme plant checked too), every line's syllable grid is
+  monotonic/non-overlapping/inside its bar, same seed → identical `compose()`
+  JSON, different seed → different. Caught two real bugs before they shipped:
+  several skeleton-template words (back/watch/how/came/put/everybody/feel/
+  nobody/yourself/hard/whole/who) missing from DICT, and a `layoutSyllables`
+  duration formula (`Math.max(0.4, gap*0.86)`) that could exceed a tight LYRICAL
+  syncopation gap and overlap two syllables — fixed to a pure fraction of the
+  gap (`gap*0.85`, no additive floor), which is safe by construction since
+  every code path guarantees gap > 0 before that line runs.
+- **Offline render** — peak < 0 dBFS (the `cut()` clip-safety normalize kicks
+  in and holds it), RMS well above a silence floor, and a bed-muted
+  (`TP.bass/kit808/kitBreak/stabs/scratch` levels → 0) render still produces
+  sound, proving the voice path itself is exercised, not just the beat.
+  **A real finding, not a bug:** two `OfflineAudioContext` renders of the
+  *identical* graph are not bit-exact in this engine — diffed the raw sample
+  arrays directly and found a ~5.96e-7 (exactly 1 float32 ULP) difference
+  starting a few thousand samples in, present even with the voice muted, so
+  it's the render engine's own non-associative summation order, not this
+  machine's logic. With the voice active that 1-ULP seed grows to a ~0.004
+  max sample difference by the end of the render — the five parallel
+  bandpass formants (Q up to 26) are marginally-stable IIR filters, and any
+  resonant filter amplifies a tiny difference in its input over time; this
+  is expected DSP behavior, not nondeterminism in the composition. The
+  guarantee that *does* hold, and is what "the hash is the pressing" means
+  here: `compose(P)` returns byte-identical JSON for the same seed (every
+  event's time/pitch/word pinned, checked in the model gauntlet above) —
+  the score is exactly reproducible; the rendered waveform for that score is
+  the same performance, not bit-identical floats. Worth knowing before
+  anyone "fixes" a false render-determinism alarm in a future pass.
+
+**Architecture call, deliberately deviating from the brief's "re-vibe at the
+next bar" wording:** FRESH precomposes the *whole* pressing at Run-It time —
+one `compose(P)` call builds a flat plan (every syllable, drum hit, bass note,
+stab, scratch gesture as an absolute time from `t0`) and `buildGraph()`
+schedules all of it at once, exactly like PERSONA (op. XXIX). This is PERSONA's
+*actual* behavior, not just its technique: PERSONA's own sliders `stop()` and
+regenerate rather than live-splice a running performance. A true bar-quantized
+live re-vibe would need to unschedule/reschedule already-queued Web Audio nodes
+mid-song, which Web Audio doesn't support — the honest options were a
+complex tail-splice scheduler or PERSONA's stop-and-regenerate precedent. Took
+the precedent: STYLE/FLOW/THEME/SING/SCRATCH/HYPE/TEMPO/VERSES changes while
+playing stop the transport and regenerate the pressing silently; the user
+presses Run It again. Documented here so a future session doesn't "fix" this
+as a bug.
+
+Other simplifications made in the builder's judgment (all noted so a tuning
+pass or improve-pass knows where to look):
+
+- **No negative `playbackRate`.** Reverse tape/vinyl playback via a negative
+  AudioBufferSourceNode.playbackRate is spec-legal but unreliably supported
+  across engines; every scratch gesture curve (baby/chirp/transformer/
+  scribble/backspin) stays positive. The turntablism character comes from
+  rate swing + fader gating, not true reverse — audibly convincing, verified
+  headless with zero page errors.
+- **DICT is ~190 words**, not the brief's 250-320 ceiling: 17 rhyme families
+  (~6-9 members each, one stressed-vowel-plus-coda per family, verified by the
+  model gauntlet) plus function/content words for the line-skeleton templates.
+  Enough for real variety across 180 tested seed/style/flow/theme combos
+  without a diminishing-returns vocabulary grind.
+- **No letter-by-letter MC-name spelling** (the brief's stretch goal) — the MC
+  NAME is generated and displayed/rapped as whole words, not spelled phoneme
+  by phoneme. A future pass could add it behind the same DICT the way the
+  brief sketched.
+- **Loose template grammar, not POS-tagged.** Line skeletons end in a `{R}`
+  rhyme slot filled from the chosen family; grammatical fit is genre-loose by
+  design (real rap forces nouns into predicate/object slots constantly — "I'm
+  on that flow," "bring the noise") rather than a hand-tagged parts-of-speech
+  engine.
+- **HYPE crowd/echo only** — the brief's stretch "hype-man interjections in the
+  gaps" (`yeah!`/`c'mon!`/`fresh!`) were scoped out; HYPE instead scales the
+  crowd-response loudness and the echo-throw depth on line endings, which
+  reads as the same thing at the mix level for less token cost.
+- **`TIMBRE.touch` intentionally absent**, matching PERSONA precedent for a
+  one-shot precomposed machine (see the architecture call above): bench edits
+  apply on the next Run It; ► HEAR (`TIMBRE.demo`) just starts a fresh
+  pressing, also PERSONA's exact pattern.
+
+The `voice`/`prosody`/`double` TIMBRE groups are exhaustive per the brief's
+requirement for the planned post-build tuning pass (82 params total across 10
+groups). Deleted `fresh/GENESIS.md` per the registration checklist; its
+grounding and design reasoning are folded into the machine's own "on this
+music" panel and this entry.
+
 ### 2026-07-22 · plan session — GENESIS brief for FRESH (late-80s rap & hip hop)
 
 Wrote `fresh/GENESIS.md`: design brief for op. XXX (provisional), a late-80s

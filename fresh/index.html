@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0a10">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="description" content="fresh — a late-80s rap &amp; hip hop machine, in the spirit of Devastatin' Dave the Turntable Slave: a synthesized MC raps seeded couplets over one of four beat dialects (electro, rock-box, boom, swing) while two turntables scratch a synthesized record. The law is the rhyme scheme against the beat — everything, including the voice and the scratched vinyl, is Web Audio synthesis. op. XXX of the opuscula.">
+<title>FRESH — late-80s rap &amp; hip hop</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@600;700&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --stage:#0c0a10; --stage2:#151119; --panel:#1a1520;
+  --ink:#ede6d8; --dim:#9b8fa0; --line:#2c2534;
+  --gold:#f0a63c; --cyan:#4fd1e0; --hot:#e0456a;
+  --accent:var(--gold);
+}
+*{box-sizing:border-box; margin:0; padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--stage); color:var(--ink);
+  font-family:'EB Garamond',Georgia,'Times New Roman',serif;
+  font-size:17px; line-height:1.55;
+  min-height:100vh; padding:1.2rem 1rem 3rem;
+  background-image:
+    radial-gradient(ellipse 70% 45% at 15% 0%, rgba(240,166,60,.08), transparent 60%),
+    radial-gradient(ellipse 80% 55% at 100% 110%, rgba(79,209,224,.06), transparent 60%);
+}
+.wrap{max-width:760px; margin:0 auto}
+a{color:var(--cyan); text-decoration:none; border-bottom:1px dotted var(--dim)}
+a:hover{color:var(--ink)}
+.mono{font-family:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; font-size:.76rem; letter-spacing:.06em}
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:14px 0 0 14px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench{position:fixed;top:max(6px,env(safe-area-inset-top));right:max(6px,env(safe-area-inset-right));z-index:100;display:flex;width:-moz-fit-content;width:fit-content;align-items:center;gap:.55em;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench:hover,.bench:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.bench:active{transform:translateY(1px)}
+.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+@media(prefers-reduced-motion:reduce){.bench,.exit{transition:none}}
+.opline{color:var(--dim); font-variant:small-caps; letter-spacing:.14em; font-size:.86rem}
+h1{
+  font-family:'Cormorant SC',serif; font-size:3.4rem; font-weight:700; letter-spacing:.02em; line-height:1;
+  margin:.15rem 0 .55rem; color:var(--ink); text-shadow:0 0 26px rgba(240,166,60,.18);
+}
+h1 .dot{color:var(--gold)}
+.thesis{font-size:1.05rem; margin-bottom:.5rem}
+.thesis b{font-weight:700}
+.sub{color:var(--dim); font-style:italic; font-size:.92rem; margin-bottom:1.2rem}
+
+.plate{
+  position:relative; border:1px solid var(--line); border-radius:6px;
+  background:linear-gradient(180deg, rgba(255,255,255,.015), rgba(0,0,0,.2)), var(--stage2);
+  overflow:hidden; margin-bottom:.55rem;
+}
+canvas{display:block; width:100%; height:auto}
+.readout{
+  display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap;
+  padding:.45rem .7rem; border-top:1px solid var(--line); color:var(--dim);
+}
+.readout .live{color:var(--accent)}
+#lyric{
+  font-family:'IBM Plex Mono',monospace; font-size:.98rem; letter-spacing:.01em;
+  color:var(--dim); text-align:center; min-height:1.7em; margin:.35rem 0 1rem;
+}
+#lyric .now{color:var(--ink); font-weight:600; text-shadow:0 0 12px rgba(240,166,60,.3)}
+#mcname{color:var(--gold); font-variant:small-caps; letter-spacing:.04em}
+
+.controls{display:grid; grid-template-columns:1fr 1fr; gap:.75rem .95rem; margin-bottom:1rem}
+@media(max-width:520px){.controls{grid-template-columns:1fr}}
+.ctl{display:flex; flex-direction:column; gap:.3rem}
+.ctl.full{grid-column:1/-1}
+.ctl label{font-variant:small-caps; letter-spacing:.12em; font-size:.74rem; color:var(--dim)}
+.chips{display:flex; flex-wrap:wrap; gap:.4rem}
+.chips button{
+  font-family:'IBM Plex Mono',monospace; font-size:.7rem; letter-spacing:.1em; text-transform:uppercase;
+  background:var(--panel); color:var(--dim); border:1px solid var(--line);
+  border-radius:999px; padding:.4rem .8rem; cursor:pointer; transition:all .14s;
+}
+.chips button:hover{color:var(--ink); border-color:var(--dim)}
+.chips button.on{color:var(--stage); background:var(--gold); border-color:var(--gold)}
+input[type=range]{width:100%; height:1.6rem; padding:0; accent-color:var(--gold); background:transparent}
+.ctl .val{font-size:.72rem; color:var(--dim); font-family:'IBM Plex Mono',monospace}
+
+.btnrow{display:flex; gap:.7rem; flex-wrap:wrap; margin-bottom:.4rem}
+button.act{
+  font-family:'EB Garamond',Georgia,serif; font-size:1.05rem; letter-spacing:.03em;
+  background:transparent; color:var(--ink);
+  border:1px solid var(--dim); border-radius:999px;
+  padding:.55rem 1.5rem; cursor:pointer; transition:all .15s;
+}
+button.act:hover{border-color:var(--ink); box-shadow:0 0 14px rgba(231,225,215,.12)}
+button.act.big{border-color:var(--gold); color:var(--gold)}
+button.act.big:hover{box-shadow:0 0 16px rgba(240,166,60,.25)}
+button.act.on{background:var(--gold); color:var(--stage); border-color:var(--gold)}
+button.act:disabled{opacity:.4; cursor:default; box-shadow:none}
+.cutnote{color:var(--dim); font-size:.8rem; font-style:italic; margin-bottom:2rem}
+
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box;border-top:1px solid var(--line);padding-top:1.4rem}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  font-family:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;font-size:.62rem;letter-spacing:.2em;
+  text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;
+  -webkit-user-select:none;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:62ch;font-size:.96rem;line-height:1.66;opacity:.92;color:#cfcabf}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;font-size:.6rem;letter-spacing:.18em;
+  text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500;color:var(--ink)}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic;color:var(--ink)}
+footer{
+  margin-top:2.2rem; padding-top:1rem; border-top:1px solid var(--line);
+  color:var(--dim); font-size:.82rem; display:flex; justify-content:space-between;
+  flex-wrap:wrap; gap:.5rem;
+}
+@media (prefers-reduced-motion: reduce){ *{animation:none!important; transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+  <a class="bench" href="../officina/#m=fresh" aria-label="Open in officina — the voicing bench" title="officina">officina</a>
+  <div class="opline">op. XXX · late-80s rap &amp; hip hop</div>
+  <h1>Fresh<span class="dot">.</span></h1>
+  <p class="thesis"><b>The rhyme scheme against the beat.</b> A synthesized MC writes and raps a record over one of four era beat dialects, while two turntables scratch a synthesized record. Set the law — style, flow, theme — the machine writes and performs the take.</p>
+  <p class="sub">for Devastatin' Dave the Turntable Slave · 1984–89, zip zap rap to the SP-1200 break · everything synthesized, nothing sampled</p>
+
+  <div class="plate">
+    <canvas id="cv" width="1320" height="740"></canvas>
+    <div class="readout mono">
+      <span id="mcname">—</span>
+      <span id="status">READY</span>
+      <span>PRESSING · <span id="seedRd" class="live">—</span></span>
+    </div>
+  </div>
+  <div id="lyric">&nbsp;</div>
+
+  <div class="controls">
+    <div class="ctl full">
+      <label for="styleChips">Style — the beat's dialect</label>
+      <div class="chips" id="styleChips"></div>
+    </div>
+    <div class="ctl full">
+      <label for="flowChips">Flow — the MC's rhyme law</label>
+      <div class="chips" id="flowChips"></div>
+    </div>
+    <div class="ctl full">
+      <label for="themeChips">Theme — what the rap is about</label>
+      <div class="chips" id="themeChips"></div>
+    </div>
+    <div class="ctl">
+      <label for="sing">Sing — spoken ↔ sing-song <span class="val" id="singVal">35%</span></label>
+      <input type="range" id="sing" min="0" max="100" value="35" step="1">
+    </div>
+    <div class="ctl">
+      <label for="scratch">Scratch — turntablism <span class="val" id="scratchVal">45%</span></label>
+      <input type="range" id="scratch" min="0" max="100" value="45" step="1">
+    </div>
+    <div class="ctl">
+      <label for="hype">Hype — the crowd &amp; the echo <span class="val" id="hypeVal">50%</span></label>
+      <input type="range" id="hype" min="0" max="100" value="50" step="1">
+    </div>
+    <div class="ctl">
+      <label for="tempo">Tempo <span class="val" id="tempoVal">116</span></label>
+      <input type="range" id="tempo" min="88" max="128" value="116" step="1">
+    </div>
+    <div class="ctl full">
+      <label for="verses">How long? <span class="val" id="versesVal">3 verses</span></label>
+      <input type="range" id="verses" min="1" max="6" value="3" step="1">
+    </div>
+  </div>
+
+  <div class="btnrow">
+    <button class="act big" id="play">Run It</button>
+    <button class="act" id="pause" disabled>Pause</button>
+    <button class="act" id="another">Aliud</button>
+    <button class="act" id="cut">Cut · 16-bit WAV</button>
+  </div>
+  <p class="cutnote" id="cutnote">renders the whole record, beat to outro · the URL hash <em>is</em> the pressing — copy the address and the exact take reloads anywhere</p>
+
+  <details class="reader">
+    <summary>On this music · late-80s rap &amp; hip hop</summary>
+    <div class="rbody">
+
+      <h4>Devastatin' Dave</h4>
+      <p>In 1986 a one-man outfit called Devastatin' Dave the Turntable Slave released <em>Zip Zap Rap</em> — a solo MC with a drum machine and two turntables, its cover art an outsider-art legend online decades later for how it looks. This machine plays Dave straight, not as the meme: he is the complete kit of the era in one figure — a party-rock groove, couplets that land square on the beat, a message rap ("don't do drugs," sincere, not winking) — and from that seed it reaches across the whole golden stretch: electro boogie (Egyptian Lover, Mantronix), the spare 808 rock of Run-DMC, the SP-1200 break era (Eric B &amp; Rakim, EPMD, Marley Marl), and the swung end of the decade.</p>
+
+      <h4>The verbal line</h4>
+      <p>Rap's verse runs through the <em>dozens</em> and <em>signifying</em>, prison and street <em>toasts</em>, the radio jive of jocks like Jocko Henderson, and Jamaican <em>toasting</em> over sound systems — public, formulaic, endlessly recombined verbal tradition, long before a drum machine ever carried it. The MC's stock formulas ("…and I'm here to say," "to the beat y'all," call-and-response "say ho!") are that tradition's fixed grammar, the way the I/you ladder is PERSONA's and sol-mi-la is NENIA's. This machine automates exactly that recombination: a closed, hand-built vocabulary of rhyme families and stock line templates, never a quote of any real record.</p>
+
+      <h4>The instrumental line</h4>
+      <p>Kool Herc's merry-go-round looped the <em>break</em> — the drum interlude — between two copies of the same record on twin turntables; Grandmaster Flash's quick-mix theory and Grand Wizzard Theodore's invention of <em>scratching</em> turned that same setup into an instrument played by hand. Then the drum machines took over the band: the TR-808's synthesized kit first, then the SP-1200's gritty 12-bit sampling. This machine's four <b>Style</b> dialects trace that arc — <b>Electro</b>'s syncopated 808 boogie, <b>Rockbox</b>'s spare Run-DMC rock, <b>Boom</b>'s SP-1200 break feel (grit and vinyl crackle synthesized, never sampled), and the swung <b>Swing</b> of the decade's close.</p>
+
+      <h4>The voice</h4>
+      <p>The MC is a source-filter formant synthesizer, the same technique behind PERSONA's singing automaton (op. XXIX) — but where Tara's pitch is uncanny and dead flat, this voice speaks: <b>Sing</b> morphs the prosody between free speech contours (a falling declination line, stress accents, boundary tones) and pitch quantized onto the beat's minor pentatonic, the old-school sing-song cadence. Plosives land like percussion on the grid; unstressed vowels reduce toward schwa; a double voice, offset and detuned, carries the hook and the posse's "ho!"</p>
+
+      <h4>The turntables</h4>
+      <p>The record on the platter is itself synthesized — a short orchestra-hit buffer, the era's Fairlight ORCH5 signature — and <b>Scratch</b> throws it through gesture curves on the fader: the baby scratch, the chirp, the transformer chop, the scribble, the backspin. Nothing here is a recording of a record; it is a record built from oscillators, scratched by a curve.</p>
+
+      <h4>The law</h4>
+      <p>The law of a rap record is the rhyme scheme against the beat: where the rhymes land, how the syllables subdivide the bar, which break the DJ loops under it. <b>Style</b> sets the beat's dialect; <b>Flow</b> sets the MC's rhyme law — <b>Park</b>'s old-school AABB couplets on the eighth-note, sing-song and square on beat four (the Dave archetype); <b>Shout</b>'s staccato Run-DMC bursts traded against silence; <b>Lyrical</b>'s sixteenth-note subdivision reaching toward Rakim. <b>Theme</b> picks the routine — <b>Party</b> rocks the house, <b>Boast</b> is a clean skills brag, <b>Message</b> is Dave's own lane, stay-in-school sincerity. Everything is seeded and deterministic: the same link always presses the same record.</p>
+    </div>
+  </details>
+
+  <footer class="mono">
+    <span>op. XXX · <a href="../">opvscvla</a></span>
+    <span>keys: space=run · p=pause · r=aliud · c=cut · 1–4=style · f=flow · t=theme · s=scratch</span>
+  </footer>
+</div>
+
+<script>
+'use strict';
+/* ============================== FRESH ==================================
+   op. XXX · late-80s rap & hip hop · single-file web audio object
+   For Devastatin' Dave the Turntable Slave (Zip Zap Rap, 1986), played
+   straight across the golden 1984-89 stretch: electro boogie, Run-DMC's
+   808 rock, the SP-1200 break era, the swung end of the decade. The law
+   is the rhyme scheme against the beat: STYLE (4 beat dialects) x FLOW
+   (the MC's rhyme law) x THEME (what the rap is about). The MC voice is
+   an evolution of PERSONA's (op. XXIX) source-filter formant technique —
+   studied there, written standalone here, with real speech prosody
+   (declination, stress accents, boundary tones, a SING morph toward
+   pentatonic sing-song) in place of PERSONA's deliberately flat pitch.
+   The scratched record is itself synthesized: a baked orchestra-hit
+   buffer thrown through playbackRate gesture curves. No samples anywhere.
+   Series conventions: seeded mulberry32 · hash permalink · space/p/r/c ·
+   deterministic 16-bit WAV cut · __iosAudio unlock + Media Session ·
+   OFFICINA bridge · <=30fps canvas · prefers-reduced-motion.
+==================================================================== */
+
+/* ---------- PRNG & small helpers ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;var t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const $=id=>document.getElementById(id);
+const clamp=(x,a,b)=>x<a?a:x>b?b:x;
+const pick=(rng,arr)=>arr[(rng()*arr.length)|0];
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+/* ============================ THE VOICE — phonetics ==================
+   Reused (studied, not shared) from PERSONA op. XXIX: measured vowel
+   formants (Peterson & Barney / Klatt) and the same consonant grammar.
+   ==================================================================== */
+const VOW={ // monophthongs: [F1,F2,F3]
+  iy:[300,2300,3000], ih:[400,1990,2550], eh:[530,1840,2480], ae:[660,1720,2410],
+  aa:[730,1090,2440], ao:[570,840,2410],  uh:[440,1020,2240], uw:[300,870,2240],
+  er:[490,1350,1690], ah:[600,1200,2400] // ah = schwa / unstressed
+};
+const DIPH={ ay:['aa','iy'], ey:['eh','iy'], ow:['ao','uw'], aw:['aa','uw'], oy:['ao','iy'] };
+const isVow=p=>!!(VOW[p]||DIPH[p]);
+const CONS={
+  p:{t:'stop',v:0,loc:900}, b:{t:'stop',v:1,loc:700}, t:{t:'stop',v:0,loc:3800},
+  d:{t:'stop',v:1,loc:3000}, k:{t:'stop',v:0,loc:1900}, g:{t:'stop',v:1,loc:1700},
+  f:{t:'fric',v:0,loc:1400,q:1.2}, v:{t:'fric',v:1,loc:1200,q:1.3},
+  s:{t:'fric',v:0,loc:6200,q:3.4}, z:{t:'fric',v:1,loc:5200,q:3.0},
+  sh:{t:'fric',v:0,loc:3000,q:2.2}, zh:{t:'fric',v:1,loc:2600,q:2.2},
+  th:{t:'fric',v:0,loc:5600,q:1.6}, dh:{t:'fric',v:1,loc:2400,q:1.2},
+  h:{t:'fric',v:0,loc:1500,q:0.8,asp:1},
+  m:{t:'nas',v:1,f1:250,f2:1000}, n:{t:'nas',v:1,f1:250,f2:1700}, ng:{t:'nas',v:1,f1:250,f2:2000},
+  l:{t:'liq',v:1,f1:360,f2:1300}, r:{t:'liq',v:1,f1:330,f2:1050,f3:1600},
+  w:{t:'glide',v:1,f1:300,f2:610}, y:{t:'glide',v:1,f1:270,f2:2300},
+  ch:{t:'stop',v:0,loc:2800,affr:'sh'}, j:{t:'stop',v:1,loc:2600,affr:'zh'}
+};
+
+/* Closed, hand-transcribed vocabulary. word -> [syllables], a syllable a
+   dot-joined phone list; the one vowel/diphthong token splits onset|vowel|coda.
+   Built around seventeen RHYME FAMILIES (same stressed nucleus + coda) below —
+   every template slot only ever draws from here; verified in the gauntlet. */
+const DICT={
+  // -- rhyme family EY (say/day/way — open FACE) --
+  say:['s.ey'], day:['d.ey'], way:['w.ey'], play:['p.l.ey'], may:['m.ey'], stay:['s.t.ey'],
+  okay:['ow','k.ey'], today:['t.ah','d.ey'], replay:['r.iy','p.l.ey'],
+  // -- AYT (right/night — PRICE + t) --
+  right:['r.ay.t'], night:['n.ay.t'], light:['l.ay.t'], tight:['t.ay.t'], bright:['b.r.ay.t'],
+  sight:['s.ay.t'], tonight:['t.ah','n.ay.t'],
+  // -- AYK (mic/like — PRICE + k) --
+  mic:['m.ay.k'], like:['l.ay.k'], strike:['s.t.r.ay.k'], spike:['s.p.ay.k'], alike:['ah','l.ay.k'],
+  // -- IYT (beat/street — FLEECE + t) --
+  beat:['b.iy.t'], street:['s.t.r.iy.t'], feet:['f.iy.t'], heat:['h.iy.t'], seat:['s.iy.t'],
+  sweet:['s.w.iy.t'], complete:['k.ah.m','p.l.iy.t'], elite:['ah','l.iy.t'],
+  // -- EYM (name/game — FACE + m) --
+  name:['n.ey.m'], game:['g.ey.m'], fame:['f.ey.m'], claim:['k.l.ey.m'], same:['s.ey.m'], flame:['f.l.ey.m'],
+  // -- UWL (school/cool — GOOSE + l) --
+  school:['s.k.uw.l'], cool:['k.uw.l'], rule:['r.uw.l'], fool:['f.uw.l'], tool:['t.uw.l'],
+  // -- AYND (mind/find — PRICE + nd) --
+  mind:['m.ay.n.d'], find:['f.ay.n.d'], kind:['k.ay.n.d'], grind:['g.r.ay.n.d'],
+  behind:['b.ah','h.ay.n.d'], designed:['d.ah','z.ay.n.d'], rewind:['r.iy','w.ay.n.d'],
+  // -- EYV (wave/save — FACE + v) --
+  wave:['w.ey.v'], brave:['b.r.ey.v'], save:['s.ey.v'], crave:['k.r.ey.v'], rave:['r.ey.v'], behave:['b.ah','h.ey.v'],
+  // -- OW (go/know — open GOAT) --
+  go:['g.ow'], know:['n.ow'], show:['sh.ow'], flow:['f.l.ow'], yo:['y.ow'], solo:['s.ow','l.ow'], radio:['r.ey','d.iy','ow'],
+  // -- AAP (top/drop — LOT + p) --
+  top:['t.aa.p'], drop:['d.r.aa.p'], stop:['s.t.aa.p'], hop:['h.aa.p'], chop:['ch.aa.p'],
+  shop:['sh.aa.p'], nonstop:['n.aa.n','s.t.aa.p'],
+  // -- AHG (rug/bug — STRUT + g) --
+  rug:['r.ah.g'], bug:['b.ah.g'], hug:['h.ah.g'], plug:['p.l.ah.g'], mug:['m.ah.g'], dug:['d.ah.g'],
+  // -- EHD (head/said — DRESS + d) --
+  head:['h.eh.d'], said:['s.eh.d'], ahead:['ah','h.eh.d'], bread:['b.r.eh.d'], spread:['s.p.r.eh.d'], thread:['th.r.eh.d'],
+  // -- AYN (mine/line — PRICE + n) --
+  mine:['m.ay.n'], line:['l.ay.n'], shine:['sh.ay.n'], sign:['s.ay.n'], design:['d.ah','z.ay.n'], nine:['n.ay.n'],
+  // -- EHST (best/rest — DRESS + st) --
+  best:['b.eh.s.t'], rest:['r.eh.s.t'], test:['t.eh.s.t'], chest:['ch.eh.s.t'], west:['w.eh.s.t'],
+  // -- AAK (rock/block — LOT + k) --
+  rock:['r.aa.k'], block:['b.l.aa.k'], clock:['k.l.aa.k'], knock:['n.aa.k'], shock:['sh.aa.k'], unlock:['ah.n','l.aa.k'],
+  // -- AYM (rhyme/time — PRICE + m) --
+  rhyme:['r.ay.m'], time:['t.ay.m'], climb:['k.l.ay.m'], prime:['p.r.ay.m'], chime:['ch.ay.m'],
+  // -- AY (fly/why — open PRICE) --
+  fly:['f.l.ay'], why:['w.ay'], high:['h.ay'], sky:['s.k.ay'], try:['t.r.ay'],
+  // -- function words / grammar --
+  i:['ay'], you:['y.uw'], we:['w.iy'], my:['m.ay'], your:['y.ao.r'], the:['dh.ah'], a:['ah'],
+  this:['dh.ih.s'], that:['dh.ae.t'], it:['ih.t'], and:['ae.n.d'], to:['t.uw'], on:['aa.n'],
+  in:['ih.n'], up:['ah.p'], out:['aw.t'], down:['d.aw.n'], now:['n.aw'], all:['ao.l'],
+  one:['w.ah.n'], two:['t.uw'], from:['f.r.ah.m'], for:['f.ao.r'], of:['ah.v'], with:['w.ih.dh'],
+  no:['n.ow'], not:['n.aa.t'], never:['n.eh','v.er'], always:['ao.l','w.ey.z'], still:['s.t.ih.l'],
+  so:['s.ow'], when:['w.eh.n'], then:['dh.eh.n'], here:['h.iy.r'], there:['dh.eh.r'],
+  be:['b.iy'], is:['ih.z'], are:['aa.r'], am:['ae.m'], got:['g.aa.t'], get:['g.eh.t'],
+  gonna:['g.aa','n.ah'], make:['m.ey.k'], take:['t.ey.k'], bring:['b.r.ih.ng'], come:['k.ah.m'],
+  want:['w.aa.n.t'], need:['n.iy.d'], keep:['k.iy.p'], hold:['h.ow.l.d'], let:['l.eh.t'],
+  can:['k.ae.n'], will:['w.ih.l'], do:['d.uw'], me:['m.iy'], told:['t.ow.l.d'], yall:['y.ao.l'],
+  yes:['y.eh.s'], word:['w.er.d'], believe:['b.ah','l.iy.v'], trust:['t.r.ah.s.t'],
+  // -- nouns / content words --
+  crowd:['k.r.aw.d'], crew:['k.r.uw'], house:['h.aw.s'], party:['p.aa.r','t.iy'],
+  world:['w.er.l.d'], life:['l.ay.f'], skills:['s.k.ih.l.z'], style:['s.t.ay.l'], king:['k.ih.ng'],
+  jam:['j.ae.m'], sound:['s.aw.n.d'], groove:['g.r.uw.v'], funk:['f.ah.ng.k'], hip:['h.ih.p'],
+  rap:['r.ae.p'], mc:['eh.m','s.iy'], dj:['d.iy','j.ey'], scratch:['s.k.r.ae.ch'], break:['b.r.ey.k'],
+  drum:['d.r.ah.m'], machine:['m.ah','sh.iy.n'], bass:['b.ey.s'], vibe:['v.ay.b'], truth:['t.r.uw.th'],
+  book:['b.uh.k'], dream:['d.r.iy.m'], teacher:['t.iy','ch.er'], future:['f.y.uw','ch.er'],
+  power:['p.aw','er'], respect:['r.ih','s.p.eh.k.t'], learn:['l.er.n'], earn:['er.n'], work:['w.er.k'],
+  real:['r.iy.l'], true:['t.r.uw'], own:['ow.n'], self:['s.eh.l.f'], smart:['s.m.aa.r.t'],
+  strong:['s.t.r.ao.ng'], proud:['p.r.aw.d'], free:['f.r.iy'], wise:['w.ay.z'], choice:['ch.oy.s'],
+  voice:['v.oy.s'], peace:['p.iy.s'], love:['l.ah.v'], friend:['f.r.eh.n.d'], turn:['t.er.n'],
+  side:['s.ay.d'], step:['s.t.eh.p'], move:['m.uw.v'], dance:['d.ae.n.s'], floor:['f.l.ao.r'],
+  jump:['j.ah.m.p'], hands:['h.ae.n.d.z'], ho:['h.ow'], hey:['h.ey'], fresh:['f.r.eh.sh'],
+  dope:['d.ow.p'], super:['s.uw','p.er'], magnificent:['m.ae.g','n.ih.f','ah.s.eh.n.t'],
+  devastatin:['d.eh.v','ah.s.t.ey','t.ih.n'], double:['d.ah','b.ah.l'], diamond:['d.ay','m.ah.n.d'],
+  slave:['s.l.ey.v'], turntable:['t.er.n','t.ey','b.ah.l'], zip:['z.ih.p'], zap:['z.ae.p'],
+  park:['p.aa.r.k'], welcome:['w.eh.l','k.ah.m'], hot:['h.aa.t'], cold:['k.ow.l.d'], big:['b.ih.g'],
+  bad:['b.ae.d'], good:['g.uh.d'], great:['g.r.ey.t'], wild:['w.ay.l.d'], loud:['l.aw.d'],
+  fast:['f.ae.s.t'], smooth:['s.m.uw.dh'], clean:['k.l.iy.n'], first:['f.er.s.t'], last:['l.ae.s.t'],
+  supersonic:['s.uw','p.er','s.aa','n.ih.k'], d:['d.iy'], e:['iy'], j:['j.ey'], check:['ch.eh.k'],
+  // -- skeleton/template words not already covered above --
+  back:['b.ae.k'], watch:['w.aa.ch'], how:['h.aw'], came:['k.ey.m'], put:['p.uh.t'],
+  everybody:['eh','v.r.iy','b.aa','d.iy'], feel:['f.iy.l'], nobody:['n.ow','b.aa','d.iy'],
+  yourself:['y.ao.r','s.eh.l.f'], hard:['h.aa.r.d'], whole:['h.ow.l'], who:['h.uw'],
+};
+function syllab(word){ // -> [{on:[cons], v:vowel, co:[cons]}] using DICT
+  const sy=DICT[word]; if(!sy)return [{on:[],v:'ah',co:[]}];
+  return sy.map(s=>{
+    const ph=s.split('.'); let vi=ph.findIndex(isVow); if(vi<0)vi=ph.length-1;
+    return {on:ph.slice(0,vi), v:ph[vi], co:ph.slice(vi+1)};
+  });
+}
+function sylCount(word){ const w=DICT[word]; return w?w.length:1; }
+
+/* rhyme families: word lists sharing a stressed nucleus + coda */
+const RHYME={
+  ey:['say','day','way','play','may','stay','okay','today','replay'],
+  ayt:['right','night','light','tight','bright','sight','tonight'],
+  ayk:['mic','like','strike','spike','alike'],
+  iyt:['beat','street','feet','heat','seat','sweet','complete','elite'],
+  eym:['name','game','fame','claim','same','flame'],
+  uwl:['school','cool','rule','fool','tool'],
+  aynd:['mind','find','kind','grind','behind','designed','rewind'],
+  eyv:['wave','brave','save','crave','rave','behave'],
+  ow:['go','know','show','flow','yo','solo','radio'],
+  aap:['top','drop','stop','hop','chop','shop','nonstop'],
+  ahg:['rug','bug','hug','plug','mug','dug'],
+  ehd:['head','said','ahead','bread','spread','thread'],
+  ayn:['mine','line','shine','sign','design','nine'],
+  ehst:['best','rest','test','chest','west'],
+  aak:['rock','block','clock','knock','shock','unlock'],
+  aym:['rhyme','time','climb','prime','chime'],
+  ay:['fly','why','high','sky','try'],
+};
+const RHYME_FAMS=Object.keys(RHYME);
+const RHYME_HUE={ey:0,ayt:1,ayk:2,iyt:3,eym:4,uwl:5,aynd:6,eyv:7,ow:8,aap:9,ahg:10,ehd:11,ayn:12,ehst:13,aak:14,aym:15,ay:16};
+const wordFamily=w=>{ for(const f in RHYME) if(RHYME[f].includes(w)) return f; return null; };
+
+/* ---- MC NAME: a small formula pool, one per pressing ---- */
+const NAME_LEAD=[['mc'],['dj']];
+const NAME_MID=[['devastatin'],['magnificent'],['supersonic'],['diamond'],['double']];
+const NAME_TAIL=[['d'],['e'],['j'],['rock'],['fresh']];
+function genName(rng){
+  const lead=pick(rng,NAME_LEAD), mid=pick(rng,NAME_MID), tail=pick(rng,NAME_TAIL);
+  return { words:[...lead,...mid,...tail], display:(lead[0]+' '+mid[0]+' '+tail[0]).toUpperCase() };
+}
+
+/* ============================== THE LAW ==================================
+   STYLE (the beat's dialect), FLOW (the MC's rhyme law), THEME (the
+   routine). None of this is voicing — it stays out of TIMBRE. */
+const STYLES=[
+  {id:'electro',label:'ELECTRO',kit:'808', bpm:[108,126],bpmDef:116, swing:0,
+   bassIdiom:'boogie', hue:'#4fd1e0', gloss:"'84-86 boogie · the Dave lane"},
+  {id:'rockbox',label:'ROCKBOX',kit:'808', bpm:[96,104],bpmDef:100, swing:0,
+   bassIdiom:'sparse', hue:'#e0456a', gloss:"'84-86 Run-DMC · spare and huge"},
+  {id:'boom',   label:'BOOM',   kit:'break',bpm:[92,102],bpmDef:96,  swing:.56,
+   bassIdiom:'funk', hue:'#f0a63c', gloss:"'87-88 SP-1200 break era"},
+  {id:'swing',  label:'SWING',  kit:'break',bpm:[104,114],bpmDef:108,swing:.63,
+   bassIdiom:'funk', hue:'#8a6ad9', gloss:"'89 new-jack-adjacent"},
+];
+const FLOWS=[
+  {id:'park',   label:'PARK',   gloss:'old-school party couplets, payoff on 4'},
+  {id:'shout',  label:'SHOUT',  gloss:'staccato bursts traded against silence'},
+  {id:'lyrical',label:'LYRICAL',gloss:'16th-note subdivision, internal rhyme'},
+];
+const THEMES=[
+  {id:'party',  label:'PARTY',  gloss:'rock the house'},
+  {id:'boast',  label:'BOAST',  gloss:'clean skills brag'},
+  {id:'message',label:'MESSAGE',gloss:"Dave's lane — stay in school"},
+];
+const FUNC_WORDS=new Set(['i','you','we','my','your','the','a','this','that','it','and','to','on',
+  'in','up','out','down','now','all','one','two','from','for','of','with','no','not','never',
+  'always','still','so','when','then','here','there','be','is','are','am','got','get','gonna',
+  'let','can','will','do','me']);
+
+/* ---- verse-couplet skeletons: word tokens ending in a {R} rhyme slot ----
+   Shared "floating formula" skeletons plus a couple per THEME for flavor —
+   the tradition's stock grammar, endlessly recombined, never a quote. */
+const SHARED_SKEL=[
+  ['i','got','that'], ['you','know','i','bring','the'], ['check','it','out','i','got','the'],
+  ['step','back','watch','me','bring','the'], ['this','is','how','we','do','the'],
+];
+const THEME_SKEL={
+  party:[ ['we','came','here','for','the'], ['put','your','hands','up','for','the'],
+          ['everybody','in','the','house','say'], ['turn','it','up','and','feel','the'] ],
+  boast:[ ['nobody','can','stop','my'], ['i','am','the','king','of','the'],
+          ['step','to','me','and','feel','my'], ['i','told','you','i','got'] ],
+  message:[ ['stay','in','school','and','find','your'], ['believe','in','yourself','and','trust','your'],
+             ['keep','your','mind','on','the'], ['work','hard','and','earn','your'] ],
+};
+function skeletonPool(themeId){ return SHARED_SKEL.concat(THEME_SKEL[themeId]); }
+
+/* ---- hook (call & response) & fixed formula lines, per THEME ---- */
+const HOOK_CALL={
+  party:  ['when','i','say','fresh','you','say'],
+  boast:  ['who','got','the','skills','you','know'],
+  message:['stay','fresh','stay','true','and'],
+};
+const HOOK_RESP=['ho'];
+const SIGNOFF={
+  party:  ['peace','to','the','whole','crew'],
+  boast:  ['i','told','you','so'],
+  message:['stay','fresh','stay','true'],
+};
+const INTRO_LINE=['yes','yes','yall'];
+
+/* ============================ THE FLOW MAPPER =============================
+   Places n syllables onto a one-bar (16 sixteenth-unit) grid per FLOW
+   archetype. Always monotonic, non-overlapping, inside [0,16) — verified
+   in the model gauntlet. Stress: content words stressed, function words not,
+   sentence-final word always fully stressed (the rhyme payoff). */
+function stressPattern(words){
+  const st=[];
+  words.forEach((w,wi)=>{ const n=sylCount(w), last=wi===words.length-1;
+    for(let k=0;k<n;k++){
+      let s = FUNC_WORDS.has(w) ? 0 : (k===n-1?2:1);
+      if(last && k===n-1) s=2;
+      st.push(s);
+    } });
+  return st;
+}
+function layoutSyllables(rng, n, flowId){
+  const BAR=16; let pos=[];
+  if(n<=0) return [];
+  if(flowId===0){ // PARK: 8th-note spine, payoff lands on beat 4 (unit 12)
+    const step = n>1 ? Math.min(2,12/(n-1)) : 0;
+    for(let i=0;i<n;i++) pos.push(12-(n-1-i)*step);
+  } else if(flowId===1){ // SHOUT: 2-5 syllable bursts, rests between
+    let i=0,p=0;
+    while(i<n){ const burst=Math.min(n-i,2+((rng()*4)|0));
+      for(let k=0;k<burst;k++){ pos.push(p); p+=1; i++; } p+=1; }
+  } else { // LYRICAL: 16th grid, seeded syncopation
+    const step = n<=16 ? 1 : BAR/n;
+    for(let i=0;i<n;i++){ let p=i*step;
+      if(step>=1 && i>0 && i<n-1 && rng()<0.3) p+=(rng()<0.5?-0.5:0.5);
+      pos.push(Math.max(0,p)); }
+  }
+  for(let i=1;i<pos.length;i++) if(pos[i]<=pos[i-1]) pos[i]=pos[i-1]+0.25;
+  const last=pos[pos.length-1];
+  if(last>BAR-0.5){ const k=(BAR-0.5)/last; pos=pos.map(p=>p*k); }
+  const out=[];
+  for(let i=0;i<pos.length;i++){
+    // gap to the next syllable (or bar end) is always >0 by construction above;
+    // a pure fraction of it (no additive floor) can never exceed the gap itself.
+    const gap = i<pos.length-1 ? (pos[i+1]-pos[i]) : (BAR-pos[i]);
+    out.push({ pos:pos[i], dur:Math.max(0.001,gap*0.85) });
+  }
+  return out;
+}
+
+/* ============================ PROSODY — the pitch law =====================
+   Speech intonation, rhythmically disciplined (unlike PERSONA's flat pitch).
+   Returns a semitone offset from TP.voice.f0 for one syllable. */
+const PENT=[0,3,5,7,10]; // minor pentatonic, semitones
+function nearestPent(st){
+  const oct=Math.floor(st/12)*12, local=st-oct; let best=PENT[0],bd=99;
+  for(const p of PENT){ const d=Math.abs(local-p); if(d<bd){bd=d;best=p;} }
+  return oct+best;
+}
+function prosodySemi(i,n,stress,isCall,isFinal,singAmt){
+  let st = lerp(TP.prosody.declStart, TP.prosody.declEnd, n>1?i/(n-1):0);
+  if(stress===2) st += TP.prosody.accentSemi;
+  else if(stress===1) st += TP.prosody.accentSemi*0.5;
+  if(isFinal) st += isCall ? TP.prosody.callRise : TP.prosody.finalFall;
+  const target=nearestPent(st);
+  return st + (target-st)*singAmt;
+}
+
+/* ============================== THE BEAT (patterns) =======================
+   16-step velocity/step arrays per voice, seeded per pressing. 808 kit
+   (ELECTRO/ROCKBOX) vs break kit (BOOM/SWING) get different pattern
+   families — see genBeat(). One pattern loops every bar; a fill lands
+   every 4th bar. */
+function genBeat808(rng, styleId){
+  const kick = styleId==='rockbox' ? [0,10] : [0];
+  if(styleId==='electro'){ const cells=[3,6,10,13]; for(const c of cells) if(rng()<0.5) kick.push(c); }
+  const snare=[4,12];
+  const hats=[];
+  if(styleId==='electro'){
+    for(let s=0;s<16;s++) hats.push({step:s, open:(s%4===2&&rng()<0.35), vel: s%4===0?0.9:0.55});
+  } else { // rockbox: sparse
+    for(const s of [0,4,8,12]) hats.push({step:s, open:false, vel:0.5});
+  }
+  const cowbell = styleId==='electro' ? [6,14].filter(()=>rng()<0.6) : [];
+  return { kick, snare, clap: styleId==='electro'?snare.slice():[], ghost:[], hats, cowbell };
+}
+function genBeatBreak(rng, styleId){
+  const kick=[0]; const cells=[3,6,10,14]; for(const c of cells) if(rng()<0.45) kick.push(c);
+  const snare=[4,12];
+  const ghost=[]; for(const s of [2,6,10,14]) if(rng()<(styleId==='swing'?0.5:0.35)) ghost.push({step:s, vel:0.15+rng()*0.2});
+  const hats=[]; const rate = styleId==='swing' ? 16 : 8;
+  for(let s=0;s<16;s+= (16/rate)) hats.push({step:s, open:s===14, vel: s%4===0?0.85:0.5});
+  return { kick, snare, clap:[], ghost, hats, cowbell:[] };
+}
+function genBeat(rng, style){
+  return style.kit==='808' ? genBeat808(rng, style.id) : genBeatBreak(rng, style.id);
+}
+function genBassLine(rng, style, root){
+  const notes=[]; const PENTB=[0,3,5,7,10];
+  if(style.bassIdiom==='boogie'){
+    for(const s of [0,4,6,8,12,14]) if(s===0||rng()<0.7)
+      notes.push({step:s, deg: s%8===0?0:pick(rng,[0,-5]), len:1.5, glide:false});
+  } else if(style.bassIdiom==='sparse'){
+    notes.push({step:0, deg:0, len:6, glide:false});
+    if(rng()<0.5) notes.push({step:8, deg:0, len:2, glide:false});
+  } else { // funk (BOOM/SWING)
+    let s=0; while(s<16){ const len=pick(rng,[1,1,2,3]);
+      notes.push({step:s, deg:pick(rng,PENTB), len:len*0.95, glide:rng()<0.4});
+      s+=len; }
+  }
+  return notes;
+}
+function genStabPlacements(rng, bars, hookBars){
+  const hits=[]; // {bar, kind}
+  for(let b=0;b<bars;b++){
+    if(hookBars.has(b) && rng()<0.5) hits.push({bar:b, kind:pick(rng,['orch','horn','piano'])});
+    else if(rng()<0.1) hits.push({bar:b, kind:pick(rng,['horn','piano'])});
+  }
+  return hits;
+}
+const mtof=m=>440*Math.pow(2,(m-69)/12);
+const ROOT_MIDI=45; // A2 — the track's fixed tonal floor (law, not TIMBRE)
+
+/* ================== TIMBRE — the voicing of this machine =================
+   Every synthesis constant in one documented place; the code reads
+   TP.<group>.<param>. The `voice`/`prosody` groups are exhaustive by
+   design — a planned post-build tuning pass works only through OFFICINA. */
+const TIMBRE={
+  id:'fresh', title:'FRESH · op. XXX',
+  doc:'A late-80s rap record, entirely synthesized. THE VOICE is a source-filter formant chain like PERSONA\'s (a sawtooth glottal buzz through a spectral-tilt shelf into five parallel bandpass formants, F1-F3 phoneme-driven and F4/F5 fixed presence formants) but speaks rather than sings: real declination, stress accents and boundary tones, morphed toward pentatonic sing-song by SING. A DOUBLE chain (offset, detuned, panned) carries hooks and the crowd. Two drum families — KIT808 (electro/rockbox) and KITBREAK (boom/swing, with a grit shaper + vinyl-crackle bed) — plus BASS and STABS (the orchestra-hit/horn/piano cluster, also the buffer the SCRATCH turntable throws). FX is a tempo-locked slap echo thrown on line-final words plus a small plate. Master: pre-gain -> tanh shaper -> compressor -> limiter, clip-safe.',
+  groups:{
+    master:{label:'master & room',doc:'Output stage and the shared plate send.',params:{
+      gain:{v:.78,min:.3,max:1,step:.01,label:'master gain',doc:'level into the compressor'},
+      room:{v:.15,min:0,max:.5,step:.01,label:'room send',doc:'send to the small plate reverb'},
+      roomLen:{v:1.6,min:.4,max:3,step:.05,unit:'s',label:'room length',doc:'plate decay time'},
+      duckDepth:{v:.25,min:0,max:.6,step:.01,label:'duck depth',doc:'bed gain dip scheduled at each syllable onset (no true sidechain in Web Audio)'},
+    }},
+    voice:{label:'the voice (formant rap)',doc:'The MC: buzz -> tilt -> five formants -> consonants. Formant centres come from the phoneme; these are the shaping controls around them.',params:{
+      f0:{v:132,min:80,max:220,step:1,unit:'Hz',label:'f0 base',doc:'the MC\'s fundamental pitch floor'},
+      formantScale:{v:1,min:.85,max:1.15,step:.01,label:'formant scale',doc:'scales all formant centres — smaller voice = higher'},
+      f1Q:{v:9,min:2,max:20,step:.5,label:'formant 1 Q',doc:'sharpness of the open/close formant'},
+      f2Q:{v:11,min:2,max:24,step:.5,label:'formant 2 Q',doc:'sharpness of the front/back formant'},
+      f3Q:{v:13,min:2,max:26,step:.5,label:'formant 3 Q',doc:'sharpness of the third formant'},
+      f2Mix:{v:.72,min:0,max:1.4,step:.02,label:'formant 2 level',doc:'weight of the second formant band'},
+      f3Mix:{v:.4,min:0,max:1.2,step:.02,label:'formant 3 level',doc:'weight of the third formant band'},
+      f4Mix:{v:.14,min:0,max:.6,step:.01,label:'formant 4 level',doc:'fixed ~3300 Hz presence formant'},
+      f5Mix:{v:.08,min:0,max:.5,step:.01,label:'formant 5 level',doc:'fixed ~3750 Hz presence formant'},
+      tiltDb:{v:-6,min:-18,max:0,step:.5,unit:'dB',label:'spectral tilt',doc:'highshelf above ~3 kHz on the source, before the formants'},
+      breath:{v:.2,min:0,max:.8,step:.01,label:'aspiration',doc:'breath-noise through the formants'},
+      jitterDepth:{v:12,min:0,max:40,step:1,unit:'¢',label:'jitter depth',doc:'seeded pitch wobble — deliberately NOT uncanny-flat, unlike PERSONA'},
+      jitterRate:{v:5,min:.5,max:14,step:.5,unit:'Hz',label:'jitter rate',doc:'wobble speed'},
+      consStop:{v:1,min:0,max:2,step:.02,label:'stop consonants',doc:'level of p/t/k/b/d/g bursts'},
+      consFric:{v:.7,min:0,max:2,step:.02,label:'fricatives',doc:'level of s/sh/f/etc. noise'},
+      consNas:{v:.6,min:0,max:1.5,step:.02,label:'nasals',doc:'level of m/n/ng'},
+      atk:{v:.01,min:.003,max:.05,step:.001,unit:'s',label:'syllable attack',doc:'onset of each rapped syllable'},
+      rel:{v:.045,min:.015,max:.15,step:.002,unit:'s',label:'syllable release',doc:'tail of each rapped syllable'},
+      unreleasedProb:{v:.35,min:0,max:1,step:.02,label:'unreleased finals',doc:'probability a line-final stop ends glottal, not spat — era diction'},
+      reduction:{v:.55,min:0,max:1,step:.02,label:'schwa reduction',doc:'how far unstressed vowels centralize toward ah'},
+      level:{v:.55,min:.1,max:1,step:.01,label:'voice level',doc:'the MC\'s overall loudness'},
+    }},
+    prosody:{label:'prosody (the pitch law)',doc:'Speech intonation, rhythmically disciplined — every number here is a TIMBRE param so the tuning pass can reach it.',params:{
+      declStart:{v:5,min:-2,max:12,step:.5,unit:'st',label:'declination start',doc:'line-initial pitch offset above f0'},
+      declEnd:{v:-2,min:-10,max:4,step:.5,unit:'st',label:'declination end',doc:'line-final baseline offset, reset each line'},
+      accentSemi:{v:3,min:0,max:8,step:.25,unit:'st',label:'stress accent',doc:'pitch bump on a fully stressed syllable'},
+      finalFall:{v:-4,min:-10,max:0,step:.5,unit:'st',label:'statement fall',doc:'boundary tone on a non-call line\'s last syllable'},
+      callRise:{v:5,min:0,max:10,step:.5,unit:'st',label:'call rise',doc:'boundary tone on hook-call lines'},
+      glideMs:{v:40,min:5,max:120,step:5,unit:'ms',label:'glide time',doc:'portamento between syllables inside a phrase'},
+    }},
+    double:{label:'the double (posse/hook voice)',doc:'A second formant chain, offset and detuned — hooks, crowd "ho!", the posse.',params:{
+      offsetMs:{v:16,min:0,max:40,step:1,unit:'ms',label:'offset',doc:'timing offset from the lead'},
+      detune:{v:16,min:0,max:40,step:1,unit:'¢',label:'detune',doc:'pitch spread from the lead'},
+      width:{v:.6,min:0,max:1,step:.02,label:'stereo width',doc:'pan spread, opposite the lead'},
+      level:{v:.45,min:0,max:1,step:.02,label:'double level',doc:'hook-doubling loudness'},
+      crowdLevel:{v:.6,min:0,max:1.2,step:.02,label:'crowd level',doc:'the "ho!" response loudness'},
+    }},
+    fx:{label:'fx sends',doc:'The era\'s vocal chain — slap echo thrown on line-final words, plus a small plate.',params:{
+      echoTime:{v:.32,min:.12,max:.6,step:.01,unit:'s',label:'echo time',doc:'slap-delay time'},
+      echoFeedback:{v:.35,min:0,max:.75,step:.01,label:'echo feedback',doc:'delay repeats'},
+      echoThrow:{v:.5,min:0,max:1,step:.02,label:'echo throw',doc:'how hard HYPE throws the echo send on line endings'},
+      plateLevel:{v:.16,min:0,max:.5,step:.01,label:'plate send',doc:'small room behind everything'},
+      plateLen:{v:1.4,min:.4,max:3,step:.05,unit:'s',label:'plate length',doc:'plate decay time'},
+    }},
+    kit808:{label:'kit — 808 (electro/rockbox)',doc:'The TR-808-style kit for ELECTRO and ROCKBOX.',params:{
+      kickLevel:{v:.9,min:0,max:1.5,step:.02,label:'kick level',doc:''},
+      kickTune:{v:56,min:30,max:90,step:1,unit:'Hz',label:'kick tune',doc:'starting pitch of the tuned kick sweep'},
+      kickDecay:{v:.16,min:.05,max:.4,step:.01,unit:'s',label:'kick decay',doc:''},
+      kickClick:{v:.5,min:0,max:1,step:.02,label:'kick click',doc:'transient click level'},
+      snareLevel:{v:.7,min:0,max:1.5,step:.02,label:'snare level',doc:''},
+      snareTone:{v:200,min:120,max:320,step:5,unit:'Hz',label:'snare tone',doc:'pitched body oscillator'},
+      snareNoise:{v:.7,min:0,max:1.5,step:.02,label:'snare noise',doc:''},
+      clapLevel:{v:.6,min:0,max:1.5,step:.02,label:'clap level',doc:''},
+      clapSpread:{v:.01,min:.002,max:.03,step:.001,unit:'s',label:'clap spread',doc:'multi-burst clap spacing'},
+      hatLevel:{v:.5,min:0,max:1.2,step:.02,label:'hat level',doc:''},
+      hatDecay:{v:.045,min:.01,max:.12,step:.002,unit:'s',label:'hat decay',doc:''},
+      openHatLevel:{v:.45,min:0,max:1.2,step:.02,label:'open hat level',doc:''},
+      openHatDecay:{v:.22,min:.05,max:.5,step:.01,unit:'s',label:'open hat decay',doc:''},
+      cowbellLevel:{v:.3,min:0,max:1,step:.02,label:'cowbell level',doc:'ELECTRO only'},
+    }},
+    kitBreak:{label:'kit — break (boom/swing)',doc:'The SP-1200 break-era kit for BOOM and SWING, through a grit chain + vinyl-crackle bed.',params:{
+      kickLevel:{v:.85,min:0,max:1.5,step:.02,label:'kick level',doc:''},
+      kickKnock:{v:70,min:40,max:120,step:1,unit:'Hz',label:'kick knock',doc:'body resonance pitch'},
+      kickDecay:{v:.2,min:.05,max:.45,step:.01,unit:'s',label:'kick decay',doc:''},
+      snareLevel:{v:.75,min:0,max:1.5,step:.02,label:'snare level',doc:''},
+      snareBody:{v:180,min:100,max:300,step:5,unit:'Hz',label:'snare body',doc:''},
+      snareNoise:{v:.8,min:0,max:1.5,step:.02,label:'snare noise',doc:''},
+      ghostLevel:{v:.3,min:0,max:1,step:.02,label:'ghost snares',doc:'low-velocity offbeat snares'},
+      hatLevel:{v:.45,min:0,max:1.2,step:.02,label:'hat level',doc:''},
+      hatDecay:{v:.04,min:.01,max:.1,step:.002,unit:'s',label:'hat decay',doc:''},
+      openHatLevel:{v:.4,min:0,max:1.2,step:.02,label:'open hat level',doc:'the &-of-4 open'},
+      grit:{v:2.2,min:1,max:6,step:.1,label:'grit drive',doc:'saturation on the drum bus — the synthesized 12-bit aesthetic'},
+      lpHz:{v:9000,min:2000,max:14000,step:100,unit:'Hz',label:'grit lowpass',doc:''},
+      crackleLevel:{v:.06,min:0,max:.3,step:.005,label:'vinyl crackle',doc:'seeded crackle bed under the kit'},
+    }},
+    bass:{label:'bass',doc:'ELECTRO/ROCKBOX boogie square-saw vs BOOM/SWING lowpassed finger-funk saw — one voice, idiom set by STYLE.',params:{
+      level:{v:.55,min:0,max:1.2,step:.02,label:'bass level',doc:''},
+      decay:{v:.35,min:.08,max:1,step:.02,unit:'s',label:'bass decay',doc:''},
+      cutoff:{v:1100,min:200,max:3000,step:20,unit:'Hz',label:'bass cutoff',doc:''},
+      drive:{v:1.3,min:1,max:4,step:.05,label:'bass drive',doc:'soft-clip on the bass voice'},
+      glideMs:{v:60,min:10,max:200,step:5,unit:'ms',label:'bass glide',doc:'legato slide time (funk idiom)'},
+    }},
+    stabs:{label:'stabs',doc:'The orchestra hit (Fairlight ORCH5, also the buffer SCRATCH throws), a horn jab and a piano jab.',params:{
+      level:{v:.4,min:0,max:1,step:.02,label:'stab level',doc:''},
+      orchDetune:{v:14,min:0,max:40,step:1,unit:'¢',label:'orch detune',doc:'cluster spread'},
+      orchDecay:{v:.55,min:.1,max:1.5,step:.02,unit:'s',label:'orch decay',doc:''},
+      orchBend:{v:.5,min:0,max:1,step:.02,label:'orch bend',doc:'downward pitch bend depth'},
+      hornLevel:{v:.35,min:0,max:1,step:.02,label:'horn jab level',doc:''},
+      pianoLevel:{v:.3,min:0,max:1,step:.02,label:'piano jab level',doc:''},
+    }},
+    scratch:{label:'the turntables',doc:'The scratched record — a baked orchestra-hit buffer thrown through playbackRate gesture curves.',params:{
+      level:{v:.6,min:0,max:1.2,step:.02,label:'scratch level',doc:''},
+      faderSharp:{v:.7,min:.1,max:1,step:.02,label:'fader sharpness',doc:'crossfader gate steepness'},
+      recordDecay:{v:.7,min:.3,max:1.2,step:.02,unit:'s',label:'record decay',doc:'length of the baked record buffer'},
+    }},
+  }
+};
+/* ---- OFFICINA bridge (identical in every machine) ---- */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const Pp=TIMBRE.groups[g].params;for(const p in Pp)o[g][p]=Pp[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+/* ---------- params & hash ---------- */
+const P={ v:1, seed:(Math.random()*0x7fffffff)|0, style:0, flow:0, theme:0, sing:35, scratch:45, hype:50, tempo:116, verses:3 };
+let __lastHash='';
+function writeHash(){ location.hash=[P.v,P.style,P.seed.toString(36),P.theme,P.flow,P.sing,P.scratch,P.hype,P.tempo,P.verses].join('.'); __lastHash=location.hash; }
+function readHash(){
+  const h=location.hash.replace(/^#/,'').split('.'); if(h.length<10||+h[0]!==1)return false;
+  P.style=clamp(+h[1]|0,0,3); P.seed=parseInt(h[2],36)||1; P.theme=clamp(+h[3]|0,0,2);
+  P.flow=clamp(+h[4]|0,0,2); P.sing=clamp(+h[5]|0,0,100); P.scratch=clamp(+h[6]|0,0,100);
+  P.hype=clamp(+h[7]|0,0,100);
+  const st=STYLES[P.style]; P.tempo=clamp(+h[8]|0, st.bpm[0], st.bpm[1]);
+  P.verses=clamp(+h[9]|0,1,6);
+  return true;
+}
+
+/* ================= COMPOSE — seed + law -> a fixed pressing ==============
+   One-shot, through-composed like PERSONA: intro -> {verse, hook} x VERSES
+   -> break -> hook -> outro, one rap line per bar. Builds a flat syllable
+   list (grid position, duration, pitch, stress) plus the beat/bass/stab
+   plan; the URL hash is the pressing. */
+function expandWords(words){
+  const list=[]; words.forEach((w,wi)=>{ const ss=syllab(w); ss.forEach((s,k)=>list.push({s,word:w,wi,first:k===0,last:k===ss.length-1})); });
+  return list;
+}
+function compose(P){
+  const rng=mulberry32(P.seed);
+  const style=STYLES[P.style], flow=P.flow, theme=THEMES[P.theme];
+  const name=genName(rng);
+  const beat=60/P.tempo, stepDur=beat/4, BAR_BEATS=4;
+  const beatPat=genBeat(rng, style);
+  const bassPat=genBassLine(rng, style);
+  const singAmt=P.sing/100;
+
+  const lines=[]; let tBeat=0;
+  function pushLine(words, kind, familyId, isCall){
+    const list=expandWords(words), n=list.length;
+    const stress=stressPattern(words);
+    const grid=layoutSyllables(rng, n, flow);
+    const lineStart=tBeat, syls=[];
+    const lastCoda=list[n-1].s.co[list[n-1].s.co.length-1];
+    const unrel=!!(lastCoda && CONS[lastCoda] && CONS[lastCoda].t==='stop' && rng()<TP.voice.unreleasedProb);
+    for(let i=0;i<n;i++){
+      const g=grid[i], t=lineStart*beat+g.pos*stepDur, dur=g.dur*stepDur;
+      const semi=prosodySemi(i,n,stress[i], isCall, i===n-1, singAmt);
+      const f=TP.voice.f0*Math.pow(2,semi/12);
+      syls.push({ t, dur, f, syl:list[i].s, word:list[i].word, wi:list[i].wi, stress:stress[i],
+                  first:i===0, last:i===n-1, un:(i===n-1)&&unrel });
+    }
+    lines.push({ t:lineStart*beat, dur:BAR_BEATS*beat, text:words.join(' '), kind, familyId, syls });
+    tBeat+=BAR_BEATS;
+  }
+
+  tBeat=BAR_BEATS; // 1 bar of pure beat/crackle before the name drop
+  pushLine(INTRO_LINE.concat(name.words), 'intro', null, false);
+  const introEndBar=tBeat/BAR_BEATS, turnBars=[introEndBar];
+
+  const hookBarSet=new Set(); let lastFam=null;
+  function pushHook(){
+    const startBar=tBeat/BAR_BEATS;
+    for(let h=0;h<2;h++){ pushLine(HOOK_CALL[theme.id],'hookcall',null,true); pushLine(HOOK_RESP,'hookresp',null,true); }
+    for(let b=startBar;b<tBeat/BAR_BEATS;b++) hookBarSet.add(b);
+  }
+  for(let v=0; v<P.verses; v++){
+    for(let c=0;c<4;c++){
+      let fam=pick(rng,RHYME_FAMS), tries=0;
+      while(fam===lastFam && tries<5){ fam=pick(rng,RHYME_FAMS); tries++; }
+      lastFam=fam;
+      const pool=RHYME[fam];
+      const wA=pick(rng,pool); const restA=pool.filter(w=>w!==wA);
+      const wB=restA.length?pick(rng,restA):wA;
+      let setupWords=skeletonPool(theme.id)[ (rng()*skeletonPool(theme.id).length)|0 ].concat([wA]);
+      let payoffWords=skeletonPool(theme.id)[ (rng()*skeletonPool(theme.id).length)|0 ].concat([wB]);
+      if(flow===2){ // LYRICAL: plant an internal rhyme mid-line in the payoff
+        const restC=pool.filter(w=>w!==wA&&w!==wB);
+        const extra=restC.length?pick(rng,restC):wB;
+        const at=Math.max(1,(payoffWords.length-1)>>1);
+        payoffWords=payoffWords.slice(0,at).concat([extra]).concat(payoffWords.slice(at));
+      }
+      pushLine(setupWords,'verse',fam,false);
+      pushLine(payoffWords,'verse',fam,false);
+    }
+    turnBars.push(tBeat/BAR_BEATS); // verse end / hook start
+    pushHook();
+    turnBars.push(tBeat/BAR_BEATS); // hook end
+  }
+
+  const breakStartBar=tBeat/BAR_BEATS;
+  tBeat += 4*BAR_BEATS;
+  const breakEndBar=tBeat/BAR_BEATS;
+  pushHook();
+  turnBars.push(tBeat/BAR_BEATS);
+  const outroStartBar=tBeat/BAR_BEATS;
+  pushLine(SIGNOFF[theme.id], 'outro', null, false);
+  tBeat += BAR_BEATS; // one tail bar for the fx/backspin to breathe
+
+  const totalBars=tBeat/BAR_BEATS, dur=tBeat*beat+2.0;
+  const stabs=genStabPlacements(rng, totalBars, hookBarSet);
+
+  return { P, style, flow, theme, name, beat, stepDur, totalBars, dur, lines,
+           beatPat, bassPat, stabs, breakStartBar, breakEndBar, hookBarSet,
+           introEndBar, outroStartBar, turnBars };
+}
+
+/* ============================ SYNTHESIS ==================================
+   Two persistent formant voice chains (lead + double), short-lived drum/
+   bass/stab hits, a baked scratch record buffer thrown through playbackRate
+   gesture curves. Persistent chains are automated per event rather than
+   rebuilt per note (the TENEBRAE lesson — see HANDOFF). */
+function shaperCurve(k){ const n=1024,c=new Float32Array(n); for(let i=0;i<n;i++){const x=i/(n-1)*2-1; c[i]=Math.tanh(k*x);} return c; }
+function seededNoise(ctx,seed,secs){
+  const rng=mulberry32(seed), n=Math.max(1,(secs*ctx.sampleRate)|0);
+  const b=ctx.createBuffer(1,n,ctx.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=rng()*2-1; return b;
+}
+function makePlate(ctx,len){
+  const n=Math.max(1,(len*ctx.sampleRate)|0), rng=mulberry32(0x7051);
+  const b=ctx.createBuffer(2,n,ctx.sampleRate);
+  for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);
+    for(let i=0;i<n;i++){const x=i/n; d[i]=(rng()*2-1)*Math.pow(1-x,2.4)*0.5;}}
+  const cv=ctx.createConvolver(); cv.buffer=b; return cv;
+}
+
+/* ---------------- THE BEAT: kit808 / kitBreak voices ---------------- */
+function kick808(ctx,dest,noiseBuf,t){
+  const o=ctx.createOscillator(); o.type='sine';
+  o.frequency.setValueAtTime(TP.kit808.kickTune*2.4,t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(28,TP.kit808.kickTune*0.55),t+TP.kit808.kickDecay);
+  const e=ctx.createGain(); e.gain.setValueAtTime(TP.kit808.kickLevel,t);
+  e.gain.exponentialRampToValueAtTime(.0008,t+TP.kit808.kickDecay);
+  o.connect(e); e.connect(dest); o.start(t); o.stop(t+TP.kit808.kickDecay+.05);
+  if(TP.kit808.kickClick>0){
+    const c=ctx.createBufferSource(); c.buffer=noiseBuf;
+    const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=4500;
+    const eg=ctx.createGain(); eg.gain.setValueAtTime(TP.kit808.kickClick*TP.kit808.kickLevel*.5,t);
+    eg.gain.exponentialRampToValueAtTime(.001,t+.007);
+    c.connect(hp); hp.connect(eg); eg.connect(dest); c.start(t); c.stop(t+.01);
+  }
+}
+function snare808(ctx,dest,noiseBuf,t,vel){
+  vel=vel==null?1:vel;
+  const o=ctx.createOscillator(); o.type='triangle'; o.frequency.value=TP.kit808.snareTone;
+  const oe=ctx.createGain(); oe.gain.setValueAtTime(TP.kit808.snareLevel*0.5*vel,t); oe.gain.exponentialRampToValueAtTime(.001,t+.09);
+  o.connect(oe); oe.connect(dest); o.start(t); o.stop(t+.1);
+  const n=ctx.createBufferSource(); n.buffer=noiseBuf;
+  const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1800; bp.Q.value=1.1;
+  const ne=ctx.createGain(); ne.gain.setValueAtTime(TP.kit808.snareLevel*TP.kit808.snareNoise*vel,t); ne.gain.exponentialRampToValueAtTime(.001,t+.1);
+  n.connect(bp); bp.connect(ne); ne.connect(dest); n.start(t); n.stop(t+.12);
+}
+function clap808(ctx,dest,noiseBuf,t){
+  for(let i=0;i<3;i++){
+    const dt=t+i*TP.kit808.clapSpread;
+    const n=ctx.createBufferSource(); n.buffer=noiseBuf;
+    const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1500; bp.Q.value=1.4;
+    const e=ctx.createGain(); e.gain.setValueAtTime(0,dt); e.gain.linearRampToValueAtTime(TP.kit808.clapLevel*(i===2?1:0.6),dt+.003);
+    e.gain.exponentialRampToValueAtTime(.001,dt+.09);
+    n.connect(bp); bp.connect(e); e.connect(dest); n.start(dt); n.stop(dt+.1);
+  }
+}
+function hat808(ctx,dest,noiseBuf,t,open,vel){
+  const n=ctx.createBufferSource(); n.buffer=noiseBuf;
+  const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=7500;
+  const dur= open? TP.kit808.openHatDecay : TP.kit808.hatDecay;
+  const lvl= open? TP.kit808.openHatLevel : TP.kit808.hatLevel;
+  const e=ctx.createGain(); e.gain.setValueAtTime(lvl*vel,t); e.gain.exponentialRampToValueAtTime(.001,t+dur);
+  n.connect(hp); hp.connect(e); e.connect(dest); n.start(t); n.stop(t+dur+.02);
+}
+function cowbell808(ctx,dest,t){
+  const o1=ctx.createOscillator(),o2=ctx.createOscillator(); o1.type='square'; o2.type='square';
+  o1.frequency.value=800; o2.frequency.value=540;
+  const e=ctx.createGain(); e.gain.setValueAtTime(TP.kit808.cowbellLevel,t); e.gain.exponentialRampToValueAtTime(.001,t+.2);
+  const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=600; bp.Q.value=2;
+  o1.connect(bp); o2.connect(bp); bp.connect(e); e.connect(dest);
+  o1.start(t); o1.stop(t+.22); o2.start(t); o2.stop(t+.22);
+}
+function kickBreak(ctx,dest,noiseBuf,t){
+  const o=ctx.createOscillator(); o.type='sine';
+  o.frequency.setValueAtTime(TP.kitBreak.kickKnock*1.8,t);
+  o.frequency.exponentialRampToValueAtTime(Math.max(35,TP.kitBreak.kickKnock*0.7),t+TP.kitBreak.kickDecay);
+  const e=ctx.createGain(); e.gain.setValueAtTime(TP.kitBreak.kickLevel,t); e.gain.exponentialRampToValueAtTime(.0008,t+TP.kitBreak.kickDecay);
+  o.connect(e); e.connect(dest); o.start(t); o.stop(t+TP.kitBreak.kickDecay+.05);
+}
+function snareBreak(ctx,dest,noiseBuf,t,vel){
+  vel=vel==null?1:vel;
+  const o=ctx.createOscillator(); o.type='triangle'; o.frequency.value=TP.kitBreak.snareBody;
+  const oe=ctx.createGain(); oe.gain.setValueAtTime(TP.kitBreak.snareLevel*0.4*vel,t); oe.gain.exponentialRampToValueAtTime(.001,t+.1);
+  o.connect(oe); oe.connect(dest); o.start(t); o.stop(t+.12);
+  const n=ctx.createBufferSource(); n.buffer=noiseBuf;
+  const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1600; bp.Q.value=1;
+  const ne=ctx.createGain(); ne.gain.setValueAtTime(TP.kitBreak.snareLevel*TP.kitBreak.snareNoise*vel,t); ne.gain.exponentialRampToValueAtTime(.001,t+.13);
+  n.connect(bp); bp.connect(ne); ne.connect(dest); n.start(t); n.stop(t+.15);
+}
+function hatBreak(ctx,dest,noiseBuf,t,open,vel){
+  const n=ctx.createBufferSource(); n.buffer=noiseBuf;
+  const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=7000;
+  const dur= open? 0.2 : TP.kitBreak.hatDecay;
+  const lvl= open? TP.kitBreak.openHatLevel : TP.kitBreak.hatLevel;
+  const e=ctx.createGain(); e.gain.setValueAtTime(lvl*vel,t); e.gain.exponentialRampToValueAtTime(.001,t+dur);
+  n.connect(hp); hp.connect(e); e.connect(dest); n.start(t); n.stop(t+dur+.02);
+}
+function startCrackle(ctx,dest,noiseBuf,t0,durSec){
+  const n=ctx.createBufferSource(); n.buffer=noiseBuf; n.loop=true;
+  const hp=ctx.createBiquadFilter(); hp.type='highpass'; hp.frequency.value=3500;
+  const e=ctx.createGain(); e.gain.value=TP.kitBreak.crackleLevel;
+  n.connect(hp); hp.connect(e); e.connect(dest); n.start(t0); n.stop(t0+durSec);
+}
+
+/* ---------------- THE BASS ---------------- */
+function bassVoice(ctx,dest,t,freqHz,durSec,glide){
+  const o=ctx.createOscillator(); o.type='sawtooth';
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=TP.bass.cutoff; lp.Q.value=1.1;
+  const shp=ctx.createWaveShaper(); shp.curve=shaperCurve(TP.bass.drive);
+  const amp=ctx.createGain(); amp.gain.setValueAtTime(0,t);
+  amp.gain.linearRampToValueAtTime(TP.bass.level,t+.008);
+  amp.gain.exponentialRampToValueAtTime(.0006,t+Math.max(TP.bass.decay,durSec*0.6));
+  if(glide){ o.frequency.setValueAtTime(freqHz*Math.pow(2,-3/12),t);
+    o.frequency.exponentialRampToValueAtTime(freqHz,t+Math.min(TP.bass.glideMs/1000,durSec*0.4)); }
+  else o.frequency.setValueAtTime(freqHz,t);
+  o.connect(lp); lp.connect(shp); shp.connect(amp); amp.connect(dest);
+  o.start(t); o.stop(t+durSec+TP.bass.decay+.05);
+}
+
+/* ---------------- STABS: orchestra hit / horn / piano cluster ----------
+   Also the buffer the SCRATCH turntable throws — see renderRecordBuffer(). */
+function stabHit(ctx,dest,t,kind,noiseBuf){
+  const decay = kind==='orch'?TP.stabs.orchDecay : kind==='horn'?TP.stabs.orchDecay*1.3 : TP.stabs.orchDecay*0.55;
+  const ivs = kind==='piano' ? [0,4,7,12] : [0,7,12];
+  const rootHz=mtof(ROOT_MIDI+24);
+  const amp=ctx.createGain(); amp.gain.setValueAtTime(0.0001,t);
+  amp.gain.linearRampToValueAtTime(1,t+.006); amp.gain.exponentialRampToValueAtTime(.0008,t+decay);
+  ivs.forEach((iv,i)=>{
+    const o=ctx.createOscillator(); o.type= kind==='piano' ? 'triangle' : 'sawtooth';
+    const f=rootHz*Math.pow(2,iv/12);
+    o.detune.value=(i-(ivs.length-1)/2)*TP.stabs.orchDetune;
+    o.frequency.setValueAtTime(f,t);
+    if(kind!=='piano') o.frequency.exponentialRampToValueAtTime(Math.max(20,f*(1-TP.stabs.orchBend*0.08)),t+decay*0.8);
+    o.connect(amp); o.start(t); o.stop(t+decay+.05);
+  });
+  if(kind==='orch' && noiseBuf){
+    const n=ctx.createBufferSource(); n.buffer=noiseBuf;
+    const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=1800; bp.Q.value=.7;
+    const ng=ctx.createGain(); ng.gain.setValueAtTime(.6,t); ng.gain.exponentialRampToValueAtTime(.001,t+.15);
+    n.connect(bp); bp.connect(ng); ng.connect(amp); n.start(t); n.stop(t+.2);
+  }
+  const lvl = kind==='orch'?TP.stabs.level : kind==='horn'?TP.stabs.hornLevel : TP.stabs.pianoLevel;
+  const lg=ctx.createGain(); lg.gain.value=lvl; amp.connect(lg); lg.connect(dest);
+}
+function renderRecordBuffer(seed){
+  const sr=44100, secs=Math.max(0.4,TP.scratch.recordDecay+0.15);
+  const oc=new OfflineAudioContext(1, Math.ceil(sr*secs), sr);
+  const nb=seededNoise(oc, seed^0x5CA7, 0.3);
+  stabHit(oc, oc.destination, 0.01, 'orch', nb);
+  return oc.startRendering();
+}
+
+/* ---------------- THE TURNTABLES: scratch gesture curves ----------------
+   Fresh AudioBufferSourceNode per gesture (never two curves on one
+   AudioParam). Web Audio's reverse-playback support for negative
+   playbackRate is unreliable across engines, so every curve stays
+   positive — the scratch character comes from rate swing + fader gating,
+   not true tape-reverse. */
+function scratchGesture(ctx,dest,recordBuf,t,kind){
+  if(!recordBuf) return 0;
+  const src=ctx.createBufferSource(); src.buffer=recordBuf;
+  const fader=ctx.createGain(); fader.gain.setValueAtTime(0,t);
+  src.connect(fader); fader.connect(dest);
+  const lvl=TP.scratch.level, sharp=TP.scratch.faderSharp;
+  let dur, curve;
+  if(kind==='baby'){ dur=0.32; curve=new Float32Array([0.25,1.6,0.3,1.3]);
+    fader.gain.setValueAtTime(lvl,t); fader.gain.setValueAtTime(lvl,t+dur);
+  } else if(kind==='chirp'){ dur=0.16; curve=new Float32Array([0.15,1.8,1.3]);
+    fader.gain.setValueAtTime(lvl,t); fader.gain.setTargetAtTime(0,t+dur*0.6,0.02/sharp);
+  } else if(kind==='transformer'){ dur=0.5; curve=new Float32Array([0.7,1.4,0.7,1.4,0.7]);
+    const chops=8; for(let i=0;i<chops;i++) fader.gain.setValueAtTime(i%2===0?lvl:0, t+dur*i/chops);
+  } else if(kind==='scribble'){ dur=0.22; curve=new Float32Array([1.7,0.45,1.7,0.45,1.7,0.45]);
+    fader.gain.setValueAtTime(lvl,t); fader.gain.setValueAtTime(lvl,t+dur);
+  } else { dur=0.8; curve=new Float32Array([1,0.4,0.08]); // backspin
+    fader.gain.setValueAtTime(lvl*0.85,t); fader.gain.linearRampToValueAtTime(0.0001,t+dur);
+  }
+  src.playbackRate.setValueCurveAtTime(curve,t,dur);
+  src.start(t); src.stop(t+dur+.05);
+  return dur;
+}
+
+/* ============================ THE VOICE ==================================
+   A lead formant chain + a double (posse/hook/crowd), each persistent —
+   automated per syllable, never rebuilt per note. */
+function buildVoiceChain(ctx,noiseBuf,t0,isDouble){
+  const buzz=ctx.createOscillator(); buzz.type='sawtooth'; buzz.frequency.value=TP.voice.f0;
+  if(isDouble) buzz.detune.value=TP.double.detune;
+  const jOsc=ctx.createOscillator(); jOsc.type='sine'; jOsc.frequency.value=TP.voice.jitterRate;
+  const jGain=ctx.createGain(); jGain.gain.value=TP.voice.jitterDepth;
+  jOsc.connect(jGain); jGain.connect(buzz.detune);
+  const tilt=ctx.createBiquadFilter(); tilt.type='highshelf'; tilt.frequency.value=3000; tilt.gain.value=TP.voice.tiltDb;
+  const glo=ctx.createGain(); glo.gain.value=0;
+  buzz.connect(tilt); tilt.connect(glo);
+  const asp=ctx.createBufferSource(); asp.buffer=noiseBuf; asp.loop=true;
+  const aspG=ctx.createGain(); aspG.gain.value=0; asp.connect(aspG);
+  const srcMix=ctx.createGain(); glo.connect(srcMix); aspG.connect(srcMix);
+  const F=[0,1,2,3,4].map(()=>ctx.createBiquadFilter());
+  const Fg=F.map(()=>ctx.createGain());
+  const Fq=[TP.voice.f1Q,TP.voice.f2Q,TP.voice.f3Q,9,9];
+  const Fl=[1,TP.voice.f2Mix,TP.voice.f3Mix,TP.voice.f4Mix,TP.voice.f5Mix];
+  const Fc=[500,1500,2500,3300,3750];
+  const vSum=ctx.createGain();
+  F.forEach((f,i)=>{ f.type='bandpass'; f.Q.value=Fq[i]; f.frequency.value=Fc[i]*TP.voice.formantScale;
+    Fg[i].gain.value=Fl[i]; srcMix.connect(f); f.connect(Fg[i]); Fg[i].connect(vSum); });
+  const vGain=ctx.createGain(); vGain.gain.value=0.0001; vSum.connect(vGain);
+  const vLevel=ctx.createGain(); vLevel.gain.value= isDouble?TP.double.level:TP.voice.level;
+  vGain.connect(vLevel);
+  buzz.start(t0); jOsc.start(t0); asp.start(t0);
+  return {buzz,glo,aspG,F,Fg,vGain,vLevel,isDouble};
+}
+function setFormants(chain,t,f1,f2,f3,glide){
+  const tc=glide? TP.prosody.glideMs/1000 : 0.012, sc=TP.voice.formantScale;
+  chain.F[0].frequency.setTargetAtTime(f1*sc,t,tc);
+  chain.F[1].frequency.setTargetAtTime(f2*sc,t,tc);
+  chain.F[2].frequency.setTargetAtTime(f3*sc,t,tc);
+}
+function consNoise(ctx,noiseBuf,dest,t,dur,band,q,gain){
+  if(gain<=0) return;
+  const s=ctx.createBufferSource(); s.buffer=noiseBuf; s.loop=true;
+  const bp=ctx.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=band; bp.Q.value=q;
+  const g=ctx.createGain(); g.gain.setValueAtTime(0,t);
+  g.gain.linearRampToValueAtTime(gain,t+0.005); g.gain.setValueAtTime(gain,t+dur*0.6);
+  g.gain.linearRampToValueAtTime(0,t+dur);
+  s.connect(bp); bp.connect(g); g.connect(dest);
+  s.start(t); s.stop(t+dur+0.02);
+}
+function articulate(ctx,chain,noiseBuf,dest,c,t,dur,unrel){
+  const cd=CONS[c]; if(!cd) return;
+  if(cd.t==='stop'){
+    chain.glo.gain.setTargetAtTime(0,t,0.005);
+    if(!unrel){
+      const burst=t+dur*0.5;
+      if(cd.affr){ const a=CONS[cd.affr]; consNoise(ctx,noiseBuf,dest,burst,dur*0.6,a.loc,a.q||2,TP.voice.consFric*0.8); }
+      else consNoise(ctx,noiseBuf,dest,burst,Math.min(0.025,dur*0.5),cd.loc,3,TP.voice.consStop);
+    }
+    if(cd.v) chain.glo.gain.setTargetAtTime(0.5,t,0.01);
+  } else if(cd.t==='fric'){
+    chain.aspG.gain.setTargetAtTime(cd.asp?TP.voice.breath*1.4:0.5,t,0.006);
+    consNoise(ctx,noiseBuf,dest,t,dur,cd.loc,cd.q||2,(cd.asp?0.6:1)*TP.voice.consFric);
+    chain.glo.gain.setTargetAtTime(cd.v?0.5:0,t,0.01);
+    chain.aspG.gain.setTargetAtTime(TP.voice.breath*0.35,t+dur,0.02);
+  } else if(cd.t==='nas'){
+    chain.glo.gain.setTargetAtTime(TP.voice.consNas,t,0.01);
+    setFormants(chain,t,cd.f1,cd.f2,2400,true);
+  } else {
+    chain.glo.gain.setTargetAtTime(0.8,t,0.01);
+    setFormants(chain,t,cd.f1,cd.f2,cd.f3||2300,true);
+  }
+}
+/* one rapped syllable at [t,t+dur] on fundamental f. Plosive onsets STEAL
+   TIME BEFORE the grid tick (the vowel lands exactly on it, like a
+   drummer's grace notes); coda consonants trail after. Continuous voicing:
+   the glottal gate never fully closes between voiced phones in a phrase. */
+function scheduleSyllable(ctx,chain,noiseBuf,dest,sy){
+  const on=sy.syl.on, co=sy.syl.co, vw=sy.syl.v, t=sy.t, dur=sy.dur;
+  const CONSDUR=0.045, onTime=Math.min(CONSDUR,dur*0.22);
+  let cursor=t-on.length*onTime;
+  for(const c of on){ articulate(ctx,chain,noiseBuf,dest,c,cursor,onTime,false); cursor+=onTime; }
+  const codaTime=Math.min(CONSDUR,dur*0.18);
+  const vEnd=t+dur-codaTime*co.length, vDur=Math.max(0.04,vEnd-t);
+  if(sy.first) chain.buzz.frequency.setValueAtTime(sy.f,t);
+  else chain.buzz.frequency.setTargetAtTime(sy.f,t,TP.prosody.glideMs/1000);
+  chain.glo.gain.setTargetAtTime(0.85,t,0.01);
+  const red=TP.voice.reduction*(sy.stress===0?1:0.28);
+  const blend=arr=>arr.map((v,i)=>lerp(v,VOW.ah[i],red));
+  const dp=DIPH[vw];
+  if(dp){ const a=blend(VOW[dp[0]]),b=blend(VOW[dp[1]]);
+    setFormants(chain,t,a[0],a[1],a[2],!sy.first);
+    setFormants(chain,t+vDur*0.5,b[0],b[1],b[2],true);
+  } else { const vf=blend(VOW[vw]||VOW.ah); setFormants(chain,t,vf[0],vf[1],vf[2],!sy.first); }
+  chain.aspG.gain.setTargetAtTime(TP.voice.breath*0.4,t,0.02);
+  let cur2=t+vDur;
+  for(let i=0;i<co.length;i++){ const c=co[i], last=i===co.length-1;
+    articulate(ctx,chain,noiseBuf,dest,c,cur2,codaTime,last&&sy.un); cur2+=codaTime; }
+  chain.aspG.gain.setTargetAtTime(0,cur2,0.03);
+  chain.vGain.gain.setValueAtTime(0.0001,t);
+  chain.vGain.gain.linearRampToValueAtTime(1,t+TP.voice.atk);
+  chain.vGain.gain.setValueAtTime(1,Math.max(t+TP.voice.atk,t+dur-TP.voice.rel));
+  chain.vGain.gain.linearRampToValueAtTime(0.0001,t+dur);
+  if(sy.last) chain.glo.gain.setTargetAtTime(0,t+dur,0.02);
+}
+
+/* ============================ THE GRAPH ===================================
+   Builds the WHOLE pressing's audio at once (like PERSONA): every drum hit,
+   bass note, stab, syllable and scratch gesture is scheduled against
+   absolute times from t0, so the identical function drives both the
+   realtime transport and the offline WAV render. */
+function buildGraph(ctx, plan, t0, recordBuf){
+  const style=plan.style, hype=P.hype/100, scratchAmt=P.scratch/100;
+  const grng=mulberry32((P.seed^0x5C4A7C7)>>>0); // presentation-layer placement only, deterministic per seed
+
+  const out=ctx.createGain(); out.gain.value=TP.master.gain;
+  const comp=ctx.createDynamicsCompressor(); comp.threshold.value=-14; comp.ratio.value=3; comp.attack.value=.006; comp.release.value=.2;
+  const lim=ctx.createDynamicsCompressor(); lim.threshold.value=-1.2; lim.ratio.value=20; lim.attack.value=.002; lim.release.value=.12;
+  out.connect(comp); comp.connect(lim); lim.connect(ctx.destination);
+  const plate=makePlate(ctx,TP.master.roomLen), roomG=ctx.createGain(); roomG.gain.value=TP.master.room;
+  plate.connect(roomG); roomG.connect(comp);
+  const echoDelay=ctx.createDelay(1.0); echoDelay.delayTime.value=TP.fx.echoTime;
+  const echoFb=ctx.createGain(); echoFb.gain.value=TP.fx.echoFeedback;
+  const echoLP=ctx.createBiquadFilter(); echoLP.type='lowpass'; echoLP.frequency.value=3200;
+  echoDelay.connect(echoLP); echoLP.connect(echoFb); echoFb.connect(echoDelay); echoLP.connect(comp);
+
+  const noise=seededNoise(ctx,0xF1E5,2.2);
+
+  const bedBus=ctx.createGain(); bedBus.gain.value=1; bedBus.connect(out);
+  const drumBus=ctx.createGain();
+  if(style.kit==='break'){
+    const gritShaper=ctx.createWaveShaper(); gritShaper.curve=shaperCurve(TP.kitBreak.grit);
+    const gritLP=ctx.createBiquadFilter(); gritLP.type='lowpass'; gritLP.frequency.value=TP.kitBreak.lpHz;
+    drumBus.connect(gritShaper); gritShaper.connect(gritLP); gritLP.connect(bedBus);
+    startCrackle(ctx,bedBus,noise,t0,plan.dur);
+  } else drumBus.connect(bedBus);
+  const bassBus=ctx.createGain(); bassBus.connect(bedBus);
+  const stabBus=ctx.createGain(); stabBus.connect(out);
+  { const sp=ctx.createGain(); sp.gain.value=.3; stabBus.connect(sp); sp.connect(plate); }
+  const scratchBus=ctx.createGain(); scratchBus.connect(out);
+  { const sp=ctx.createGain(); sp.gain.value=.22; scratchBus.connect(sp); sp.connect(plate); }
+
+  const leadVoiceOut=ctx.createGain(); leadVoiceOut.connect(out);
+  const leadPlateSend=ctx.createGain(); leadPlateSend.gain.value=TP.master.room*0.9;
+  leadVoiceOut.connect(leadPlateSend); leadPlateSend.connect(plate);
+  const leadEchoSend=ctx.createGain(); leadEchoSend.gain.value=0.14;
+  leadVoiceOut.connect(leadEchoSend); leadEchoSend.connect(echoDelay);
+  const doublePan=ctx.createStereoPanner(); doublePan.pan.value=-TP.double.width;
+  const doubleVoiceOut=ctx.createGain(); doubleVoiceOut.connect(doublePan); doublePan.connect(out);
+  const doublePlateSend=ctx.createGain(); doublePlateSend.gain.value=TP.master.room*1.3;
+  doubleVoiceOut.connect(doublePlateSend); doublePlateSend.connect(plate);
+  const doubleEchoSend=ctx.createGain(); doubleEchoSend.gain.value=0.1;
+  doubleVoiceOut.connect(doubleEchoSend); doubleEchoSend.connect(echoDelay);
+
+  const leadChain=buildVoiceChain(ctx,noise,t0,false);
+  const doubleChain=buildVoiceChain(ctx,noise,t0,true);
+  const scratchEvents=[]; // {t,dur,kind} — the canvas platter/fader reads this
+  const doScratch=(t,kind)=>{ const dur=scratchGesture(ctx,scratchBus,recordBuf,t,kind); scratchEvents.push({t,dur,kind}); };
+
+  /* ---- THE BEAT: loop the pattern every bar, swing + a fill every 4th ---- */
+  const bp=plan.beatPat, stepDur=plan.stepDur, swingAmt=style.swing;
+  const sw=step=>(step%2===1? swingAmt*stepDur : 0);
+  const kickFn = style.kit==='808' ? t=>kick808(ctx,drumBus,noise,t) : t=>kickBreak(ctx,drumBus,noise,t);
+  const snareFn = style.kit==='808' ? (t,v)=>snare808(ctx,drumBus,noise,t,v) : (t,v)=>snareBreak(ctx,drumBus,noise,t,v);
+  const hatFn = style.kit==='808' ? (t,o,v)=>hat808(ctx,drumBus,noise,t,o,v) : (t,o,v)=>hatBreak(ctx,drumBus,noise,t,o,v);
+  for(let bar=0; bar<plan.totalBars; bar++){
+    if(bar>=plan.breakStartBar && bar<plan.breakEndBar) continue; // the break owns this span
+    const bt=t0+bar*4*plan.beat, fill=(bar%4===3);
+    for(const s of bp.kick) kickFn(bt+s*stepDur+sw(s));
+    for(const s of bp.snare) snareFn(bt+s*stepDur+sw(s),1);
+    for(const s of bp.clap) clap808(ctx,drumBus,noise,bt+s*stepDur+sw(s));
+    for(const g of bp.ghost) snareFn(bt+g.step*stepDur+sw(g.step), g.vel);
+    for(const h of bp.hats) hatFn(bt+h.step*stepDur+sw(h.step), h.open, h.vel);
+    for(const s of bp.cowbell) cowbell808(ctx,drumBus,bt+s*stepDur+sw(s));
+    if(fill){ for(const s of [12,13,14,15]) snareFn(bt+s*stepDur, 0.4+(s-12)*0.12); }
+  }
+  /* ---- BASS ---- */
+  for(let bar=0; bar<plan.totalBars; bar++){
+    if(bar>=plan.breakStartBar && bar<plan.breakEndBar) continue;
+    const bt=t0+bar*4*plan.beat;
+    for(const n of plan.bassPat)
+      bassVoice(ctx,bassBus, bt+n.step*stepDur+sw(n.step), mtof(ROOT_MIDI+n.deg-12), n.len*stepDur, n.glide);
+  }
+  /* ---- STABS ---- */
+  for(const s of plan.stabs){
+    if(s.bar>=plan.breakStartBar && s.bar<plan.breakEndBar) continue;
+    stabHit(ctx,stabBus, t0+s.bar*4*plan.beat, s.kind, noise);
+  }
+  /* ---- BREAK: scratch solo (high SCRATCH) or a punctuated stab break ---- */
+  if(scratchAmt>=0.5){
+    const gestures=['baby','chirp','transformer','scribble'], nGest=4+Math.round(scratchAmt*4);
+    const span=(plan.breakEndBar-plan.breakStartBar)*4*plan.beat;
+    for(let i=0;i<nGest;i++)
+      doScratch( t0+plan.breakStartBar*4*plan.beat+i*(span/nGest), gestures[i%gestures.length]);
+    for(let bar=plan.breakStartBar; bar<plan.breakEndBar; bar++) kickFn(t0+bar*4*plan.beat);
+  } else {
+    const kinds=['orch','horn','piano','horn'];
+    for(let bar=plan.breakStartBar; bar<plan.breakEndBar; bar++){
+      kickFn(t0+bar*4*plan.beat);
+      stabHit(ctx,stabBus, t0+bar*4*plan.beat+stepDur*8, kinds[(bar-plan.breakStartBar)%4], noise);
+    }
+  }
+  /* ---- turnaround / intro-cut / outro-backspin scratches ---- */
+  if(scratchAmt>0){
+    const nIntro=Math.round(1+scratchAmt*2);
+    for(let i=0;i<nIntro;i++) doScratch( t0+(0.4+i*0.6)*plan.beat, i%2===0?'chirp':'scribble');
+    const cyc=['baby','chirp','scribble','transformer']; let gi=0;
+    for(const bar of plan.turnBars) if(grng()<0.35+scratchAmt*0.5){
+      doScratch( t0+bar*4*plan.beat-stepDur*2, cyc[gi%cyc.length]); gi++;
+    }
+    doScratch( t0+plan.outroStartBar*4*plan.beat-stepDur*2, 'backspin');
+  }
+  /* ---- THE MC: every line, lead or double(crowd), echo throw + bed duck ---- */
+  const crowdBoost=0.6+hype*0.8;
+  for(const line of plan.lines){
+    const isCrowd=line.kind==='hookresp';
+    const chain=isCrowd?doubleChain:leadChain, dest=isCrowd?doubleVoiceOut:leadVoiceOut;
+    for(const sy of line.syls) scheduleSyllable(ctx,chain,noise,dest,sy);
+    if(isCrowd){
+      doubleVoiceOut.gain.setTargetAtTime(crowdBoost, t0+line.t, 0.02);
+      doubleVoiceOut.gain.setTargetAtTime(1, t0+line.t+line.dur*0.7, 0.15);
+    }
+    const throwT=t0+line.t+line.dur*0.85;
+    const esend=isCrowd?doubleEchoSend:leadEchoSend, base=isCrowd?0.1:0.14;
+    esend.gain.setTargetAtTime(base+TP.fx.echoThrow*hype*0.7, throwT, 0.01);
+    esend.gain.setTargetAtTime(base, throwT+0.35, 0.18);
+    bedBus.gain.setTargetAtTime(1-TP.master.duckDepth, t0+line.t, 0.02);
+    bedBus.gain.setTargetAtTime(1, t0+line.t+0.3, 0.12);
+  }
+
+  return { ctx, out, comp, scratchEvents, scratchBus, recordBuf };
+}
+
+/* ============================ TRANSPORT ===================================
+   One-shot pressing, like PERSONA: the whole song is scheduled at Run It;
+   the playhead is ctx.currentTime-t0, which freezes for free on suspend
+   (pause) and survives lock-screen via the silent anchor + Media Session. */
+let RT=null, plan=null, __starting=false;
+const st={ playing:false, paused:false };
+
+/* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
+function __hint(msg){ try{ const p=$('play'); if(!p)return; let h=$('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin:6px 0 0;font-style:italic;letter-spacing:.04em';
+      p.parentElement.insertAdjacentElement('afterend',h);} h.textContent=msg; }catch(e){} }
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(st.playing&&!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{if(document.visibilityState==='visible')kick();}catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint(''); else setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('audio suspended — tap Run It again · check the ring/silent switch');}catch(e){}},450);
+}
+/* ---- Media Session ---- */
+const __SILENCE='data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+let __silAudio=null;
+function __mediaSessionInit(){ if(!('mediaSession' in navigator))return; try{
+  navigator.mediaSession.setActionHandler('play',()=>{if(!st.playing)play();else if(st.paused)togglePause();});
+  navigator.mediaSession.setActionHandler('pause',()=>{if(st.playing&&!st.paused)togglePause();});
+  navigator.mediaSession.setActionHandler('stop',()=>{if(st.playing)stop();});
+  navigator.mediaSession.setActionHandler('nexttrack',()=>{aliud();});
+}catch(e){} }
+function __mediaSessionUpdate(){ if(!('mediaSession' in navigator))return; try{
+  navigator.mediaSession.metadata=new MediaMetadata({ title:'FRESH — '+(plan?plan.name.display:'—'), artist:'OPVSCVLA · op. XXX', album:'late-80s rap & hip hop' });
+  navigator.mediaSession.playbackState=(st.playing&&!st.paused)?'playing':'paused';
+}catch(e){} }
+function __silStart(){ try{ if(!__silAudio){__silAudio=new Audio(__SILENCE);__silAudio.loop=true;__silAudio.setAttribute('playsinline','');} __silAudio.play().catch(()=>{}); }catch(e){} }
+function __silStop(){ try{__silAudio&&__silAudio.pause();}catch(e){} }
+
+async function play(){
+  if(st.playing){ stop(); return; }
+  if(__starting) return; __starting=true;
+  try{
+    plan=compose(P); writeHash(); updateReadouts();
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    __iosAudio(ctx);
+    let recordBuf=null; try{ recordBuf=await renderRecordBuffer(P.seed); }catch(e){}
+    const t0=ctx.currentTime+0.15;
+    const G=buildGraph(ctx,plan,t0,recordBuf);
+    RT={ctx,t0,G};
+    st.playing=true; st.paused=false;
+    $('play').textContent='Stop It'; $('play').classList.add('on'); $('status').textContent='RUNNING';
+    $('pause').disabled=false; $('pause').textContent='Pause';
+    __mediaSessionInit(); __mediaSessionUpdate(); __silStart();
+  } finally { __starting=false; }
+}
+function stop(){
+  if(!RT)return; const c=RT.ctx; setTimeout(()=>{try{c.close()}catch(e){}},260);
+  RT=null; st.playing=false; st.paused=false;
+  $('play').textContent='Run It'; $('play').classList.remove('on'); $('status').textContent='READY';
+  $('pause').disabled=true; $('pause').textContent='Pause';
+  __mediaSessionUpdate(); __silStop();
+}
+function togglePause(){
+  if(!RT||!st.playing)return;
+  if(st.paused){ st.paused=false; RT.ctx.resume(); $('pause').textContent='Pause'; $('status').textContent='RUNNING'; }
+  else { st.paused=true; RT.ctx.suspend(); $('pause').textContent='Resume'; $('status').textContent='PAUSED'; }
+  __mediaSessionUpdate();
+}
+function aliud(){ P.seed=(Math.random()*0x7fffffff)|0; stop(); regen(); }
+/* live turntablism, key 's' — a performance flourish over the fixed pressing,
+   not part of the deterministic composition (the WAV cut never calls this). */
+function triggerScratch(){
+  if(!RT||!RT.G||!RT.G.scratchBus) return;
+  const kinds=['baby','chirp','scribble','transformer'];
+  const kind=kinds[(Math.random()*kinds.length)|0];
+  const t=RT.ctx.currentTime+0.03;
+  const dur=scratchGesture(RT.ctx,RT.G.scratchBus,RT.G.recordBuf,t,kind);
+  RT.G.scratchEvents.push({t,dur,kind});
+}
+
+/* ---------- WAV cut ---------- */
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(14,14,16,.92);color:#e9e2d2;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#e9e2d2;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
+async function cut(){
+  const p=compose(P); plan=p; writeHash(); updateReadouts();
+  const btn=$('cut'), note=$('cutnote'); btn.disabled=true; note.textContent='pressing to disc…';
+  try{
+    const recordBuf=await renderRecordBuffer(P.seed);
+    const sr=44100;
+    const oc=new OfflineAudioContext(2,Math.ceil((plan.dur+0.4)*sr),sr);
+    buildGraph(oc,plan,0.06,recordBuf);
+    const buf=await oc.startRendering();
+    let L=buf.getChannelData(0), R=buf.getChannelData(1), n=buf.length;
+    let mx=0; for(let i=0;i<n;i++){const a=Math.abs(L[i]);if(a>mx)mx=a;const b=Math.abs(R[i]);if(b>mx)mx=b;}
+    if(mx>0.92){const k=0.92/mx; for(let i=0;i<n;i++){L[i]*=k;R[i]*=k;}}
+    const dv=new DataView(new ArrayBuffer(44+n*4));
+    const ws=(o,s)=>{for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i))};
+    ws(0,'RIFF');dv.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+    dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,2,true);
+    dv.setUint32(24,sr,true);dv.setUint32(28,sr*4,true);dv.setUint16(32,4,true);dv.setUint16(34,16,true);
+    ws(36,'data');dv.setUint32(40,n*4,true);
+    let o=44; for(let i=0;i<n;i++){ let a=clamp(L[i],-1,1),b=clamp(R[i],-1,1);
+      dv.setInt16(o,a<0?a*0x8000:a*0x7FFF,true);o+=2; dv.setInt16(o,b<0?b*0x8000:b*0x7FFF,true);o+=2; }
+    saveWav(new Blob([dv],{type:'audio/wav'}), 'fresh-'+plan.style.id+'-'+P.seed.toString(36)+'.wav');
+    note.textContent='cut · '+plan.style.label.toLowerCase()+' · '+plan.name.display.toLowerCase();
+  }catch(e){ note.textContent='render failed — '+e.message; console.error(e); }
+  btn.disabled=false;
+}
+
+/* ---------- regenerate + readouts ---------- */
+function regen(){
+  writeHash();
+  plan=compose(P);
+  updateReadouts();
+}
+function updateReadouts(){
+  $('mcname').textContent=plan.name.display;
+  $('seedRd').textContent=P.seed.toString(36).toUpperCase();
+  updateLyric(-1);
+}
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function updateLyric(tt){
+  if(!plan){$('lyric').innerHTML='&nbsp;';return;}
+  let cur=null; for(const ln of plan.lines){ if(tt>=ln.t-0.05 && tt<ln.t+ln.dur+0.25){cur=ln;break;} }
+  if(!cur){
+    for(const ln of plan.lines){ if(ln.t>tt){cur=ln;break;} }
+    if(cur){ $('lyric').innerHTML='<span style="opacity:.5">'+esc(cur.text)+'</span>'; return; }
+    $('lyric').innerHTML='&nbsp;'; return;
+  }
+  let activeWord=-1;
+  for(const s of cur.syls){ if(tt>=s.t-0.02 && tt<s.t+s.dur+0.06){ activeWord=s.wi; break; } }
+  const words=cur.text.split(' '); let html='';
+  words.forEach((w,i)=>{ html+= (i===activeWord?'<span class="now">'+esc(w)+'</span>':esc(w))+' '; });
+  $('lyric').innerHTML=html.trim();
+}
+
+/* ============================ CANVAS — the wheels of steel ================
+   Two platters + a crossfader mixer (spin steady, wiggle on a scratch
+   event), the lyric ticker (the law made visible — rhyme-family syllables
+   share a colour across lines), a 16-LED beat lane. Layer-cheap: redrawn
+   whole each frame (no offscreen caching needed at this complexity),
+   throttled to ~30fps, sleeps under prefers-reduced-motion. */
+const FAMILY_PALETTE=['#e0456a','#f0a63c','#4fd1e0','#8a6ad9','#5cc46b','#e0c23c','#c45c9e','#4c8ee0',
+  '#e07a3c','#6ee0b0','#e04c4c','#9c6ee0','#3ce0d0','#e0e04c','#7a4ce0','#e04c9c','#4ce07a'];
+const familyColor=fam=>FAMILY_PALETTE[(fam!=null&&RHYME_HUE[fam]!=null?RHYME_HUE[fam]:0)%FAMILY_PALETTE.length];
+
+const cv=$('cv'), cx=cv.getContext('2d'); const CW=cv.width, CH=cv.height;
+const reduce=matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+function roundRect(x,y,w,h,r){ cx.beginPath(); cx.moveTo(x+r,y);
+  cx.arcTo(x+w,y,x+w,y+h,r); cx.arcTo(x+w,y+h,x,y+h,r); cx.arcTo(x,y+h,x,y,r); cx.arcTo(x,y,x+w,y,r); cx.closePath(); }
+function findScratchEvent(tt){
+  if(!RT||!RT.G||!RT.G.scratchEvents) return null;
+  for(const e of RT.G.scratchEvents){ const rt=e.t-RT.t0; if(tt>=rt-0.02 && tt<rt+e.dur) return {t:rt,dur:e.dur,kind:e.kind,rel:tt-rt}; }
+  return null;
+}
+function drawPlatter(cxp,cyp,r,ang,hue){
+  cx.save(); cx.translate(cxp,cyp);
+  const g=cx.createRadialGradient(0,0,4,0,0,r); g.addColorStop(0,'#2a2530'); g.addColorStop(1,'#111018');
+  cx.fillStyle=g; cx.beginPath(); cx.arc(0,0,r,0,7); cx.fill();
+  cx.strokeStyle='#3a3444'; cx.lineWidth=2; cx.beginPath(); cx.arc(0,0,r,0,7); cx.stroke();
+  cx.rotate(ang);
+  cx.strokeStyle='rgba(237,230,216,.14)'; cx.lineWidth=1;
+  for(let i=0;i<28;i++){ const rr=8+i*(r-20)/28; cx.beginPath(); cx.arc(0,0,rr,0,7); cx.stroke(); }
+  cx.fillStyle=hue; cx.beginPath(); cx.arc(0,0,r*0.32,0,7); cx.fill();
+  cx.fillStyle='#0c0a10'; cx.beginPath(); cx.arc(0,0,4,0,7); cx.fill();
+  cx.strokeStyle='rgba(0,0,0,.35)'; cx.lineWidth=2; cx.beginPath(); cx.moveTo(0,0); cx.lineTo(r*0.92,0); cx.stroke();
+  cx.restore();
+}
+function render(tt){
+  const playing=tt>=0 && st.playing, anim=playing && !reduce;
+  const style=plan?plan.style:STYLES[P.style];
+  cx.fillStyle='#0a0812'; cx.fillRect(0,0,CW,CH);
+  const glow=cx.createRadialGradient(CW*0.5,CH*0.22,60,CW*0.5,CH*0.22,CW*0.7);
+  glow.addColorStop(0,style.hue+'22'); glow.addColorStop(1,'rgba(0,0,0,0)');
+  cx.fillStyle=glow; cx.fillRect(0,0,CW,CH);
+
+  const pr=150, pyc=190, lxc=300, rxc=CW-300;
+  const scr=findScratchEvent(tt);
+  const spin= anim? tt*1.6 : 0;
+  const wig= (anim&&scr)? Math.sin(tt*36)*0.6*(1-scr.rel/Math.max(.05,scr.dur)) : 0;
+  drawPlatter(lxc,pyc,pr, spin+wig, style.hue);
+  drawPlatter(rxc,pyc,pr, spin*0.96, style.hue);
+  cx.fillStyle='#1a1522'; roundRect(CW*0.5-90,pyc-40,180,80,10); cx.fill();
+  cx.strokeStyle='#332b3d'; cx.lineWidth=1; roundRect(CW*0.5-90,pyc-40,180,80,10); cx.stroke();
+  cx.strokeStyle='#443c50'; cx.beginPath(); cx.moveTo(CW*0.5-70,pyc+13); cx.lineTo(CW*0.5+70,pyc+13); cx.stroke();
+  const nubX=CW*0.5+((anim&&scr)?Math.sin(tt*28)*68*(1-scr.rel/Math.max(.05,scr.dur)):0);
+  cx.fillStyle= scr? style.hue : '#6b6478';
+  roundRect(nubX-14,pyc+6,28,14,4); cx.fill();
+  cx.font='11px "IBM Plex Mono",monospace'; cx.fillStyle='#9b8fa0'; cx.textAlign='center';
+  cx.fillText('CROSSFADER',CW*0.5,pyc-48);
+  if(scr){ cx.fillStyle=style.hue; cx.fillText(scr.kind.toUpperCase(),CW*0.5,pyc+55); }
+  cx.textAlign='left';
+
+  const tickerY=400;
+  cx.font='11px "IBM Plex Mono",monospace'; cx.fillStyle='#9b8fa0';
+  cx.fillText('LYRIC — the rhyme family lights the payoff word',40,tickerY-26);
+  if(plan){
+    let cur=null; for(const ln of plan.lines){ if(tt>=ln.t-0.05&&tt<ln.t+ln.dur+0.25){cur=ln;break;} }
+    if(!cur) for(const ln of plan.lines){ if(ln.t>tt){cur=ln;break;} }
+    if(cur){
+      let activeWord=-1;
+      if(anim) for(const s of cur.syls){ if(tt>=s.t-0.02&&tt<s.t+s.dur+0.06){activeWord=s.wi;break;} }
+      const words=cur.text.split(' '), fam=cur.familyId, col=fam?familyColor(fam):null;
+      cx.font='22px "IBM Plex Mono",monospace'; let x=40;
+      words.forEach((w,i)=>{
+        const isRhyme= fam && i===words.length-1 && (RHYME[fam]||[]).includes(w);
+        cx.fillStyle= i===activeWord? '#ede6d8' : (isRhyme&&col? col : '#665f74');
+        cx.fillText(w,x,tickerY);
+        x+=cx.measureText(w).width+13;
+      });
+    }
+  }
+
+  const ledY=560, rows=[{k:'kick',label:'KICK'},{k:'snare',label:'SNR'},{k:'hat',label:'HAT'}];
+  const bp=plan?plan.beatPat:null;
+  const curStep= (anim&&plan)? Math.floor((((tt/plan.stepDur)%16)+16)%16) : -1;
+  rows.forEach((row,ri)=>{
+    const y=ledY+ri*30;
+    cx.font='10px "IBM Plex Mono",monospace'; cx.fillStyle='#665f74'; cx.fillText(row.label,40,y+4);
+    for(let s=0;s<16;s++){
+      const x=110+s*70;
+      let on=false;
+      if(bp){ if(row.k==='kick') on=bp.kick.includes(s);
+        else if(row.k==='snare') on=bp.snare.includes(s)||bp.ghost.some(g=>g.step===s);
+        else on=bp.hats.some(h=>h.step===s); }
+      cx.fillStyle= curStep===s ? style.hue : (on?'#4a4256':'#221d2c');
+      cx.beginPath(); cx.arc(x,y,5,0,7); cx.fill();
+    }
+  });
+
+  updateLyric(playing?tt:-1);
+}
+let lastFrame=0;
+function drawLoop(now){
+  requestAnimationFrame(drawLoop);
+  if(now-lastFrame<33)return; lastFrame=now;
+  const tt=RT?(RT.ctx.currentTime-RT.t0):-1;
+  if(RT&&plan&&tt>=plan.dur){ stop(); render(-1); return; }
+  render(RT?Math.max(0,tt):-1);
+}
+requestAnimationFrame(drawLoop);
+
+/* ============================ WIRING ===================================== */
+function setStyle(i){
+  P.style=clamp(i,0,STYLES.length-1);
+  const s=STYLES[P.style];
+  if(P.tempo<s.bpm[0]||P.tempo>s.bpm[1]) P.tempo=s.bpmDef;
+  buildChips(); syncSliders(); stop(); regen();
+}
+function buildChips(){
+  const sHost=$('styleChips'); sHost.innerHTML='';
+  STYLES.forEach((s,i)=>{ const b=document.createElement('button'); b.textContent=s.label; b.title=s.gloss;
+    if(i===P.style)b.classList.add('on'); b.addEventListener('click',()=>setStyle(i)); sHost.appendChild(b); });
+  const fHost=$('flowChips'); fHost.innerHTML='';
+  FLOWS.forEach((f,i)=>{ const b=document.createElement('button'); b.textContent=f.label; b.title=f.gloss;
+    if(i===P.flow)b.classList.add('on');
+    b.addEventListener('click',()=>{ P.flow=i; buildChips(); stop(); regen(); });
+    fHost.appendChild(b); });
+  const tHost=$('themeChips'); tHost.innerHTML='';
+  THEMES.forEach((t,i)=>{ const b=document.createElement('button'); b.textContent=t.label; b.title=t.gloss;
+    if(i===P.theme)b.classList.add('on');
+    b.addEventListener('click',()=>{ P.theme=i; buildChips(); stop(); regen(); });
+    tHost.appendChild(b); });
+}
+function syncSliders(){
+  $('sing').value=P.sing; $('singVal').textContent=P.sing+'%';
+  $('scratch').value=P.scratch; $('scratchVal').textContent=P.scratch+'%';
+  $('hype').value=P.hype; $('hypeVal').textContent=P.hype+'%';
+  $('tempo').min=STYLES[P.style].bpm[0]; $('tempo').max=STYLES[P.style].bpm[1];
+  $('tempo').value=P.tempo; $('tempoVal').textContent=P.tempo;
+  $('verses').value=P.verses; $('versesVal').textContent=P.verses+(P.verses===1?' verse':' verses');
+}
+$('sing').addEventListener('input',e=>{P.sing=+e.target.value;$('singVal').textContent=P.sing+'%';stop();regen();});
+$('scratch').addEventListener('input',e=>{P.scratch=+e.target.value;$('scratchVal').textContent=P.scratch+'%';stop();regen();});
+$('hype').addEventListener('input',e=>{P.hype=+e.target.value;$('hypeVal').textContent=P.hype+'%';stop();regen();});
+$('tempo').addEventListener('input',e=>{P.tempo=+e.target.value;$('tempoVal').textContent=P.tempo;stop();regen();});
+$('verses').addEventListener('input',e=>{P.verses=+e.target.value;$('versesVal').textContent=P.verses+(P.verses===1?' verse':' verses');stop();regen();});
+$('play').addEventListener('click',play);
+$('pause').addEventListener('click',togglePause);
+$('another').addEventListener('click',aliud);
+$('cut').addEventListener('click',cut);
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
+  if(e.target.tagName==='BUTTON'&&e.code==='Space'){e.preventDefault();e.target.blur();play();return;}
+  if(e.code==='Space'){e.preventDefault();play();}
+  else if(e.key==='p'||e.key==='P'){togglePause();}
+  else if(e.key==='r'||e.key==='R'){aliud();}
+  else if(e.key==='c'||e.key==='C'){cut();}
+  else if(e.key>='1'&&e.key<='4'){ const i=+e.key-1; if(i<STYLES.length)setStyle(i); }
+  else if(e.key==='f'||e.key==='F'){ P.flow=(P.flow+1)%FLOWS.length; buildChips(); stop(); regen(); }
+  else if(e.key==='t'||e.key==='T'){ P.theme=(P.theme+1)%THEMES.length; buildChips(); stop(); regen(); }
+  else if(e.key==='s'||e.key==='S'){ triggerScratch(); }
+});
+window.addEventListener('hashchange',()=>{ if(location.hash===__lastHash)return;
+  if(readHash()){ buildChips(); syncSliders(); stop(); regen(); } });
+
+/* ---------- init ---------- */
+if(!readHash())writeHash();
+buildChips(); syncSliders(); regen();
+
+/* OFFICINA audition: one-shot pressing — just perform it (PERSONA's pattern). */
+TIMBRE.demo=()=>{ if(!st.playing)play(); };
+</script>
+</body>
+</html>
