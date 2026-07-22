@@ -1151,6 +1151,8 @@ function buildGraph(ctx, plan, t0, recordBuf){
 
   const leadChain=buildVoiceChain(ctx,noise,t0,false);
   const doubleChain=buildVoiceChain(ctx,noise,t0,true);
+  leadChain.vLevel.connect(leadVoiceOut);
+  doubleChain.vLevel.connect(doubleVoiceOut);
   const scratchEvents=[]; // {t,dur,kind} — the canvas platter/fader reads this
   const doScratch=(t,kind)=>{ const dur=scratchGesture(ctx,scratchBus,recordBuf,t,kind); scratchEvents.push({t,dur,kind}); };
 

@@ -1,5 +1,36 @@
 # FRESH — threads
 
+### 2026-07-22 · improve session — THE VOICE WAS NEVER CONNECTED (maintainer: "i dont hear any voice")
+
+Root cause, embarrassingly simple: `buildVoiceChain` builds the whole formant
+chain and feeds `vGain → vLevel`, and `buildGraph` builds `leadVoiceOut` /
+`doubleVoiceOut` with their plate/echo sends — **but no line ever connected
+`vLevel` to the voice bus.** The entire voiced path (every vowel, every pitched
+sound the MC makes) ended in an unconnected node; only consonant noise bursts,
+which `consNoise` wires directly to the bus, were audible — faint ticks where
+syllables land. Fix: two lines after the chains are built —
+`leadChain.vLevel.connect(leadVoiceOut)` / `doubleChain.vLevel.connect(doubleVoiceOut)`.
+
+**Why three verification passes missed it** (build, review, envelope-fix — all
+"voice-solo non-silent, PASS"): every gauntlet muted the *bed* and checked the
+render wasn't silent, but the consonant noise bursts bypass `vGain`/`vLevel`
+and kept the "voice path" above the silence floor. The lesson, for any future
+audio-wiring verification here: **an RMS floor proves something sounds, not
+that the right thing sounds.** The check that catches this class of bug isolates
+the path under test by muting its *siblings inside the voice* too (consStop /
+consFric / breath → 0) so the formant chain is the only possible source.
+That check now exists (throwaway `scratchpad/`, this session): voiced-path-only
+render of a verse bar — line RMS 0.0003 on the broken build (silence-floor
+residue through the compressor makeup gain) vs 0.032 fixed, >100×, with the
+same render clip-safe and error-free. `dev/verify.mjs fresh` + `dev/check.mjs`
+re-run clean; `compose()` untouched, so pressings/hashes are unchanged — the
+same links now simply *speak*.
+
+Note for the vocal tuning pass: this is the first time the voice is actually
+audible in the mix — every `voice`/`double`/`fx` level was balanced against a
+mute MC, so expect the starting mix to need real attention (voice level,
+echo sends, duck depth) before fine voicing.
+
 ### 2026-07-22 · improve session — voiced-onset envelope fix (the review's deferred item)
 
 Picked up the one concrete audio-quality item the review session deferred to a
