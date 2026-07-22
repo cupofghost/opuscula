@@ -1,7 +1,13 @@
 # Handoff
 
-Complete orientation for OPVSCVLA. Paste this plus the files in scope at the
-start of a session — it's meant to be enough to work without re-explaining.
+Orientation for OPVSCVLA. **You don't need to read this whole file** — and you
+shouldn't. Priority on every task is shipping with **minimal token usage**. The
+lean top matter (Architecture → Key decisions → File structure → Conventions →
+Quality bar → Workflow → TIMBRE/OFFICINA) plus the one machine in your scope is
+enough to work. Each machine is self-contained: to work on it you need its
+`index.html` and its own Open-threads entry (search Open threads for the
+machine's name) — **not** the other machines' code or history. If a task seems
+to require combing the whole repo, flag that instead of doing it.
 
 ---
 
@@ -98,8 +104,8 @@ keep all three (page, README, this file) in sync when adding a machine.
 ## Conventions
 
 **Working process (agreed with the maintainer):**
-- Keep this HANDOFF.md current — update it at the **end of every session**
-  without being asked (architecture, decisions, structure, threads).
+- Keep this HANDOFF.md current — update it **in your PR** at the end of every
+  session without being asked (architecture, decisions, structure, threads).
 - During iteration, output **patches/diffs, not full-file rewrites.** Emit a
   whole file only when creating it or when changes exceed ~50%.
 - Don't restate the request or recap prior turns; answer directly.
@@ -117,81 +123,104 @@ keep all three (page, README, this file) in sync when adding a machine.
 - Verify audio work **headless (Chromium)**: enumerate the model for
   correctness, then smoke-test the transport/scheduler and offline render for
   runtime errors. See the RILLE threads for the pattern.
-- Git: develop on the feature branch, commit with descriptive messages, push;
-  **don't open a PR unless asked.** The music-theory / design reasoning tends to
-  live in commit messages.
+- Git: develop on your `claude/*` branch, commit with descriptive messages (the
+  music-theory / design reasoning lives there), and **open a PR** — every task
+  ends in a PR the maintainer reviews and merges. Never push to `main`, never
+  merge your own PR. See Workflow.
 
-## Working in parallel — many sessions, one main
+## Quality bar
 
-Several chats now work this repo at once, each on its own `claude/*` branch,
-all landing on `main`. Every rule below exists because the failure it prevents
-has already happened here: two branches claiming the same opus number, stale
-branches sixty commits behind, merged branches resumed, work stranded on
-pre-rewrite history. (See the "state of the branch farm" thread for the
-current inventory.)
+**Don't ship low-quality code.** A machine is done only when it meets the house
+grammar end to end: the law is the interface, generation is seeded and
+deterministic, the URL hash round-trips, the offline WAV is deterministic and
+clip-safe, iOS audio + Media Session are wired, `prefers-reduced-motion` is
+respected, TIMBRE + the OFFICINA bridge are present, and it is **verified
+headless** (enumerate the model → transport smoke → offline render, all with
+zero page errors). If you can't clear that bar inside the token budget, ship a
+smaller scope *well* and note the rest in Open threads — never ship a
+half-working machine to save tokens.
 
-**Branch discipline**
-- **One session = one branch = one scope** — usually one machine. Before
-  starting, `git fetch origin` and scan `git branch -r` plus recent
-  `origin/main` history: if a live branch is already working the same
-  machine, coordinate through the maintainer rather than racing it. Two
-  branches must never edit the same machine's `index.html` concurrently.
-- **First act of a session: `git fetch origin main` and start from (or
-  rebase onto) `origin/main`.** The container's local `main` is a snapshot
-  from clone time and is usually already stale.
-- **Last act of a session: fetch again, rebase onto `origin/main`, re-verify,
-  push.** Land small and land often — the abandoned branches in the farm are
-  the ones that sat unlanded until rebasing became archaeology.
-- **A merged branch is finished.** Never stack follow-up commits on it;
-  restart the branch from `origin/main` (`git checkout -B <branch>
-  origin/main`) and treat the follow-up as fresh work.
-- Branches with **no merge base** against `origin/main` predate a history
-  rewrite and cannot be merged. Anything still wanted from one gets
-  re-implemented fresh on `origin/main`.
+**Maintainer's reference machines — the bar to match:** **BOLG**, **DIAMOND**,
+**TESSERA**, **FADÓ**, **TENEBRAE**. Study these for shell, voicing, and finish
+when building or improving; "use DIAMOND as an example" is a standing
+instruction. **Known to need work:** **PAS SALÉ** (op. I, the oldest — good song,
+but shell + voice are below standard), **RILLE** (strong concept, genuinely hard
+to settle — read the many RILLE threads before touching it), **ŠIYÓTȞAŊKA**
+(functional but musically thin). Treat these as where improvement effort pays
+off; treat the reference five as the finish level to hit.
 
-**Claiming an opus number / directory**
-- **Numbers are claimed by landing on `main`, not by designing.** While a
-  machine is in flight its number is provisional. At every rebase, re-read
-  the registry (file table above / `index.html` / `README.md`) on
-  `origin/main`; if another machine landed first, take the next numeral —
-  the directory name keeps, the op. number moves.
-- Before scaffolding a new machine, also check the other live branches for
-  an in-flight directory of the same name. Two in-flight machines may share
-  a provisional number (the rebase rule resolves it) but never a directory.
+## Workflow — many sessions, PRs into main
+
+Several chats work this repo at once, each on its own `claude/*` branch. **The
+maintainer commits to `main`; agents open PRs.** Every session — plan, build, or
+improve — ends by opening a PR and stopping. Never push to `main`, never merge
+your own PR.
+
+**The three kinds of task** (the maintainer says which):
+- **Plan** — write a design brief for another agent to build, in the house
+  format (`diamond/GENESIS.md`): grounding, the law, the generation/interlock
+  logic, voices, a TIMBRE sketch, canvas, gotchas (the verbatim OFFICINA bridge,
+  iOS/lock-screen from day one), a considered-and-rejected list, a verify
+  gauntlet, and a registration checklist. **No machine code.** The brief lives in
+  the machine's directory (e.g. `foo/GENESIS.md`) and claims the concept +
+  directory name, not the opus number. PR the brief.
+- **Build** — implement a machine (from a brief or from scratch): the machine's
+  `index.html` + registry wiring (below). Verify headless before you PR; delete
+  the design brief and fold its outcome into your Open-threads entry.
+- **Improve** — targeted fixes/upgrades to one existing machine. Minimal diff,
+  verify what you touched, PR it.
+
+**Scope & independence**
+- **One session = one branch = one scope**, usually one machine. Work from the
+  lean orientation at the top of this file + your one machine (its `index.html`
+  and its Open-threads entry). You should **not** need the other machines' code
+  or threads; if a task seems to, flag it rather than combing the repo.
+- Keep edits inside your machine's directory plus the minimal registry rows.
+  Before starting, `git fetch origin` and scan `git branch -r` + recent
+  `origin/main`: two branches must never edit the same machine's `index.html`
+  concurrently — coordinate through the maintainer instead of racing.
+
+**Expect `main` to have moved** — it almost always has; agents commonly run
+several items at once and PRs merge continuously.
+- **First act:** `git fetch origin main`, start from / rebase onto
+  `origin/main` (the container's local `main` is a stale clone-time snapshot).
+- **Before you PR:** fetch again, rebase onto `origin/main`, re-verify, and
+  re-read the registry (file table above / `index.html` / `README.md`) on
+  `origin/main`.
+- **Opus numbers are provisional until merged.** Take the next free numeral from
+  current `origin/main` and say in the PR that it's provisional; if another
+  machine merges first, the maintainer settles final numbering at merge — the
+  directory name is yours, the number can move. (Machines here have renumbered
+  several times before landing; that's normal.) Also check live branches for an
+  in-flight directory of the same name — two machines may share a provisional
+  number but never a directory.
+- A **merged PR is finished.** Follow-up work is a fresh branch off
+  `origin/main`, never new commits on the merged branch. Branches with no merge
+  base against `origin/main` predate a history rewrite and can't be merged;
+  re-implement anything still wanted from one fresh on `origin/main`.
 
 **HANDOFF.md — the one file every branch edits**
-- Touch only (a) your own Open-threads entries and (b) the exact lines your
-  change requires in the fixed sections (your row in the file table, one
-  convention bullet). **Never reflow, reorder, or cosmetically rewrite
-  sections you didn't work in** — that is what turns parallel edits into
-  real conflicts.
-- New Open-threads entries go at the **top** of Open threads, self-contained
-  under their own `###` heading. Top-insertion means concurrent branches
-  conflict at the same spot and the resolution is mechanical: **keep both
-  sides' threads** (either order), then re-merge any fixed-section lines by
-  hand.
-- Only a session that deliberately reorganizes this file (like this one) may
-  restructure it — and that session should touch nothing else.
+- Update it in your PR (don't wait to be asked): your Open-threads entry, plus
+  the exact fixed-section lines your change needs (your row in the file table,
+  one convention bullet). **Never reflow, reorder, or cosmetically rewrite
+  sections you didn't work in** — that is what turns parallel edits into real
+  conflicts.
+- New Open-threads entries go at the **top**, self-contained under their own
+  `###` heading. Top-insertion means concurrent branches conflict at the same
+  spot and the resolution is mechanical: **keep both sides' entries** (either
+  order), then re-merge any fixed-section lines by hand.
+- Only a session that deliberately reorganizes this file may restructure it —
+  and that session touches nothing else.
 
 **Registry files** — the landing `index.html`, `README.md`, the file table
-here, and `officina`'s `MACHINES` chips:
-- Add your row/chip as a **minimal diff** — no reordering, no reformat, no
-  drive-by copy edits. All four must agree at every landing; the
-  rebase-before-push is where you re-sync them against what landed under you.
+here, and `officina`'s `MACHINES` chips: add your row/chip as a **minimal diff**
+— no reordering, no reformat, no drive-by copy edits. All four must agree; the
+rebase-before-PR is where you re-sync them against what merged under you.
 
-**Cross-machine sweeps** — bridge changes, a convention applied everywhere:
-- The OFFICINA bridge is duplicated verbatim in all twenty-one machines, so
-  editing it touches every file and conflicts with every live branch. A
-  sweep gets its **own dedicated branch**, mixes in no per-machine feature
-  work, lands fast, and announces itself in Open threads so per-machine
-  sessions know to rebase before continuing.
-
-**Design briefs** (`rille/HARMONIA.md`, `diamond/GENESIS.md`,
-`tenebrae/OFFICIUM.md`):
-- A brief in a machine's directory claims the **concept and the directory
-  name, not the opus number** — the number is assigned when the machine
-  ships. Delete the brief when it ships and fold the outcome into the
-  HANDOFF thread (the briefs themselves say so).
+**Cross-machine sweeps** — a change touching every machine (the OFFICINA bridge,
+a convention applied everywhere): its **own dedicated branch/PR**, no per-machine
+feature work mixed in, announced in Open threads so per-machine sessions know to
+rebase. See also the per-machine OFFICINA policy in TIMBRE/OFFICINA below.
 
 ## TIMBRE / OFFICINA — the voicing layer (all machines)
 
@@ -221,6 +250,14 @@ running machine to factory while lit), **COPY TWEAKS** (modified-only JSON to
 clipboard — the format to paste into a chat when asking for values to be baked
 in as new factory defaults). Every edit write-through-debounces to the applied
 key, so machines opened directly speak with the dialed-in voice.
+
+**OFFICINA is improved per-machine, not swept (for now).** When you're already in
+a machine, a **token-light** bench/TIMBRE fix — a mislabeled or missing param, a
+wrong factory default, a group that should exist — just do it in the same PR. A
+**token-intensive** officina change — a bench-wide feature, a schema redesign,
+anything that would balloon the PR or the token budget — is **not** inline work:
+note it in Open threads and leave it for a dedicated pass. Shipping the machine
+with minimal tokens comes first.
 
 Conventions when touching this layer:
 - `TIMBRE.id` === the directory name (that's how the bench addresses it).
@@ -252,6 +289,45 @@ Conventions when touching this layer:
 ## Open threads
 
 Newest first.
+
+### Workflow reorganization — PRs into main, per-machine independence, minimal tokens
+**Branch:** `claude/opuscula-workflow-standards-ljzy2z` · **Files:** `HANDOFF.md`
++ `CLAUDE.md` (front matter only; no machine or registry files touched).
+**Status:** done. This is a deliberate reorganization session per the "only a
+session that reorganizes this file may restructure it, and touches nothing else"
+rule. Maintainer-driven convention changes:
+
+- **The maintainer now commits to `main`; agents open PRs.** Every task — plan,
+  build, or improve — ends in a PR the maintainer reviews and merges. Agents
+  never push to `main` or merge their own PR. Replaces the old "land small and
+  land often on `main`" model throughout (rewrote the whole parallel-work
+  section into the new **Workflow** section; flipped the Git convention bullet
+  and CLAUDE.md's Git + Working-process sections).
+- **Three named task modes** (plan / build / improve), all → PR, documented in
+  Workflow so the maintainer can ask for any one and the agent knows the shape.
+- **Opus numbers are provisional until *merged*** (was "until landed"). Agent
+  takes the next free numeral from `origin/main`, flags it provisional in the
+  PR; the maintainer settles final numbering at merge. Directory name is claimed,
+  the number can still move.
+- **Each machine is independent / minimal-token first.** New intro states you
+  don't need to read the whole 220 KB HANDOFF: lean top matter + your one
+  machine (its `index.html` + its own Open-threads entry, found by name) is
+  enough; you should not comb the other machines' code or history, and should
+  flag it if a task seems to require that. Priority on every task is shipping
+  with minimal token usage.
+- **New Quality bar section.** Explicit "don't ship low-quality code" checklist
+  (law-as-interface, seeded/deterministic, hash round-trip, clip-safe WAV,
+  iOS/Media Session, reduced-motion, TIMBRE+bridge, verified headless) + the
+  maintainer's reference machines to match (**BOLG, DIAMOND, TESSERA, FADÓ,
+  TENEBRAE**) and the ones known to need work (**PAS SALÉ, RILLE, ŠIYÓTȞAŊKA**).
+- **OFFICINA is improved per-machine, not swept, for now.** Token-light
+  bench/TIMBRE fixes ride along in the machine's PR; token-intensive officina
+  work is noted in Open threads and left for a dedicated pass. Added to the
+  TIMBRE/OFFICINA section.
+- Kept intact: the minimal-diff registry discipline, top-insertion of
+  Open-threads entries, the dedicated-branch rule for cross-machine sweeps, the
+  design-brief convention, and rebase-onto-`origin/main`-before-PR (agents are
+  expected to find `main` has moved since they began).
 
 ### BANI — new machine, op. XXVIII (Georgian table-song polyphony on an adaptive-intonation engine)
 **Branch:** `claude/georgian-polyphonic-vocal-machine-hu9nmd` · **File:** `bani/index.html`
