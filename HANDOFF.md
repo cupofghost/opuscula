@@ -251,6 +251,37 @@ Conventions when touching this layer:
 
 Newest first.
 
+### AMADINDA — design brief for a new machine (Baganda equipentatonic interlock; brief only, no code)
+**Branch:** `claude/baganda-musical-machine-fckn1r` · **File:** `amadinda/OKWAWULA.md`
+(design brief only — no machine code, no registry rows yet) · **Status:** design
+complete, implementation NOT started; a later session (maintainer says Sonnet)
+implements from the brief. Per the design-brief convention this claims the
+**concept and the directory `amadinda/`, not the op. number** — XXIII is
+provisional, re-checked at the implementer's every rebase. Delete the brief
+when the machine ships and fold the outcome into this thread.
+
+- **The machine:** the Baganda (Buganda, Uganda) royal amadinda xylophone —
+  two seeded parts (okunaga/okwawula) interlock in strict alternation and
+  parallel octaves; the third part (okukoonera, the amatengezzi keys) is
+  **derived mechanically from the other two**, never composed; at speed the
+  combined stream splinters into Kubik's *inherent patterns*. Controls: cycle
+  length (12/18/24/36), MUKO I–V (the five exact transpositions), ensemble
+  (amadinda bars / entenga drum chime), tempo, seed.
+- **Tuning law: equipentatonic (5-TET, 240 ¢ steps)** — `f = BASE·2^((k−1)/5)`,
+  one Hz literal. Second deliberate non-JI machine after TRITAVA; the equal
+  division is the tradition's own documented ideal (Wachsmann's measurements;
+  the miko transpositions only work because steps are equal) — stated honestly
+  in the brief and to-be reader notes. Terminology flag: the request said
+  "equiheptatonic," but the Kiganda tuning is equi*penta*tonic (7-equal is the
+  Thai/Khmer idealization); the brief records this and designs on 5.
+- Brief follows the `diamond/GENESIS.md` house format: grounding, tuning law,
+  interlock/generation law (okwawula chosen by a deterministic candidate
+  search scored for emergent-pattern quality), performance arc, voices
+  (buffer-baked, FOLI family), TIMBRE sketch, canvas wheel, gotchas
+  (verbatim OFFICINA bridge — the FADÓ crash lesson; lock-screen pattern from
+  day one), considered-and-rejected, a 11-point verify gauntlet, registration
+  checklist, pick-ups (akadinda triple interlock, OP–XY path-A demo).
+
 ### TENEBRAE — maintainer-reported voicing fixes (op. XXVI)
 **Branch:** `claude/tenebrae-to-main-3s6rw3` · **File:** `tenebrae/index.html`
 (3 targeted changes in `scheduleSingerChain`/`buildGraph`). **Status:** done,
