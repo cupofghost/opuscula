@@ -1,5 +1,51 @@
 # FRESH — threads
 
+### 2026-07-22 · improve session — voiced-onset envelope fix (the review's deferred item)
+
+Picked up the one concrete audio-quality item the review session deferred to a
+later pass (see its entry below): word-initial **voiced** consonants (liquids
+l/r, glides w/y, nasals m/n/ng, and voiced-stop bars) were gated near-silent.
+`scheduleSyllable` articulates onset consonants *before* the vowel's grid tick
+`t` (plosives-as-percussion, so the vowel lands exactly on the beat), but the
+per-syllable `vGain` amplitude envelope — which the voiced formant path runs
+through — only opened at `t`. Noise-burst consonants (voiceless stops,
+fricatives) bypass `vGain` and were fine; voiced onsets, which sound *through*
+the formant chain, were nearly muted. Audibly: soft/clipped word-initial
+liquids and nasals.
+
+**Fix:** open `vGain` at the first *voiced* onset consonant instead of at `t`.
+Walk the onset list, find the first phone with `CONS[..].v`, set `voiceStart`
+to its scheduled time (`onsetStart + i*onTime`); voiceless-only onsets keep
+`voiceStart = t` (unchanged — their bursts bypass the envelope anyway). Two
+guards keep it safe on the persistent shared chain: clamp `voiceStart` up to the
+previous syllable's release time (`chain._lastEnd`, tracked per chain; syllables
+on a given chain are scheduled in time order, so this is monotonic) so a long
+onset stolen into a tight preceding syllable can't rewrite that syllable's tail
+ramp, and clamp it down to `t` so it can never open *after* the vowel. Only
+synthesis changed — `compose()` is byte-for-byte untouched.
+
+Verified headless (Chromium via `/opt/pw-browsers/chromium`):
+
+- **Targeted before/after mechanism check** (`scratchpad/verify-fresh-voicedonset.mjs`,
+  gitignored): renders single syllables with the voiced formant path isolated
+  (consonant noise bursts routed to a dead node). "rock" (voiced r onset) now
+  measures pre-tick RMS 3.6e-2 — on par with its vowel body (3.5e-2), i.e. the r
+  fully sounds; "top" (voiceless t onset) stays 0 on the voiced path before the
+  tick (correct — nothing voiced to hear there, and proof the fix doesn't
+  falsely energise voiceless onsets). The voiced onset is now clearly louder
+  pre-tick than the voiceless one, which is the whole point.
+- **No regression:** `dev/verify.mjs fresh` (loads-clean · bench 10/82 ·
+  plays-clean · cut-renders-wav, full 17.5 MB WAV downloaded this run) and
+  `dev/check.mjs` (bridge/registry/numbering) both clean; the 180-combo model
+  gauntlet still PASS (compose untouched); the offline audio gauntlet still PASS
+  (shipped peak 0.92 held by the clip-safe normalize, RMS above floor,
+  voice-solo non-silent).
+
+Minimal diff — one function (`scheduleSyllable`) touched, no TIMBRE/param
+changes, so the planned vocal tuning pass reads the same bench. This clears the
+review's only open follow-up; the rest of its "noted, not changed" list was
+architecture calls that check out.
+
 ### 2026-07-22 · review session — build verified independently, PR'd
 
 Reviewed the build session's work (below) end to end and re-verified rather
