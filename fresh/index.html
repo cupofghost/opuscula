@@ -584,7 +584,7 @@ const TIMBRE={
       gain:{v:.78,min:.3,max:1,step:.01,label:'master gain',doc:'level into the compressor'},
       room:{v:.15,min:0,max:.5,step:.01,label:'room send',doc:'send to the small plate reverb'},
       roomLen:{v:1.6,min:.4,max:3,step:.05,unit:'s',label:'room length',doc:'plate decay time'},
-      duckDepth:{v:.25,min:0,max:.6,step:.01,label:'duck depth',doc:'bed gain dip scheduled at each syllable onset (no true sidechain in Web Audio)'},
+      duckDepth:{v:.25,min:0,max:.6,step:.01,label:'duck depth',doc:'bed gain dip scheduled at each rapped line\'s onset (no true sidechain in Web Audio)'},
     }},
     voice:{label:'the voice (formant rap)',doc:'The MC: buzz -> tilt -> five formants -> consonants. Formant centres come from the phoneme; these are the shaping controls around them.',params:{
       f0:{v:132,min:80,max:220,step:1,unit:'Hz',label:'f0 base',doc:'the MC\'s fundamental pitch floor'},

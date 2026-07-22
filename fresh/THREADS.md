@@ -1,6 +1,31 @@
 # FRESH — threads
 
-### 2026-07-22 · build session — FRESH (op. XXX, provisional) shipped whole
+### 2026-07-22 · review session — build verified independently, PR'd
+
+Reviewed the build session's work (below) end to end and re-verified rather
+than trusting the record: `dev/check.mjs` (bridge byte-identical, registries
+agree) and `dev/verify.mjs fresh` (loads-clean · bench-schema 10/82 ·
+plays-clean · cut-renders-wav) re-run and passing, plus a fresh independent
+model gauntlet (not the build session's script) in real Chromium: 180
+seed×style×flow×theme combos, 5400 lines, 1440 couplets — DICT closure, couplet
+rhyme-family integrity (incl. the LYRICAL internal plant), monotonic
+non-overlapping syllable grids, same-seed determinism, distinct-seed
+distinctness, and the hash round-trip all pass with zero page errors. The
+architecture calls documented below (precomposed pressing, positive-only
+playbackRate, touch-less TIMBRE) all check out against the code.
+
+One fix from review: the `master.duckDepth` bench doc claimed the bed ducks at
+each *syllable* onset; the implementation ducks at each *line* onset. Doc
+corrected to match the code (behavior unchanged) so the tuning pass reads the
+bench truthfully.
+
+Noted for the tuning pass, not changed: voiced onset consonants (l/r/w/y/m/n
+and voiced-stop bars) sound through the per-syllable `vGain` envelope, which
+only opens at the vowel's grid tick — so onsets stolen from before the tick are
+nearly silent for those classes (noise-burst consonants bypass `vGain` and are
+unaffected). Audibly this reads as soft/clipped liquid onsets; if the tuning
+pass wants them stronger, the envelope needs to open at the first onset
+consonant rather than at `t`.
 
 Built `fresh/index.html` from the GENESIS brief in one session, all three
 staged scopes (beat / MC / turntables) landed rather than split — the brief's
