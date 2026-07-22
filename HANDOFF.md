@@ -294,6 +294,77 @@ verified headless. Three complaints, all confirmed real:
   not a voicing choice. Re-tested the same stress sweep post-fix: peaks
   0.84–0.94, zero clip, zero NaN.
 
+### ŠIYÓTȞAŊKA — brought up to house standard (shell re-skin, op. XXV unchanged)
+**Branch:** `claude/lakota-flute-standardization-qub4qd` · **File:**
+`siyotanka/index.html` only (full re-skin, ~50%+ changed, so emitted whole).
+**Status:** done, verified headless (Chromium/playwright, 36 checks, zero
+page errors; scratchpad `verify-siyotanka.mjs`, not committed). No registry
+changes — same title, op. number (XXV), concept, TIMBRE id and schema; the
+landing card / README row / officina chip / file table all still describe it
+correctly. Maintainer's ask: "bring the Lakota flute up to the standard of
+the rest of the machines, use DIAMOND as an example." The *engine* (the law
++ synthesis) was already sound; the *shell* was well below house grammar.
+
+- **Adopted the house shell verbatim-in-grammar (DIAMOND/FADÓ):** full head
+  metadata (viewport-fit, color-scheme/theme-color, apple-web-app tags,
+  icon.svg + preconnect + the Cormorant SC / EB Garamond / IBM Plex Mono
+  fonts); the `.pit` framed card; the sticky `.exit` + fixed `.bench` chips
+  (bench now points at `../officina/#m=siyotanka`, was the malformed
+  `?bench=` form); the `eyebrow / h1 / sub (bold lede) / credit` header
+  anatomy; the `.plate` canvas with corner `.tag`s (SCALE · <mode> / status);
+  `.pick` Play+Pause buttons, chip selectors for Scale & Key, labelled
+  sliders for Pace & Song, dashed `.cut` + `.cutnote`; the rich collapsible
+  `.reader` (8 h4 sections — Densmore, the terraced descent, the tuning
+  hedge, etc.) replacing the thin open panel; the `.foot`; and a READER'S
+  GUIDE comment block. **Went dark-only** (`color-scheme:dark`) like the
+  reference machines — the old light-mode `@media` is gone; siyotanka's own
+  ochre `--accent #d98a3d` / turquoise `--sky #4fb3a3` palette on warm brown
+  `--ground #17110c` is now the single voice.
+- **iOS audio + robust save added (were entirely missing — it was the only
+  machine of 26 without `__iosAudio`):** the standard `__hint`/`__iosAudio`
+  playback-session unlock (attached once when the persistent `ac` is created),
+  and the shared tappable-pill `saveWav(blob,filename)` replacing the bare
+  `a.click()` download (the encoder itself kept, refactored to
+  `encodeWavBlob`). `cut()` now shows "cutting…"/result in the `.cutnote`.
+- **Two real defects fixed while re-skinning:**
+  - *Looping was broken.* The lap-boundary timer called `play()`, but
+    `play()`'s `if(st.playing)return` guard fired first, so a verse never
+    re-improvised past the first. Restructured into `play → startLap →
+    nextLap` (nextLap bypasses the guard); verified the lap counter now
+    advances (verse 1 → verse 2 …). Also made the boundary timer
+    **pause-aware** — it now stores remaining time against `ac.currentTime`
+    at pause and reschedules on resume, instead of a wall-clock `setTimeout`
+    that drifted while suspended.
+  - *Offline renders were non-deterministic.* `voice()` drew the per-note
+    breath `playbackRate` from `Math.random()`, so no two cuts of the same
+    seed matched. Now seeded: `genAll` attaches a per-note `jit=rng()` that
+    voice() consumes. Two cuts of a seed are byte-identical within ±1 LSB
+    (the residual 190-ish/2.67M samples at maxΔ=1 is Chromium's
+    OfflineAudioContext convolver+compressor denormal noise — present in
+    every machine with a reverb, not a seeding gap; the score `genAll` is
+    exactly byte-identical).
+- **Controls note:** the old visible **seed slider was dropped** in favour of
+  the house pattern (seed lives in the hash + `r`/Another), matching DIAMOND/
+  FADÓ. Scale/Key moved from `<select>`s to chip rows. Pace/Song sliders kept,
+  now with word readouts. Hash schema unchanged (`s/sc/k/p/o`), so old links
+  still resolve.
+- **Canvas** kept the flute-schematic + terrace-trace but rebuilt in the
+  plate: added the right-hand **scale ledger** (five degrees as exact ratios,
+  tonic in turquoise, the sounding degree boxed — the diamond "data on the
+  canvas" move), a live pitch readout in the lane, register chevrons for
+  overblown octaves; `prefers-reduced-motion` freezes the scroll. `drawStatic`
+  on idle/stop.
+- **Verified:** clean load; genAll deterministic per seed / differs across
+  seed+lap / ends on tonic / monotonic / NaN-free / ≥6 pitches; Mode-1 JI
+  cents exact (6/5, 4/3, 3/2, 9/5) and the neutral 11/9≈347.4¢; ladder
+  register-fold exact; play/pause/resume/stop + nextLap loop; offline render
+  stereo/non-silent/deterministic(±1 LSB); hash round-trip; OFFICINA bench
+  schema (6 groups / 16 params), live `set`, `bulk` reset-then-apply,
+  localStorage overlay, `?factory` bypass. Screenshot-checked idle + playing.
+- **Pick-up ideas (unchanged from the build thread below):** a real six-hole
+  cross-fingering chart; a second Plains melodic form; a double-flute drone
+  variant; a distinct overblown-octave timbre. Still deliberately solo.
+
 ### TENEBRAE — new machine, op. XXVI (implemented from tenebrae/OFFICIUM.md)
 **Branch:** `claude/tenebrae-machine-an2uin` · **File:** `tenebrae/index.html`
 (new, ~1950 lines) · `tenebrae/OFFICIUM.md` deleted per its own instruction.
