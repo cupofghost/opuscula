@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1c140d">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AMADINDA">
+<meta name="description" content="AMADINDA — the Baganda royal log xylophone. Two interlocking parts in parallel octaves, a third part mechanically derived from them, equipentatonic (5-TET) tuning, and the inherent patterns that emerge at speed. op. XXVII of the opuscula.">
+<title>AMADINDA · op. XXVII · opvscvla</title>
+<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../site.webmanifest">
+<style>
+html{background:#1c140d}
+body{background:#1c140d;color:#e8dcc4}
+:root{
+  color-scheme:dark;
+  --bg:#1c140d; --panel:#241a10; --well:#140d08;
+  --ink:#e8dcc4; --dim:#a58a5e; --faint:#5c4a32;
+  --wood:#c99a5b; --grass:#8a9c4e; --ember:#d9662c;
+  --line:rgba(201,154,91,.28); --hair:rgba(201,154,91,.14);
+}
+@media (prefers-color-scheme: light){
+  html{background:#f5ecd8}
+  body{background:#f5ecd8;color:#2c2214}
+  :root{
+    color-scheme:light;
+    --bg:#f5ecd8; --panel:#efe2c4; --well:#fffaf0;
+    --ink:#2c2214; --dim:#7a6844; --faint:#b7a684;
+    --wood:#9c6a2e; --grass:#5c7530; --ember:#b8461c;
+    --line:rgba(156,106,46,.32); --hair:rgba(156,106,46,.16);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#1c140d; --panel:#241a10; --well:#140d08;
+  --ink:#e8dcc4; --dim:#a58a5e; --faint:#5c4a32;
+  --wood:#c99a5b; --grass:#8a9c4e; --ember:#d9662c;
+  --line:rgba(201,154,91,.28); --hair:rgba(201,154,91,.14);
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f5ecd8; --panel:#efe2c4; --well:#fffaf0;
+  --ink:#2c2214; --dim:#7a6844; --faint:#b7a684;
+  --wood:#9c6a2e; --grass:#5c7530; --ember:#b8461c;
+  --line:rgba(156,106,46,.32); --hair:rgba(156,106,46,.16);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'IBM Plex Mono',ui-monospace,'Courier New',monospace;font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:0 auto;padding:30px 20px 64px}
+header{margin-bottom:20px}
+.brand{font-size:11px;letter-spacing:.4em;color:var(--dim)}
+.brand a{color:inherit;text-decoration:none;border-bottom:1px dotted var(--faint)}
+h1{font-weight:600;font-size:clamp(38px,7vw,62px);letter-spacing:.06em;margin:.1em 0 .05em;color:var(--wood)}
+.sub{font-size:14px;font-style:italic;color:var(--ink)}
+.strap{font-size:11px;letter-spacing:.16em;color:var(--dim);margin-top:6px;text-transform:uppercase}
+
+.figure{margin:18px 0 8px}
+canvas#fig{width:100%;height:auto;aspect-ratio:900/520;display:block;background:var(--well);border:1px solid var(--line)}
+.caption{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;font-size:10px;letter-spacing:.2em;color:var(--dim);margin-top:7px}
+
+.ctls{margin-top:22px;border-top:1px solid var(--hair);padding-top:18px}
+.row{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.fld{display:flex;flex-direction:column;gap:6px;user-select:none}
+.fld>span{font-size:10px;letter-spacing:.2em;color:var(--dim)}
+.fld>span b{color:var(--wood);font-weight:600}
+
+.btn{font-family:inherit;font-size:12px;letter-spacing:.14em;color:var(--ink);background:transparent;border:1px solid var(--line);padding:10px 16px;cursor:pointer;border-radius:0}
+.btn:hover{border-color:var(--wood);color:var(--wood)}
+.btn:focus-visible{outline:2px solid var(--wood);outline-offset:2px}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:default;transform:none}
+.btn.big{padding:12px 26px;font-size:14px}
+.btn.on{background:var(--ember);color:#1c140d;border-color:var(--ember)}
+.btn.mute.muted{background:var(--faint);color:var(--well);border-color:var(--faint)}
+
+select,input[type=range]{font-family:inherit;font-size:12px;color:var(--ink);background:var(--panel);border:1px solid var(--line);padding:9px 10px;border-radius:0}
+select:focus-visible,input[type=range]:focus-visible{outline:2px solid var(--wood);outline-offset:2px}
+input[type=range]{accent-color:var(--wood);padding:0;height:34px;width:190px;background:transparent;border:0}
+
+.ledger{margin-top:8px;border-top:1px solid var(--hair);padding-top:16px}
+.ledger dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 22px;margin:0;font-size:12px}
+.ledger dt{color:var(--dim);letter-spacing:.16em;font-size:10px;align-self:baseline;padding-top:2px}
+.ledger dd{margin:0;color:var(--ink)}
+
+.colophon{margin-top:34px;padding-top:14px;border-top:1px solid var(--hair);font-size:11px;letter-spacing:.12em;color:var(--dim)}
+.colophon a{color:var(--wood);text-decoration:none;border-bottom:1px dotted var(--wood)}
+.colophon .fine{font-size:10px;color:var(--faint)}
+
+.exit{position:sticky;top:max(6px,env(safe-area-inset-top));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;margin:0 0 16px;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench{position:fixed;top:max(6px,env(safe-area-inset-top));right:max(6px,env(safe-area-inset-right));z-index:100;display:flex;width:fit-content;align-items:center;gap:.55em;padding:7px 13px 7px 11px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:11px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;text-decoration:none;color:#e9e2d2;background:rgba(10,10,12,.5);border:1px solid rgba(233,226,210,.28);border-radius:999px;backdrop-filter:blur(6px);transition:border-color .15s ease,background .15s ease,transform .12s ease}
+.bench:hover,.bench:focus-visible,.exit:hover,.exit:focus-visible{color:#fff;border-color:rgba(233,226,210,.72);background:rgba(10,10,12,.8);outline:none}
+.bench:active,.exit:active{transform:translateY(1px)}
+.exit .x{font-size:15px;line-height:1;letter-spacing:0}
+@media(prefers-reduced-motion:reduce){.bench,.exit{transition:none}}
+
+.reader{margin:22px auto 4px;padding:0 18px;max-width:100%;box-sizing:border-box}
+.reader>summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;padding:8px 15px;border:1px solid;border-radius:999px;opacity:.6;user-select:none;transition:opacity .15s}
+.reader>summary::-webkit-details-marker{display:none}
+.reader>summary::marker{content:''}
+.reader>summary::before{content:'▸';display:inline-block;transition:transform .18s ease}
+.reader[open]>summary::before{transform:rotate(90deg)}
+.reader>summary:hover,.reader>summary:focus-visible{opacity:1;outline:none}
+.reader[open]>summary{opacity:1;margin-bottom:14px}
+.rbody{max-width:64ch;font-size:1rem;line-height:1.66;opacity:.92}
+.rbody h4{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;opacity:.62;margin:17px 0 6px;font-weight:500}
+.rbody h4:first-child{margin-top:2px}
+.rbody p{margin:0 0 11px}
+.rbody em{font-style:italic}
+
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <a class="exit" href="../" aria-label="Back to opuscula — all works" title="opuscula"><span class="x" aria-hidden="true">←</span>opvscvla</a>
+  <a class="bench" href="../officina/#m=amadinda" aria-label="Open in officina — the voicing bench" title="officina">officina</a>
+
+<header>
+  <div class="brand"><a href="../">OPVSCVLA</a> · OP. XXVII</div>
+  <h1>AMADINDA</h1>
+  <div class="sub">the Baganda royal log xylophone &middot; two parts interlock, a third is read off them</div>
+  <div class="strap">okunaga begins &middot; okwawula divides &middot; okukoonera is never written</div>
+</header>
+
+<section class="figure">
+  <canvas id="fig" width="900" height="520" aria-label="The interlock wheel: pulses of the combined okunaga/okwawula stream arranged around a ring, radial position encoding degree (five tracks); ember sparks on the rim mark the derived okukoonera strikes; a rotating playhead sweeps as the cycle plays."></canvas>
+  <div class="caption">
+    <span>THE INTERLOCK WHEEL &middot; RADIUS = DEGREE</span>
+    <span>OKUNAGA (wood) &middot; OKWAWULA (grass) &middot; OKUKOONERA (ember, rim)</span>
+  </div>
+</section>
+
+<section class="ctls">
+  <div class="row">
+    <button id="btnPlay" class="btn big">PLAY</button>
+    <button id="btnPause" class="btn" disabled>PAUSE</button>
+    <button id="btnAnother" class="btn">ANOTHER</button>
+    <button id="btnCut" class="btn">CUT &middot; WAV</button>
+  </div>
+  <div class="row">
+    <div class="fld">
+      <span>CYCLE <i>(empagi)</i></span>
+      <select id="selCycle"></select>
+    </div>
+    <div class="fld">
+      <span>MUKO</span>
+      <select id="selMuko"></select>
+    </div>
+    <div class="fld">
+      <span>ENSEMBLE</span>
+      <select id="selEnsemble"></select>
+    </div>
+  </div>
+  <div class="row">
+    <div class="fld">
+      <span>TEMPO <b id="lblTempo">540</b> strokes/min (combined)</span>
+      <input type="range" id="inpTempo" min="360" max="660" step="2" value="540">
+    </div>
+  </div>
+  <div class="row">
+    <span style="font-size:10px;letter-spacing:.2em;color:var(--dim);align-self:center">LISTEN LIKE A MUGANDA — MUTE A PART:</span>
+    <button id="muteokunaga" class="btn mute" title="key 1">1 OKUNAGA</button>
+    <button id="muteokwawula" class="btn mute" title="key 2">2 OKWAWULA</button>
+    <button id="muteokukoonera" class="btn mute" title="key 3">3 OKUKOONERA</button>
+  </div>
+</section>
+
+<section class="ledger">
+  <dl>
+    <dt>SEED</dt><dd id="ledSeed">—</dd>
+    <dt>CYCLE</dt><dd id="ledCycle">—</dd>
+    <dt>MUKO</dt><dd id="ledMuko">—</dd>
+    <dt>ENSEMBLE</dt><dd id="ledEnsemble">—</dd>
+    <dt>TEMPO</dt><dd id="ledTempo">—</dd>
+    <dt>TUNING</dt><dd>equipentatonic &middot; f = 122&nbsp;Hz &times; 2^((key&minus;1)/5) &middot; five exact 240&cent; steps, zero just intonation</dd>
+    <dt>STATUS</dt><dd id="ledStatus">—</dd>
+  </dl>
+</section>
+
+<details class="reader">
+  <summary>On this music · the amadinda and the court of the Kabaka</summary>
+  <div class="rbody">
+    <h4>The court of the Kabaka</h4>
+    <p>Buganda is the largest traditional kingdom of Uganda; its court at the Lubiri, the Kabaka's palace at Mengo, kept professional musician guilds for centuries — the twelve-key <em>amadinda</em> and the larger <em>akadinda</em> log xylophones, the <em>entenga</em> royal drum chime, the <em>ennanga</em> arched harp. In May 1966 government troops stormed the Lubiri; the court and its music stopped overnight.</p>
+    <h4>How three play twelve keys</h4>
+    <p>Two players sit facing each other across the middle keys. The <em>omunazi</em> plays <em>okunaga</em> ("to begin") — an even row of notes, always struck in parallel octaves — on the even pulses; the <em>omwawuzi</em> plays <em>okwawula</em> ("to divide"), the same kind of row, exactly in the gaps. Together they weave one unbroken stream at double density. A third player, the <em>omukoonezi</em>, composes nothing: he watches the combined stream and, on the instrument's two topmost keys, duplicates every note that lands on the two lowest keys — two octaves up. Nobody plays the melody you hear rising out of the texture; it is read off the whole.</p>
+    <h4>Inherent patterns</h4>
+    <p>At full speed — eight to ten strokes a second in real performance — the ear cannot track the true interlocking parts. It regroups the stream by pitch proximity into separate melodic threads that nobody is actually playing: what the ethnomusicologist Gerhard Kubik, who learned amadinda playing from the court musician Evaristo Muyinda, called <em>inherent patterns</em>. Kiganda composers judge a piece by what emerges, not by what is notated; Ligeti later named this music among the sparks for his late piano études.</p>
+    <h4>The tuning</h4>
+    <p>Klaus Wachsmann's measurements of Kiganda instruments in the 1940s&ndash;50s found five nearly equal steps to the octave, about 240 cents apart — an <em>equipentatonic</em> ideal, not a Western compromise. The proof is in the repertoire itself: a piece can be shifted by one to four steps (a <em>muko</em>) and remain exactly itself, which only works if every step truly is the same size. This machine tunes exactly to that ideal — five-tone equal temperament, no just intonation anywhere in the signal path — the collection's second deliberate departure from just tuning after TRITAVA's non-octave scale.</p>
+    <h4>Muko — the same piece, five times over</h4>
+    <p>Because the okukoonera rule always watches the instrument's two lowest physical keys — not two fixed notes of the tune — shifting the muko genuinely recomposes the derived part even though the melody underneath is, note for note, the same piece transposed. Five transpositions, five different emergent melodies.</p>
+    <h4>What this machine does and does not do</h4>
+    <p>It composes fresh okunaga and okwawula parts within the documented law on every seed — not a transcription of the historical repertoire, whose named classics (<em>Ssematimba ne Kikwabanga</em>, <em>Olutalo olw'e Nsinsi</em>, <em>Ganga alula</em>) survive through Wachsmann's recordings and Kubik's transcriptions and are honored here in name only. Two synthesized bodies carry the same score: the amadinda's dry hardwood slats, and the entenga drum chime that historically played the identical repertoire on a different body.</p>
+  </div>
+</details>
+
+<footer class="colophon">
+  op. XXVII &middot; <a href="../">opvscvla</a> &middot; keys: space=play/stop &middot; p=pause/resume &middot; r=another &middot; c=cut &middot; 1/2/3=mute a part<br>
+  <span class="fine">log wood &amp; banana leaf, IBM Plex Mono &middot; 2026</span>
+</footer>
+</main>
+
+<script>
+/* =====================================================================
+   AMADINDA — op. XXVII. The Buganda court log xylophone as a law machine.
+   Two seeded parts (okunaga on even pulses, okwawula on odd) interlock in
+   strict alternation and parallel octaves; the third part (okukoonera, the
+   amatengezzi keys) is derived mechanically — never composed — from
+   whichever pulses land on the instrument's two lowest keys. Tuning is
+   exact 5-TET (equipentatonic, ~240¢ steps) — no just intonation anywhere.
+
+   THE SHARED SKELETON (every opuscula work is built the same way):
+     · __hint / __iosAudio — iOS audio unlock, identical across the works.
+     · a seeded generator that COMPOSES the piece (LAW block + genAll).
+     · an audio graph of oscillators/noise only — never samples.
+     · TWO renderers: a realtime lookahead scheduler feeding the live
+       AudioContext, and an offline OfflineAudioContext render for "cut".
+     · a <canvas> wheel that sleeps when idle.
+     · a hash-permalink block: every control (seed included) round-trips
+       through location.hash, so THE URL IS THE PRESSING.
+
+   KEYS: space=play/stop · p=pause/resume · r=another · c=cut ·
+         1/2/3 = mute okunaga/okwawula/okukoonera (session-only, not hashed)
+   ===================================================================== */
+
+/* ---- iOS audio unlock: playback session, gesture resume, interruption recovery ---- */
+function __hint(msg){
+  try{
+    const p=document.getElementById('btnPlay')||document.querySelector('button');
+    if(!p||!p.insertAdjacentElement)return;
+    let h=document.getElementById('ioshint');
+    if(!h){h=document.createElement('div');h.id='ioshint';
+      h.style.cssText='font-size:.72rem;text-align:center;opacity:.8;margin-top:6px;font-style:italic;letter-spacing:.04em';
+      p.insertAdjacentElement('afterend',h);}
+    h.textContent=msg;
+  }catch(e){}
+}
+function __iosAudio(ac){
+  try{if(navigator.audioSession&&navigator.audioSession.type!=='playback')navigator.audioSession.type='playback';}catch(e){}
+  const kick=()=>{try{if(!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
+  kick();
+  try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
+  const onVis=()=>{try{if(document.visibilityState==='visible')kick();}catch(e){}};
+  document.addEventListener&&document.addEventListener('visibilitychange',onVis);
+  window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
+  try{ac.addEventListener('statechange',()=>{
+    if(ac.state==='closed'){document.removeEventListener&&document.removeEventListener('visibilitychange',onVis);__hint('');return;}
+    if(ac.state==='running')__hint('');
+    else setTimeout(kick,60);
+  });}catch(e){}
+  setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
+    __hint('AUDIO PAUSED — tap Play again · if silent, check the ring/silent switch');}catch(e){}},450);
+}
+
+/* ---- Media Session: lock-screen / notification-shade transport ---- */
+const __SILENCE='data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+let __silAudio=null;
+function __mediaSessionInit(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.setActionHandler('play',()=>{if(!st.playing)play();else if(st.paused)togglePause();});
+    navigator.mediaSession.setActionHandler('pause',()=>{if(st.playing&&!st.paused)togglePause();});
+    navigator.mediaSession.setActionHandler('stop',()=>{if(st.playing)stop();});
+    navigator.mediaSession.setActionHandler('nexttrack',()=>{const b=$('btnAnother');b&&b.click();});
+  }catch(e){}
+}
+function __mediaSessionUpdate(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.metadata=new MediaMetadata({
+      title:'AMADINDA', artist:'OPVSCVLA · op. XXVII',
+      album:st.ensemble.toUpperCase()+' · muko '+ROMAN[st.muko]
+    });
+    navigator.mediaSession.playbackState=(st.playing&&!st.paused)?'playing':'paused';
+  }catch(e){}
+}
+function __silStart(){
+  try{ if(!__silAudio){__silAudio=new Audio(__SILENCE);__silAudio.loop=true;__silAudio.setAttribute('playsinline','');}
+    __silAudio.play().catch(()=>{}); }catch(e){}
+}
+function __silStop(){try{__silAudio&&__silAudio.pause();}catch(e){}}
+
+const $=id=>document.getElementById(id);
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const ROMAN=['I','II','III','IV','V'];
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function cssVar(name,fallback){try{const v=getComputedStyle(document.documentElement).getPropertyValue(name).trim();return v||fallback;}catch(e){return fallback;}}
+
+/* ============================ LAW ======================================
+   The tuning and the interlock are engine law, not TIMBRE. BASE is the
+   only Hz literal in the whole signal path. */
+const SR=44100;
+const BASE=122;                                 // Hz, key 1 — law, not voicing
+const N_CHOICES=[12,18,24,36];
+function keyFreq(k){ return BASE*Math.pow(2,(k-1)/5); }   // exact 5-TET, k=1..12
+
+/* ---- the contour walk: steps of -2..+2 taxed toward +-1, folding at [0,4] ---- */
+const TAX=[-2,-1,-1,-1,0,1,1,1,2];
+function walkSteps(rng,len,startDeg){
+  let d=startDeg; const out=[d];
+  for(let i=1;i<len;i++){
+    let nd=d+TAX[Math.floor(rng()*TAX.length)];
+    if(nd<0)nd=-nd; if(nd>4)nd=8-nd;
+    d=nd; out.push(d);
+  }
+  return out;
+}
+function segmentsForN(N){
+  if(N===12)return[6,6]; if(N===18)return[6,6,6]; if(N===24)return[12,12]; if(N===36)return[12,12,12];
+  return[N];
+}
+function composeOkunaga(rng,N){
+  const lens=segmentsForN(N);
+  const first=walkSteps(rng,lens[0],0);
+  const segs=[first];
+  for(let s=1;s<lens.length;s++){
+    const v=first.slice();
+    const nSub=1+Math.floor(rng()*3);
+    for(let k=0;k<nSub;k++){
+      const idx=Math.floor(rng()*v.length);
+      let nv=Math.floor(rng()*5);
+      if(nv===v[idx])nv=(nv+1+Math.floor(rng()*4))%5;
+      v[idx]=nv;
+    }
+    segs.push(v);
+  }
+  return [].concat(...segs);
+}
+function combinedDegrees(okunagaRaw,okwawulaRaw,N,shift){
+  const out=new Array(2*N);
+  for(let i=0;i<N;i++){
+    out[2*i]=(((okunagaRaw[i]+shift)%5)+5)%5;
+    out[2*i+1]=(((okwawulaRaw[i]+shift)%5)+5)%5;
+  }
+  return out;
+}
+function lowBandFrac(comb){ let c=0; for(let i=0;i<comb.length;i++) if(comb[i]===0||comb[i]===1)c++; return c/comb.length; }
+function maxCircularRun(arr){
+  const L=arr.length; if(!L)return 0;
+  const doubled=arr.concat(arr);
+  let best=1,run=1;
+  for(let i=1;i<doubled.length;i++){
+    if(doubled[i]===doubled[i-1]){run++; if(run>best)best=run;} else run=1;
+    if(best>=L)break;
+  }
+  return Math.min(best,L);
+}
+function circAutocorr(a,lag){ const M=a.length; let match=0; for(let i=0;i<M;i++) if(a[i]===a[(i+lag)%M])match++; return match/M; }
+function bandPeriodicity(onset,N){
+  const M=onset.length; let cnt=0; for(const v of onset)cnt+=v;
+  if(cnt===0||cnt===M)return 0;
+  const lags=[Math.round(N/2),Math.round(N/3)].filter(l=>l>0&&l<M);
+  let best=0; for(const lag of lags){const sc=circAutocorr(onset,lag); if(sc>best)best=sc;}
+  return best;
+}
+function distinctGapBonus(onset){
+  const M=onset.length, idxs=[];
+  for(let i=0;i<M;i++) if(onset[i])idxs.push(i);
+  if(idxs.length<2)return 0;
+  const gaps=new Set();
+  for(let i=0;i<idxs.length;i++){ const nxt=idxs[(i+1)%idxs.length]; const g=((nxt-idxs[i])+M)%M||M; gaps.add(g); }
+  return gaps.size>=2?0.3:0;
+}
+function emergenceScore(comb,N){
+  const bands=[[0,1],[2,3],[4]]; let total=0;
+  for(const band of bands){
+    const onset=comb.map(d=>band.includes(d)?1:0);
+    total+=bandPeriodicity(onset,N)+distinctGapBonus(onset);
+  }
+  return total;
+}
+
+/* ---- the search: K=64 candidates, hard constraints checked across all
+   five muko rotations so any transposition of the winning piece is valid,
+   soft emergence score breaks the tie. Never fails to terminate. ---- */
+const _canonCache=new Map();
+/* rotation badness: how many of the 5 muko rotations violate the low-band
+   window (+ the shift-invariant stutter check), and by how much — the
+   metric a local repair hill-climbs against. */
+function rotationBadness(okunagaRaw,cand,N){
+  let failCount=0, dist=0;
+  for(let sh=0;sh<5;sh++){
+    const frac=lowBandFrac(combinedDegrees(okunagaRaw,cand,N,sh));
+    if(frac<0.25){failCount++; dist+=(0.25-frac);}
+    else if(frac>0.50){failCount++; dist+=(frac-0.50);}
+  }
+  if(maxCircularRun(combinedDegrees(okunagaRaw,cand,N,0))>3){failCount+=5; dist+=1;}
+  return {failCount,dist};
+}
+/* a bounded single-position hill-climb: K=64 random sampling alone leaves a
+   small tail of seeds where no candidate clears the density window on
+   every one of the five muko rotations at once. Rather than growing K
+   arbitrarily (diminishing returns, more search time for the same gap),
+   nudge single pulses of the best sampled candidate toward validity —
+   never touches okunaga, never crashes, always terminates. */
+function repairCandidate(rng,okunagaRaw,cand,N){
+  let cur=cand.slice(), curBad=rotationBadness(okunagaRaw,cur,N);
+  for(let t=0;t<500&&curBad.failCount>0;t++){
+    const idx=Math.floor(rng()*N), old=cur[idx], nv=Math.floor(rng()*5);
+    if(nv===old)continue;
+    cur[idx]=nv;
+    const nb=rotationBadness(okunagaRaw,cur,N);
+    if(nb.failCount<curBad.failCount||(nb.failCount===curBad.failCount&&nb.dist<curBad.dist)) curBad=nb;
+    else cur[idx]=old;
+  }
+  return {cand:cur,bad:curBad};
+}
+function genCanon(seed,N){
+  const key=seed+'|'+N;
+  if(_canonCache.has(key))return _canonCache.get(key);
+  const rng=mulberry32((seed^Math.imul(N,2654435761))>>>0);
+  const okunagaRaw=composeOkunaga(rng,N);
+  const K=64, cands=[];
+  for(let c=0;c<K;c++){ const start=Math.floor(rng()*5); cands.push(walkSteps(rng,N,start)); }
+  function passesAllRot(cand){ return rotationBadness(okunagaRaw,cand,N).failCount===0; }
+  function scoreOf(cand){ return emergenceScore(combinedDegrees(okunagaRaw,cand,N,0),N); }
+  let pool=cands.filter(passesAllRot), level=0, okwawulaRaw;
+  if(pool.length){
+    okwawulaRaw=pool[0]; let bestScore=scoreOf(pool[0]);
+    for(let i=1;i<pool.length;i++){ const s=scoreOf(pool[i]); if(s>bestScore){bestScore=s;okwawulaRaw=pool[i];} }
+  }else{
+    // none of the 64 sampled candidates clear every rotation: take the
+    // least-bad by rotationBadness (ties by emergence), then repair it.
+    let bestC=cands[0], bestBad=rotationBadness(okunagaRaw,cands[0],N), bestScore=scoreOf(cands[0]);
+    for(let i=1;i<cands.length;i++){
+      const b=rotationBadness(okunagaRaw,cands[i],N), s=scoreOf(cands[i]);
+      if(b.failCount<bestBad.failCount||(b.failCount===bestBad.failCount&&b.dist<bestBad.dist)){bestC=cands[i];bestBad=b;bestScore=s;}
+    }
+    const repaired=repairCandidate(rng,okunagaRaw,bestC,N);
+    okwawulaRaw=repaired.cand;
+    level=repaired.bad.failCount===0?1:2;   // 1 = repaired to full validity, 2 = honest last resort
+  }
+  const result={okunagaRaw,okwawulaRaw,N,level};
+  _canonCache.set(key,result);
+  return result;
+}
+function genAll(seed,N,muko){
+  const canon=genCanon(seed,N);
+  const shift=((muko%5)+5)%5;
+  const okunaga=canon.okunagaRaw.map(d=>((d+shift)%5+5)%5);
+  const okwawula=canon.okwawulaRaw.map(d=>((d+shift)%5+5)%5);
+  const combined=combinedDegrees(canon.okunagaRaw,canon.okwawulaRaw,N,shift);
+  const okukoonera=[];
+  for(let p=0;p<combined.length;p++){
+    const d=combined[p];
+    if(d===0)okukoonera.push({pulse:p,key:11});
+    else if(d===1)okukoonera.push({pulse:p,key:12});
+  }
+  return {seed,N,muko:shift,okunaga,okwawula,okukoonera,combined,level:canon.level};
+}
+function cycleEvents(gen){
+  const evs=[];
+  for(let i=0;i<gen.N;i++){
+    evs.push({pulse:2*i,part:'okunaga',keys:[gen.okunaga[i]+1,gen.okunaga[i]+6]});
+    evs.push({pulse:2*i+1,part:'okwawula',keys:[gen.okwawula[i]+1,gen.okwawula[i]+6]});
+  }
+  for(const ok of gen.okukoonera) evs.push({pulse:ok.pulse,part:'okukoonera',keys:[ok.key]});
+  evs.sort((a,b)=>a.pulse-b.pulse||(a.part==='okukoonera'?1:-1));
+  return evs;
+}
+
+/* ============================= TIMBRE =================================== */
+const TIMBRE={
+  id:'amadinda',
+  title:'AMADINDA — the voicing bench',
+  doc:'Two synthesized bodies for one interlocking score: free-bar log slats (amadinda) and a tuned drum chime (entenga). Everything here is voicing — decays, partials, balance, room. The 5-TET tuning law, the cycle length, the interlock, and the derived okukoonera rule are fixed engine law and are not exposed here.',
+  groups:{
+    master:{label:'master',doc:'Output stage: level into a gentle saturator and a glue compressor ahead of a brickwall limiter — the cut can never clip.',params:{
+      level:{v:.85,min:0,max:1.2,step:.01,label:'level'},
+      drive:{v:.18,min:0,max:.8,step:.01,label:'drive',doc:'gentle soft-clip saturation'},
+      comp:{v:.5,min:0,max:1,step:.02,label:'compression',doc:'blends threshold and ratio together — glue, not squash'},
+    }},
+    bars:{label:'the bars · amadinda',doc:'The twelve hardwood slats. Free-bar transverse-mode partials at ratios 1 : p2r : p3r, each with its own register-scaled decay. No resonators — the sound is dry and woody.',params:{
+      p2r:{v:2.76,min:2,max:3.6,step:.01,label:'partial 2 ratio',doc:'the free-bar overtone (ideal bar 2.76)'},
+      p2a:{v:.30,min:0,max:.8,step:.01,label:'partial 2 level'},
+      p3r:{v:5.40,min:3.5,max:7,step:.01,label:'partial 3 ratio'},
+      p3a:{v:.09,min:0,max:.4,step:.01,label:'partial 3 level',doc:'the glitter'},
+      decay:{v:.5,min:.2,max:1.2,step:.01,unit:'s',label:'decay (low key)'},
+      decayTilt:{v:.3,min:.1,max:1,step:.01,label:'decay tilt',doc:'top-key decay as a fraction of the low-key decay'},
+      hardness:{v:.5,min:0,max:1,step:.02,label:'strike hardness'},
+    }},
+    mallet:{label:'the mallet',doc:'The strike transient common to every amadinda stroke.',params:{
+      thump:{v:.55,min:0,max:1,step:.02,label:'thump level'},
+      thumpLen:{v:.007,min:.002,max:.02,step:.001,unit:'s',label:'thump length'},
+      noiseColor:{v:.5,min:0,max:1,step:.02,label:'tone',doc:'0 = bright chip, 1 = dark thud'},
+    }},
+    drums:{label:'the drums · entenga',doc:'Twelve tuned drums carrying the identical repertoire. Membrane modes at ratios 1 : p2r : p3r : p4r, a fast initial pitch drop, and a skin-noise transient.',params:{
+      p2r:{v:1.5,min:1.2,max:2,step:.01,label:'partial 2 ratio'},
+      p2a:{v:.4,min:0,max:1,step:.01,label:'partial 2 level'},
+      p3r:{v:2.0,min:1.6,max:2.6,step:.01,label:'partial 3 ratio'},
+      p3a:{v:.25,min:0,max:1,step:.01,label:'partial 3 level'},
+      p4r:{v:2.9,min:2.4,max:3.6,step:.01,label:'partial 4 ratio'},
+      p4a:{v:.12,min:0,max:.6,step:.01,label:'partial 4 level'},
+      dropDepth:{v:60,min:0,max:150,step:1,unit:'¢',label:'pitch drop depth'},
+      dropTime:{v:.04,min:.01,max:.12,step:.005,unit:'s',label:'pitch drop time'},
+      skinNoise:{v:.25,min:0,max:.8,step:.01,label:'skin noise'},
+      decay:{v:.6,min:.2,max:1.4,step:.01,unit:'s',label:'decay (low drum)'},
+      decayTilt:{v:.35,min:.1,max:1,step:.01,label:'decay tilt'},
+    }},
+    balance:{label:'balance',doc:'The three parts as independent gain taps — mute or solo-audition the interlock exactly as Kubik teaches it: hear okunaga alone, then the composite.',params:{
+      okunagaGain:{v:1,min:0,max:1.6,step:.02,label:'okunaga'},
+      okwawulaGain:{v:1,min:0,max:1.6,step:.02,label:'okwawula'},
+      okukooneraGain:{v:1,min:0,max:1.6,step:.02,label:'okukoonera'},
+      jitter:{v:.03,min:0,max:.2,step:.005,label:'velocity jitter',doc:'small seeded unevenness — the tradition is otherwise strictly even'},
+    }},
+    tuning:{label:'tuning & room',doc:'Voicing only — the 5-TET law itself is fixed engine code, not exposed here.',params:{
+      spread:{v:6,min:0,max:30,step:.5,unit:'¢',label:'tuning spread',doc:'per-key detune from ideal 5-TET, drawn deterministically from the seed — real log instruments are never perfectly equal'},
+      roomSize:{v:.18,min:0,max:1,step:.02,label:'room size'},
+      roomSend:{v:.12,min:0,max:.5,step:.01,label:'room send'},
+    }},
+  }
+};
+
+/* ---- OFFICINA bridge (identical in every machine) ------------------------ */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+/* ============================ SYNTHESIS ================================= */
+function synBar(f0,decay,rng){
+  const B=TP.bars, M=TP.mallet;
+  const dur=Math.max(.15,decay*4), n=Math.floor(dur*SR), o=new Float32Array(n);
+  const parts=[[1,1],[B.p2r,B.p2a],[B.p3r,B.p3a]];
+  for(const[pr,pa] of parts){
+    const f=f0*pr; if(f>SR*0.45)continue;
+    const pd=decay*Math.pow(pr,-0.65);
+    const w=2*Math.PI*f/SR; let ph=rng()*6.283;
+    for(let i=0;i<n;i++){ph+=w; o[i]+=Math.sin(ph)*pa*Math.exp(-(i/SR)/pd);}
+  }
+  const cn=Math.floor(M.thumpLen*SR); let prev=0;
+  for(let i=0;i<cn;i++){
+    const nz=rng()*2-1, hp=nz-prev*M.noiseColor; prev=nz;
+    o[i]+=hp*M.thump*(0.4+0.6*B.hardness)*Math.exp(-i/(0.0013*SR));
+  }
+  return o;
+}
+function synDrum(f0,decay,rng){
+  const D=TP.drums;
+  const dur=Math.max(.15,decay*4), n=Math.floor(dur*SR), o=new Float32Array(n);
+  const dropRatio=Math.pow(2,D.dropDepth/1200)-1;
+  const parts=[[1,1],[D.p2r,D.p2a],[D.p3r,D.p3a],[D.p4r,D.p4a]];
+  for(const[pr,pa] of parts){
+    const pd=decay*Math.pow(pr,-0.6);
+    let ph=0;
+    for(let i=0;i<n;i++){
+      const t=i/SR;
+      const f=f0*pr*(1+dropRatio*Math.exp(-t/D.dropTime));
+      ph+=2*Math.PI*f/SR;
+      o[i]+=Math.sin(ph)*pa*Math.exp(-t/pd);
+    }
+  }
+  const cn=Math.floor(0.01*SR); let prev=0;
+  for(let i=0;i<cn;i++){
+    const nz=rng()*2-1, hp=nz-prev*0.3; prev=nz;
+    o[i]+=hp*D.skinNoise*Math.exp(-i/(0.0025*SR));
+  }
+  return o;
+}
+function toBuffer(ctx,arr){ const b=ctx.createBuffer(1,arr.length,SR); b.getChannelData(0).set(arr); return b; }
+function buildKits(ctx,seed){
+  const detuneRng=mulberry32((seed^0xBADA55)>>>0);
+  const detune=[0]; for(let k=1;k<=12;k++) detune[k]=(detuneRng()*2-1)*TP.tuning.spread;
+  const amad={}, ent={};
+  const rngA=mulberry32(0x51ed270b), rngE=mulberry32(0x27d4eb2f);
+  for(let k=1;k<=12;k++){
+    const f=keyFreq(k)*Math.pow(2,detune[k]/1200);
+    const decA=TP.bars.decay*Math.pow(TP.bars.decayTilt,(k-1)/11);
+    amad[k]=toBuffer(ctx,synBar(f,decA,rngA));
+    const decE=TP.drums.decay*Math.pow(TP.drums.decayTilt,(k-1)/11);
+    ent[k]=toBuffer(ctx,synDrum(f,decE,rngE));
+  }
+  return {amadinda:amad,entenga:ent};
+}
+
+/* ============================ AUDIO GRAPH =============================== */
+function shaperCurve(k){const n=1024,c=new Float32Array(n); for(let i=0;i<n;i++){const x=i/(n-1)*2-1;c[i]=Math.tanh(x*k)/Math.tanh(k);} return c;}
+function makeRoomIR(ac,sec,exp){
+  const len=Math.max(1,Math.floor(sec*ac.sampleRate)), b=ac.createBuffer(2,len,ac.sampleRate);
+  for(let c=0;c<2;c++){const d=b.getChannelData(c);let lp=0;
+    for(let i=0;i<len;i++){const e=Math.pow(1-i/len,exp);lp+=0.22*((Math.random()*2-1)-lp);d[i]=lp*e*3;}}
+  return b;
+}
+function buildGraph(ac){
+  const G={ac};
+  G.okunagaGain=ac.createGain(); G.okunagaGain.gain.value=TP.balance.okunagaGain;
+  G.okwawulaGain=ac.createGain(); G.okwawulaGain.gain.value=TP.balance.okwawulaGain;
+  G.okukooneraGain=ac.createGain(); G.okukooneraGain.gain.value=TP.balance.okukooneraGain;
+  G.panOkunaga=ac.createStereoPanner(); G.panOkunaga.pan.value=-0.22;
+  G.panOkwawula=ac.createStereoPanner(); G.panOkwawula.pan.value=0.22;
+  G.panOkukoonera=ac.createStereoPanner(); G.panOkukoonera.pan.value=0;
+  G.okunagaGain.connect(G.panOkunaga); G.okwawulaGain.connect(G.panOkwawula); G.okukooneraGain.connect(G.panOkukoonera);
+  G.dry=ac.createGain(); G.dry.gain.value=1;
+  G.roomSend=ac.createGain(); G.roomSend.gain.value=TP.tuning.roomSend;
+  [G.panOkunaga,G.panOkwawula,G.panOkukoonera].forEach(n=>{ n.connect(G.dry); n.connect(G.roomSend); });
+  G.room=ac.createConvolver(); G.room.buffer=makeRoomIR(ac,0.3+TP.tuning.roomSize*1.2,2.6);
+  G.roomSend.connect(G.room);
+  G.shaper=ac.createWaveShaper(); G.shaper.curve=shaperCurve(1+TP.master.drive*6); G.shaper.oversample='2x';
+  G.comp=ac.createDynamicsCompressor();
+  G.comp.threshold.value=-24+TP.master.comp*18; G.comp.ratio.value=2+TP.master.comp*6;
+  G.comp.attack.value=.003; G.comp.release.value=.15;
+  G.limiter=ac.createDynamicsCompressor();
+  G.limiter.threshold.value=-6; G.limiter.knee.value=6; G.limiter.ratio.value=20;
+  G.limiter.attack.value=.0015; G.limiter.release.value=.09;
+  G.master=ac.createGain(); G.master.gain.value=TP.master.level;
+  G.dry.connect(G.shaper); G.room.connect(G.shaper);
+  G.shaper.connect(G.comp).connect(G.limiter).connect(G.master).connect(ac.destination);
+  return G;
+}
+function playStroke(ctx,G,kit,key,part,t,gainMul){
+  const buf=kit&&kit[key]; if(!buf)return;
+  const src=ctx.createBufferSource(); src.buffer=buf;
+  const g=ctx.createGain(); g.gain.value=gainMul==null?1:gainMul;
+  src.connect(g);
+  const tap=part==='okunaga'?G.okunagaGain:part==='okwawula'?G.okwawulaGain:G.okukooneraGain;
+  g.connect(tap);
+  src.start(t);
+}
+function scheduleCycle(ctx,G,kit,gen,cycleStartT,pulseDur,stage,mutes,cycleIdx,seed){
+  const events=cycleEvents(gen);
+  for(const ev of events){
+    if(ev.part==='okwawula'&&stage<1)continue;
+    if(ev.part==='okukoonera'&&stage<2)continue;
+    if(mutes[ev.part])continue;
+    const t=cycleStartT+ev.pulse*pulseDur;
+    const jseed=(seed ^ Math.imul(cycleIdx+1,486187739) ^ Math.imul(ev.pulse+1,2246822519))>>>0;
+    const jr=mulberry32(jseed)();
+    const gainMul=1+(jr*2-1)*TP.balance.jitter;
+    for(const k of ev.keys) playStroke(ctx,G,kit,k,ev.part,t,gainMul);
+  }
+}
+
+/* ============================== STATE ==================================== */
+const st={seed:0x1a2b3c4d>>>0,N:24,muko:0,ensemble:'amadinda',tempo:540,playing:false,paused:false,
+  mutes:{okunaga:false,okwawula:false,okukoonera:false}};
+let RT=null;
+
+/* ============================ TRANSPORT ================================== */
+function play(){
+  const ac=new (window.AudioContext||window.webkitAudioContext)();
+  __iosAudio(ac);
+  const G=buildGraph(ac);
+  const kits=buildKits(ac,st.seed);
+  const gen=genAll(st.seed,st.N,st.muko);
+  const pulseDur=60/st.tempo;
+  const t0=ac.currentTime+0.1;
+  RT={ac,G,kits,kitSeed:st.seed,gen,genKey:st.seed+'|'+st.N,cycleIdx:0,cycleStartT:t0,pulseDur,N:st.N,timer:null};
+  scheduleCycle(ac,G,kits[st.ensemble],gen,t0,pulseDur,0,st.mutes,0,st.seed);
+  RT.timer=setInterval(schedTick,40);
+  st.playing=true; st.paused=false;
+  $('btnPlay').textContent='STOP'; $('btnPlay').classList.add('on');
+  $('btnPause').disabled=false; $('btnPause').textContent='PAUSE'; $('btnPause').classList.remove('on');
+  __mediaSessionInit(); __mediaSessionUpdate(); __silStart();
+  renderLedger(); startRaf();
+}
+function schedTick(){
+  if(!RT)return;
+  const cycleDur=2*RT.N*RT.pulseDur;
+  const boundary=RT.cycleStartT+cycleDur;
+  if(RT.ac.currentTime>boundary-0.2){
+    const newGenKey=st.seed+'|'+st.N;
+    const mukoShift=((st.muko%5)+5)%5;
+    if(newGenKey!==RT.genKey){
+      RT.gen=genAll(st.seed,st.N,st.muko); RT.genKey=newGenKey; RT.N=st.N; RT.cycleIdx=0;
+    }else{
+      RT.cycleIdx++;
+      if(RT.gen.muko!==mukoShift) RT.gen=genAll(st.seed,st.N,st.muko);
+    }
+    if(st.seed!==RT.kitSeed){ RT.kits=buildKits(RT.ac,st.seed); RT.kitSeed=st.seed; }
+    RT.pulseDur=60/st.tempo;
+    RT.cycleStartT=boundary;
+    const stage=Math.min(RT.cycleIdx,2);
+    scheduleCycle(RT.ac,RT.G,RT.kits[st.ensemble],RT.gen,RT.cycleStartT,RT.pulseDur,stage,st.mutes,RT.cycleIdx,st.seed);
+  }
+}
+function togglePause(){
+  if(!RT)return;
+  if(!st.paused){ RT.ac.suspend().catch(()=>{}); st.paused=true; $('btnPause').textContent='RESUME'; $('btnPause').classList.add('on'); }
+  else{ RT.ac.resume().catch(()=>{}); st.paused=false; $('btnPause').textContent='PAUSE'; $('btnPause').classList.remove('on'); }
+  __mediaSessionUpdate(); renderLedger();
+}
+function stop(){
+  if(!RT)return;
+  clearInterval(RT.timer);
+  const cycleDur=2*RT.N*RT.pulseDur;
+  const remain=Math.max(0,(RT.cycleStartT+cycleDur)-RT.ac.currentTime);
+  const c=RT.ac;
+  setTimeout(()=>{try{c.close();}catch(e){}},(remain+1.2)*1000);
+  RT=null;
+  st.playing=false; st.paused=false;
+  $('btnPlay').textContent='PLAY'; $('btnPlay').classList.remove('on');
+  $('btnPause').disabled=true; $('btnPause').textContent='PAUSE'; $('btnPause').classList.remove('on');
+  __mediaSessionUpdate(); __silStop();
+  renderLedger(); draw();
+}
+function another(){
+  st.seed=(Math.random()*0x100000000)>>>0;
+  updateHashSoon(); renderLedger();
+  if(!st.playing) draw();
+}
+// scales L/R down (deterministically, by the buffer's own measured peak) so
+// the cut never exceeds ceil — a hard guarantee independent of the
+// compressor/limiter's own behavior, which can still overshoot on fast
+// multi-voice transients.
+function normalizeToPeak(L,R,ceil){
+  let peak=1e-9;
+  for(let i=0;i<L.length;i++){ const a=Math.max(Math.abs(L[i]),Math.abs(R[i])); if(a>peak)peak=a; }
+  if(peak>ceil){ const k=ceil/peak; for(let i=0;i<L.length;i++){L[i]*=k;R[i]*=k;} }
+  return peak;
+}
+async function cut(){
+  const btn=$('btnCut'); const orig=btn.textContent; btn.disabled=true; btn.textContent='CUTTING…';
+  try{
+    const gen=genAll(st.seed,st.N,st.muko);
+    const pulseDur=60/st.tempo, cycleDur=2*st.N*pulseDur;
+    const TARGET=48;
+    const numCycles=Math.max(3,Math.ceil(TARGET/cycleDur));
+    const leadIn=0.05, tailPad=1.2;
+    const total=leadIn+numCycles*cycleDur+tailPad;
+    const ctx=new OfflineAudioContext(2,Math.ceil(total*SR),SR);
+    const G=buildGraph(ctx);
+    const kits=buildKits(ctx,st.seed);
+    for(let c=0;c<numCycles;c++)
+      scheduleCycle(ctx,G,kits[st.ensemble],gen,leadIn+c*cycleDur,pulseDur,Math.min(c,2),st.mutes,c,st.seed);
+    const rb=await ctx.startRendering();
+    const L=rb.getChannelData(0), R=rb.getChannelData(1);
+    normalizeToPeak(L,R,0.92);
+    const blob=encodeWav(L,R,SR);
+    saveWav(blob,'amadinda_'+st.ensemble+'_n'+st.N+'_k'+(st.muko+1)+'_'+st.seed.toString(16).padStart(8,'0').slice(-6)+'.wav');
+  }catch(e){ console.error(e); }
+  btn.disabled=false; btn.textContent=orig;
+}
+
+/* ------------------------------- canvas ---------------------------------- */
+let rafOn=false;
+function startRaf(){
+  if(RM){draw();return;}
+  if(rafOn)return; rafOn=true;
+  requestAnimationFrame(function loop(){
+    rafOn=false; draw();
+    if(st.playing&&!st.paused&&!RM){rafOn=true; requestAnimationFrame(loop);}
+  });
+}
+function currentPulseInfo(){
+  if(!RT||!st.playing||st.paused)return null;
+  const cur=RT.ac.currentTime-RT.cycleStartT;
+  if(cur<0)return null;
+  const p=Math.floor(cur/RT.pulseDur)%(2*RT.N);
+  return {pulse:p,stage:Math.min(RT.cycleIdx,2)};
+}
+function draw(){
+  const cv=$('fig'); if(!cv)return;
+  const ctx=cv.getContext('2d'); const w=cv.width,h=cv.height;
+  ctx.fillStyle=cssVar('--well','#140d08'); ctx.fillRect(0,0,w,h);
+  const gen=(RT&&RT.gen)?RT.gen:genAll(st.seed,st.N,st.muko);
+  const N=gen.N;
+  const cx=w/2, cy=h/2-6;
+  const Rin=Math.min(w,h)*0.13, Rout=Math.min(w,h)*0.40;
+  const info=currentPulseInfo();
+  const stage=info?info.stage:2;
+  const bandR=[0,1,2,3,4].map(d=>Rin+(d/4)*(Rout-Rin));
+  ctx.strokeStyle=cssVar('--hair','rgba(201,154,91,.14)'); ctx.lineWidth=1;
+  for(const r of bandR){ ctx.beginPath(); ctx.arc(cx,cy,r,0,2*Math.PI); ctx.stroke(); }
+  const M2=2*N;
+  for(let p=0;p<M2;p++){
+    const isOkunaga=(p%2===0), idx=Math.floor(p/2);
+    if(!isOkunaga && stage<1) continue;
+    const deg=isOkunaga?gen.okunaga[idx]:gen.okwawula[idx];
+    const ang=-Math.PI/2+(p/M2)*2*Math.PI;
+    const r=Rin+(deg/4)*(Rout-Rin);
+    const x=cx+r*Math.cos(ang), y=cy+r*Math.sin(ang);
+    ctx.beginPath(); ctx.arc(x,y,isOkunaga?3.4:3,0,2*Math.PI);
+    ctx.fillStyle=isOkunaga?cssVar('--wood','#c99a5b'):cssVar('--grass','#8a9c4e');
+    ctx.fill();
+    if((deg===0||deg===1) && stage>=2){
+      const rx=cx+(Rout+9)*Math.cos(ang), ry=cy+(Rout+9)*Math.sin(ang);
+      ctx.beginPath(); ctx.arc(rx,ry,2.6,0,2*Math.PI);
+      ctx.fillStyle=cssVar('--ember','#d9662c'); ctx.fill();
+    }
+  }
+  if(info && !RM){
+    const ang=-Math.PI/2+(info.pulse/M2)*2*Math.PI;
+    ctx.strokeStyle=cssVar('--ember','#d9662c'); ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(cx+(Rout+16)*Math.cos(ang),cy+(Rout+16)*Math.sin(ang)); ctx.stroke();
+  }
+  ctx.fillStyle=cssVar('--dim','#a58a5e'); ctx.font='11px IBM Plex Mono, monospace';
+  ctx.textAlign='center';
+  ctx.fillText('N='+N+' · MUKO '+ROMAN[st.muko]+' · '+st.ensemble.toUpperCase(),cx,cy+Rout+34);
+}
+
+/* ------------------------------- ledger ----------------------------------- */
+function renderLedger(){
+  $('ledSeed').textContent=st.seed.toString(16).toUpperCase().padStart(8,'0');
+  $('ledCycle').textContent=st.N+' notes (empagi)';
+  $('ledMuko').textContent='MUKO '+ROMAN[st.muko];
+  $('ledEnsemble').textContent=st.ensemble.toUpperCase();
+  $('ledTempo').textContent=st.tempo+' strokes/min';
+  $('ledStatus').textContent=st.playing?(st.paused?'paused':'playing'):'stopped';
+}
+
+/* ------------------------------- UI wiring --------------------------------- */
+N_CHOICES.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;if(n===st.N)o.selected=true;$('selCycle').appendChild(o);});
+ROMAN.forEach((r,i)=>{const o=document.createElement('option');o.value=i;o.textContent='MUKO '+r;if(i===st.muko)o.selected=true;$('selMuko').appendChild(o);});
+['amadinda','entenga'].forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e.toUpperCase();if(e===st.ensemble)o.selected=true;$('selEnsemble').appendChild(o);});
+
+function afterLawChange(){ updateHashSoon(); renderLedger(); if(!st.playing) draw(); }
+$('selCycle').addEventListener('change',e=>{st.N=parseInt(e.target.value,10); afterLawChange();});
+$('selMuko').addEventListener('change',e=>{st.muko=parseInt(e.target.value,10); afterLawChange();});
+$('selEnsemble').addEventListener('change',e=>{st.ensemble=e.target.value; afterLawChange();});
+$('inpTempo').addEventListener('input',e=>{st.tempo=parseInt(e.target.value,10); $('lblTempo').textContent=st.tempo; afterLawChange();});
+
+['okunaga','okwawula','okukoonera'].forEach(p=>{
+  const b=$('mute'+p);
+  b.addEventListener('click',()=>{ st.mutes[p]=!st.mutes[p]; b.classList.toggle('muted',st.mutes[p]); });
+});
+
+$('btnPlay').addEventListener('click',()=>{ if(st.playing) stop(); else play(); });
+$('btnPause').addEventListener('click',togglePause);
+$('btnAnother').addEventListener('click',another);
+$('btnCut').addEventListener('click',cut);
+
+addEventListener('keydown',e=>{
+  const t=e.target&&e.target.tagName;
+  if(t==='INPUT'||t==='SELECT'||t==='TEXTAREA')return;
+  if(e.code==='Space'){e.preventDefault(); $('btnPlay').click();}
+  else if(e.key==='p'||e.key==='P')togglePause();
+  else if(e.key==='r'||e.key==='R')another();
+  else if(e.key==='c'||e.key==='C')cut();
+  else if(e.key==='1')$('muteokunaga').click();
+  else if(e.key==='2')$('muteokwawula').click();
+  else if(e.key==='3')$('muteokukoonera').click();
+});
+
+/* ---- hash: every param (seed included) round-trips; the URL is the pressing ---- */
+let __applying=false;
+function __state(){ return {s:st.seed.toString(16),n:st.N,k:st.muko,e:st.ensemble,t:st.tempo}; }
+function __apply(o){
+  if(o.s)st.seed=parseInt(o.s,16)>>>0;
+  if(o.n!==undefined&&N_CHOICES.includes(parseInt(o.n,10)))st.N=parseInt(o.n,10);
+  if(o.k!==undefined)st.muko=((parseInt(o.k,10)%5)+5)%5;
+  if(o.e==='amadinda'||o.e==='entenga')st.ensemble=o.e;
+  if(o.t!==undefined)st.tempo=Math.max(360,Math.min(660,parseInt(o.t,10)));
+}
+function __hashRead(){ const h=location.hash.slice(1); if(!h)return null; const o={};
+  for(const q of h.split('&')){const i=q.indexOf('=');if(i>0)o[q.slice(0,i)]=decodeURIComponent(q.slice(i+1));} return o; }
+function __hashWrite(){ if(__applying)return; try{const o=__state(); history.replaceState(null,'','#'+Object.entries(o).map(([k,v])=>k+'='+v).join('&'));}catch(e){} }
+function updateHashSoon(){ setTimeout(__hashWrite,60); }
+function syncControls(){
+  $('selCycle').value=String(st.N); $('selMuko').value=String(st.muko); $('selEnsemble').value=st.ensemble;
+  $('inpTempo').value=String(st.tempo); $('lblTempo').textContent=st.tempo;
+}
+
+/* ---- robust WAV save (shared house pattern) ----------------------------- */
+function encodeWav(L,R,sr){
+  const n=L.length,buf=new ArrayBuffer(44+n*4),d=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)d.setUint8(o+i,s.charCodeAt(i));};
+  ws(0,'RIFF');d.setUint32(4,36+n*4,true);ws(8,'WAVE');ws(12,'fmt ');
+  d.setUint32(16,16,true);d.setUint16(20,1,true);d.setUint16(22,2,true);
+  d.setUint32(24,sr,true);d.setUint32(28,sr*4,true);d.setUint16(32,4,true);d.setUint16(34,16,true);
+  ws(36,'data');d.setUint32(40,n*4,true);
+  let o=44; const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+  for(let i=0;i<n;i++){d.setInt16(o,clamp(L[i],-1,1)*32767,true);o+=2;d.setInt16(o,clamp(R[i],-1,1)*32767,true);o+=2;}
+  return new Blob([buf],{type:'audio/wav'});
+}
+function saveWav(blob,filename){
+  var url=URL.createObjectURL(blob);
+  try{var a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){try{a.remove()}catch(e){}},30000);}catch(e){}
+  try{
+    var old=document.getElementById('__savebar');if(old)old.remove();
+    var bar=document.createElement('div');bar.id='__savebar';
+    bar.setAttribute('style','position:fixed;left:50%;bottom:max(14px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:99999;display:flex;gap:.7em;align-items:center;max-width:92vw;padding:11px 15px;border-radius:999px;background:rgba(14,14,16,.92);color:#e9e2d2;font:600 13px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;box-shadow:0 8px 26px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)');
+    var a2=document.createElement('a');a2.href=url;a2.download=filename;a2.textContent='⬇ Save WAV';
+    a2.setAttribute('style','color:#fff;text-decoration:none;white-space:nowrap');
+    var nm=document.createElement('span');nm.textContent=filename;
+    nm.setAttribute('style','opacity:.6;font-weight:400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:46vw');
+    var x=document.createElement('button');x.textContent='✕';x.setAttribute('aria-label','dismiss');
+    x.setAttribute('style','background:none;border:none;color:#e9e2d2;cursor:pointer;font-size:14px;opacity:.65;padding:0 1px');
+    x.onclick=function(){bar.remove()};
+    a2.addEventListener('click',function(){setTimeout(function(){try{bar.remove()}catch(e){}},1500)});
+    bar.appendChild(a2);bar.appendChild(nm);bar.appendChild(x);document.body.appendChild(bar);
+  }catch(e){}
+  setTimeout(function(){try{URL.revokeObjectURL(url)}catch(e){}},300000);
+}
+
+/* ---- OFFICINA live hooks -------------------------------------------------
+   Live-rampable: master level/drive/comp, the three balance taps, room
+   send. Everything else (bars/mallet/drums partials & decays, tuning
+   spread, room size) only matters at the NEXT bake — and every play()/cut()
+   bakes fresh from current TP already, so there is nothing else to do here:
+   no mid-play rebake, exactly the house convention. */
+function applyMasterLive(){
+  if(!RT)return;
+  const ct=RT.ac.currentTime;
+  RT.G.master.gain.setTargetAtTime(TP.master.level,ct,.05);
+  RT.G.shaper.curve=shaperCurve(1+TP.master.drive*6);
+  RT.G.comp.threshold.setTargetAtTime(-24+TP.master.comp*18,ct,.05);
+  RT.G.comp.ratio.setTargetAtTime(2+TP.master.comp*6,ct,.05);
+  RT.G.okunagaGain.gain.setTargetAtTime(TP.balance.okunagaGain,ct,.05);
+  RT.G.okwawulaGain.gain.setTargetAtTime(TP.balance.okwawulaGain,ct,.05);
+  RT.G.okukooneraGain.gain.setTargetAtTime(TP.balance.okukooneraGain,ct,.05);
+  RT.G.roomSend.gain.setTargetAtTime(TP.tuning.roomSend,ct,.05);
+}
+const LIVE_PARAMS=new Set(['master.level','master.drive','master.comp','balance.okunagaGain','balance.okwawulaGain','balance.okukooneraGain','balance.jitter','tuning.roomSend']);
+TIMBRE.touch=(path)=>{ if(path==null||LIVE_PARAMS.has(path)) applyMasterLive(); };
+TIMBRE.demo=(group)=>{
+  try{
+    const voice=(group==='drums')?'entenga':(group==='bars'||group==='mallet')?'amadinda':st.ensemble;
+    const ac2=new (window.AudioContext||window.webkitAudioContext)();
+    const G=buildGraph(ac2);
+    const kits=buildKits(ac2,st.seed);
+    const keys=[4,7,9,11];
+    let t=ac2.currentTime+0.05;
+    const step=0.5*60/540;
+    for(const k of keys){ playStroke(ac2,G,kits[voice],k,'okunaga',t,1); t+=step; }
+    setTimeout(()=>{try{ac2.close();}catch(e){}},2500);
+  }catch(e){}
+};
+
+/* ---- init: read the hash, sync the UI, draw the first frame -------------- */
+(function init(){
+  const o=__hashRead();
+  if(o){ __applying=true; try{__apply(o);}catch(e){} __applying=false; }
+  else { st.seed=(Math.random()*0x100000000)>>>0; }
+  syncControls(); __hashWrite(); renderLedger(); draw();
+})();
+</script>
+</body>
+</html>
