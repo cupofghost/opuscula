@@ -46,6 +46,8 @@ h1{font-size:2.6rem;font-weight:400;letter-spacing:.02em;line-height:1.05;margin
 .mchips button.on{color:var(--bg);background:var(--brass);border-color:var(--brass);font-weight:500}
 .mchips .rn{opacity:.6;margin-right:.45em}
 .mchips button.on .rn{opacity:.75}
+.allbar{display:flex;align-items:center;gap:.6rem;margin-bottom:1rem}
+.allbar .stripnote{font-family:'IBM Plex Mono',monospace;font-size:.6rem;letter-spacing:.06em;color:var(--dim)}
 
 /* bench layout */
 .bench{display:grid;grid-template-columns:minmax(340px,620px) minmax(360px,1fr);gap:1rem;align-items:start}
@@ -106,6 +108,11 @@ details.grp[open]>summary::before{transform:rotate(90deg)}
 .prm .rst{background:none;border:none;color:var(--dim);cursor:pointer;font-size:.75rem;padding:0 .2em;visibility:hidden}
 .prm.mod .rst{visibility:visible}
 .prm .rst:hover{color:var(--txt)}
+.prm .pab{font-family:'IBM Plex Mono',monospace;font-size:.55rem;letter-spacing:.05em;color:var(--dim);
+  background:none;border:1px solid var(--dim);border-radius:999px;padding:.05em .55em;cursor:pointer;visibility:hidden;white-space:nowrap}
+.prm.mod .pab{visibility:visible}
+.prm .pab:hover{color:var(--txt);border-color:var(--txt)}
+.prm .pab.on{color:var(--bg);background:var(--brass);border-color:var(--brass)}
 .prm input[type=range]{width:100%;height:1.15rem;accent-color:var(--brass);background:transparent;display:block;margin-top:.1rem}
 .prm .pdoc{font-size:.85rem;color:var(--dim);line-height:1.45;max-width:70ch;margin-top:.1rem}
 
@@ -138,6 +145,10 @@ footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
   <p class="sub"><b>The voicing bench.</b> Every machine keeps its synthesized voices in one documented block — its <em>timbre</em>. Pick a machine below: it runs live in its own frame while you shape those voices by ear, in the mix they actually sit in. Save what you dial in as named presets; they follow the machine everywhere on this device.</p>
 
   <div class="mchips mono" id="mchips" role="tablist" aria-label="Machines"></div>
+  <div class="allbar mono">
+    <button class="bt" id="pexpall" title="export every machine's applied voice + presets on this device, in one file">export everything</button>
+    <span class="stripnote" id="expallnote"></span>
+  </div>
 
   <div class="bench">
     <div class="stage">
@@ -158,7 +169,7 @@ footer a{color:inherit;text-decoration:underline;text-underline-offset:2px}
       <h4>Where the sound actually lives</h4>
       <p>Each machine's source carries a <code>TIMBRE</code> block near the top of its script — every synthesis constant, named, bounded, and documented, grouped by voice. The machine's code reads those values instead of scattered magic numbers, so the numbers on this bench <em>are</em> the instrument's voice. The bench talks to the machine over <code>postMessage</code> while it plays; nothing here is a mock-up or a preview — the frame on the left is the real machine, real scheduler, real mix.</p>
       <h4>Presets</h4>
-      <p>Edits write to this browser's storage as the machine's <em>applied</em> voice: open the machine directly — even from the catalogue — and it speaks with your voicing. Name and save any state as a preset; load, overwrite, or delete them here; export them as JSON to move between devices or to hand back for baking into the factory voice. <code>FACTORY</code> returns the shipped sound (the machine also obeys a <code>?factory</code> URL switch). The <code>A/B</code> button flips the running machine to the factory voice while lit — the honest way to hear what your tweaks are doing.</p>
+      <p>Edits write to this browser's storage as the machine's <em>applied</em> voice: open the machine directly — even from the catalogue — and it speaks with your voicing. Name and save any state as a preset; load, overwrite, or delete them here; export them as JSON to move between devices or to hand back for baking into the factory voice — <code>export everything</code>, above the machine chips, does the same for every machine's voicing on this device in one file. <code>FACTORY</code> returns the shipped sound (the machine also obeys a <code>?factory</code> URL switch). The <code>A/B</code> button flips the whole running machine to the factory voice while lit; each touched parameter carries its own small <code>a/b</code> to hold just that one at factory — the honest way to hear what any single tweak, or the whole voicing, is doing.</p>
       <h4>Determinism, unharmed</h4>
       <p>Seeds, URL-hash pressings, and the offline WAV cut all still reproduce exactly — voicing changes <em>timbre</em>, never the composition. But a WAV cut while a preset is applied is cut in that preset's voice: what you hear is what you get.</p>
     </div>
@@ -292,6 +303,7 @@ function buildPanel(){
       const k=g+'.'+p;
       const el=document.createElement('div'); el.className='prm'; el.dataset.k=k;
       el.innerHTML='<div class="row1"><span class="plabel"></span><span class="sp"></span>'+
+        '<button class="pab" title="hold just this parameter at factory, to compare against your edit">a/b</button>'+
         '<input type="number"><span class="unit"></span>'+
         '<button class="rst" title="back to factory">↺</button></div>'+
         '<input type="range"><div class="pdoc"></div>';
@@ -307,6 +319,10 @@ function buildPanel(){
       rng.addEventListener('input',()=>{setVal(k,+rng.value);num.value=fmt(B.vals[k],P.step)});
       num.addEventListener('change',()=>{setVal(k,+num.value);num.value=fmt(B.vals[k],P.step);rng.value=B.vals[k]});
       el.querySelector('.rst').addEventListener('click',()=>{setVal(k,P.v);num.value=fmt(P.v,P.step);rng.value=P.v});
+      el.querySelector('.pab').addEventListener('click',ev=>{
+        const on=ev.currentTarget.classList.toggle('on');
+        post({op:'set',path:k,value:on?P.v:B.vals[k]});
+      });
       det.appendChild(el);
     }
     panel.appendChild(det);
@@ -337,6 +353,7 @@ function buildPanel(){
   $('pfactory').addEventListener('click',doFactory);
   $('pab').addEventListener('click',()=>{
     B.ab=!B.ab; $('pab').classList.toggle('on',B.ab);
+    document.querySelectorAll('.prm .pab.on').forEach(b=>b.classList.remove('on'));
     post({op:'bulk',values:B.ab?{}:modOnly()});
     note(B.ab?'hearing the FACTORY voice — press a/b again for your edits':'hearing your edits');
   });
@@ -392,7 +409,10 @@ function setVal(k,v){
   B.vals[k]=v;
   if(B.ab){B.ab=false;$('pab').classList.remove('on');post({op:'bulk',values:modOnly()});}
   else post({op:'set',path:k,value:v});
-  document.querySelectorAll('.prm[data-k="'+k+'"]').forEach(el=>el.classList.toggle('mod',isMod(k)));
+  document.querySelectorAll('.prm[data-k="'+k+'"]').forEach(el=>{
+    el.classList.toggle('mod',isMod(k));
+    const b=el.querySelector('.pab'); if(b)b.classList.remove('on');
+  });
   refreshMods(); writeApplied();
 }
 function paramOf(k){const i=k.indexOf('.');const G=B.schema.groups[k.slice(0,i)];return G&&G.params[k.slice(i+1)]}
@@ -406,6 +426,7 @@ function applyState(v){
     const k=el.dataset.k,P=paramOf(k);
     el.querySelector('input[type=range]').value=B.vals[k];
     el.querySelector('input[type=number]').value=fmt(B.vals[k],P.step);
+    const b=el.querySelector('.pab'); if(b)b.classList.remove('on');
   });
   refreshMods(); writeApplied();
 }
@@ -426,11 +447,30 @@ for(const[rn,dir,name]of MACHINES){
 }
 stage.addEventListener('load',()=>{ if(B.id&&!B.schema) setTimeout(()=>{if(!B.schema)post({op:'hello'})},400); });
 
-/* deep link: #m=<dir> */
-(function(){
+/* export every machine's applied voice + presets on this device, one file */
+$('pexpall').addEventListener('click',()=>{
+  const machines={};
+  for(const[,dir]of MACHINES){
+    const applied=loadJSON(AKEY(dir),null), pr=loadJSON(PKEY(dir),{});
+    if(applied||Object.keys(pr).length)machines[dir]={applied,presets:pr};
+  }
+  const n=Object.keys(machines).length;
+  if(!n){$('expallnote').textContent='nothing voiced yet on this device';return}
+  const blob=new Blob([JSON.stringify({officina:'export-all',machines},null,1)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='officina_all.json';a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),30000);
+  $('expallnote').textContent='exported '+n+' machine(s)';
+});
+
+/* deep link: #m=<dir> — also picked up on hashchange, so a pasted/edited
+   link or a browser back/forward switches machines mid-session too, not
+   just the chips */
+function applyHash(){
   const m=/[#&]m=([a-z-]+)/.exec(location.hash);
   if(m&&MACHINES.some(x=>x[1]===m[1]))pick(m[1]);
-})();
+}
+applyHash();
+addEventListener('hashchange',applyHash);
 </script>
 </body>
 </html>

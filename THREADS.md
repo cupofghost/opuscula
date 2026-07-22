@@ -15,6 +15,58 @@ create one (same header format) the first time you touch them.
 
 ---
 
+### OFFICINA — three deferred bench pick-ups from the TIMBRE rollout
+**Branch:** `claude/officina-tweaks-6qx98v` · **File:** `officina/index.html`
+only. **Status:** done, verified headless (synthetic-schema harness, not
+committed — see below). Closes the three "Pick-ups" noted when OFFICINA first
+shipped (this file, "OFFICINA + TIMBRE rollout"): export everything, a
+hashchange listener, and per-param A/B.
+
+- **Export everything.** `pexp` in the per-machine strip only ever exported
+  the currently-benched machine. Added a top-level `export everything` button
+  above the machine chips (`#pexpall`, new `.allbar` row) that walks
+  `MACHINES`, gathers every machine's `opvscvla.timbre.<id>` (applied voice)
+  and `opvscvla.presets.<id>` (named presets) that actually have data, and
+  downloads one `officina_all.json` (`{officina:'export-all', machines:{...}}`).
+  Machines with nothing saved are skipped rather than padding the file with
+  empty entries.
+- **Hashchange listener.** The `#m=<dir>` deep link only ever resolved once,
+  in an IIFE at load — switching machines after that was chips-only, even
+  though `pick()` already keeps the hash in sync via `history.replaceState`.
+  Factored the IIFE into `applyHash()`, called once at load and again on
+  `addEventListener('hashchange', applyHash)`; `pick()`'s existing
+  `history.replaceState` (not `location.hash=`) doesn't itself fire
+  `hashchange`, so there's no feedback loop. A pasted/edited link or
+  browser back/forward now switches the benched machine mid-session.
+- **Per-param A/B.** The existing `A/B` button flips the *entire* running
+  machine to factory while held — useful, but you lose the mix around the one
+  parameter you're actually deciding on. Added a small `a/b` button to every
+  param row (visible, like the reset `↺`, only once that param is modified)
+  that sends a single `{op:'set'}` holding just that path at its factory
+  value while lit, independent of the committed edit shown in the slider/
+  number box. Reconciled with the existing controls rather than left to
+  collide: editing a param (slider/number/reset) clears its own held toggle,
+  and the whole-voice `A/B` clears every per-param toggle when pressed (its
+  `bulk` post supersedes them all anyway) — both verified headless.
+- **Verified** with a throwaway `dev/scratchpad/verify-officina-tweaks.mjs`
+  (not committed, per `.gitignore`'s `scratchpad/`): built the panel from a
+  synthetic `{op:'schema'}` postMessage rather than through the real
+  `officina/<dir>?bench` iframe, because that cross-frame round-trip is
+  currently broken under `file://` in this sandbox on `main` too (confirmed
+  via `git stash` before touching anything) — unrelated to this change, not
+  fixed here. Checked: panel builds from the injected schema; hashchange
+  switches the stagehint/chip highlight; editing a param marks it modified
+  and reveals its `a/b`; the per-param toggle flips on/off and is cleared by
+  either editing that param or firing the whole-voice `A/B`; `export
+  everything` downloads `officina_all.json` containing every machine with
+  saved data (and no others) after seeding a second machine's
+  `localStorage` key directly. Zero page errors throughout. Also ran
+  `node dev/check.mjs` (bridge/registry/numbering) — clean, since no
+  machine `index.html` or the bridge itself was touched.
+- **Reader panel** (`officina/index.html`'s own "on this bench" doc) updated
+  to describe both new controls in the existing Presets section — minimal
+  addition, not a rewrite.
+
 ### Dev tooling — verify harness, drift checker, machine template, CI
 **Branch:** `claude/opuscula-workflow-standards-ljzy2z` · **Files:** new `dev/`
 (tooling) + `.github/workflows/ci.yml`; docs wired into `HANDOFF.md` + `CLAUDE.md`;
