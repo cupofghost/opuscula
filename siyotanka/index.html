@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ŠIYÓTȞAŊKA · op. XXV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="../favicon-32.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <link rel="manifest" href="../site.webmanifest">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --ground: #17110c;
+      --txt: #ecdcc0;
+      --field: #241a12;
+      --line: #7a5f45;
+      --accent: #d98a3d;   /* ochre / red-earth */
+      --sky: #4fb3a3;      /* prairie-dusk turquoise */
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --ground: #f6f0e6;
+        --txt: #2b2114;
+        --field: #efe7d8;
+        --line: #b09472;
+        --accent: #b96a1f;
+        --sky: #2f8576;
+      }
+    }
+    body {
+      background: var(--ground);
+      color: var(--txt);
+      font-family: Charter, 'Bitstream Charter', Georgia, serif;
+      line-height: 1.5;
+      font-size: 16px;
+    }
+    header { padding: 1rem; border-bottom: 3px double var(--line); position: relative; }
+    h1 { font-size: 2rem; font-weight: 400; letter-spacing: 0.12em; }
+    .subtitle { font-size: 0.9rem; color: var(--line); margin-top: 0.25rem; }
+    main { max-width: 1100px; margin: 0 auto; padding: 2rem 1rem; }
+    .controls { display: flex; gap: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; align-items: center; }
+    button { background: var(--field); color: var(--txt); border: 1px solid var(--line); padding: 0.5rem 1rem; cursor: pointer; font: inherit; }
+    button:hover { background: var(--line); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.on { background: var(--accent); color: var(--ground); }
+    select { background: var(--field); color: var(--txt); border: 1px solid var(--line); padding: 0.35rem 0.5rem; font: inherit; }
+    input[type="range"] { width: 170px; accent-color: var(--accent); }
+    .slider { display: flex; align-items: center; gap: 0.5rem; font-size: 0.92rem; }
+    canvas { border: 1px solid var(--line); display: block; margin: 1.5rem 0; max-width: 100%; height: auto; background: var(--field); }
+    .panel { background: var(--field); border: 1px solid var(--line); padding: 1.5rem; margin-bottom: 1.5rem; }
+    .panel h2 { font-size: 1.2rem; margin-bottom: 0.75rem; font-weight: 400; letter-spacing: 0.04em; }
+    .panel p { margin-bottom: 0.6rem; }
+    details.panel summary { cursor: pointer; font-size: 1.2rem; letter-spacing: 0.04em; }
+    details.panel[open] summary { margin-bottom: 0.75rem; }
+    .keys { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; font-size: 0.9rem; }
+    .key { background: var(--ground); padding: 0.5rem; border: 1px solid var(--line); }
+    .ledger { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.3rem; font-size: 0.85rem; font-family: ui-monospace, Menlo, Consolas, monospace; }
+    .ledger-row { padding: 0.3rem 0.55rem; background: var(--ground); border-left: 2px solid var(--accent); }
+    .ledger-row.tonic { border-left-color: var(--sky); }
+    footer { border-top: 3px double var(--line); padding: 1.5rem; text-align: center; font-size: 0.9rem; margin-top: 2rem; }
+    .pills { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .pill { display: inline-block; padding: 0.25rem 0.75rem; border: 1px solid var(--line); font-size: 0.85rem; }
+    @media (prefers-reduced-motion: reduce) {
+      canvas { border: 2px solid var(--line); }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <h1>ŠIYÓTȞAŊKA</h1>
+  <div class="subtitle">op. XXV · the Lakota courting flute · MMXXVI</div>
+</header>
+<main>
+  <div class="controls">
+    <button id="play">⏵ Play</button>
+    <button id="pause" disabled>⏸ Pause</button>
+    <button id="stop">⏹ Stop</button>
+    <button id="another">⟳ Another</button>
+    <button id="cut">💾 Cut WAV</button>
+  </div>
+  <div class="controls">
+    <div class="slider">
+      <label for="seed">Seed:</label>
+      <input type="range" id="seed" min="0" max="99999" value="0">
+      <span id="seedVal">0</span>
+    </div>
+    <div class="slider">
+      <label for="scale">Scale:</label>
+      <select id="scale">
+        <option value="0">Minor pentatonic (Mode 1)</option>
+        <option value="1">Neutral third (old-flute)</option>
+        <option value="2">Major pentatonic (Mode 4)</option>
+      </select>
+    </div>
+    <div class="slider">
+      <label for="key">Key:</label>
+      <select id="key">
+        <option value="0">D</option>
+        <option value="1">E</option>
+        <option value="2" selected>F♯</option>
+        <option value="3">G</option>
+        <option value="4">A</option>
+      </select>
+    </div>
+    <div class="slider">
+      <label for="pace">Pace:</label>
+      <input type="range" id="pace" min="0" max="100" value="45">
+    </div>
+    <div class="slider">
+      <label for="orn">Song:</label>
+      <input type="range" id="orn" min="0" max="100" value="45">
+    </div>
+  </div>
+
+  <canvas id="canvas" width="1040" height="340"></canvas>
+
+  <details class="panel" open>
+    <summary>On this music</summary>
+    <p>Across the Plains, a young man courted with a flute. The Lakota (Teton Sioux)
+    call it the <em>šiyótȟaŋka</em> — the "big prairie-chicken flute" — its breathy,
+    warbling voice likened to the booming courtship display of the grouse, and to
+    birdsong. It was played alone, out on the prairie at dusk: a solo, unaccompanied
+    love-song meant to carry across a camp. The tradition of Sioux music was
+    documented in unusual depth by Frances Densmore, whose <em>Teton Sioux Music</em>
+    (Bureau of American Ethnology, 1918) transcribed hundreds of songs.</p>
+    <p>The flute is a duct (fipple) flute: air is split against an edge, so the tone
+    is soft, woody, and full of breath. Melodies favour a <strong>terraced descent</strong>
+    — a phrase arcs up to a high note and tumbles back down in steps to a long-held
+    tonic, the shared melodic shape of Plains song — ornamented with grace notes and
+    quick "bird" trills between neighbouring tones.</p>
+    <p><strong>On the tuning.</strong> A Plains flute is hand-made; no two are tuned
+    alike, and older flutes were never in equal temperament — their finger-holes were
+    spaced by hand, and their thirds often measure <em>neutral</em>, sitting between a
+    minor and a major third. This machine renders the traditional minor-pentatonic
+    fingering (the modern "Mode 1": root, minor third, fourth, fifth, minor seventh)
+    in <strong>exact just intonation</strong> — the small-integer ratios a solo melody
+    leans toward — over one chosen key. The <em>Neutral third</em> scale swaps the just
+    6/5 third for 11/9 (≈347¢), the flatter third measurements of old flutes often
+    show; <em>Major pentatonic</em> is the brighter "Mode 4". The fingering diagram is
+    a schematic — more holes open, higher pitch — not a literal chart of any one flute.</p>
+  </details>
+
+  <div class="panel">
+    <h2>Keys</h2>
+    <div class="keys">
+      <div class="key"><strong>space</strong> play/stop</div>
+      <div class="key"><strong>p</strong> pause/resume</div>
+      <div class="key"><strong>r</strong> another (a new improvisation)</div>
+      <div class="key"><strong>c</strong> cut WAV</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>The scale <span id="scaleName" style="color:var(--line);font-size:0.9rem"></span></h2>
+    <div class="ledger" id="ledger"></div>
+  </div>
+</main>
+
+<footer>
+  <div class="pills">
+    <a href="../" class="pill">.exit</a>
+    <a href="../officina/?bench=siyotanka" class="pill">.bench</a>
+  </div>
+</footer>
+
+<script>
+// ============ TIMBRE SCHEMA (OFFICINA bridge) ============
+const TIMBRE = {
+  id: 'siyotanka',
+  title: 'ŠIYÓTȞAŊKA',
+  doc: 'The Lakota courting flute — a breathy wooden duct flute. One woody tone (bandpass-shaped harmonics), an air/breath noise bed gated to each note, a chiff at the attack, gentle finger-vibrato, grace notes and trills. Just intonation throughout; the scale itself (the law) is chosen in the UI, not here.',
+  groups: {
+    master: {
+      label: 'Master',
+      doc: 'Overall output level and the open-air reverb send.',
+      params: {
+        level: { v: 0.85, min: 0.1, max: 1, step: 0.05, label: 'Level', unit: '', doc: 'Master output gain.' },
+        room: { v: 0.34, min: 0, max: 1, step: 0.02, label: 'Room', unit: '', doc: 'Reverb send (the prairie/canyon air).' }
+      }
+    },
+    flute: {
+      label: 'Flute',
+      doc: 'The wooden tone. Level rides live; breath/bright/attack/release are baked per note and apply at the next verse or Play.',
+      params: {
+        level: { v: 0.78, min: 0.2, max: 1, step: 0.05, label: 'Level', unit: '', doc: 'Flute volume (live).' },
+        breath: { v: 0.32, min: 0, max: 0.8, step: 0.02, label: 'Breath', unit: '', doc: 'Air/breath noise mixed under each note (applies next verse).' },
+        bright: { v: 2100, min: 900, max: 5000, step: 100, label: 'Brightness', unit: 'Hz', doc: 'Tone lowpass cutoff — how reedy vs. dark (applies next verse).' },
+        attack: { v: 0.055, min: 0.01, max: 0.2, step: 0.005, label: 'Attack', unit: 's', doc: 'Note bloom time (applies next verse).' },
+        release: { v: 0.16, min: 0.05, max: 0.6, step: 0.02, label: 'Release', unit: 's', doc: 'Note release time (applies next verse).' }
+      }
+    },
+    vibrato: {
+      label: 'Vibrato',
+      doc: 'The finger-vibrato warble. Blooms after an onset delay, like a held flute note. Baked per note.',
+      params: {
+        depth: { v: 13, min: 0, max: 40, step: 1, label: 'Depth', unit: '¢', doc: 'Vibrato depth in cents (applies next verse).' },
+        rate: { v: 5.2, min: 3, max: 8, step: 0.1, label: 'Rate', unit: 'Hz', doc: 'Vibrato speed (applies next verse).' },
+        onset: { v: 0.35, min: 0, max: 1, step: 0.05, label: 'Onset', unit: 's', doc: 'Delay before vibrato blooms in (applies next verse).' }
+      }
+    },
+    ornament: {
+      label: 'Ornament',
+      doc: 'How grace notes and "bird" trills are voiced. How MANY of them is the Song slider (the law), not here.',
+      params: {
+        grace: { v: 0.07, min: 0.02, max: 0.16, step: 0.005, label: 'Grace', unit: 's', doc: 'Length of a grace note (applies next verse).' },
+        trill: { v: 11, min: 5, max: 18, step: 0.5, label: 'Trill rate', unit: 'Hz', doc: 'Speed of a trill’s alternation (applies next verse).' }
+      }
+    },
+    wind: {
+      label: 'Wind',
+      doc: 'A faint prairie-wind bed under the flute. Rides live.',
+      params: {
+        level: { v: 0.05, min: 0, max: 0.25, step: 0.01, label: 'Level', unit: '', doc: 'Wind bed volume (live).' },
+        cutoff: { v: 520, min: 200, max: 1400, step: 20, label: 'Cutoff', unit: 'Hz', doc: 'Wind lowpass centre (live).' },
+        rate: { v: 0.11, min: 0.03, max: 0.4, step: 0.01, label: 'Gust rate', unit: 'Hz', doc: 'How fast the wind swells (live).' }
+      }
+    },
+    room: {
+      label: 'Room',
+      doc: 'The reverb tail itself (the air the flute sounds into). Baked into the impulse response; applies at the next verse or Play.',
+      params: {
+        decay: { v: 2.6, min: 0.8, max: 4.5, step: 0.1, label: 'Decay', unit: 's', doc: 'Reverb tail length (applies next verse).' }
+      }
+    }
+  }
+};
+/* ---- OFFICINA bridge (identical in every machine) ------------------------ */
+const TP=(()=>{const o={};for(const g in TIMBRE.groups){o[g]={};const P=TIMBRE.groups[g].params;for(const p in P)o[g][p]=P[p].v;}return o;})();
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+// ============ STATE ============
+const st = {
+  seed: 0, scale: 0, key: 2, pace: 0.45, orn: 0.45,
+  playing: false, paused: false, lap: 0
+};
+let ac, RT = { g: null };
+let canvas, ctx;
+
+// ============ THE LAW: SCALE (tuning) + KEY + FINGERING ============
+// Every scale is a pentatonic set given as exact just-intonation ratios [num,den]
+// over the chosen key's fundamental. Five degrees; the octave (2/1) is implicit.
+const SCALES = [
+  // Mode 1 — the traditional minor pentatonic: root, ♭3, 4, 5, ♭7.
+  { name: 'Minor pentatonic (Mode 1)', ratios: [[1,1],[6,5],[4,3],[3,2],[9,5]] },
+  // Neutral third — the flat/neutral third measured on many old flutes (11/9 ≈ 347¢).
+  { name: 'Neutral third (old-flute)', ratios: [[1,1],[11,9],[4,3],[3,2],[9,5]] },
+  // Mode 4 — the brighter major pentatonic: root, 2, 3, 5, 6.
+  { name: 'Major pentatonic (Mode 4)', ratios: [[1,1],[9,8],[5,4],[3,2],[5,3]] }
+];
+// Keys name the flute's root note (all holes closed). The fundamental is a single
+// pitch reference; every degree above it is an exact ratio, so the intervals stay just.
+const KEYS = [
+  { name: 'D',  hz: 293.66 },
+  { name: 'E',  hz: 329.63 },
+  { name: 'F♯', hz: 369.99 },
+  { name: 'G',  hz: 392.00 },
+  { name: 'A',  hz: 440.00 }
+];
+// Schematic fingering: how many holes (of six, counted from the far/bottom end) are
+// open for each of the five degrees. More open ⇒ higher. Real six-hole flutes use
+// cross-fingerings; this is a teaching diagram, not one flute's chart.
+const OPEN_HOLES = [0, 1, 2, 3, 5];
+
+function cents(num, den) { return 1200 * Math.log2(num / den); }
+// A ladder index L walks the pentatonic across octaves: si = degree within the
+// octave (drives the fingering), oct = register (drives overblow).
+function ladder(L) {
+  const oct = Math.floor(L / 5), si = ((L % 5) + 5) % 5;
+  return { oct, si };
+}
+function ladderFreq(L, ratios, fund) {
+  const { oct, si } = ladder(L);
+  return fund * ratios[si][0] / ratios[si][1] * Math.pow(2, oct);
+}
+
+function mulberry32(a) {
+  return function() {
+    a |= 0; a = a + 0x6d2b79f5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// ============ COMPOSITION ENGINE ============
+// A verse is a sequence of free-rhythm phrases. Each phrase (optionally) arcs up
+// to a peak, then TERRACES DOWN in steps to a long-held tonic — the Plains
+// "tumbling strain" — with grace notes and trills sprinkled by the Song slider.
+// Returns { events, dur } — events carry absolute seconds so the scheduler places
+// them at ac.currentTime + t, and dur is the verse length (for the loop timer).
+function genAll(seed, scaleIdx, keyIdx, pace, ornAmt, lap = 0) {
+  const rng = mulberry32(seed ^ (lap * 0x9e3779b1));
+  const ratios = SCALES[scaleIdx].ratios;
+  const fund = KEYS[keyIdx].hz;
+  // Pace 0..1 → seconds per rhythmic unit (higher pace = quicker, shorter notes).
+  const dscale = 1.5 - 0.95 * pace;
+  const events = [];
+  let t = 0.5; // a beat of air before the first note
+
+  const push = (L, units, vel, orn) => {
+    const dur = units * dscale;
+    const { oct, si } = ladder(L);
+    events.push({
+      t, dur, L, si, oct,
+      freq: ladderFreq(L, ratios, fund),
+      neighborFreq: ladderFreq(L + 1, ratios, fund), // upper scale-step, for grace/trill
+      vel, orn: orn || null
+    });
+    t += dur + 0.02 * dscale * (0.5 + rng()); // a hair of rubato between notes
+  };
+
+  const nPhrases = 3 + Math.floor(rng() * 3); // 3–5 phrases per verse
+  for (let ph = 0; ph < nPhrases; ph++) {
+    // Peak of this phrase: a fifth to an octave-and-a-third above the root.
+    const pk = 3 + Math.floor(rng() * (ornAmt > 0.55 ? 5 : 4)); // 3..7 (or 3..6)
+
+    // Optional quick ascent up to the peak.
+    if (rng() < 0.6) {
+      let L = Math.max(0, pk - 3 - Math.floor(rng() * 2));
+      while (L < pk) {
+        push(L, 0.5 + rng() * 0.4, 0.5 + 0.1 * rng(),
+             rng() < 0.5 * ornAmt ? { grace: true } : null);
+        L += rng() < 0.78 ? 1 : 2;
+      }
+    }
+    // The peak itself — the brightest, most likely to sing a trill.
+    push(pk, 0.8 + rng() * 0.6, 0.72 + 0.13 * rng(),
+         rng() < 0.7 * ornAmt ? { trill: true } : null);
+
+    // Terraced descent to the tonic.
+    let cur = pk;
+    while (cur > 0) {
+      cur = Math.max(0, cur - (rng() < 0.8 ? 1 : 2));
+      const vel = 0.5 + 0.28 * (cur / pk) + 0.06 * rng();
+      push(cur, 0.55 + rng() * 0.45, vel,
+           rng() < 0.35 * ornAmt ? { grace: true } : null);
+      // Linger on a terrace: an upper-neighbour oscillation, then back.
+      if (cur > 0 && rng() < 0.4 * ornAmt) {
+        push(cur + 1, 0.3 + rng() * 0.2, vel * 0.85, null);
+        push(cur, 0.4 + rng() * 0.3, vel, null);
+      }
+    }
+    // Land on the tonic and hold it (the phrase's rest / breath).
+    push(0, 1.6 + rng() * 1.4, 0.5 + 0.08 * rng(),
+         rng() < 0.4 * ornAmt ? { trill: true } : null);
+
+    // Breathe before the next phrase.
+    t += (0.5 + rng() * 0.9) * dscale;
+  }
+
+  const last = events[events.length - 1];
+  const dur = (last ? last.t + last.dur : 2) + 0.8 * dscale;
+  return { events, dur };
+}
+
+// ============ AUDIO GRAPH ============
+// A single wooden tone (harmonic-rich PeriodicWave through a brightness lowpass),
+// a breath-noise bed and attack chiff synthesized per note, a faint wind bed, and
+// an open-air reverb (seeded IR). Master limiter holds the peak ≤ 1.
+let WOOD = null;      // cached PeriodicWave, per-context
+let NOISE_BUF = null; // cached white-noise buffer, per-context
+
+function woodWave(actx) {
+  // Duct-flute-ish spectrum: strong fundamental, gently rolling partials.
+  const amps = [0, 1, 0.5, 0.30, 0.15, 0.09, 0.05, 0.03, 0.02];
+  const real = new Float32Array(amps.length);
+  const imag = new Float32Array(amps.length);
+  for (let i = 0; i < amps.length; i++) imag[i] = amps[i];
+  return actx.createPeriodicWave(real, imag, { disableNormalization: false });
+}
+function noiseBuf(actx) {
+  const n = Math.floor(actx.sampleRate * 2);
+  const b = actx.createBuffer(1, n, actx.sampleRate);
+  const d = b.getChannelData(0);
+  const r = mulberry32(0x5eed ^ st.seed);
+  for (let i = 0; i < n; i++) d[i] = r() * 2 - 1;
+  return b;
+}
+
+function buildGraph(actx) {
+  const sr = actx.sampleRate;
+  const nodes = {};
+  WOOD = woodWave(actx);
+  NOISE_BUF = noiseBuf(actx);
+
+  nodes.master = new GainNode(actx, { gain: TP.master.level });
+  nodes.limiter = new DynamicsCompressorNode(actx, { threshold: -3, knee: 3, ratio: 12, attack: 0.003, release: 0.12 });
+
+  // Open-air reverb: seeded exponential-noise IR.
+  const irLen = Math.max(1, Math.floor(sr * TP.room.decay));
+  const ir = actx.createBuffer(2, irLen, sr);
+  const irR = mulberry32(0xa17 ^ st.seed);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = ir.getChannelData(ch);
+    for (let i = 0; i < irLen; i++) d[i] = (irR() * 2 - 1) * Math.pow(1 - i / irLen, 2.2);
+  }
+  nodes.conv = new ConvolverNode(actx, { buffer: ir });
+  nodes.wet = new GainNode(actx, { gain: TP.master.room });
+  nodes.dry = new GainNode(actx, { gain: 1 });
+
+  // Flute bus.
+  nodes.flute = new GainNode(actx, { gain: TP.flute.level });
+  nodes.flute.connect(nodes.dry);
+  nodes.flute.connect(nodes.conv);
+
+  // Wind bed: looping noise → LFO-swept lowpass → gain.
+  nodes.windSrc = new AudioBufferSourceNode(actx, { buffer: NOISE_BUF, loop: true });
+  nodes.windLP = new BiquadFilterNode(actx, { type: 'lowpass', frequency: TP.wind.cutoff, Q: 0.7 });
+  nodes.windGain = new GainNode(actx, { gain: TP.wind.level });
+  nodes.windLFO = new OscillatorNode(actx, { type: 'sine', frequency: TP.wind.rate });
+  nodes.windLFOgain = new GainNode(actx, { gain: TP.wind.cutoff * 0.5 });
+  nodes.windLFO.connect(nodes.windLFOgain);
+  nodes.windLFOgain.connect(nodes.windLP.frequency);
+  nodes.windSrc.connect(nodes.windLP);
+  nodes.windLP.connect(nodes.windGain);
+  nodes.windGain.connect(nodes.dry);
+  nodes.windGain.connect(nodes.conv);
+
+  // Routing: (dry + wet) → limiter → master → out.
+  nodes.dry.connect(nodes.limiter);
+  nodes.conv.connect(nodes.wet);
+  nodes.wet.connect(nodes.limiter);
+  nodes.limiter.connect(nodes.master);
+  nodes.master.connect(actx.destination);
+
+  return nodes;
+}
+
+// One breathy flute note, synthesized fresh (tone + breath noise + chiff + vibrato).
+function voice(actx, dest, freq, neighborFreq, t0, dur, vel, orn) {
+  const atk = TP.flute.attack, rel = TP.flute.release;
+  let start = t0, mainDur = dur;
+
+  // Grace note: a quick upper neighbour that leans into the main note.
+  if (orn && orn.grace) {
+    const g = Math.min(TP.ornament.grace, dur * 0.4);
+    graceOsc(actx, dest, neighborFreq, t0, g, vel * 0.8);
+    start = t0 + g; mainDur = dur - g;
+  }
+
+  // Tone.
+  const osc = new OscillatorNode(actx, { frequency: freq });
+  osc.setPeriodicWave(WOOD);
+  const lp = new BiquadFilterNode(actx, { type: 'lowpass', frequency: TP.flute.bright, Q: 0.6 });
+
+  // Finger vibrato, blooming after an onset delay.
+  if (TP.vibrato.depth > 0) {
+    const lfo = new OscillatorNode(actx, { type: 'sine', frequency: TP.vibrato.rate });
+    const lg = new GainNode(actx, { gain: 0 });
+    const on = Math.min(TP.vibrato.onset, mainDur * 0.6);
+    lg.gain.setValueAtTime(0, start);
+    lg.gain.linearRampToValueAtTime(TP.vibrato.depth, start + on + 0.001);
+    lfo.connect(lg); lg.connect(osc.detune);
+    lfo.start(start); lfo.stop(start + mainDur + rel);
+  }
+
+  // Trill: alternate the tone between the note and its upper neighbour.
+  if (orn && orn.trill && mainDur > 0.28) {
+    const step = 1 / (TP.ornament.trill * 2);
+    let tt = start, up = false;
+    while (tt < start + mainDur - step) {
+      osc.frequency.setValueAtTime(up ? freq : neighborFreq, tt);
+      up = !up; tt += step;
+    }
+    osc.frequency.setValueAtTime(freq, tt); // resolve back down
+  }
+
+  const env = new GainNode(actx, { gain: 0 });
+  const a = Math.min(atk, mainDur * 0.5);
+  const susEnd = start + Math.max(a, mainDur - rel);
+  env.gain.setValueAtTime(0, start);
+  env.gain.linearRampToValueAtTime(vel, start + a);
+  env.gain.setValueAtTime(vel, susEnd);
+  env.gain.linearRampToValueAtTime(0, start + mainDur + rel);
+  osc.connect(lp); lp.connect(env); env.connect(dest);
+  osc.start(start); osc.stop(start + mainDur + rel);
+
+  // Breath bed: bandpassed noise, gated to the note, plus a sharper attack chiff.
+  const breath = TP.flute.breath;
+  if (breath > 0) {
+    const nz = new AudioBufferSourceNode(actx, { buffer: NOISE_BUF, loop: true, playbackRate: 0.6 + Math.random() * 0.2 });
+    const bp = new BiquadFilterNode(actx, { type: 'bandpass', frequency: Math.min(6000, freq * 2.2), Q: 1.4 });
+    const ng = new GainNode(actx, { gain: 0 });
+    ng.gain.setValueAtTime(0, start);
+    ng.gain.linearRampToValueAtTime(breath * vel * 0.5, start + a * 0.8);
+    ng.gain.linearRampToValueAtTime(breath * vel * 0.28, start + a * 0.8 + 0.05);
+    ng.gain.setTargetAtTime(0.0001, susEnd, rel * 0.6);
+    nz.connect(bp); bp.connect(ng); ng.connect(dest);
+    nz.start(start); nz.stop(start + mainDur + rel);
+
+    // Chiff — the airstream striking the fipple at the attack.
+    const ch = new AudioBufferSourceNode(actx, { buffer: NOISE_BUF, loop: true, playbackRate: 1.4 });
+    const chf = new BiquadFilterNode(actx, { type: 'highpass', frequency: 2400, Q: 0.7 });
+    const cg = new GainNode(actx, { gain: 0 });
+    cg.gain.setValueAtTime(breath * vel * 0.6, start);
+    cg.gain.exponentialRampToValueAtTime(0.0001, start + 0.06);
+    ch.connect(chf); chf.connect(cg); cg.connect(dest);
+    ch.start(start); ch.stop(start + 0.08);
+  }
+}
+
+function graceOsc(actx, dest, freq, t0, dur, vel) {
+  const osc = new OscillatorNode(actx, { frequency: freq });
+  osc.setPeriodicWave(WOOD);
+  const lp = new BiquadFilterNode(actx, { type: 'lowpass', frequency: TP.flute.bright, Q: 0.6 });
+  const env = new GainNode(actx, { gain: 0 });
+  env.gain.setValueAtTime(0, t0);
+  env.gain.linearRampToValueAtTime(vel, t0 + dur * 0.4);
+  env.gain.linearRampToValueAtTime(0, t0 + dur);
+  osc.connect(lp); lp.connect(env); env.connect(dest);
+  osc.start(t0); osc.stop(t0 + dur + 0.02);
+}
+
+// ============ SCHEDULER ============
+function scheduleVerse(events, nodes) {
+  const base = ac.currentTime + 0.08;
+  RT.verseStart = base;
+  for (const ev of events) {
+    voice(ac, nodes.flute, ev.freq, ev.neighborFreq, base + ev.t, ev.dur, ev.vel, ev.orn);
+  }
+}
+
+// ============ MAIN TRANSPORT ============
+function play() {
+  if (st.playing) return;
+  st.playing = true;
+  st.paused = false;
+  document.getElementById('play').disabled = true;
+  document.getElementById('pause').disabled = false;
+
+  if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+  if (ac.state === 'suspended') ac.resume();
+
+  RT.g = buildGraph(ac);
+  RT.g.windSrc.start();
+  RT.g.windLFO.start();
+
+  const gen = genAll(st.seed, st.scale, st.key, st.pace, st.orn, st.lap);
+  RT.events = gen.events;
+  RT.dur = gen.dur;
+  scheduleVerse(RT.events, RT.g);
+
+  // Loop the verse; a fresh lap re-improvises (and picks up any law/pace change).
+  RT.stopTimer = setTimeout(() => {
+    if (st.playing) { st.lap++; teardown(); play(); }
+  }, RT.dur * 1000);
+
+  updateHash();
+  animate();
+}
+
+function teardown() {
+  if (RT.stopTimer) clearTimeout(RT.stopTimer);
+  if (RT.g) {
+    try { RT.g.windSrc.stop(); RT.g.windLFO.stop(); } catch (e) {}
+    try { RT.g.master.disconnect(); } catch (e) {}
+  }
+  RT.g = null;
+}
+
+function pause() {
+  if (!st.playing || st.paused) return;
+  st.paused = true;
+  ac.suspend();
+  document.getElementById('pause').textContent = '⏵ Resume';
+  document.getElementById('pause').classList.add('on');
+}
+function resume() {
+  if (!st.playing || !st.paused) return;
+  st.paused = false;
+  ac.resume();
+  document.getElementById('pause').textContent = '⏸ Pause';
+  document.getElementById('pause').classList.remove('on');
+  animate();
+}
+
+function stop() {
+  st.playing = false;
+  st.paused = false;
+  st.lap = 0;
+  teardown();
+  document.getElementById('play').disabled = false;
+  document.getElementById('pause').disabled = true;
+  document.getElementById('pause').textContent = '⏸ Pause';
+  document.getElementById('pause').classList.remove('on');
+  drawStatic();
+}
+
+function another() {
+  const wasPlaying = st.playing;
+  if (wasPlaying) { teardown(); st.playing = false; }
+  st.seed = Math.floor(Math.random() * 100000);
+  st.lap = 0;
+  document.getElementById('seed').value = st.seed;
+  document.getElementById('seedVal').textContent = st.seed;
+  updateHash();
+  if (wasPlaying) play();
+}
+
+// ============ OFFLINE RENDER ============
+async function cut() {
+  const gen = genAll(st.seed, st.scale, st.key, st.pace, st.orn, 0);
+  const sr = 44100;
+  const total = gen.dur + TP.room.decay + 0.3;
+  const off = new OfflineAudioContext(2, Math.ceil(total * sr), sr);
+
+  const savedAc = ac;
+  ac = off;
+  const nodes = buildGraph(off);
+  nodes.windSrc.start(0);
+  nodes.windLFO.start(0);
+  scheduleVerse(gen.events, nodes);
+  const rendered = await off.startRendering();
+  ac = savedAc;
+
+  saveWav(rendered);
+}
+
+function saveWav(audioBuffer) {
+  const sr = audioBuffer.sampleRate;
+  const left = audioBuffer.getChannelData(0);
+  const right = audioBuffer.numberOfChannels > 1 ? audioBuffer.getChannelData(1) : left;
+  const wav = new WavEncoder().encode([Array.from(left), Array.from(right)], sr);
+  const blob = new Blob([wav], { type: 'audio/wav' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `siyotanka-${KEYS[st.key].name.replace('♯','sharp')}-${st.seed}.wav`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Minimal 16-bit WAV encoder.
+class WavEncoder {
+  encode(channels, sampleRate) {
+    const frames = channels[0].length;
+    const dataLength = frames * channels.length * 2;
+    const buffer = new ArrayBuffer(44 + dataLength);
+    const view = new DataView(buffer);
+    const writeString = (offset, s) => { for (let i = 0; i < s.length; i++) view.setUint8(offset + i, s.charCodeAt(i)); };
+    writeString(0, 'RIFF');
+    view.setUint32(4, 36 + dataLength, true);
+    writeString(8, 'WAVE');
+    writeString(12, 'fmt ');
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);
+    view.setUint16(22, channels.length, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * channels.length * 2, true);
+    view.setUint16(32, channels.length * 2, true);
+    view.setUint16(34, 16, true);
+    writeString(36, 'data');
+    view.setUint32(40, dataLength, true);
+    let offset = 44;
+    for (let i = 0; i < frames; i++) {
+      for (let ch = 0; ch < channels.length; ch++) {
+        const s = Math.max(-1, Math.min(1, channels[ch][i]));
+        view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+        offset += 2;
+      }
+    }
+    return new Uint8Array(buffer);
+  }
+}
+
+// ============ OFFICINA LIVE EDIT / AUDITION ============
+// Master/flute level, room send and the wind bed ride live; the rest is baked
+// per note and applies at the next verse or Play (like GRADUS/NENIA/FADÓ).
+function applyTimbreEdit() {
+  if (!RT.g || !ac) return;
+  const now = ac.currentTime, tau = 0.05;
+  RT.g.master.gain.setTargetAtTime(TP.master.level, now, tau);
+  RT.g.wet.gain.setTargetAtTime(TP.master.room, now, tau);
+  RT.g.flute.gain.setTargetAtTime(TP.flute.level, now, tau);
+  RT.g.windGain.gain.setTargetAtTime(TP.wind.level, now, tau);
+  RT.g.windLP.frequency.setTargetAtTime(TP.wind.cutoff, now, tau);
+  RT.g.windLFOgain.gain.setTargetAtTime(TP.wind.cutoff * 0.5, now, tau);
+  RT.g.windLFO.frequency.setTargetAtTime(TP.wind.rate, now, tau);
+}
+TIMBRE.touch = () => applyTimbreEdit();
+// ► HEAR: this is a continuous, looping machine — start the transport if idle.
+TIMBRE.demo = () => { if (!st.playing) play(); };
+
+// ============ VISUALIZATION ============
+// A schematic flute across the top with its six holes; a scrolling melodic
+// terrace-trace below. Holes fill for the sounding note's fingering.
+function css(v) { return getComputedStyle(document.body).getPropertyValue(v).trim(); }
+
+function currentEvent() {
+  if (!RT.events || RT.verseStart == null) return null;
+  const local = ac.currentTime - RT.verseStart;
+  for (const ev of RT.events) if (local >= ev.t && local < ev.t + ev.dur) return { ev, local };
+  return null;
+}
+
+function drawFlute(now) {
+  const w = canvas.width, h = canvas.height;
+  const flX = 70, flY = 78, flW = w - 140, flH = 40;
+  // Body.
+  ctx.fillStyle = css('--line');
+  ctx.globalAlpha = 0.35; ctx.fillRect(flX, flY, flW, flH); ctx.globalAlpha = 1;
+  ctx.strokeStyle = css('--line'); ctx.lineWidth = 1.5;
+  ctx.strokeRect(flX, flY, flW, flH);
+  // Mouth end + the fetish/block (the totem carving over the sound-hole).
+  ctx.fillStyle = css('--accent');
+  ctx.fillRect(flX - 16, flY + flH * 0.2, 16, flH * 0.6);
+  ctx.fillRect(flX + flW * 0.16, flY - 8, 22, 10);
+  // Six holes.
+  const cur = now && now.ev;
+  const openN = cur ? OPEN_HOLES[cur.si] : 0;
+  for (let i = 0; i < 6; i++) {
+    const hx = flX + flW * (0.36 + i * 0.088);
+    const hy = flY + flH / 2;
+    const open = cur ? (i >= 6 - openN) : false; // open the far (right) holes first
+    ctx.beginPath(); ctx.arc(hx, hy, 8, 0, Math.PI * 2);
+    if (open) { ctx.fillStyle = css('--ground'); ctx.fill(); ctx.strokeStyle = css('--accent'); ctx.lineWidth = 2; ctx.stroke(); }
+    else { ctx.fillStyle = css('--accent'); ctx.fill(); }
+  }
+  // Register chevrons (overblown upper octaves).
+  if (cur && cur.oct > 0) {
+    ctx.strokeStyle = css('--sky'); ctx.lineWidth = 2;
+    for (let o = 0; o < cur.oct; o++) {
+      const cx = flX + flW - 10 - o * 12;
+      ctx.beginPath(); ctx.moveTo(cx - 5, flY - 10); ctx.lineTo(cx, flY - 16); ctx.lineTo(cx + 5, flY - 10); ctx.stroke();
+    }
+  }
+}
+
+function drawStatic() {
+  const w = canvas.width, h = canvas.height;
+  // Prairie-dusk wash.
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, css('--field'));
+  g.addColorStop(1, css('--ground'));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+  drawFlute(null);
+  ctx.fillStyle = css('--line');
+  ctx.font = '13px ui-monospace, monospace';
+  ctx.fillText('press ⏵ Play', 70, h - 22);
+}
+
+let trace = []; // recent {y, t} for the terrace-trace
+function animate() {
+  if (!st.playing || st.paused) return;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const w = canvas.width, h = canvas.height;
+  const g = ctx.createLinearGradient(0, 0, 0, h);
+  g.addColorStop(0, css('--field'));
+  g.addColorStop(1, css('--ground'));
+  ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+
+  const now = currentEvent();
+  drawFlute(now);
+
+  // Trace lane.
+  const laneTop = 160, laneBot = h - 40, span = 8; // ladder indices 0..~8 mapped
+  const yOf = (L) => laneBot - (Math.max(0, Math.min(span, L)) / span) * (laneBot - laneTop);
+  // Gridlines at each scale degree of the base octave.
+  ctx.strokeStyle = css('--line'); ctx.globalAlpha = 0.25; ctx.lineWidth = 1;
+  for (let L = 0; L <= 5; L++) { const y = yOf(L); ctx.beginPath(); ctx.moveTo(70, y); ctx.lineTo(w - 70, y); ctx.stroke(); }
+  ctx.globalAlpha = 1;
+
+  if (now && (!trace.length || trace[trace.length - 1].L !== now.ev.L)) {
+    trace.push({ L: now.ev.L, x: w - 70 });
+    if (trace.length > 48) trace.shift();
+  }
+  if (!reduce) for (const p of trace) p.x -= 2.2;
+  trace = trace.filter(p => p.x > 66);
+
+  // The terrace-trace itself.
+  ctx.strokeStyle = css('--accent'); ctx.lineWidth = 2.5; ctx.beginPath();
+  trace.forEach((p, i) => { const y = yOf(p.L); if (i === 0) ctx.moveTo(p.x, y); else ctx.lineTo(p.x, y); });
+  ctx.stroke();
+  if (now) {
+    const y = yOf(now.ev.L);
+    ctx.fillStyle = now.ev.si === 0 ? css('--sky') : css('--accent');
+    ctx.beginPath(); ctx.arc(w - 70, y, 6, 0, Math.PI * 2); ctx.fill();
+  }
+
+  // Readout.
+  ctx.fillStyle = css('--txt'); ctx.font = '14px ui-monospace, monospace';
+  const ratios = SCALES[st.scale].ratios;
+  let label = `${SCALES[st.scale].name.split(' (')[0]} · key ${KEYS[st.key].name}`;
+  ctx.fillText(label, 70, 26);
+  if (now) {
+    const r = ratios[now.ev.si];
+    const c = Math.round(cents(r[0], r[1]));
+    const reg = now.ev.oct > 0 ? ` +${now.ev.oct}8ve` : '';
+    ctx.fillStyle = css('--sky');
+    ctx.fillText(`${r[0]}/${r[1]}  ${c}¢${reg}  ${now.ev.freq.toFixed(1)} Hz`, 70, 46);
+  }
+  ctx.fillStyle = css('--line'); ctx.font = '12px ui-monospace, monospace';
+  ctx.fillText(`verse ${st.lap + 1}`, w - 150, 26);
+
+  requestAnimationFrame(animate);
+}
+
+// ============ SCALE LEDGER ============
+function renderLedger() {
+  const el = document.getElementById('ledger');
+  el.innerHTML = '';
+  const ratios = SCALES[st.scale].ratios;
+  document.getElementById('scaleName').textContent = `· key ${KEYS[st.key].name} (${KEYS[st.key].hz.toFixed(1)} Hz)`;
+  const names = ['root', 'third', 'fourth', 'fifth', 'seventh'];
+  ratios.forEach((r, i) => {
+    const row = document.createElement('div');
+    row.className = 'ledger-row' + (i === 0 ? ' tonic' : '');
+    const hz = (KEYS[st.key].hz * r[0] / r[1]).toFixed(1);
+    row.textContent = `${names[i]}  ${r[0]}/${r[1]}  ${Math.round(cents(r[0], r[1]))}¢  ${hz}Hz`;
+    el.appendChild(row);
+  });
+}
+
+// ============ EVENT LISTENERS ============
+document.getElementById('play').addEventListener('click', () => { if (st.paused) resume(); else play(); });
+document.getElementById('pause').addEventListener('click', () => { if (st.paused) resume(); else pause(); });
+document.getElementById('stop').addEventListener('click', stop);
+document.getElementById('another').addEventListener('click', another);
+document.getElementById('cut').addEventListener('click', cut);
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'SELECT') return;
+  if (e.key === ' ') { e.preventDefault(); if (st.playing) stop(); else play(); }
+  else if (e.key === 'p') { e.preventDefault(); if (st.paused) resume(); else if (st.playing) pause(); }
+  else if (e.key === 'r') { e.preventDefault(); another(); }
+  else if (e.key === 'c') { e.preventDefault(); cut(); }
+});
+
+document.getElementById('seed').addEventListener('input', (e) => {
+  st.seed = parseInt(e.target.value);
+  document.getElementById('seedVal').textContent = st.seed;
+  updateHash();
+});
+document.getElementById('scale').addEventListener('change', (e) => {
+  st.scale = parseInt(e.target.value); renderLedger(); updateHash();
+});
+document.getElementById('key').addEventListener('change', (e) => {
+  st.key = parseInt(e.target.value); renderLedger(); updateHash();
+});
+document.getElementById('pace').addEventListener('input', (e) => {
+  st.pace = parseInt(e.target.value) / 100; updateHash();
+});
+document.getElementById('orn').addEventListener('input', (e) => {
+  st.orn = parseInt(e.target.value) / 100; updateHash();
+});
+
+canvas = document.getElementById('canvas');
+ctx = canvas.getContext('2d');
+
+// ============ HASH SERIALIZATION ============
+function updateHash() {
+  const hash = `s=${st.seed}&sc=${st.scale}&k=${st.key}&p=${Math.round(st.pace * 100)}&o=${Math.round(st.orn * 100)}`;
+  history.replaceState(null, '', '#' + hash);
+}
+function loadHash() {
+  const params = new URLSearchParams(location.hash.slice(1));
+  if (params.has('s')) st.seed = parseInt(params.get('s')) || 0;
+  if (params.has('sc')) st.scale = Math.max(0, Math.min(SCALES.length - 1, parseInt(params.get('sc')) || 0));
+  if (params.has('k')) st.key = Math.max(0, Math.min(KEYS.length - 1, parseInt(params.get('k')) || 0));
+  if (params.has('p')) st.pace = (parseInt(params.get('p')) || 0) / 100;
+  if (params.has('o')) st.orn = (parseInt(params.get('o')) || 0) / 100;
+  document.getElementById('seed').value = st.seed;
+  document.getElementById('seedVal').textContent = st.seed;
+  document.getElementById('scale').value = st.scale;
+  document.getElementById('key').value = st.key;
+  document.getElementById('pace').value = Math.round(st.pace * 100);
+  document.getElementById('orn').value = Math.round(st.orn * 100);
+}
+
+loadHash();
+renderLedger();
+drawStatic();
+</script>
+</body>
+</html>

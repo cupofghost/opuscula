@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="OPVSCVLA">
-<meta name="description" content="opuscula — twenty-four small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum, javanese gamelan, harry partch's tonality diamond, dubstep, a self-predicting language model, crimean steppe women's polyphony, the bohlen–pierce scale (a music with no octave), an l-system that grows music from grammar, early tape splicing, portuguese fado, the riddle canons of bach's musical offering, south indian carnatic svara and shruti.">
+<meta name="description" content="opuscula — twenty-five small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum, javanese gamelan, harry partch's tonality diamond, dubstep, a self-predicting language model, crimean steppe women's polyphony, the bohlen–pierce scale (a music with no octave), an l-system that grows music from grammar, early tape splicing, portuguese fado, the riddle canons of bach's musical offering, south indian carnatic svara and shruti, the lakota courting flute.">
 <title>OPVSCVLA — small musical machines</title>
 <link rel="icon" href="./favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
@@ -80,13 +80,13 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
      This file is pure HTML + CSS. No JavaScript, no audio: it is just the
      index card wall that links out to the works. Each work lives in
      its own folder as its own index.html; this page never loads them, it
-     only links to them (href="./folder/"). Twenty-one works.
+     only links to them (href="./folder/"). Twenty-five works.
 
      Anatomy, top to bottom:
        .wrap      the 760px column everything sits in
        .eyebrow   the "catalogvs · mmxxvi" kicker
        h1 / .sub  the title and the one-line manifesto
-       .grid      the card wall — one <a class="card"> per work (twenty-four total)
+       .grid      the card wall — one <a class="card"> per work (twenty-five total)
        .notes     the shared-keys reminder (space / r / c)
        .foot      the colophon + repo link
 
@@ -109,7 +109,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
 <div class="wrap">
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
-  <div class="sub">twenty-four small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="sub">twenty-five small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
   <div class="opxy"><a href="./opxy/"><span class="tag">new →</span> play these on a teenage engineering OP–XY · MIDI fork</a></div>
   <hr class="rule">
 
@@ -727,6 +727,27 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
         <h2>Svara</h2>
         <p>South Indian Carnatic music — svara over the twenty-two shrutis</p>
         <span class="tech">raga lakshana as a directed automaton · gamaka curves whose every turning point is an exact shruti · a korvai solved exactly, 3T+2g=span · zero equal temperament</span>
+      </div>
+    </a>
+
+    <a href="./siyotanka/" class="card" style="--bg:#17110c">
+      <div class="emblem">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <line x1="16" y1="53" x2="86" y2="48" stroke="#d98a3d" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="24" cy="52.5" r="3.6" fill="#d98a3d"/>
+          <circle cx="40" cy="51" r="3" fill="#17110c" stroke="#d98a3d" stroke-width="1.6"/>
+          <circle cx="50" cy="50.3" r="3" fill="#17110c" stroke="#d98a3d" stroke-width="1.6"/>
+          <circle cx="60" cy="49.7" r="3" fill="#17110c" stroke="#d98a3d" stroke-width="1.6"/>
+          <circle cx="70" cy="49" r="3" fill="#17110c" stroke="#d98a3d" stroke-width="1.6"/>
+          <path d="M30 40 Q42 24 56 34" fill="none" stroke="#4fb3a3" stroke-width="1.6" opacity="0.85"/>
+          <path d="M46 34 Q58 18 72 30" fill="none" stroke="#4fb3a3" stroke-width="1.4" opacity="0.6"/>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="op">op. XXV · MMXXVI</span>
+        <h2>Šiyótȟaŋka</h2>
+        <p>the lakota courting flute</p>
+        <span class="tech">generative Plains courting-flute improvisation · minor-pentatonic fingering in exact just intonation (neutral-third &amp; major-pentatonic variants) · terraced descent · breathy duct-flute synthesis · fingering diagram</span>
       </div>
     </a>
 

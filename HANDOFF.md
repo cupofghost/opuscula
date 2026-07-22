@@ -7,7 +7,7 @@ start of a session — it's meant to be enough to work without re-explaining.
 
 ## Architecture
 
-**OPVSCVLA is twenty-four independent single-file Web Audio machines** plus a static
+**OPVSCVLA is twenty-five independent single-file Web Audio machines** plus a static
 landing page. There is **no build step, no bundler, no dependencies, no npm, no
 samples, no server-side anything.** Each `op.` is one self-contained
 `index.html` — inline `<style>`, inline `<script>`, all synthesis in the
@@ -86,6 +86,7 @@ forfex/index.html    op. XXI   FORFEX     — early tape splicing (musique concr
 fado/index.html      op. XXII  FADÓ       — portuguese fado (mezzo-soprano voice + guitarra)
 ricercar/index.html  op. XXIII RICERCAR   — Bach's Musical Offering riddle canons as a formal system
 svara/index.html     op. XXIV  SVARA      — South Indian Carnatic music: svara over the 22 shrutis
+siyotanka/index.html op. XXV   ŠIYÓTȞAŊKA — the Lakota courting flute (šiyótȟaŋka; just-intonation minor pentatonic)
 ```
 
 The `op.` roman-numeral order is fixed and lives in `index.html` and `README.md`;
@@ -645,6 +646,96 @@ next: rebase onto `origin/main` first, same as always. **Files done:**
 **Status:** in progress, going down the op. list in order; each machine
 verified headless (Chromium) as it lands. Maintainer-requested: listen with
 the phone locked/backgrounded.
+### ŠIYÓTȞAŊKA — new machine, op. XXV (the Lakota courting flute)
+**Branch:** `claude/native-american-music-machine-og4kk6` · **File:**
+`siyotanka/index.html` · **Status:** done, verified headless (Chromium, 34
+checks, zero page/console errors). New op. Registered in `index.html` (card +
+counts), `README.md` (row + count), `officina` (chip), `CLAUDE.md`/this file
+(file table + counts); counts bumped twenty-four → twenty-five everywhere
+(and the stale "twenty-one" prose lines in `index.html`'s `.sub` + authoring
+comments and `README`'s intro corrected to twenty-five in the same pass).
+**Renumbered twice at landing, XXIII → XXIV → XXV:** RICERCAR landed as op.
+XXIII, then SVARA landed as op. XXIV, both while this was in flight — per the
+claiming-by-landing rule this took the next free numeral each time; the
+directory name (`siyotanka`) keeps, only the op. number moved. Resolved on
+two successive rebases (all threads kept, all cards/rows/chips preserved).
+Maintainer's brief: a new machine based on Native American music, a
+well-documented tribe, bonus for accurate tuning. One-session build (design +
+implement + verify + register), full autonomy.
+
+Answered with the **Plains/Lakota courting flute** (*šiyótȟaŋka*, the "big
+prairie-chicken flute") — one of the best-documented Native instrumental
+traditions (Frances Densmore, *Teton Sioux Music*, 1918), and the choice that
+gives a real **tuning** story: an instrument whose fingering maps to a
+pentatonic scale I can state as exact ratios, rather than an oral vocal
+tradition with no fixed temperament.
+
+- **The law is the tuning + the fingering.** Three pentatonic scales as exact
+  JI ratios over one chosen key: **Minor pentatonic (Mode 1)**
+  `[[1,1],[6,5],[4,3],[3,2],[9,5]]` (the traditional/default fingering);
+  **Neutral third** swaps 6/5 (316¢) for **11/9 (≈347¢)** — the flat/neutral
+  third that measurements of *old* hand-made flutes often show, a genuinely
+  documented characteristic, not an invention; **Major pentatonic (Mode 4)**
+  `[[1,1],[9,8],[5,4],[3,2],[5,3]]`. Five keys (D/E/F♯/G/A) name the root
+  note; the fundamental is one Hz literal per key and every degree above it is
+  an exact ratio, so the intervals stay just. Honestly hedged in the reader:
+  a Plains flute is hand-made, never equal-tempered, no two alike — the
+  machine renders the *mode* in exact JI, and the fingering diagram is a
+  schematic ("more holes open, higher"), not one flute's chart.
+- **Melodic law = the terraced descent** (the Plains "tumbling strain"). A
+  verse is 3–5 free-rhythm phrases; each optionally arcs up to a seeded peak
+  (a fifth to an octave-and-a-third above the root) then *terraces down* in
+  scale steps to a long-held tonic, with lingering upper-neighbour
+  oscillations. Grace notes and "bird" trills are sprinkled by the **Song**
+  slider (the law, in the UI — how *many* ornaments), while their *voicing*
+  (grace length, trill rate) lives in TIMBRE. **Pace** sets seconds-per-unit
+  (how the flute breathes). Verified: verses always end on the tonic;
+  deterministic per seed; ≥6 distinct pitches; times monotonic; NaN-free.
+- **Synthesis (no samples):** one woody duct-flute tone (a `PeriodicWave`
+  harmonic profile through a brightness lowpass), a **breath-noise bed** gated
+  to each note (bandpassed white noise), an **attack chiff** (the airstream
+  striking the fipple), gentle **finger-vibrato** that blooms after an onset
+  delay, a faint **prairie-wind bed** (looping noise → LFO-swept lowpass), and
+  an **open-air reverb** (seeded exponential-noise IR, stereo). Master
+  limiter holds peak ≤ 1 (offline render peak ≈0.82, rms ≈0.26, NaN-free).
+- **Transport = looping verse** (FADÓ precedent): `play()` builds the graph,
+  generates + schedules one verse, and a timer re-improvises the next lap
+  (which is where a scale/key/pace change re-vibes) — the inter-verse gap
+  reads as the player taking a breath. Live TIMBRE: master/flute level, room
+  send, and the wind bed ride live; the rest is baked per note (next
+  verse/Play). `► HEAR` starts the transport if idle (continuous family).
+- **Canvas:** a schematic flute across the top, its six holes filling for the
+  sounding note's fingering (far holes open first; register chevrons for
+  overblown octaves), over a scrolling **terrace-trace** of the melody with a
+  gold/turquoise tonic marker and a live ratio/cents/Hz readout. Static layer
+  on stop; `prefers-reduced-motion` freezes the scroll. Palette: red-earth
+  ochre `--accent #d98a3d` + prairie-dusk turquoise `--sky #4fb3a3` on warm
+  brown; card `--bg #17110c`, emblem a holed flute with rising "song" arcs.
+- **TIMBRE:** 16 params / 6 groups (master, flute, vibrato, ornament, wind,
+  room). Bridge verbatim (copied from FADÓ/FORFEX); `TIMBRE.touch` ramps the
+  live params, `TIMBRE.demo` starts the transport.
+- **Verified headless** (`scratchpad/verify-siyotanka.mjs`, playwright + the
+  full chrome binary `chromium-1194/chrome-linux/chrome`, `--headless=new`;
+  scratchpad not committed, GONGAN/TESSERA precedent): schema well-formed
+  (16 params); Mode-1 ratios exact and the JI thirds/fifth land on the right
+  cents; ladder register-folding exact (root=fund, octave=×2, fifth=3/2);
+  genAll deterministic + differs across seeds + ends on tonic + NaN-free;
+  offline render NaN-free/non-silent/≤1/stereo; live play/pause/resume;
+  live TIMBRE touch reaches the graph; hash round-trip; OFFICINA bench schema
+  announce + set + bulk (reset-then-apply) + localStorage overlay + `?factory`
+  bypass. Screenshot-checked (flute + holes + terrace-trace render on theme).
+- **Pick-up ideas:** a real six-hole cross-fingering chart (the current
+  diagram is a schematic); a second documented Plains melodic form beyond the
+  terraced descent; a low-drone "double flute" variant (some Plains flutes
+  are doubles); the octave could overblow with its own timbre shift rather
+  than the same tone up a register. Deliberately kept **solo/unaccompanied**
+  (no drum) — that is how the courting flute was actually played.
+
+### Lock-screen playback via Media Session API — sweep in progress (PAS SALÉ, SCALA done)
+**Branch:** `claude/app-link-request-vj8sml` · **Files done:** `pas-sale/index.html`
+(op. I), `scala/index.html` (op. II) · **Status:** in progress, going down the
+op. list in order; each machine verified headless (Chromium) as it lands.
+Maintainer-requested: listen with the phone locked/backgrounded.
 
 - **`__iosAudio`'s hide-suspend removed** in each machine touched so far: it
   used to deliberately `ac.suspend()` on `visibilitychange`→hidden (comment:
