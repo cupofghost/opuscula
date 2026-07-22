@@ -246,6 +246,35 @@ Conventions when touching this layer:
 
 Newest first.
 
+### BANI — design brief for a Georgian-polyphony machine with adaptive intonation (provisional op. XXIII)
+**Branch:** `claude/georgian-polyphonic-vocal-machine-12frkj` · **File:**
+`bani/INTONATIO.md` only (design brief — no engine, no registry rows) ·
+**Status:** brief complete; implementation is the next session's work.
+Two-session build (SUBLOW/VYVID precedent). The brief claims the **concept
+and the `bani/` directory, not the number** — XXIII is provisional; re-check
+the registry at every rebase and renumber if something lands first.
+
+- **The machine:** Georgian three-part polyphony (*mravalkhmianoba* — UNESCO
+  2001/2008, "Chakrulo" on the Voyager record) in three regional textures:
+  KAKHETI drone dialogue, GURIA counterpoint with the krimanchuli yodel,
+  SVANETI chord procession.
+- **The law is adaptive intonation, not a scale table:** per the measured
+  tuning of the 1966 Erkomaishvili overdub corpus (Scherbaum/Mzhavanadze;
+  Tsereteli–Veshapidze; Erkvanidze) — near-pure vertical 5ths/4ths/octaves,
+  neutral thirds ≈350¢, flexible ≈172¢ melodic seconds, emergent pitch
+  drift. Every note's pitch is a closed-form weighted mean of harmonic pulls
+  (against sounding voices, bani weighted steadiest), a melodic step prior,
+  and a drifting frame that re-anchors at each cadence — deterministic, one
+  Hz literal, zero ET except as the explicit TSQOBA A/B contrast. A
+  deliberate, argued departure from the collection's exact-JI norm: Georgian
+  tuning is measurably neither JI nor ET, so the adaptive engine *is* the
+  "don't approximate where the tradition is exact" rendering here.
+- Full spec in the brief: solver + target/weight tables (§2), voice grammars
+  (§3), vocables (§4), male-formant + krimanchuli chest/falsetto flip
+  synthesis (§5), controls (§6), TIMBRE groups (§7), grapevine canvas (§8),
+  Media-Session-from-day-one (§9), verification plan (§10), registration
+  checklist (§11). Ship session deletes the brief and folds results in here.
+
 ### RILLE — harmony recomposed on the LAMENTO GROUND (a tradition with rules)
 **Branch:** `claude/rille-edm-aesthetic-fix-m3nik7` · **Files:** `rille/index.html`
 only (engine + display + reader notes; UI shell, drums, mix chain, TIMBRE,
