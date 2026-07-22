@@ -17,9 +17,9 @@ a session follows them without being re-told.
   Follow the **Workflow** section of HANDOFF.md: fetch + rebase onto
   `origin/main` at session start *and* again before you PR (local `main` is a
   stale clone-time snapshot); one session = one branch = one scope; a merged PR
-  is finished, never resumed; opus numbers are provisional until *merged* —
-  take the next free numeral from `origin/main`, flag it provisional in the PR,
-  and expect the maintainer to settle final numbering at merge.
+  is finished, never resumed; opus numbers are assigned at merge by the
+  maintainer — leave an `op. ??` placeholder or take `node dev/check.mjs --next`
+  and flag it provisional in the PR; the number can still move after you push.
 - **Don't ship low-quality code.** Meet the Quality-bar checklist in HANDOFF.md
   end to end and verify headless before you PR; match the maintainer's reference
   machines (BOLG, DIAMOND, TESSERA, FADÓ, TENEBRAE). If you can't clear the bar
@@ -64,9 +64,12 @@ a session follows them without being re-told.
 
 ## Verifying audio work
 
-Verify **headless (Chromium)**: enumerate the model for correctness, then
-smoke-test the transport/scheduler and the offline render for runtime errors.
-See `rille/THREADS.md` for the pattern.
+Verify **headless (Chromium)** before every PR: `node dev/verify.mjs <machine>`
+runs the shared harness (loads clean · bench schema · plays · cuts a WAV) on any
+machine — no per-machine wiring. Add machine-specific invariants (a tuning table,
+a rule) in `<machine>/expected.json` or a throwaway `scratchpad/` script.
+`node dev/check.mjs` catches bridge/registry/numbering drift; CI runs both on
+every PR. Node 22+, `cd dev && npm install` once. See dev/README.md.
 
 ## Git
 

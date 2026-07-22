@@ -15,6 +15,65 @@ create one (same header format) the first time you touch them.
 
 ---
 
+### Dev tooling — verify harness, drift checker, machine template, CI
+**Branch:** `claude/opuscula-workflow-standards-ljzy2z` · **Files:** new `dev/`
+(tooling) + `.github/workflows/ci.yml`; docs wired into `HANDOFF.md` + `CLAUDE.md`;
+`.gitignore` adds `dev/node_modules/`. No machine `index.html` touched. **Status:**
+done, all 28 machines pass. Implements the five streamlining items the maintainer
+asked for.
+
+- **`dev/verify.mjs` — one headless harness for every machine.** Drives each
+  machine through the parts of the house grammar guaranteed identical across all
+  of them — the OFFICINA bench schema (postMessage) and the space/`c` keyboard
+  transport — so there's no per-machine wiring. Checks: `loads-clean` (no
+  pageerror/console.error on `?factory`), `bench-schema` (well-formed, `id===dir`,
+  params numeric + labelled), `plays-clean` (Space starts an AudioContext),
+  `cut-renders-wav` (`c` runs the offline render → RIFF/WAVE download). Replaces
+  the per-session throwaway `scratchpad/verify-*.mjs`. `--quick` (structural
+  only), `--list`, optional `<machine>/expected.json` for machine-specific
+  assertions. Runs machines through a small concurrency pool.
+- **Two things learned building it, both real:** (1) `has-canvas` was dropped as
+  a check — **PAS SALÉ ships a DOM visual, no canvas**, so a canvas isn't a
+  universal invariant. (2) The cut check treats a merely-slow render gracefully:
+  PAS SALÉ compiles **116 s** of dense 5-voice audio and renders slower than 240 s
+  on this software-GL sandbox, so the check passes on a full WAV download *or* on
+  an OfflineAudioContext constructed with no page error (path wired, render just
+  slow) — render speed isn't a correctness property. A cut that errors or never
+  starts a render still fails. Verified full-WAV renders on a spread of families
+  (DIAMOND, AMADINDA, BANI, BOLG, COCHLEA, RILLE, SVARA, PEAL, RICERCAR ~69 MB,
+  SUBLOW); PAS SALÉ passes via the graceful path.
+- **`dev/check.mjs` — static drift, no browser.** Groups machines by their
+  whitespace-normalized OFFICINA bridge and flags any drifted copy (all 28 are
+  currently byte-identical); asserts every machine appears in all four registries
+  (landing card / README row / officina chip / HANDOFF table); asserts op.
+  numbering has no duplicate or gap. `--next` prints the next free numeral
+  for the maintainer to stamp at merge.
+- **The checker earned its keep on day one.** Rebasing onto current `main` (which
+  had gained PERSONA, op. XXIX, while this branch worked), `check.mjs` flagged a
+  real bridge drift: PERSONA's copy renamed the local `P`→`Pp` in the bridge's
+  `reset`, so it was no longer verbatim. Restored to canonical (one line,
+  functionally identical, block-scoped so safe — PERSONA still passes the harness
+  fully). That one-line machine-file change is the only non-`dev/`/-doc edit in
+  this PR, made solely because the tool caught a genuine house-rule violation.
+- **`dev/template/index.html` — the house shell as a minimal *working* machine.**
+  Loads, benches, plays, cuts — passes the harness from commit one (verified by
+  copying it to a temp dir named `template`). Copy it to `<machine>/index.html`
+  and fill the `TODO(law/voices/canvas/reader)` markers; the SHARED blocks
+  (canonical OFFICINA bridge, `__iosAudio`, Media Session, `saveWav`, keyboard
+  grammar) stay verbatim, which `check.mjs` enforces. Plus `template/expected.json`
+  as the example schema.
+- **`.github/workflows/ci.yml`** runs `check.mjs` + `verify.mjs` on every PR and
+  on `main` (Node 22, installs Chromium, concurrency 3, 30-min cap). **Green is
+  the merge signal** — CI carries the mechanical Quality-bar checks so the
+  maintainer doesn't hand-verify each PR.
+- **Opus numbering (item 5) deferred to merge:** a build agent leaves an `op. ??`
+  placeholder or takes `dev/check.mjs --next`; the maintainer stamps the final
+  numeral at merge, and `check.mjs` fails CI on a duplicate/gap. Documented in the
+  Workflow section of HANDOFF + CLAUDE.
+- **Dev-only, quarantined:** everything lives under `dev/` and `.github/`; the
+  machines stay one file, zero runtime dependencies. `dev/node_modules/` is
+  gitignored.
+
 ### Workflow reorganization — PRs into main, per-machine independence, minimal tokens
 **Branch:** `claude/opuscula-workflow-standards-ljzy2z` · **Files:** `HANDOFF.md`
 + `CLAUDE.md` (front matter), and the inline Open-threads log split out into

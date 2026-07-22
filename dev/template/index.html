@@ -1,0 +1,344 @@
+<!doctype html>
+<!--
+  OPVSCVLA machine template — copy this whole file to <machine>/index.html and
+  build from it. It is a MINIMAL but COMPLETE, house-grammar machine: it loads
+  clean, exposes a TIMBRE schema to the bench, plays on Space, and cuts a real
+  WAV on `c`, so `node dev/verify.mjs <machine>` passes from the first commit.
+
+  Fill in the parts marked TODO(law) / TODO(voices) / TODO(canvas) / TODO(reader)
+  with the actual machine. Leave the SHARED blocks (the OFFICINA bridge, iOS
+  audio, Media Session, saveWav, the keyboard grammar) as they are — they are
+  the same in every machine; `node dev/check.mjs` enforces the bridge is verbatim.
+
+  House rules (see HANDOFF.md): one file, zero dependencies, all sound synthesized
+  in Web Audio, deterministic (seed + hash reproduce the pressing), the law is the
+  interface (voicing lives in TIMBRE, the musical law does not). Match the finish
+  of the reference machines: BOLG, DIAMOND, TESSERA, FADÓ, TENEBRAE.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#12100e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>TEMPLATE · OPVSCVLA</title>
+<link rel="icon" href="../icon.svg">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+SC:wght@500;600&family=EB+Garamond:ital@0;1&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ground:#12100e; --txt:#e9e2d6; --dim:#a99f8e; --line:#2c2823;
+    --accent:#d98a3d; --accent2:#4fb3a3;               /* TODO: pick the machine's palette */
+    --card:#17140f;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{background:var(--ground);color:var(--txt);font-family:'EB Garamond',serif}
+  body{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .pit{width:100%;max-width:920px;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:28px 30px 22px;position:relative}
+  .exit,.bench{position:fixed;top:14px;font:500 12px/1 'IBM Plex Mono',monospace;
+    color:var(--dim);text-decoration:none;letter-spacing:.08em}
+  .exit{left:16px}.bench{right:16px}
+  .eyebrow{font:500 12px/1 'IBM Plex Mono',monospace;letter-spacing:.32em;color:var(--accent);text-transform:uppercase}
+  h1{font-family:'Cormorant SC',serif;font-weight:600;font-size:clamp(30px,7vw,52px);letter-spacing:.04em;margin:.15em 0 .1em}
+  .sub{color:var(--txt);font-size:17px;font-weight:600}
+  .credit{color:var(--dim);font-size:14px;font-style:italic;margin-top:.2em}
+  .plate{position:relative;margin:20px 0 16px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#0d0b09}
+  canvas{display:block;width:100%;height:auto}
+  .tag{position:absolute;font:500 11px/1 'IBM Plex Mono',monospace;color:var(--dim);letter-spacing:.06em}
+  .tag.tl{top:8px;left:10px}.tag.tr{top:8px;right:10px}
+  .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:12px 0}
+  .pick button,.cut{font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:.08em;
+    color:var(--txt);background:transparent;border:1px solid var(--line);border-radius:8px;
+    padding:10px 18px;cursor:pointer}
+  .pick button:hover,.cut:hover{border-color:var(--accent)}
+  .cut{border-style:dashed}
+  .cutnote{font:400 12px/1.4 'IBM Plex Mono',monospace;color:var(--dim);min-height:1.2em}
+  label.ctl{display:flex;flex-direction:column;gap:4px;font:500 11px/1 'IBM Plex Mono',monospace;
+    letter-spacing:.06em;color:var(--dim);min-width:160px;flex:1}
+  input[type=range]{width:100%;accent-color:var(--accent)}
+  .reader{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+  .reader summary{cursor:pointer;font:500 12px/1 'IBM Plex Mono',monospace;letter-spacing:.14em;color:var(--accent);text-transform:uppercase}
+  .reader h4{font-family:'Cormorant SC',serif;font-weight:600;margin:14px 0 4px;color:var(--txt)}
+  .reader p{color:var(--dim);font-size:15px;line-height:1.5;margin-bottom:6px}
+  .foot{margin-top:16px;color:var(--dim);font:400 11px/1.5 'IBM Plex Mono',monospace;letter-spacing:.04em}
+  @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<a class="exit" href="../index.html">← opvscvla</a>
+<a class="bench" href="../officina/#m=template">officina</a>
+<main class="pit">
+  <div class="eyebrow">op. ?? · TEMPLATE</div>
+  <h1>TEMPLATE</h1>
+  <p class="sub">A one-line lede for what this machine renders.</p>
+  <p class="credit">the tradition / source, in a phrase</p>
+
+  <div class="plate">
+    <canvas id="cv" width="920" height="360" aria-label="Description of the visualization for screen readers"></canvas>
+    <span class="tag tl" id="tagL">LAW · —</span>
+    <span class="tag tr" id="tagR">idle</span>
+  </div>
+
+  <div class="row pick">
+    <button id="play">▶ play</button>
+    <button id="pause">❙❙ pause</button>
+    <button id="another">↻ another</button>
+  </div>
+  <div class="row">
+    <!-- TODO(law): expose the compositional law here (a mode/scale/method), not knobs on a sample. -->
+    <label class="ctl">tempo <span id="tempoV"></span>
+      <input id="tempo" type="range" min="60" max="180" step="1" value="104"></label>
+  </div>
+  <div class="row">
+    <button class="cut" id="cut">↧ cut 16-bit wav</button>
+    <span class="cutnote" id="cutnote"></span>
+  </div>
+
+  <details class="reader">
+    <summary>on this music</summary>
+    <!-- TODO(reader): plain-language history of the idea this machine renders. -->
+    <h4>The idea</h4><p>What the tradition is, in plain language.</p>
+    <h4>The law</h4><p>What constraint the machine composes within, and why it is the interface.</p>
+    <h4>How to listen</h4><p>What to notice.</p>
+  </details>
+  <p class="foot">space play/stop · p pause · r another · c cut · deterministic: the link is the pressing</p>
+</main>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const SR = 44100;
+
+/* ===================== TIMBRE — voicing constants ========================= *
+ * Everything the code reads as TP.<group>.<param>. Voicing only — the musical
+ * LAW (scales, ratios, methods, moods) does NOT live here. Factory defaults must
+ * equal the literals they replace. Add a group and it appears on the bench. */
+const TIMBRE = { id:'template', title:'TEMPLATE · op. ??',
+  doc:'How this instrument is built, for the officina reader.',
+  groups:{
+    master:{ label:'master', doc:'output stage', params:{
+      level:{ v:0.8, min:0, max:1,   step:.01,          label:'level',      doc:'master output gain' },
+      drive:{ v:1.4, min:1, max:4,   step:.05,          label:'drive',      doc:'soft-clip drive into the shaper' } }},
+    voice:{ label:'voice', doc:'the single synth voice', params:{
+      decay:{  v:0.55, min:.05, max:3,   step:.01, unit:'s',  label:'decay',      doc:'per-note amplitude decay' },
+      bright:{ v:2200,  min:200, max:8000,step:10,  unit:'Hz', label:'brightness', doc:'lowpass cutoff on the voice' } }}
+  }};
+const TP = {}; for(const g in TIMBRE.groups){ TP[g]={}; const P=TIMBRE.groups[g].params; for(const p in P) TP[g][p]=P[p].v; }
+
+/* ===================== OFFICINA bridge (SHARED — verbatim) ================= *
+ * Identical in every machine (dev/check.mjs enforces it). Overlays saved tweaks
+ * at boot; serves the schema + live edits to the bench under ?bench. Do not edit;
+ * assign TIMBRE.touch below once the graph exists. */
+(function(){
+  const KEY='opvscvla.timbre.'+TIMBRE.id, qs=new URLSearchParams(location.search);
+  const set=(k,v)=>{const i=k.indexOf('.'),g=k.slice(0,i),p=k.slice(i+1);
+    if(TP[g]&&(p in TP[g])&&typeof v==='number'&&isFinite(v)){TP[g][p]=v;return true}return false};
+  const reset=()=>{for(const g in TIMBRE.groups){const P=TIMBRE.groups[g].params;for(const p in P)TP[g][p]=P[p].v}};
+  if(!qs.has('factory')){try{const o=JSON.parse(localStorage.getItem(KEY)||'null');
+    if(o&&o.v)for(const k in o.v)set(k,o.v[k]);}catch(e){}}
+  if(!qs.has('bench'))return;
+  const snap=()=>{const v={};for(const g in TP)for(const p in TP[g])v[g+'.'+p]=TP[g][p];return v};
+  const post=m=>{try{parent.postMessage(Object.assign({officina:1,id:TIMBRE.id},m),'*')}catch(e){}};
+  const hello=()=>post({op:'schema',schema:{id:TIMBRE.id,title:TIMBRE.title,doc:TIMBRE.doc,groups:TIMBRE.groups},values:snap()});
+  addEventListener('message',ev=>{const m=ev.data;if(!m||m.officina!==1||m.id!==TIMBRE.id)return;
+    if(m.op==='set'){if(set(m.path,m.value)&&TIMBRE.touch)TIMBRE.touch(m.path)}
+    else if(m.op==='bulk'){reset();for(const k in m.values)set(k,m.values[k]);if(TIMBRE.touch)TIMBRE.touch(null)}
+    else if(m.op==='demo'){if(TIMBRE.demo)TIMBRE.demo(m.group)}
+    else if(m.op==='hello')hello()});
+  hello();
+})();
+
+/* ===================== the law + generation =============================== *
+ * TODO(law): replace the placeholder pentatonic with the machine's real law. */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const SCALE=[0,3,5,7,10];                                  // TODO(law): the actual scale/mode/method
+function genAll(seed){
+  const rng=mulberry32(seed>>>0), notes=[]; let t=0, prev=0;
+  for(let i=0;i<24;i++){
+    const deg=SCALE[(rng()*SCALE.length)|0];
+    const midi=57+deg+12*((rng()*2)|0);
+    notes.push({t, midi, prev}); prev=midi; t+=1;         // 1 beat per note (scaled by tempo at schedule time)
+  }
+  return { notes, beats:t };
+}
+
+/* ===================== audio graph + one voice ============================ */
+let ac=null, G=null, st={playing:false,paused:false,seed:1,tempo:104,score:null,idx:0,t0:0,timer:0};
+
+function buildGraph(ctx){
+  const inNode=ctx.createGain();
+  const shaper=ctx.createWaveShaper(); { const n=1024,c=new Float32Array(n); const k=TP.master.drive;
+    for(let i=0;i<n;i++){const x=i/(n-1)*2-1; c[i]=Math.tanh(k*x);} shaper.curve=c; }
+  const comp=ctx.createDynamicsCompressor();
+  comp.threshold.value=-14; comp.ratio.value=3; comp.attack.value=.004; comp.release.value=.18;
+  const out=ctx.createGain(); out.gain.value=TP.master.level;
+  inNode.connect(shaper).connect(comp).connect(out).connect(ctx.destination);
+  return { in:inNode, out, comp };
+}
+// one plucked/decaying voice — TODO(voices): replace with the machine's synthesis.
+function voice(ctx, g, when, midi){
+  const f=440*Math.pow(2,(midi-69)/12);
+  const osc=ctx.createOscillator(); osc.type='triangle'; osc.frequency.value=f;
+  const lp=ctx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=TP.voice.bright;
+  const amp=ctx.createGain(); amp.gain.value=0;
+  osc.connect(lp).connect(amp).connect(g.in);
+  const dec=TP.voice.decay;
+  amp.gain.setValueAtTime(0,when);
+  amp.gain.linearRampToValueAtTime(.5,when+.008);
+  amp.gain.exponentialRampToValueAtTime(.0005,when+dec);
+  osc.start(when); osc.stop(when+dec+.05);
+}
+
+/* ===================== transport (live scheduler) ========================= */
+const spb = () => 60/st.tempo;
+function schedTick(){
+  if(!st.playing||st.paused) return;
+  const ahead=ac.currentTime+0.2;
+  const s=st.score;
+  while(st.idx<s.notes.length){
+    const n=s.notes[st.idx];
+    const when=st.t0 + n.t*spb();
+    if(when>ahead) break;
+    voice(ac,G,when,n.midi);
+    st.idx++;
+  }
+  if(st.idx>=s.notes.length){                 // loop
+    st.t0 += s.beats*spb(); st.idx=0;
+  }
+}
+function play(){
+  if(st.playing) return;
+  if(!ac){ ac=new (window.AudioContext||window.webkitAudioContext)({sampleRate:SR}); __iosAudio(ac); }
+  if(ac.state!=='running') ac.resume().catch(()=>{});
+  G=buildGraph(ac);
+  st.score=genAll(st.seed); st.idx=0; st.t0=ac.currentTime+0.08;
+  st.playing=true; st.paused=false;
+  st.timer=setInterval(schedTick,50); schedTick();
+  __media(); drawLoop(); status();
+}
+function stop(){ st.playing=false; st.paused=false; clearInterval(st.timer);
+  if(ac){ try{ac.close();}catch(e){} ac=null; } status(); draw(); }
+function togglePause(){
+  if(!st.playing||!ac) return;
+  st.paused=!st.paused;
+  if(st.paused) ac.suspend(); else ac.resume();
+  status();
+}
+function another(){ st.seed=(Math.random()*1e9)|0; writeHash();
+  if(st.playing){ st.score=genAll(st.seed); st.idx=0; st.t0=ac.currentTime+0.08; } draw(); status(); }
+
+/* ===================== cut — deterministic offline WAV ==================== */
+async function cut(){
+  $('cutnote').textContent='cutting…';
+  const score=genAll(st.seed), dur=score.beats*spb()+2;
+  const oc=new (window.OfflineAudioContext||window.webkitOfflineAudioContext)(2, Math.ceil(SR*dur), SR);
+  const g=buildGraph(oc), t0=0.05;
+  for(const n of score.notes) voice(oc,g,t0+n.t*spb(),n.midi);
+  const buf=await oc.startRendering();
+  saveWav(encodeWavBlob(buf), 'template-'+(st.seed>>>0).toString(36)+'.wav');
+  $('cutnote').textContent='cut ✓';
+}
+function encodeWavBlob(buf){
+  const ch=buf.numberOfChannels, len=buf.length, data=new DataView(new ArrayBuffer(44+len*ch*2));
+  const w=(o,s)=>{for(let i=0;i<s.length;i++)data.setUint8(o+i,s.charCodeAt(i));};
+  w(0,'RIFF'); data.setUint32(4,36+len*ch*2,true); w(8,'WAVE'); w(12,'fmt ');
+  data.setUint32(16,16,true); data.setUint16(20,1,true); data.setUint16(22,ch,true);
+  data.setUint32(24,SR,true); data.setUint32(28,SR*ch*2,true); data.setUint16(32,ch*2,true);
+  data.setUint16(34,16,true); w(36,'data'); data.setUint32(40,len*ch*2,true);
+  let o=44; const chans=[]; for(let c=0;c<ch;c++)chans.push(buf.getChannelData(c));
+  for(let i=0;i<len;i++)for(let c=0;c<ch;c++){ let s=Math.max(-1,Math.min(1,chans[c][i])); data.setInt16(o,s*32767,true); o+=2; }
+  return new Blob([data],{type:'audio/wav'});
+}
+function saveWav(blob, filename){
+  const url=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url); a.remove();}, 400);
+}
+
+/* ===================== SHARED: iOS audio + Media Session ================== *
+ * Keeps audio alive across lock/visibility. Full lock-screen playback in the
+ * reference machines also anchors a silent <audio>; keep this at minimum. */
+function __iosAudio(ctx){
+  const resume=()=>{ if(ctx&&ctx.state!=='running') ctx.resume().catch(()=>{}); };
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden) resume(); });
+  ['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,resume,{passive:true}));
+}
+function __media(){
+  if(!('mediaSession' in navigator)) return;
+  try{
+    navigator.mediaSession.metadata=new MediaMetadata({title:'TEMPLATE', artist:'OPVSCVLA'});
+    navigator.mediaSession.setActionHandler('play',()=>play());
+    navigator.mediaSession.setActionHandler('pause',()=>togglePause());
+    navigator.mediaSession.setActionHandler('nexttrack',()=>another());
+  }catch(e){}
+}
+// live voicing edits from the bench
+TIMBRE.touch=function(path){
+  if(!G||!ac) return;
+  if(path==='master.level'||path==null) G.out.gain.setTargetAtTime(TP.master.level, ac.currentTime, .02);
+  // bright/decay/drive apply to newly-scheduled notes automatically.
+};
+
+/* ===================== canvas (cached static + playhead) ================== */
+const cv=$('cv'), cx=cv.getContext('2d');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function draw(){
+  const s=st.score||genAll(st.seed);
+  cx.clearRect(0,0,cv.width,cv.height);
+  cx.fillStyle='#0d0b09'; cx.fillRect(0,0,cv.width,cv.height);
+  const pad=30, w=cv.width-2*pad, h=cv.height-2*pad;
+  const lo=52, hi=84;
+  s.notes.forEach((n,i)=>{                       // TODO(canvas): the real visualization
+    const x=pad+ (i/(s.notes.length-1))*w;
+    const y=pad+ (1-(n.midi-lo)/(hi-lo))*h;
+    cx.fillStyle=i%SCALE.length===0?'var(--accent2)':'#d98a3d';
+    cx.beginPath(); cx.arc(x,y,4,0,7); cx.fill();
+  });
+}
+let raf=0;
+function drawLoop(){
+  draw();
+  if(st.playing && ac){
+    const beats=((ac.currentTime-st.t0)/spb());
+    const s=st.score, frac=(beats % s.beats)/s.beats;
+    const pad=30, x=pad+frac*(cv.width-2*pad);
+    cx.strokeStyle='#e9e2d6'; cx.beginPath(); cx.moveTo(x,10); cx.lineTo(x,cv.height-10); cx.stroke();
+  }
+  if(st.playing && !st.paused && !reduce) raf=requestAnimationFrame(drawLoop);
+}
+function status(){ $('tagR').textContent = st.playing?(st.paused?'paused':'playing'):'idle';
+  $('tagL').textContent='LAW · seed '+(st.seed>>>0).toString(36);
+  $('play').textContent=st.playing?'■ stop':'▶ play';
+  $('tempoV').textContent=st.tempo+' bpm'; }
+
+/* ===================== URL hash = the pressing =========================== */
+function writeHash(){ location.hash='s='+(st.seed>>>0).toString(36)+'&t='+st.tempo; }
+function readHash(){
+  const p=new URLSearchParams(location.hash.slice(1));
+  if(p.has('s')) st.seed=parseInt(p.get('s'),36)>>>0;
+  if(p.has('t')){ st.tempo=+p.get('t'); $('tempo').value=st.tempo; }
+}
+
+/* ===================== wiring ============================================= */
+$('play').onclick=()=>st.playing?stop():play();
+$('pause').onclick=togglePause;
+$('another').onclick=another;
+$('cut').onclick=cut;
+$('tempo').oninput=e=>{ st.tempo=+e.target.value; status(); };
+addEventListener('keydown',e=>{
+  const t=e.target&&e.target.tagName; if(t==='INPUT'||t==='TEXTAREA') return;
+  if(e.key===' '){ e.preventDefault(); st.playing?stop():play(); }
+  else if(e.key==='p'||e.key==='P') togglePause();
+  else if(e.key==='r'||e.key==='R'){ e.preventDefault(); another(); }
+  else if(e.key==='c'||e.key==='C') cut();
+});
+readHash(); if(!location.hash) st.seed=(Math.random()*1e9)|0;
+status(); draw();
+</script>
+</body>
+</html>
