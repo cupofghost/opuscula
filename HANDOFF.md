@@ -246,6 +246,53 @@ Conventions when touching this layer:
 
 Newest first.
 
+### SVARA — design brief for a Carnatic machine (op. XXIII provisional; NOT yet implemented)
+**Branch:** `claude/carnatic-swara-shruti-machine-vs7xs0` · **File:**
+`svara/LAKSHANA.md` (design brief only — no code, no registry rows) ·
+**Status:** design complete, implementation NOT started. Per the claiming
+rule this brief claims the **directory `svara/` and the concept**, not the
+opus number — XXIII is provisional until landing. Maintainer's brief: a new
+machine based on the South Indian Carnatic tradition, using the swara and
+the concept of shruti.
+
+- **The machine:** SVARA — the user picks a **raga** and a **tala**; the
+  machine performs a short concert item (staged ālāpana over the tambura →
+  pallavi with cumulative sangati variations against a mridangam → a
+  **korvai** cadence that must land exactly on samam). Voice-first
+  (ākāram-singing formant voice), tambura with jvāri bloom, modal-synthesis
+  mridangam tuned to Sa.
+- **The tuning law is the classical 22-shruti grid, exact JI, zero ET**:
+  22 = 2 achala (1/1, 3/2) + **ten comma pairs 81/80 apart** — each
+  variable svarasthāna owns a pair and the raga chooses the member (e.g.
+  Kharaharapriyā ri = 10/9 vs Śaṅkarābharaṇam ri = 9/8, a pramāṇa shruti
+  apart: the concept of shruti made audible). `SA = 196` the one Hz
+  literal; integer ratio pairs end to end.
+- **The melodic law is raga lakshana as an automaton** (GRADUS's move):
+  ārohana/avarohana as directed successor graphs (handles varjya, vakra,
+  and Bhairavi's direction-dependent two dhas), nyāsa-only phrase endings,
+  jīva dwell weights, prayoga seeding. Eight baked ragas with full
+  lakshana + gamaka maps. **Gamaka is the swara's identity**: five curve
+  types (kampita/jāru/nokku/sphurita/orikkai) whose every turning point is
+  an exact shruti; some swaras are never plain (Tōḍi, Bhairavi).
+- **The rhythmic law has a right answer** (PEAL's move): four talas
+  (Ādi/Rūpaka/Miśra Chāpu/Khaṇḍa Chāpu) × gati 4/3/5; the korvai identity
+  **3T + 2g = span** verified for every seed × tala × gati.
+- **This is the raga machine `diamond/GENESIS.md` §12 parked** ("a credible
+  alap needs a melodic intelligence this framework can't yet honor") — the
+  brief argues the Carnatic (not Hindustani) form dissolves that objection:
+  bounded item, lakshana automaton, variation-of-a-fixed-line sangati,
+  arithmetic cadence. Correctness, not creativity.
+- Skeleton: scheduler family (BOLG/FADÓ), baked mridangam strokes (no
+  mid-play rebake, ► HEAR auditions), OFFICINA bridge verbatim, Media
+  Session pattern included from day one so the in-flight sweep skips it.
+  Canvas: the **22-shruti wheel with a live pitch needle** (gamaka visible
+  as motion between lit points) + a tala lane with kriyā symbols and a
+  korvai 3× countdown.
+- **Pick-up:** an implementation session builds `svara/index.html` from the
+  brief (§13 is the verify gauntlet, §14 the registration checklist), then
+  deletes the brief and folds the outcome into this thread. Registry files
+  deliberately untouched by this session — nothing ships until it lands.
+
 ### RILLE — harmony recomposed on the LAMENTO GROUND (a tradition with rules)
 **Branch:** `claude/rille-edm-aesthetic-fix-m3nik7` · **Files:** `rille/index.html`
 only (engine + display + reader notes; UI shell, drums, mix chain, TIMBRE,
