@@ -9,7 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="OPVSCVLA">
-<meta name="description" content="opuscula — twenty-seven small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum, javanese gamelan, harry partch's tonality diamond, dubstep, a self-predicting language model, crimean steppe women's polyphony, the bohlen–pierce scale (a music with no octave), an l-system that grows music from grammar, early tape splicing, portuguese fado, the riddle canons of bach's musical offering, south indian carnatic svara and shruti, the lakota courting flute, renaissance sacred polyphony for tenebrae, the baganda royal log xylophone.">
+<meta name="description" content="opuscula — twenty-eight small musical machines: single-file web audio objects. zydeco, just intonation, species counterpoint, minimal techno, comma pump, uilleann piping, change-ringing, old-time banjo, west african drumming, playground chant, mongolian throat singing, modular synthesis, french military field drum, javanese gamelan, harry partch's tonality diamond, dubstep, a self-predicting language model, crimean steppe women's polyphony, the bohlen–pierce scale (a music with no octave), an l-system that grows music from grammar, early tape splicing, portuguese fado, the riddle canons of bach's musical offering, south indian carnatic svara and shruti, the lakota courting flute, renaissance sacred polyphony for tenebrae, the baganda royal log xylophone, georgian table-song polyphony on an adaptive-intonation engine.">
 <title>OPVSCVLA — small musical machines</title>
 <link rel="icon" href="./favicon-32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
@@ -80,13 +80,13 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
      This file is pure HTML + CSS. No JavaScript, no audio: it is just the
      index card wall that links out to the works. Each work lives in
      its own folder as its own index.html; this page never loads them, it
-     only links to them (href="./folder/"). Twenty-seven works.
+     only links to them (href="./folder/"). Twenty-eight works.
 
      Anatomy, top to bottom:
        .wrap      the 760px column everything sits in
        .eyebrow   the "catalogvs · mmxxvi" kicker
        h1 / .sub  the title and the one-line manifesto
-       .grid      the card wall — one <a class="card"> per work (twenty-seven total)
+       .grid      the card wall — one <a class="card"> per work (twenty-eight total)
        .notes     the shared-keys reminder (space / r / c)
        .foot      the colophon + repo link
 
@@ -109,7 +109,7 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
 <div class="wrap">
   <div class="eyebrow">catalogvs · mmxxvi</div>
   <h1>Opvscvla</h1>
-  <div class="sub">twenty-seven small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
+  <div class="sub">twenty-eight small musical machines — each a single file of pure web audio. the machine composes; you set the law it obeys.</div>
   <div class="opxy"><a href="./opxy/"><span class="tag">new →</span> play these on a teenage engineering OP–XY · MIDI fork</a></div>
   <hr class="rule">
 
@@ -796,6 +796,28 @@ h1{font-family:'Cormorant SC',serif;font-weight:700;text-align:center;
         <h2>Amadinda</h2>
         <p>the Baganda royal log xylophone — two parts interlock, a third is read off them</p>
         <span class="tech">okunaga and okwawula interlock in strict alternation and parallel octaves · okukoonera is derived, never composed · exact five-tone equal temperament, the tradition's own law · the five muko transpositions recompose the emergent part</span>
+      </div>
+    </a>
+
+    <a href="./bani/" class="card" style="--bg:#241318">
+      <div class="emblem" aria-hidden="true">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- a grapevine trellis: three tendrils, one per voice -->
+          <g fill="none" stroke-width="2.4" stroke-linecap="round">
+            <path d="M15 82 Q30 60 22 45 Q14 30 25 15" stroke="#7a5233"/>
+            <path d="M32 85 Q45 62 38 44 Q40 28 52 18" stroke="#5c7a41"/>
+            <path d="M50 88 Q62 60 58 42 Q68 26 78 14" stroke="#c9973f"/>
+          </g>
+          <circle cx="25" cy="15" r="3" fill="#c9973f"/>
+          <circle cx="52" cy="18" r="3" fill="#c9973f"/>
+          <circle cx="78" cy="14" r="3" fill="#c9973f"/>
+        </svg>
+      </div>
+      <div class="meta">
+        <span class="op">op. XXVIII · MMXXVI</span>
+        <h2>Bani</h2>
+        <p>Georgian table-song polyphony, tuned by negotiation</p>
+        <span class="tech">three-part mravalkhmianoba — Kakheti, Guria, Svaneti · an adaptive-intonation engine solves every pitch as a weighted pull between harmony, melody and a drifting frame, not a ratio table · fifths and fourths pure, thirds neutral, cadences lock and the residue drifts · krimanchuli's chest/falsetto register flip</span>
       </div>
     </a>
 
