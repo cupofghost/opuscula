@@ -102,7 +102,7 @@ tenebrae/index.html  op. XXVI TENEBRAE    — Renaissance sacred polyphony, Tene
 amadinda/index.html  op. XXVII AMADINDA   — Baganda royal log xylophone, equipentatonic interlock
 bani/index.html      op. XXVIII BANI      — Georgian table-song polyphony, adaptive intonation
 persona/index.html   op. XXIX  PERSONA    — the singing automaton (formant speech synthesis; after "I Feel Fantastic")
-fresh/index.html     op. XXX   FRESH      — late-80s rap & hip hop (for Devastatin' Dave the Turntable Slave)
+fresh/index.html     op. XXX   FRESH      — '80s rap & hip hop, the golden age (formant rap voice + synthesized turntables)
 ```
 
 The `op.` roman-numeral order is fixed and lives in `index.html` and `README.md`;

@@ -1,5 +1,67 @@
 # FRESH — threads
 
+### 2026-07-22 · tuning session — vocal tuning + reframe to '80s rap in general
+
+First real pass with the voice audible in the mix (it had been muted since
+build — see the connection-fix entry below). Maintainer notes, all six
+addressed:
+
+- **Too wet.** The voice sends were `master.room*0.9` (plate) and 0.14 (echo) —
+  a reverberant MC. Split the voice's wet path off the master `room` onto two
+  dedicated, low `fx` params — **`voicePlate` 0.04** and **`voiceEcho` 0.04** —
+  so he sits dry and up front; the throw on line-final words still rides up on
+  HYPE but from a dry resting level (`echoThrow` 0.5→0.25, `echoFeedback`
+  0.35→0.22). The old `fx.plateLevel`/`fx.plateLen` params were unused by the
+  voice path and are replaced by `voicePlate`/`voiceEcho` (still 10 groups; the
+  bench schema stays 82 params).
+- **Crowd sounded like noise.** Root cause: `HOOK_RESP` was a single `'ho'`
+  laid across the whole bar by the normal flow mapper — a bar-long formant
+  drone. Now the crowd gets a dedicated layout: short punchy stabs (0.5 beat)
+  spread across strong beats, `HOOK_RESP=['ho','ho']`, at a saner `crowdBoost`
+  (was up to 1.4, now ≤1.0) and dry. Reads as a shout, not a wash. (Verified:
+  max crowd-stab duration 0.5 beat, spread, across all styles.)
+- **Intelligibility.** The real culprit was the formant time-constant: vowel
+  bodies glided their formants over `glideMs` (~3× tc to settle ≈ 66 ms), longer
+  than many vowels last, so vowels never reached their target = mush. Split it:
+  **vowel bodies now snap to target with a crisp fixed tc (0.014)**; the longer
+  glide is reserved for diphthong movement and consonant→vowel coarticulation.
+  Backed by voicing params: `reduction` 0.55→0.30 (vowels stay distinct, less
+  schwa), `f2Mix` 0.72→0.80 (F2 carries vowel identity), `consStop`/`consFric`
+  up, `breath` 0.20→0.12 (less noise over the formants), `glideMs` 40→22,
+  `voice.level` 0.55→0.70, `duckDepth` 0.25→0.32 (bed gets out of his way).
+- **Same cadence every line.** `layoutSyllables` was deterministic per
+  syllable-count, so every equal-length line marched identically. Rewrote all
+  three flows to draw a **seeded per-line rhythmic identity** (`feel`): PARK
+  varies its entry (downbeat / &-of-1 pickup / beat-2), its 8th-vs-dotted spine
+  and 16th squeezes, and where the payoff lands (4 or its &); SHOUT varies burst
+  length, 16th-tight subdivision and rest length; LYRICAL varies its syncopation
+  density. Also gave the couplet a two-line pitch cadence — the setup line's
+  boundary *holds up* (continuation, +1 st), the payoff *falls* — so no two
+  consecutive lines end on the same contour. (Verified: 76% of equal-length
+  verse-line buckets now show ≥2 distinct grids; was 0%.) The chosen FLOW still
+  governs identity — this varies cadence *within* the flow the user picked, not
+  the flow itself.
+- **Reframe to '80s rap in general, Dave among peers, no meme framing.** The
+  machine was written "for Devastatin' Dave"; it's now **the golden age,
+  1984–89**, with Dave named as one prominent artist among Run-DMC, Grandmaster
+  Flash & the Furious Five, Kurtis Blow, LL Cool J, Eric B & Rakim, KRS-One, Big
+  Daddy Kane, Slick Rick, Doug E. Fresh, Egyptian Lover, Mantronix, Marley Marl
+  and others — treated with the same reverence as any of them. Every "meme,"
+  "outsider-art," "played straight not as the meme" line is gone from FRESH's
+  own copy (the "on this music" panel, header, shell, meta, README row, HANDOFF
+  line, landing card, MC-name/STYLE glosses). `Zip Zap Rap` is now cited as a
+  record of the era, not a curiosity. (PERSONA's op. XXIX row keeps its own
+  wording — out of scope.)
+
+Only `compose()`-affecting change is the flow/crowd rewrite, which is an
+intended musical change — the hash format is unchanged and still round-trips, so
+old links still resolve, they simply render the new (better) flow. Verified
+headless: `dev/check.mjs` clean (registries still agree), `dev/verify.mjs fresh`
+clean (10 groups / 82 params), the 180-combo model gauntlet still PASS (DICT
+closure, rhyme integrity, monotonic non-overlapping grids, determinism), the
+voiced-path-only render still sounds (line RMS 0.033), and the crowd/flow
+behavioral check passes. No new page errors.
+
 ### 2026-07-22 · improve session — THE VOICE WAS NEVER CONNECTED (maintainer: "i dont hear any voice")
 
 Root cause, embarrassingly simple: `buildVoiceChain` builds the whole formant
