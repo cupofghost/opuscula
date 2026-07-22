@@ -1,30 +1,43 @@
 # CLAUDE.md
 
-Orientation for OPVSCVLA. **Read `HANDOFF.md` first** — it is the complete brief
-(architecture, key decisions, file structure, conventions, open threads). This
-file only pins the working conventions so a session follows them without being
-re-told.
+Orientation for OPVSCVLA. **Read `HANDOFF.md` first** — but only its lean top
+matter (architecture, key decisions, file structure, conventions, quality bar,
+workflow, TIMBRE/OFFICINA) plus the one machine in your scope. Each machine is
+self-contained; you don't need the other machines' code or history. Priority is
+shipping with **minimal token usage**. This file pins the working conventions so
+a session follows them without being re-told.
 
 ## Working process
 
-- **Sessions run in parallel** — other chats are landing other branches on
-  `main` right now. Follow the **"Working in parallel"** section of
-  HANDOFF.md: fetch + rebase onto `origin/main` at session start *and* again
-  before pushing (local `main` is a stale clone-time snapshot); one session =
-  one branch = one scope; a merged branch is never resumed; opus numbers and
-  directories are claimed by *landing*, not by designing — re-check the
-  registry at every rebase and renumber if someone landed first.
-- In HANDOFF.md, touch only your own Open-threads entries (added at the
-  **top**) plus the minimal lines your change needs in fixed sections. Never
-  reflow sections you didn't work in. Registry files (`index.html`,
-  `README.md`, HANDOFF file table, officina `MACHINES`) get minimal-diff
-  rows only. Cross-machine sweeps (e.g. the duplicated OFFICINA bridge) go
-  on a dedicated branch that does nothing else.
-- **Keep `HANDOFF.md` current.** Update it at the **end of every session**
-  without being asked — architecture, key decisions, file structure,
-  conventions, and open threads. It is the single source of orientation; a new
-  chat starts by pasting it plus the files in scope, so treat that as complete
-  and don't ask the maintainer to re-explain.
+- **The maintainer commits to `main`; agents open PRs.** Every task — plan a
+  machine (a design brief for another agent), build a machine, or improve one —
+  ends by opening a PR the maintainer reviews and merges. Never push to `main`,
+  never merge your own PR.
+- **Sessions run in parallel** and `main` will have moved since you began.
+  Follow the **Workflow** section of HANDOFF.md: fetch + rebase onto
+  `origin/main` at session start *and* again before you PR (local `main` is a
+  stale clone-time snapshot); one session = one branch = one scope; a merged PR
+  is finished, never resumed; opus numbers are provisional until *merged* —
+  take the next free numeral from `origin/main`, flag it provisional in the PR,
+  and expect the maintainer to settle final numbering at merge.
+- **Don't ship low-quality code.** Meet the Quality-bar checklist in HANDOFF.md
+  end to end and verify headless before you PR; match the maintainer's reference
+  machines (BOLG, DIAMOND, TESSERA, FADÓ, TENEBRAE). If you can't clear the bar
+  in the token budget, ship less scope well and note the rest in the machine's
+  `THREADS.md`.
+- Your **session record** goes at the **top** of a `THREADS.md` — your machine's
+  `<machine>/THREADS.md` for machine work, the repo-root `THREADS.md` for a
+  cross-cutting change. In HANDOFF.md touch only the minimal fixed-section lines
+  your change needs, and never reflow sections you didn't work in. Registry
+  files (`index.html`, `README.md`, HANDOFF file table, officina `MACHINES`) get
+  minimal-diff rows only. Cross-machine sweeps (e.g. the duplicated OFFICINA
+  bridge) go on a dedicated branch that does nothing else. OFFICINA is otherwise
+  improved per-machine: token-light bench fixes ride along in the machine's PR,
+  token-intensive ones are noted in the machine's `THREADS.md` and left.
+- **Keep orientation current in your PR** without being asked: HANDOFF.md when
+  architecture / decisions / file structure / conventions change, and your
+  per-session record at the top of the relevant `THREADS.md`. Don't ask the
+  maintainer to re-explain.
 - During iteration, output **patches/diffs, not full-file rewrites.** Emit a
   whole file only when creating it, or when changes exceed ~50% of it.
 - **Don't restate the request or recap prior turns.** Answer directly.
@@ -53,12 +66,13 @@ re-told.
 
 Verify **headless (Chromium)**: enumerate the model for correctness, then
 smoke-test the transport/scheduler and the offline render for runtime errors.
-See the RILLE threads in HANDOFF.md for the pattern.
+See `rille/THREADS.md` for the pattern.
 
 ## Git
 
-Develop on the feature branch, commit with descriptive messages, push. The
-music-theory / design reasoning tends to live in the commit message. **Don't
-open a PR unless asked.** Rebase onto `origin/main` before every push; on a
-HANDOFF.md conflict, keep both sides' Open-threads entries and re-merge fixed
-sections by hand.
+Develop on your `claude/*` branch, commit with descriptive messages (the
+music-theory / design reasoning lives there), and **open a PR** — every task
+ends in a PR the maintainer reviews and merges. Never push to `main`, never
+merge your own PR. Rebase onto `origin/main` before you PR; on a `THREADS.md`
+conflict keep both sides' `###` entries, and re-merge any HANDOFF fixed-section
+lines by hand.
