@@ -23,18 +23,21 @@ a session follows them without being re-told.
 - **Don't ship low-quality code.** Meet the Quality-bar checklist in HANDOFF.md
   end to end and verify headless before you PR; match the maintainer's reference
   machines (BOLG, DIAMOND, TESSERA, FADÓ, TENEBRAE). If you can't clear the bar
-  in the token budget, ship less scope well and note the rest in Open threads.
-- In HANDOFF.md, touch only your own Open-threads entries (added at the
-  **top**) plus the minimal lines your change needs in fixed sections. Never
-  reflow sections you didn't work in. Registry files (`index.html`,
-  `README.md`, HANDOFF file table, officina `MACHINES`) get minimal-diff
-  rows only. Cross-machine sweeps (e.g. the duplicated OFFICINA bridge) go
-  on a dedicated branch that does nothing else. OFFICINA is otherwise improved
-  per-machine: token-light bench fixes ride along in the machine's PR,
-  token-intensive ones are noted in Open threads and left.
-- **Keep `HANDOFF.md` current.** Update it **in your PR** at the end of every
-  session without being asked — architecture, key decisions, file structure,
-  conventions, and open threads. Don't ask the maintainer to re-explain.
+  in the token budget, ship less scope well and note the rest in the machine's
+  `THREADS.md`.
+- Your **session record** goes at the **top** of a `THREADS.md` — your machine's
+  `<machine>/THREADS.md` for machine work, the repo-root `THREADS.md` for a
+  cross-cutting change. In HANDOFF.md touch only the minimal fixed-section lines
+  your change needs, and never reflow sections you didn't work in. Registry
+  files (`index.html`, `README.md`, HANDOFF file table, officina `MACHINES`) get
+  minimal-diff rows only. Cross-machine sweeps (e.g. the duplicated OFFICINA
+  bridge) go on a dedicated branch that does nothing else. OFFICINA is otherwise
+  improved per-machine: token-light bench fixes ride along in the machine's PR,
+  token-intensive ones are noted in the machine's `THREADS.md` and left.
+- **Keep orientation current in your PR** without being asked: HANDOFF.md when
+  architecture / decisions / file structure / conventions change, and your
+  per-session record at the top of the relevant `THREADS.md`. Don't ask the
+  maintainer to re-explain.
 - During iteration, output **patches/diffs, not full-file rewrites.** Emit a
   whole file only when creating it, or when changes exceed ~50% of it.
 - **Don't restate the request or recap prior turns.** Answer directly.
@@ -63,13 +66,13 @@ a session follows them without being re-told.
 
 Verify **headless (Chromium)**: enumerate the model for correctness, then
 smoke-test the transport/scheduler and the offline render for runtime errors.
-See the RILLE threads in HANDOFF.md for the pattern.
+See `rille/THREADS.md` for the pattern.
 
 ## Git
 
 Develop on your `claude/*` branch, commit with descriptive messages (the
 music-theory / design reasoning lives there), and **open a PR** — every task
 ends in a PR the maintainer reviews and merges. Never push to `main`, never
-merge your own PR. Rebase onto `origin/main` before you PR; on a HANDOFF.md
-conflict, keep both sides' Open-threads entries and re-merge fixed sections by
-hand.
+merge your own PR. Rebase onto `origin/main` before you PR; on a `THREADS.md`
+conflict keep both sides' `###` entries, and re-merge any HANDOFF fixed-section
+lines by hand.
