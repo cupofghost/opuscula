@@ -7,7 +7,7 @@ start of a session — it's meant to be enough to work without re-explaining.
 
 ## Architecture
 
-**OPVSCVLA is twenty-eight independent single-file Web Audio machines** plus a static
+**OPVSCVLA is twenty-nine independent single-file Web Audio machines** plus a static
 landing page. There is **no build step, no bundler, no dependencies, no npm, no
 samples, no server-side anything.** Each `op.` is one self-contained
 `index.html` — inline `<style>`, inline `<script>`, all synthesis in the
@@ -90,6 +90,7 @@ siyotanka/index.html op. XXV   ŠIYÓTȞAŊKA — the Lakota courting flute (ši
 tenebrae/index.html  op. XXVI TENEBRAE    — Renaissance sacred polyphony, Tenebrae responsories
 amadinda/index.html  op. XXVII AMADINDA   — Baganda royal log xylophone, equipentatonic interlock
 bani/index.html      op. XXVIII BANI      — Georgian table-song polyphony, adaptive intonation
+persona/index.html   op. XXIX  PERSONA    — the singing automaton (formant speech synthesis; after "I Feel Fantastic")
 ```
 
 The `op.` roman-numeral order is fixed and lives in `index.html` and `README.md`;
@@ -252,6 +253,111 @@ Conventions when touching this layer:
 ## Open threads
 
 Newest first.
+
+### PERSONA — new machine, op. XXIX (the singing automaton; a formant speech synthesizer that sings)
+**Branch:** `claude/i-feel-fantastic-machine-xb8wha` · **File:** `persona/index.html`
+(new, ~1150 lines). **Status:** done, verified headless (Chromium/playwright, 24
+checks + voice-isolation + reduced-motion freeze — zero page errors, deterministic
+render). New op. Registered in `index.html` (card + counts), `README.md` (row +
+count), `officina` (chip), `CLAUDE.md` + this file (counts + file table). op. XXIX
+was free at the pre-push rebase (BANI XXVIII was the latest landed); the directory
+name `persona/` is unclaimed on any live branch.
+
+- **The brief, played straight.** The maintainer asked for a machine "based off the
+  *I Feel Fantastic* YouTube video … play it straight, same conventions and reverence
+  as any other machine." The source is **John Bergeron's *Tara the Android*** (2004,
+  viral on YouTube 2009): a mannequin "pop-star android" who can move only her head
+  and hands, singing cheerful affirmations through a **primitive speech synthesizer**
+  while a cheap synth noodles behind her in a bright key that never resolves. Rather
+  than karaoke one MP3, PERSONA renders the *form/tradition* the video belongs to —
+  the singing automaton — as a seeded generator, the way NENIA renders "the
+  playground chant" rather than one rhyme. The uncanny cheer is played dead straight;
+  the horror is emergent (sweet music + flat mechanical voice + the words), never a
+  "spooky" cue.
+- **The signature / correctness domain is real source–filter (formant) speech
+  synthesis.** THE VOICE is one persistent chain: a glottal buzz (sawtooth) → three
+  parallel band-pass **formant** filters shaped per phoneme → a light ring-mod edge →
+  a per-syllable envelope. Vowel formant frequencies (F1–F3) are the *measured*
+  values a formant synth uses (Peterson & Barney 1952 / Klatt), stored in `VOW`;
+  diphthongs (`DIPH`) glide start→end across the vowel. Consonants (`CONS`) are the
+  same physics: filtered-noise bursts for fricatives (`s`/`sh`/`f`…), a
+  silence-then-pop for stops (`t`/`k`/`p`…), a low murmur for nasals, formant
+  transitions for liquids/glides. Words are spelled out phoneme-by-phoneme in a
+  **hand-verified pronunciation dictionary** `DICT` (91 words — the closed vocabulary
+  the machine can sing); `syllab()` splits each syllable into onset|vowel|coda so the
+  melody lands one note per syllable. **Pitch is `setValueAtTime` — instant and held
+  flat** (no scoop, no vibrato): the phase-continuous, click-free mechanical
+  steadiness IS the instrument (Mori's uncanny valley). Verified: every DICT syllable
+  has exactly one known vowel and only known phones; every refrain contour has exactly
+  one scale-degree per syllable.
+- **The bed is the "atonal noodling," rendered as a drifting non-functional
+  arpeggiator.** A persistent 2-osc arp through a low-pass with a slow wandering LFO,
+  over a held 3-osc pad, plus a soft preset drum-machine (kick/backbeat/hats). The
+  tonal **center drifts** per bar — seeded step ∈ {−2..+2} scaled by the DRIFT law —
+  so the bright chords wander and functional harmony never closes, while Tara sings on
+  regardless and the two fall out of agreement. Verified: DRIFT=0 → center never moves
+  (single value); DRIFT=90 → many distinct centers.
+- **The form + the crack.** Fixed grammar (the tradition's "sol-mi-la"): the
+  refrain **ladder** *I feel fantastic / hey hey hey → you feel fantastic → you are
+  fantastic* (verbatim signature). Verses are generated affirmations from each
+  routine's vocab grammar. The **CRACK** law rations how far the unease reaches — from
+  a pristine loop that never turns (0) to a routine so overrun it stutters — by
+  weaving `genCrackLine()` (*run · please leave*, per routine) into the body and a
+  capped finale surge. Four **PROGRAMS** reframe the same automaton (Fantastic /
+  Welcome — the hostess who won't let you go / Jingle — the advert / Malfunction),
+  each loading its own tempo/crack/drift defaults + refrain + vocab (mirrors NENIA's
+  game selector, RILLE's moods, BANI's regions). Verified: crack count grows
+  monotonically with the CRACK control (1→3→6 at 0/40/100).
+- **Architecture is NENIA's one-shot through-composed spine** (a param change
+  regenerates; the seed is the take), NOT a live re-vibe scheduler — appropriate for a
+  fixed short song. `compose()` lays lines on a beat grid → flat `syls` + per-bar
+  `chordPlan`; `buildGraph()` schedules it. Persistent voice/arp/pad chains (automated
+  per event) rather than per-note node churn — the **TENEBRAE lesson** (per-note
+  filter chains outlive their source and cost CPU for the whole OfflineAudioContext
+  render). Duration is ~45–65s; the malfunction·7 stress render is ~97s of audio in
+  ~17s wall, deterministic, NaN-free, peak ≤0.92 (cut normalizes if needed).
+- **Transport is the current house standard** (copied from BANI/TENEBRAE): playhead =
+  `ctx.currentTime − t0` (a suspended context freezes it, so pause/lock are free);
+  `__iosAudio` playback-session unlock + interruption recovery; Media Session
+  (play/pause/stop/nexttrack, silent-audio anchor for lock-screen); shared `saveWav`
+  pill; deterministic 16-bit WAV cut; space/p/r/c. **One real bug found & fixed:**
+  `aliud()`/`regen()` call `writeHash()`, whose async `hashchange` echo re-entered the
+  handler and called `stop()` — racing and killing a just-started take. Guarded the
+  handler to ignore our own hash writes (`__lastHash`); NENIA has the latent version
+  of this but never plays immediately after a self-write so never hit it.
+- **TIMBRE/OFFICINA:** 5 groups, 28 params (master & room, voice/formant-TTS, bed/arp,
+  pad, beat). Bridge copied verbatim from NENIA. The law (routines, words, DICT,
+  drift, the crack, formant *centres*) stays out of TIMBRE — only the *shaping* around
+  it (formant Q/mix, aspiration, consonant level, robotic ring-mod, arp cutoff/LFO,
+  pad, beat) is voiced. Verified: schema well-formed, live `set` and `bulk`
+  (reset-then-apply) round-trip, `?factory` bypass, zero page errors in bench mode.
+  `TIMBRE.demo` = perform (one-shot machine; ► HEAR just starts the take).
+- **Canvas** keeps the video's cruel economy: of the whole porcelain mannequin, only
+  the **head** (slow seeded sway/nod, rare blink) and the **hands** (tick on the beat)
+  move, and the **mouth** shapes each vowel as a viseme derived from that vowel's own
+  formants (jaw-open from F1, lip-round from low F2). A faint drifting arp ribbon +
+  center readout + karaoke lyric (crack lines in hot pink) sit behind. Dark-only
+  (`color-scheme:dark`), domestic-TV-glow palette. `prefers-reduced-motion` freezes
+  the figure to a single mid-word stare (verified: canvas byte-identical across
+  frames while playing under reduced-motion).
+- **Verified headless** (`scratchpad/verify-persona.mjs`, playwright + bundled
+  Chromium, not committed): no page errors (the offline Google-Fonts fetch failure is
+  filtered as environment noise — GitHub Pages serves them fine); dictionary/formant
+  well-formedness; refrain contour lengths; all 4 programs compose finite/in-register
+  with a crack; determinism (same seed byte-identical, different seed differs); the
+  CRACK and DRIFT laws; hash round-trip; offline render (deterministic, NaN-free,
+  non-silent, peak-safe) for a light and a stress config; voice-only and bed-only
+  both audible (the voice is not drowned); TIMBRE schema; full transport smoke
+  (play/pause/resume/stop/another/re-play); OFFICINA bench set+bulk; reduced-motion
+  freeze; screenshot.
+- **Honest simplifications / pick-ups (none block correctness):** the pronunciation
+  dictionary is a closed 91-word vocabulary (adding words = adding DICT entries, no
+  G2P engine — deliberate, like NENIA's authored cells); the formant model is
+  parallel-only (no cascade / no explicit anti-formant for nasals — approximated with
+  a low murmur); one voice (Tara sings alone); the "drift" is a per-bar integer step,
+  not a continuous glide. Pick-ups: a true nasal anti-resonance; a second/adult voice
+  model; a longer verse grammar; a "diction" law (formant clarity) if wanted as a
+  visible control rather than a TIMBRE knob.
 
 ### BANI — new machine, op. XXVIII (Georgian table-song polyphony on an adaptive-intonation engine)
 **Branch:** `claude/georgian-polyphonic-vocal-machine-hu9nmd` · **File:** `bani/index.html`
