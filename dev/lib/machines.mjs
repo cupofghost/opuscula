@@ -60,6 +60,18 @@ export function fromRoman(s) {
   return n;
 }
 
+// English words for a count, e.g. 30 -> "thirty", 29 -> "twenty-nine". Handles
+// 0-199, which is all this collection will plausibly reach; returns the digits
+// as a fallback beyond that.
+const ONES = ['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+const TENS = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+export function numberWords(n) {
+  if (n < 0 || n >= 200) return String(n);
+  if (n < 20) return ONES[n];
+  if (n < 100) { const o = n % 10; return o ? `${TENS[(n / 10) | 0]}-${ONES[o]}` : TENS[(n / 10) | 0]; }
+  const r = n % 100; return 'one hundred' + (r ? ' ' + numberWords(r) : '');
+}
+
 // Parse the HANDOFF file table rows: "rille/index.html  op. IV  RILLE  — ..."
 export function handoffOpTable(handoffText) {
   const rows = [];

@@ -15,6 +15,28 @@ create one (same header format) the first time you touch them.
 
 ---
 
+### Dev tooling — count check so the spelled-out machine count can't drift
+**Branch:** `claude/opuscula-workflow-standards-ljzy2z` · **Files:** `dev/check.mjs`
++ `dev/lib/machines.mjs`; count fixes in `HANDOFF.md`, `CLAUDE.md`, `README.md`,
+`index.html`; de-numbered a stale `officina/index.html` comment. **Status:** done,
+`check.mjs` clean (30 machines). Follow-up to the dev-tooling PR.
+
+- **The gap it closes:** `check.mjs` verified every machine appears in all four
+  registries and that op. numbering is contiguous, but not the *prose* count —
+  "twenty-nine … machines" in HANDOFF/CLAUDE/README/index stayed behind when
+  FRESH (op. XXX) landed, because a spelled-out count is prose, not a per-machine
+  row.
+- **The check (class `(c)`):** a number-word immediately preceding
+  "machines"/"works" in the orientation + landing files must equal
+  `numberWords(machineDirs().length)` (new `lib` helper, 0–199). It caught
+  exactly the six real drifts (HANDOFF ×1, CLAUDE ×1, README ×1, index.html ×3),
+  zero false positives; all six fixed twenty-nine → thirty. Adding a machine that
+  forgets the count now fails CI.
+- **De-drifted, not just fixed:** the officina `MACHINES` comment still read "the
+  twenty-four, in op. order" (stale by six) — removed the number entirely ("the
+  machines, in op. order") so there's nothing left to maintain there. Also topped
+  up index.html's meta enumeration, which was missing FRESH's subject.
+
 ### OFFICINA — three deferred bench pick-ups from the TIMBRE rollout
 **Branch:** `claude/officina-tweaks-6qx98v` · **File:** `officina/index.html`
 only. **Status:** done, verified headless (synthetic-schema harness, not
