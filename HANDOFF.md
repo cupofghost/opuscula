@@ -13,7 +13,7 @@ repo, flag that instead of doing it.
 
 ## Architecture
 
-**OPVSCVLA is twenty-nine independent single-file Web Audio machines** plus a static
+**OPVSCVLA is thirty independent single-file Web Audio machines** plus a static
 landing page. There is **no build step, no bundler, no dependencies, no npm, no
 samples, no server-side anything.** Each `op.` is one self-contained
 `index.html` — inline `<style>`, inline `<script>`, all synthesis in the
