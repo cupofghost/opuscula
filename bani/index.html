@@ -595,7 +595,7 @@ function composeKakheti(rng,cfg,voices,sounding,frame,note,silence,holdNote,doRe
           if(!voices[restRole].silent) holdNote(restRole,voices,sounding,voices[restRole]);
 
           if(thisIsLineFinalSlot) doReanchor();
-          pushSlot(syl,voices,{isLineFinal:thisIsLineFinalSlot,isPenultimate,isSongFinal:isSongFinalLine&&thisIsLineFinalSlot,region,verseIdx:vs,lineIdx:ln,drift:getDrift()});
+          pushSlot(syl,voices,{isLineFinal:thisIsLineFinalSlot,isFirstOfLine,isPenultimate,isSongFinal:isSongFinalLine&&thisIsLineFinalSlot,region,verseIdx:vs,lineIdx:ln,drift:getDrift()});
         }
       }
       syl.push({breath:true,dur:breathBeats,region,drift:getDrift()});
@@ -662,7 +662,7 @@ function composeGuria(rng,cfg,voices,sounding,frame,note,silence,holdNote,doRean
         }
 
         if(isLastOfLine) doReanchor();
-        pushSlot(syl,voices,{isLineFinal:isLastOfLine,isPenultimate,isSongFinal:isSongFinalLine&&isLastOfLine,region,verseIdx:vs,lineIdx:ln,drift:getDrift()});
+        pushSlot(syl,voices,{isLineFinal:isLastOfLine,isFirstOfLine,isPenultimate,isSongFinal:isSongFinalLine&&isLastOfLine,region,verseIdx:vs,lineIdx:ln,drift:getDrift()});
       }
       syl.push({breath:true,dur:breathBeats,region,drift:getDrift()});
     }
@@ -710,7 +710,7 @@ function composeSvaneti(rng,cfg,voices,sounding,frame,note,silence,holdNote,doRe
         }
 
         if(isLastOfLine) doReanchor();
-        pushSlot(syl,voices,{isLineFinal:isLastOfLine,isPenultimate,isSongFinal:isSongFinalLine&&isLastOfLine,region,verseIdx:vs,lineIdx:ln,drift:getDrift()});
+        pushSlot(syl,voices,{isLineFinal:isLastOfLine,isFirstOfLine,isPenultimate,isSongFinal:isSongFinalLine&&isLastOfLine,region,verseIdx:vs,lineIdx:ln,drift:getDrift()});
       }
       syl.push({breath:true,dur:breathBeats,region,drift:getDrift()});
     }
