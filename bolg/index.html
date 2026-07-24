@@ -1127,6 +1127,7 @@ function start(){
   el.btnSona.textContent='STAD';
   el.btnSos.disabled=false; el.btnSos.textContent='SOS'; el.btnSos.classList.remove('on');
   updateHint(); needsDraw=true; startRaf();
+  __mediaSessionInit(); __mediaSessionUpdate(); __silStart();
 }
 function stop(){
   if(!live.playing)return;
@@ -1147,6 +1148,7 @@ function stop(){
   el.btnSona.textContent='SEINN';
   el.btnSos.disabled=true; el.btnSos.textContent='SOS'; el.btnSos.classList.remove('on');
   updateHint(); needsDraw=true; startRaf();
+  __mediaSessionUpdate(); __silStop();
 }
 function togglePlay(){ if(live.playing)stop(); else start(); }
 /* SOS · AR AGHAIDH: suspend/resume the shared AudioContext. The chanter and the
@@ -1158,7 +1160,7 @@ function togglePause(){
     el.btnSos.textContent='SOS'; el.btnSos.classList.remove('on');}
   else{live.paused=true; ctx.suspend();
     el.btnSos.textContent='AR AGHAIDH'; el.btnSos.classList.add('on');}
-  updateHint();
+  updateHint(); __mediaSessionUpdate();
 }
 
 /* ------------------------------ GEARR · WAV ------------------------------ */
@@ -1714,13 +1716,48 @@ function updateHint(){
   catch(e){window.addEventListener('pointerdown',kick,true)}
   window.addEventListener('keydown',kick,true);
   document.addEventListener('visibilitychange',function(){
-    // stop the sound when backgrounded (locked, app switched or closed);
-    // a playback-session context otherwise keeps rendering in the background
-    if(document.hidden){ if(ctx&&ctx.state==='running')ctx.suspend().catch(function(){}); }
-    else kick();
+    // playback-session context keeps rendering in the background (phone
+    // locked, app switched) — that's wanted now (lock-screen listening via
+    // Media Session, below), so only ever resume here, never suspend on hide.
+    // kick() already guards on live.paused, so a manual pause still holds.
+    kick();
   });
   window.addEventListener('pagehide',function(){try{if(ctx&&ctx.state==='running')ctx.suspend()}catch(e){}});
 })();
+
+/* ---- Media Session: lock-screen / notification-shade transport ----
+   A silent looping <audio> anchors the OS "now playing" session — Web
+   Audio alone doesn't reliably surface one — and keeps the tab exempt from
+   background timer throttling so the lookahead scheduler stays live with
+   the phone locked. */
+const __SILENCE='data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+let __silAudio=null;
+function __mediaSessionInit(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.setActionHandler('play',()=>{if(!live.playing)start();else if(live.paused)togglePause();});
+    navigator.mediaSession.setActionHandler('pause',()=>{if(live.playing&&!live.paused)togglePause();});
+    navigator.mediaSession.setActionHandler('stop',()=>{if(live.playing)stop();});
+    navigator.mediaSession.setActionHandler('nexttrack',()=>{regen({newSeed:true});});
+  }catch(e){}
+}
+function __mediaSessionUpdate(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.metadata=new MediaMetadata({
+      title:'BOLG', artist:'OPVSCVLA · op. VI',
+      album:'round '+seedHex()
+    });
+    navigator.mediaSession.playbackState=(live.playing&&!live.paused)?'playing':'paused';
+  }catch(e){}
+}
+function __silStart(){
+  try{
+    if(!__silAudio){__silAudio=new Audio(__SILENCE);__silAudio.loop=true;__silAudio.setAttribute('playsinline','');}
+    __silAudio.play().catch(()=>{});
+  }catch(e){}
+}
+function __silStop(){try{__silAudio&&__silAudio.pause();}catch(e){}}
 
 /* -------------------------------- init ----------------------------------- */
 function init(){

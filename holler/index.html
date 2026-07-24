@@ -303,12 +303,11 @@ function __iosAudio(ac){
   const kick=()=>{try{if(!st.paused&&ac.state!=='running'&&ac.state!=='closed')ac.resume().catch(()=>{});}catch(e){}};
   kick();
   try{const b=ac.createBuffer(1,1,22050),s=ac.createBufferSource();s.buffer=b;s.connect(ac.destination);s.start(0);}catch(e){}
-  // stop the sound when the page is backgrounded (phone locked, app switched
-  // or closed) — a playback-session AudioContext otherwise keeps rendering in
-  // the background. Suspend on hidden; only auto-resume while visible.
+  // playback-session context keeps rendering in the background (phone
+  // locked, app switched) — that's wanted now (lock-screen listening via
+  // Media Session, below), so only ever resume on visibility, never suspend on hide.
   const onVis=()=>{try{
     if(document.visibilityState==='visible')kick();
-    else if(ac.state==='running')ac.suspend().catch(()=>{});
   }catch(e){}};
   document.addEventListener&&document.addEventListener('visibilitychange',onVis);
   window.addEventListener&&window.addEventListener('pagehide',()=>{try{if(ac.state==='running')ac.suspend().catch(()=>{});}catch(e){}});
@@ -320,6 +319,40 @@ function __iosAudio(ac){
   setTimeout(()=>{try{if(ac.state!=='running'&&ac.state!=='closed')
     __hint('AUDIO SUSPENDED — tap Pick again · if still silent, check the ring/silent switch');}catch(e){}},450);
 }
+
+/* ---- Media Session: lock-screen / notification-shade transport ----
+   A silent looping <audio> anchors the OS "now playing" session — Web
+   Audio alone doesn't reliably surface one — and keeps the tab exempt from
+   background timer throttling so the lookahead scheduler stays live with
+   the phone locked. */
+const __SILENCE='data:audio/wav;base64,UklGRrQBAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YZABAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA';
+let __silAudio=null;
+function __mediaSessionInit(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.setActionHandler('play',()=>{if(!st.playing)play();else if(st.paused)togglePause();});
+    navigator.mediaSession.setActionHandler('pause',()=>{if(st.playing&&!st.paused)togglePause();});
+    navigator.mediaSession.setActionHandler('stop',()=>{if(st.playing)stop();});
+    navigator.mediaSession.setActionHandler('nexttrack',()=>{regen();});
+  }catch(e){}
+}
+function __mediaSessionUpdate(){
+  if(!('mediaSession' in navigator))return;
+  try{
+    navigator.mediaSession.metadata=new MediaMetadata({
+      title:'HOLLER', artist:'OPVSCVLA · op. VIII',
+      album:st.style+' · '+st.tuning
+    });
+    navigator.mediaSession.playbackState=(st.playing&&!st.paused)?'playing':'paused';
+  }catch(e){}
+}
+function __silStart(){
+  try{
+    if(!__silAudio){__silAudio=new Audio(__SILENCE);__silAudio.loop=true;__silAudio.setAttribute('playsinline','');}
+    __silAudio.play().catch(()=>{});
+  }catch(e){}
+}
+function __silStop(){try{__silAudio&&__silAudio.pause();}catch(e){}}
 
 /* ============================ ENGINE-BEGIN ============================
    Pure, DOM-free. seed + mode + tuning → tune; tune + style → pluck events.
@@ -931,6 +964,7 @@ function play(){
   st.playing=true; st.paused=false; $('pick').textContent='Rest'; $('pick').classList.add('on');
   $('pause').disabled=false; $('pause').textContent='Pause'; $('pause').classList.remove('on');
   invalidate();
+  __mediaSessionInit(); __mediaSessionUpdate(); __silStart();
 }
 function stop(){
   if(!RT)return;
@@ -940,6 +974,7 @@ function stop(){
   RT=null; st.playing=false; st.paused=false; $('pick').textContent='Pick'; $('pick').classList.remove('on');
   $('pause').disabled=true; $('pause').textContent='Pause'; $('pause').classList.remove('on');
   invalidate();
+  __mediaSessionUpdate(); __silStop();
 }
 // through-composed: any control change regenerates and (if playing) restarts
 function regen(){ if(RT){ stop(); play(); } else { invalidate(); } }
@@ -1138,6 +1173,7 @@ function togglePause(){
     $('pause').textContent='Pause'; $('pause').classList.remove('on');}
   else{st.paused=true; RT.ctx.suspend();
     $('pause').textContent='Resume'; $('pause').classList.add('on');}
+  __mediaSessionUpdate();
 }
 $('pause').addEventListener('click',togglePause);
 $('cut').addEventListener('click',cut);
