@@ -17,6 +17,3 @@ Last consolidation: (never)
 
 ## Known issues
 (one line each: what, where, date noticed, signature)
-
-## Archive
-(completed entries moved here during consolidation — one line each)
